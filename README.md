@@ -80,20 +80,6 @@ python3 scripts/dashboard.py --slim          # -> dashboard.html
 open dashboard.html
 ```
 
-To run the pipeline on new papers you also need:
-
-| for | what | note |
-|---|---|---|
-| evaluating papers | the `claude` CLI, signed in | each paper is one agent session |
-| `scripts/harvest.py` | nothing extra | queries Europe PMC over plain HTTPS |
-| `scripts/supervise.sh` | macOS | uses `caffeinate`, and BSD `date` to read the reset time out of a usage-limit message |
-| new-candidate alerts | macOS | `osascript` notifications; `--no-notify` turns them off |
-| screenshots of the dashboard | headless Chrome | optional, only used to produce `docs/dashboard.png` |
-
-No GPU, and about 10 GB free disk if you let the cache fill up. On Linux the Python side works
-unchanged; `supervise.sh` needs its two macOS commands swapped (`caffeinate` dropped, `date -j`
-replaced with `date -d`).
-
 ## Running it
 
 ```bash
