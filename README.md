@@ -4,11 +4,18 @@ Reads recent open-access biology papers, finds the data attached to them, opens 
 decides whether it is a good basis for a machine-learning project. It only *finds* projects; it
 trains nothing itself.
 
-**[▶ Open the dashboard](https://claude.ai/artifact/6vGy3Vuy2NuAbqdXVkscH7)** — every evaluation,
-scored and browsable. A snapshot; the live copy is `dashboard.html`, rebuilt every minute while
-a run is going.
+**The dashboard** holds every evaluation, scored and browsable — hover a point for the one-line
+idea and the arithmetic behind its score, click it for the full report. Open it with:
 
-[![dashboard](docs/dashboard.png)](https://claude.ai/artifact/6vGy3Vuy2NuAbqdXVkscH7)
+```bash
+open docs/dashboard.html        # the committed snapshot
+open dashboard.html             # the live copy, rebuilt every minute while a run is going
+```
+
+GitHub serves `.html` as source text rather than rendering it, so the link below is a picture of
+the page, not the page itself.
+
+![dashboard](docs/dashboard.png)
 
 ## Where it has got to
 
