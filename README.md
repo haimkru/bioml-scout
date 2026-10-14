@@ -10,7 +10,10 @@ decides whether it is a good basis for a machine-learning project.
 **The dashboard** holds every evaluation, scored and browsable — hover a point for the one-line
 idea and the arithmetic behind its score, click it for the full report.
 
-**[⤓ Download the dashboard](../../raw/main/docs/dashboard.html)** (7 MB) 
+**[⤓ Download the dashboard](../../raw/main/docs/dashboard.html)** (7 MB) — it saves as
+`dashboard.html`; open it from your downloads and it renders as a page.
+
+![dashboard](docs/dashboard.png)
 
 ## Where it has got to
 
