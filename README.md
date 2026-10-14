@@ -1,29 +1,14 @@
 # bioml-scout
+edited: 10.14.2026
+author: haim krupkin+claude
 
 Reads recent open-access biology papers, finds the data attached to them, opens that data, and
-decides whether it is a good basis for a machine-learning project. It only *finds* projects; it
-trains nothing itself.
+decides whether it is a good basis for a machine-learning project. 
 
 **The dashboard** holds every evaluation, scored and browsable — hover a point for the one-line
 idea and the arithmetic behind its score, click it for the full report.
 
-**[⤓ Download the dashboard](../../raw/main/docs/dashboard.html)** (7 MB) — it saves as
-`dashboard.html`; open it from your downloads and it renders as a page. GitHub shows `.html` as
-source text rather than rendering it, so the file has to reach the browser from disk. Nothing is
-hosted and the repository stays private.
-
-If a browser shows the source instead of downloading, open
-[`docs/dashboard.html`](docs/dashboard.html) on GitHub and use its **Download raw file** button,
-or save the link as a file. The extension must stay `.html`.
-
-Or, from a clone:
-
-```bash
-open docs/dashboard.html        # the committed snapshot
-open dashboard.html             # the live copy, rebuilt every minute while a run is going
-```
-
-![dashboard](docs/dashboard.png)
+**[⤓ Download the dashboard](../../raw/main/docs/dashboard.html)** (7 MB) 
 
 ## Where it has got to
 
@@ -37,8 +22,6 @@ published between 1 July and 1 October 2026.
 | park | 62 | passed the deal-breakers, weak case |
 | rejected | 652 | failed a deal-breaker — usually the data needs an access application, or the label would have to be constructed |
 
-The highest-scoring candidates are mostly protein-sequence tasks with a measured label, which is
-what the rubric is built to surface: a frozen ESM-2 backbone plus a small head, on a laptop.
 
 ## How it works
 
@@ -56,13 +39,6 @@ scripts/supervise.sh    restarts the run after a usage limit, a sleep or a crash
 ```
 
 The agent itself is defined in [`.claude/agents/paper-evaluator.md`](.claude/agents/paper-evaluator.md):
-its procedure, its output schema, and the rules that keep it honest. It must open the actual files
-and record what it verified against what it only read in the abstract. Three candidates have
-already died on exactly that gap.
-
-**Code computes the scores, never the model.** The agent extracts facts and scores each checklist
-item with a reason; [`scripts/scoring.py`](scripts/scoring.py) turns those into every total and
-the ranking:
 
 ```
 ROI = payoff × crowding × known-labels ÷ effort        (0–10)
@@ -81,42 +57,6 @@ The rubric is [`CHECKLIST.md`](CHECKLIST.md); the project's own constraints and 
 [`CLAUDE.md`](CLAUDE.md). [`NOTES.md`](NOTES.md) records every design decision and the bugs behind
 them, including the ones that cost a day.
 
-## Running it
-
-```bash
-# 1. build the queue (writes queue.csv, then stops)
-uv run --no-project --python 3.11 scripts/harvest.py --start 2026-07-01 --end 2026-10-01
-
-# 2. start evaluating, and keep it running unattended
-nohup ./scripts/supervise.sh 1 1x 300 > logs/supervise.out 2>&1 &
-#                            │ │   └─ seconds between health checks
-#                            │ └───── rest after each paper, as a multiple of its own time
-#                            └─────── agents in parallel
-
-# 3. read the results
-python3 scripts/rank.py                 # PROJECTS.md + projects.csv
-python3 scripts/dashboard.py --watch 60 # live dashboard.html
-open dashboard.html
-
-./scripts/supervise.sh --stop           # finishes the paper in flight, then stops
-```
-
-Pacing is the knob that matters. One agent with a 1× rest works about half the time, which keeps
-usage per hour low enough to stay under the rolling limit and leave room for other work. The
-supervisor is plain bash and spawns no agents, so a usage limit cannot stop it; when one stops the
-run, it reads the reset time out of the limit message and sleeps until exactly then.
-
-## What is not in here
-
-`data/` (5.6 GB of cached API responses and downloads) is excluded and is rebuilt by the scripts.
-Some of what it caches is licensed material from publishers, including atlases under CC BY-NC-ND,
-which may not be redistributed. `logs/`, `scratchpad/` and the 23 GB `attempted_projects/` tree are
-excluded for the same reason or for size. `evaluations/` is here because it is this project's own
-analysis.
-
-Before making this repository public, note that `scripts/fetch.py` puts a contact address in its
-User-Agent header, which is the polite convention for the NCBI and Europe PMC APIs but is a real
-email address.
 
 ## Installing
 
@@ -154,20 +94,27 @@ No GPU, and about 10 GB free disk if you let the cache fill up. On Linux the Pyt
 unchanged; `supervise.sh` needs its two macOS commands swapped (`caffeinate` dropped, `date -j`
 replaced with `date -d`).
 
-### First run
+## Running it
 
 ```bash
-# 1. build the queue for a date range, then stop and read the summary
-python3 scripts/harvest.py --start 2026-07-01 --end 2026-10-01
+# 1. build the queue (writes queue.csv, then stops)
+uv run --no-project --python 3.11 scripts/harvest.py --start 2026-07-01 --end 2026-10-01
 
-# 2. evaluate ten dataset papers first and read a few of the JSON files by hand,
-#    to see whether the agent is really opening data or just paraphrasing abstracts
-./scripts/run_queue.sh 10 1
-
-# 3. when the output looks right, hand it to the supervisor and leave it
+# 2. start evaluating, and keep it running unattended
 nohup ./scripts/supervise.sh 1 1x 300 > logs/supervise.out 2>&1 &
+#                            │ │   └─ seconds between health checks
+#                            │ └───── rest after each paper, as a multiple of its own time
+#                            └─────── agents in parallel
+
+# 3. read the results
+python3 scripts/rank.py                 # PROJECTS.md + projects.csv
+python3 scripts/dashboard.py --watch 60 # live dashboard.html
+open dashboard.html
+
+./scripts/supervise.sh --stop           # finishes the paper in flight, then stops
 ```
 
-Step 2 is the one people skip and regret. If the evaluations are shallow, edit
-`.claude/agents/paper-evaluator.md`, delete those ten JSON files, and run it again — iterating on
-ten papers is cheap, iterating after several hundred is not.
+Pacing is important otherwise u will burn through tokens if tokens are given in a per hour/day basis.
+Generally we have a setting to test on 10 papers initally and we can tweek the agents afterwards. its best to do htis at this stage.
+
+For questions: contact hkrupkin@stanford. edu 
