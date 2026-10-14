@@ -7,9 +7,14 @@ trains nothing itself.
 **The dashboard** holds every evaluation, scored and browsable — hover a point for the one-line
 idea and the arithmetic behind its score, click it for the full report.
 
-**[⤓ Download the dashboard](../../raw/main/docs/dashboard.html)** (7 MB) — then open the
-downloaded file. GitHub shows `.html` as source text instead of rendering it, so the file has to
-reach your browser from disk. Nothing is hosted, and the repository stays private.
+**[⤓ Download the dashboard](../../raw/main/docs/dashboard.html)** (7 MB) — it saves as
+`dashboard.html`; open it from your downloads and it renders as a page. GitHub shows `.html` as
+source text rather than rendering it, so the file has to reach the browser from disk. Nothing is
+hosted and the repository stays private.
+
+If a browser shows the source instead of downloading, open
+[`docs/dashboard.html`](docs/dashboard.html) on GitHub and use its **Download raw file** button,
+or save the link as a file. The extension must stay `.html`.
 
 Or, from a clone:
 
