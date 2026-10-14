@@ -1,0 +1,128 @@
+{
+  "paper_id": "natgen2026-02768-8",
+  "title": "Lineage identity governs oncogene dependence in mouse NSCLC models of KRAS inhibitor resistance.",
+  "doi": "10.1038/s41588-026-02768-8",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319747",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the data myself (paper is paywalled, no PubMed Central copy, no accessions auto-detected): GEO SuperSeries GSE319747 with 41 samples in three subseries. Downloaded and opened GSE319597_normalized_counts.tsv.gz (2.5 MB gzipped; exactly 56,941 gene rows x 16 sample columns, Ensembl mouse gene IDs, DESeq2-style normalized counts) and GSE319596_sgOlfr.mRp.clN_peaks.narrowPeak.gz (228,900 rows, standard 10-column narrowPeak format: chromosome, start, end, peak name, score, strand, fold-enrichment, -log10 p, -log10 q, summit offset). Read the full file listings and byte sizes for all three subseries, and the GEO series-matrix sample metadata (titles, genotypes, treatments) for the single-cell and bulk RNA subseries.",
+    "what_came_from_paper_text_only": "Everything about the biology (sotorasib response, Kras amplification as a resistance route, squamous transformation) comes from the abstract and the GEO series summary only; the Nature Genetics full text, its Methods and its supplementary tables are paywalled and not in PubMed Central, so I could not check row counts against the paper or see whether per-tumor measurements exist in supplementary tables. I did NOT download the 228 MB processed single-cell file GSE319598_adata_tumor_final.h5ad (over the 50 MB cap), so I have not seen the cell count or whether it carries a cell-state annotation column."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Public GEO, no login or application. I downloaded two files successfully. Processed outputs are posted alongside raw data."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "No prediction target is a column anywhere. Every candidate label must be built: chromatin-accessibility change needs a consensus peak set plus signal quantified from 16 bigWig files; tumor cell state needs re-clustering the single-cell data; drug response exists only as a per-mouse experimental design field."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are usable as-is: gene identifiers are Ensembl mouse IDs, and peaks carry mouse genome coordinates (GRCm39 per the pipeline description) so DNA sequence can be pulled without identifier lookups."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Weak pass. The bulk file is labelled 'normalized counts' (unitless, DESeq2 size-factor scaled) with no units column; narrowPeak columns follow a documented standard. Nothing is ambiguous enough to be dangerous, but nothing is explicit either."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 41,
+      "note": "Hard fail. 41 biological samples in total: 9 single-cell libraries (4 vehicle tumors, 3 sotorasib tumors, 2 pooled stromal controls), 16 bulk RNA samples and 16 ATAC samples, the latter two being 4 organoid lines x 4 genotypes. Against the checklist bar of ~1,500 labelled rows (~400 for classification), this is two orders of magnitude short. Cells or genes can be counted in the tens of thousands, but the independent unit here is the mouse or the organoid line."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.5 GB if limited to the bulk counts table plus the four condition-level peak files; ~11 GB if the per-sample bigWig coverage tracks are needed",
+      "note": "The small tabular route fits easily. Any quantitative accessibility comparison needs the 16 bigWigs (0.3-3.2 GB each) or the 11 GB raw tar, which breaks the laptop budget."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO metadata, the file listings and the downloaded files agree with each other (16 columns = 16 ATAC/RNA samples, 9 single-cell libraries). Could not cross-check against the paper because the full text is paywalled; recorded as unverifiable rather than contradictory."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "For the most natural project (predict a tumor cell's state) the label would come from unsupervised clustering of the very expression matrix used as features, which is leakage by construction. The accessibility label would be a real measurement, but that project dies at A2 and A6 instead."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "WTKO-CNN (a convolutional neural network that classifies regulatory DNA as coming from wild-type versus transcription-factor-knockout open-chromatin peaks; arXiv preprint retrieved via search)",
+        "open_weights": null,
+        "score_and_split": "Search snippet only: reported across accessibility datasets for the RelA, LSD1 and Ebf1 perturbations; I did not retrieve the numbers or the split.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "maxATAC (deep neural networks predicting transcription-factor binding from ATAC-seq, PLOS Computational Biology; retrieved via search)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the title and venue.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models with open weights) would be the natural backbone for a sequence-to-accessibility task on mouse peaks",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only embedding of ~200,000 peak sequences is feasible but slow (roughly a day); a GPU would be wanted",
+    "licence": "Nucleotide Transformer and DNABERT-2 weights are openly downloadable; not the blocking issue here"
+  },
+  "integration": {
+    "partner_dataset": "ENCODE mouse lung and esophagus open-chromatin maps, or the Mouse ENCODE / Tabula Muris reference atlases, joinable on GRCm39 genomic coordinates and Ensembl mouse gene IDs",
+    "join_key": "GRCm39 genomic coordinates (peaks) and Ensembl mouse gene ID (expression)",
+    "bigger_question_one_sentence": "Do the regulatory regions that open when lung cells are pushed to a squamous state match the regions that are natively open in genuine squamous tissue? — a real question, but with only four perturbation conditions here this dataset contributes a handful of points rather than a training set."
+  },
+  "controls": {
+    "positive_control": "The squamous marker genes the paper itself reports (Trp63/deltaNp63, Sox2, keratins) must come out as strongly changed; and Nkx2-1 target regions must lose accessibility. Available, but these are the paper's own findings, so recovering them proves plumbing, not new biology.",
+    "negative_control": "Label shuffling across the 16 organoid samples is runnable but nearly meaningless at n=16.",
+    "external_validation": "Human lung squamous versus adenocarcinoma profiles (e.g. TCGA LUSC/LUAD) exist as an independent comparison, but they are a different species and assay, so this would be a qualitative cross-check, not a validation set."
+  },
+  "honest_claim_h3": "Any model here could only claim: in four organoid lines from one laboratory, a DNA sequence model can separate the regions that open after forcing one of two specific transcription factors from regions that do not — a statement about four conditions in one mouse system, not about lung cancer lineage plasticity in general.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence of regulatory regions to predict which ones open when a squamous-lineage transcription factor is switched on.",
+    "train_on": "Short stretches of mouse genome under called open-chromatin peaks. I verified 228,900 peaks in one condition's peak file, but only 4 experimental conditions x 4 organoid lines = 16 samples generated them, so the number of independent examples for the question being asked is 4, not 228,900.",
+    "predict": "Whether a region gains, loses or keeps its accessibility when deltaNp63 or Sox2 is forced on. The true answer would come from ATAC-seq (a laboratory assay that marks regions of DNA not wrapped tightly in protein), but it is not supplied as a column — it would have to be computed by overlapping separately called peak sets and re-quantifying 11 GB of coverage tracks.",
+    "why_worthwhile": "Lung cancers that escape KRAS-targeting drugs by changing cell identity are an unsolved clinical problem, and knowing which regulatory regions are sequence-poised to flip would tell cancer-biology labs where to look. But this dataset is a mechanism study with four conditions, not a resource that could support such a model."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "16 ATAC samples across 4 conditions from one laboratory and one mouse system, against public resources such as ENCODE that hold hundreds of mouse accessibility experiments across many tissues."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Four replicate organoid lines per condition is enough to estimate noise for a differential test, but far too few groups to calibrate per-region prediction confidence."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The sequence-to-accessibility models I found in search (maxATAC, WTKO-CNN) are not trained on this perturbation, so they are not direct competitors; but with 4 conditions there is no training set here to beat them with."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: there is no existing model on this exact task to run as our baseline, and no new data joins to these 16 samples on a shared key in a way that adds examples of the same measurement."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was a DNA-sequence model predicting which open-chromatin regions gain accessibility when the squamous transcription factors deltaNp63 or Sox2 are forced on in mouse lung alveolar organoids, with a frozen DNA language model plus a small head. It dies on scale: 4 conditions x 4 organoid lines, with the label needing construction from 11 GB of coverage tracks. The alternative, classifying tumor cell states in the single-cell data, dies on circularity because those states are defined by clustering the same expression values used as features.",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "working_set_gb": 11.0,
+    "needs_gpu": true,
+    "peak_ram_gb": 8.0,
+    "embedding_hours": 24.0,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed. The 11 GB figure is the sum of the 16 bigWig coverage files I saw listed in GEO (0.33-3.2 GB each), which is what a quantitative accessibility label would require. The 24 h embedding figure assumes ~200,000 peak sequences through a DNA language model on CPU at a few sequences per second; a GPU would cut it to under an hour.",
+    "cheapest_killing_check": "Count the biologically independent units before anything else: the GEO series page shows 41 samples (9 single-cell libraries, 16 bulk RNA, 16 ATAC), which is visible in under a minute and settles the question."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 decisively: the whole study is 41 biological samples (9 single-cell libraries, 16 bulk RNA-seq, 16 ATAC-seq across 4 organoid lines x 4 genotypes), against a bar of ~1,500 labelled rows. It also fails A2 — no prediction target exists as a column; accessibility change would have to be built from separately called peak sets plus 11 GB of coverage tracks — and A8 for the obvious alternative, since tumor cell states in the single-cell object are defined by clustering the same expression values that would serve as features. The data is cleanly deposited and the bulk counts table parsed on the first try, so this is an excellent mechanism paper and a non-starter as an ML project; the gene-level and peak-level counts are large only because they count features, not independent experiments."
+}

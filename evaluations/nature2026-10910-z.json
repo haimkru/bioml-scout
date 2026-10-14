@@ -1,0 +1,50 @@
+{
+  "paper_id": "nature2026-10910-z",
+  "title": "Psychedelics align brain activity with context.",
+  "doi": "10.1038/s41586-026-10910-z",
+  "journal": "Nature",
+  "data_url": "https://openneuro.org/datasets/ds006110",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the OpenNeuro ds006110 S3 bucket (version 1.2.2, CC0 licence, no login): 64 subject folders, participants.tsv with 64 rows (age, dose in mg/kg). Opened phenotype/scored/ses-02/EDI.tsv (62 data rows; EDI_ONE has NaNs) and ASC11.tsv headers (11 subscales of the altered-states questionnaire). Listed sub-PC001 raw func (4 echoes x 4 tasks, 80-190 MB each), EEG (91 MB BrainVision file) and fMRIPrep func outputs (voxelwise preprocessed BOLD, 60-240 MB per run, plus confound TSVs). Found no parcellated (region-level) time series in the derivatives.",
+    "what_came_from_paper_text_only": "62 analysed participants, fMRI about 80 min and EEG about 150 min after dose, the trajectory-based ML method and its correlation with experience scores, and the next-day mindset-change result; I did not open the follow-up MINDSET table rows or the paper's analysis code."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "OpenNeuro ds006110, CC0, public S3 listing works without login (checked). Only sensitive demographics need a data-access agreement."},
+    "a2_label_is_a_column": {"pass": true, "note": "Subjective-experience scores are ready columns: EDI (ego-dissolution inventory) and ASC11 (11-dimension altered-states scale) TSVs in derivatives/phenotype/scored/ses-02 (opened)."},
+    "a3_inputs_present": {"pass": true, "note": "Raw and fMRIPrep-preprocessed BOLD (fMRI signal) NIfTI images and raw EEG are present, but only voxelwise; region-level time series would have to be built by parcellating every run yourself."},
+    "a4_units_stated": {"pass": true, "note": "Questionnaire JSONs document which items are averaged into each subscale; dose is in mg/kg (checked)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 62, "note": "The labelled unit is the participant: EDI.tsv has 62 rows (opened). Even counting every scan, 62 subjects x 2 sessions x 4 tasks is about 500 scans that are not independent. Well under the 400-row floor for classification at the honest unit."},
+    "a6_fits_laptop": {"pass": false, "working_set": "About 60 GB of preprocessed voxelwise fMRI (64 subjects x 8 runs x ~120 MB per MNI-space run, extrapolated from sub-PC001); parcellated tables would be a few hundred MB once built.", "note": "No region-level time series are deposited, so download plus parcellation of every run is required; streaming per file is possible but slow."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says 62 adults; bucket has 64 subject folders and participants.tsv 64 rows, EDI.tsv 62 rows. Plausible exclusions, not checked against the paper."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are self-report questionnaires filled in by participants, not model outputs and not computed from brain data."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "This paper's own trajectory model (low-dimensional embeddings of each person's brain dynamics, Stoliker et al. 2026)", "open_weights": null, "score_and_split": "Reported correlations between context alignment and ego-dissolution / mindset change across 62 participants; no held-out test set described in what I read.", "authors_named_unsolved": "Not checked in the full discussion.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "None fitting the CHECKLIST list; fMRI foundation models (e.g. BrainLM) exist but were not evaluated here", "freeze_and_head_viable": null, "hardware": "", "licence": "Data CC0"},
+  "integration": {"partner_dataset": "Other public psychedelic fMRI datasets (e.g. LSD/psilocybin studies) were not located on OpenNeuro in this evaluation", "join_key": "None; participants are unique to this study", "bigger_question_one_sentence": "Whether a brain signature of ego dissolution learned here transfers to another drug or site, which needs a second dataset not found."},
+  "controls": {"positive_control": "Drug versus baseline session classification from functional connectivity (a known large effect).", "negative_control": "Shuffle questionnaire scores across subjects.", "external_validation": "None located."},
+  "honest_claim_h3": "Among 62 healthy adults scanned once on 19 mg psilocybin at one site, brain-dynamics features correlate with their own self-reported ego dissolution.",
+  "plain_idea": {
+    "one_liner": "Use brain scans recorded during a psilocybin session to predict how strongly each person reported their sense of self dissolving.",
+    "train_on": "Functional MRI (fMRI, brain blood-flow signal) recordings during rest, meditation, music and movie, before and on the drug day, for 62 labelled participants (verified from EDI.tsv).",
+    "predict": "Self-reported ego-dissolution and altered-states questionnaire scores, filled in by participants after the session.",
+    "why_worthwhile": "Psychedelic-therapy researchers want a brain marker of a therapeutic experience; but 62 people is too few for a model to show this out of sample."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict per-subject ego-dissolution (EDI) and altered-states (ASC11) scores from parcellated fMRI connectivity during psilocybin; killed by n = 62 subjects and no region-level derivatives.",
+  "effort": {"hours_to_feature_table": 30, "working_set_gb": 60, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from file sizes listed for sub-PC001 extrapolated to 64 subjects; nothing timed.", "cheapest_killing_check": "Count rows in EDI.tsv: 62 labelled participants (done; kills it)."},
+  "verdict": "reject",
+  "verdict_reason": "A5 fails: openly downloadable (CC0, OpenNeuro) but the labelled unit is the participant, and only 62 have experience scores (EDI.tsv opened). Also A6: no region-level time series, so about 60 GB of voxelwise fMRI must be parcellated first."
+}

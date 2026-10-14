@@ -1,0 +1,69 @@
+{
+  "paper_id": "cell2026-07-054",
+  "title": "Synthetic transcription factors designed by domain recombination enhance CAR T cell antitumor function.",
+  "doi": "10.1016/j.cell.2026.07.054",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE335040 (plus GSE335026, GSE335058, GSE280508, GSE280509)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed two GEO (Gene Expression Omnibus) RNA count tables: GSE335026 raw counts = 29,744 gene rows x 27 sample columns (3 donors x 9 conditions, condition names in the header), and GSE335040 raw counts = 26,475 gene rows x 33 columns named Acute_1A..Acute_3K. Listed every public supplementary file in all five series (GSE335058 has 11 narrowPeak peak files, 139 KB-1.1 MB each, plus a 32 GB raw tar; GSE280508 has eight ~0.5-1 GB bigwig coverage tracks plus an 11 GB raw tar; GSE280509 has a 1.2 GB raw tar plus a 5.5 KB barcode map). Opened the GSE280509 barcode-to-sample spreadsheet (29 rows) and pulled all 33 GSE335040 and 66 GSE335058 sample titles, which name every construct profiled.",
+    "what_came_from_paper_text_only": "Everything about the design screens themselves (how many DESynR recombined transcription factors were built and tested, their domain architectures, and their antitumor/proliferation scores) comes from the abstract alone. The Cell article has no PubMed Central copy, Europe PMC returns no supplementary files for either the article or its bioRxiv preprint (10.1101/2024.11.06.622344), bioRxiv itself returned HTTP 429 (blocked), and Zenodo has 0 hits for DESynR, so I never saw a screen table."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO series GSE335026/335040/335058/280508/280509 are public and download without login; I parsed two count matrices. But the screen result table that the project would need is in no public repository I could reach (no PubMed Central copy, Europe PMC supplementary endpoint empty, bioRxiv blocked, Zenodo 0 hits)."},
+    "a2_label_is_a_column": {"pass": false, "note": "No functional score for any engineered transcription factor appears in any downloadable file. The label would have to be transcribed from a paywalled figure/supplement, or constructed as a differential-expression contrast computed from the count matrices."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are nameable: each construct is a concatenation of named human AP-1 (activator protein-1) domains, e.g. MAFF-ATF3-BATF2, so sequences are recoverable from UniProt. Verified construct names in GEO sample titles."},
+    "a4_units_stated": {"pass": true, "note": "Count files are explicitly labelled raw versus norm; raw columns are integer read counts (checked first rows). The normalization method behind the 'norm' files is not stated in the file name."},
+    "a5_enough_rows": {"pass": false, "n_rows": 11, "note": "Fatal. The unit a model would generalize over is the engineered construct, and the public data holds only 11 conditions per experiment (GFP control, 7 natural AP-1 factors, 3 DESynR fusions) in 3 donors; across all five series just 5 distinct DESynR fusions exist (JUN-FOS-BATF, FOSL1-BATF-MAFA, MAFF-ATF3-BATF2, BATF3-JDP2-BATF2, BATF3-BATF2-MAFF). Checklist needs ~1,500 labelled rows, or 400 for classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~2 MB of gzipped count matrices; ~6 MB of peak files", "note": "The small processed files are trivial on a laptop; the raw tars (32 GB, 11 GB) and 1 GB bigwigs are not, and were deliberately not downloaded."},
+    "a7_counts_match_paper": {"pass": true, "note": "Sample counts in GEO (27, 33, 66, 16, 27) match the series metadata; the paper's own screen counts could not be checked because the full text is paywalled."},
+    "a8_label_provenance": {"pass": true, "note": "The underlying measurements are real wet-lab readouts (RNA sequencing counts, chromatin immunoprecipitation peaks, tumor killing assays), not another model's output; the problem is availability and quantity, not circularity."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ProDomino (machine-learning model for where one protein domain can be inserted into another, Nature Methods 2025)", "open_weights": null, "score_and_split": "Reported by its authors to give high insertion scores at experimentally validated sites in the bacterial transcription factor AraC; I read only the search summary, not the paper, so no metric or split is verified.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "TxPert (deep-learning predictor of transcriptome-wide effects of genetic perturbations, Nature Biotechnology 2026)", "open_weights": null, "score_and_split": "Evaluated on the Norman CRISPR-activation dataset (94 single and 110 double gene-overexpression perturbations in the K562 leukemia cell line); numbers not verified by me.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Model for which genes respond to a transcription factor perturbation (G3, 2022)", "open_weights": null, "score_and_split": "Claims to predict responsive genes without using data from perturbed cells; metric and split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model) on the fusion protein sequence, or Enformer/AlphaGenome-style DNA models for the binding-site side", "freeze_and_head_viable": true, "hardware": "CPU laptop would suffice for 5-11 sequences, which is the problem, not the solution", "licence": "ESM-2 is MIT-licensed; the paper's GEO data carries no explicit licence"},
+  "integration": {"partner_dataset": "UniProt plus JASPAR/ReMap for AP-1 family motifs and published chromatin immunoprecipitation peaks", "join_key": "UniProt accession / gene symbol for each parent domain, and hg38 genomic coordinates for peaks", "bigger_question_one_sentence": "Which recombined arrangements of AP-1 domains create regulatory programs no natural factor produces - a question this public subset cannot answer because only five such arrangements were deposited."},
+  "controls": {"positive_control": "The model should recover the textbook result that BATF and JUN overexpression increase effector gene expression in T cells; also recoverable: GFP control samples must look like no perturbation.", "negative_control": "Shuffle the construct label across the 11 conditions; with 3 donors per condition this test has almost no power.", "external_validation": "Other AP-1 overexpression CAR T datasets exist (e.g. published c-Jun overexpression studies), but no second source of recombined-domain constructs exists."},
+  "honest_claim_h3": "With the public files you could only claim 'among three engineered AP-1 fusions and seven natural AP-1 factors measured in three healthy donors, gene-level responses differ in these ways' - a descriptive statement about ten conditions, not a predictive model of synthetic transcription factor function.",
+  "plain_idea": {
+    "one_liner": "Use the domain parts list of a lab-built transcription factor to predict how strongly it improves tumor killing by engineered T cells.",
+    "train_on": "Each example would be one synthetic transcription factor described by which protein domains were stitched together, in what order. The public data contains only 5 such designs plus 7 natural factors, measured in 3 donors.",
+    "predict": "A functional score for the design - tumor killing, T cell expansion or persistence - measured in laboratory assays with human CAR (chimeric antigen receptor) T cells. Those scores are reported only in the paywalled paper, not in any downloadable file.",
+    "why_worthwhile": "Cell-engineering groups currently build and test such factors one at a time; a model that ranked designs before synthesis would cut months of bench work. Even a failure would quantify how far domain order alone explains function."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The public deposit has 5 engineered designs; TxPert's benchmark alone uses 94 single and 110 double gene-overexpression perturbations, and that is a different task from domain recombination."},
+    "confidence_score": {"answer": "no", "why": "Three donors per condition give a crude noise estimate for gene expression, but with 5 designs there is no basis for calibrated per-design uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "No model predicts recombined-domain transcription factor function in human T cells, so the niche is open; but with 5 labelled designs nothing can be trained, let alone compared."},
+    "guaranteed_improvement": {"answer": "no", "why": "The screen scores are not accessible, so there is no baseline to run, no shared split, and no label to join on."}
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "None found: the antitumor functional score of a domain-recombined transcription factor is measured only in this paper's own assays; a Zenodo search on DESynR returned 0 records and no public resource catalogues such designs.",
+    "approx_items": null,
+    "join_key": "n/a (constructs are named by parent gene symbols only)",
+    "why": "With the label existing nowhere else, there is neither extra training data nor an external validation set for this task."
+  },
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The attractive idea - embed each synthetic transcription factor's amino acid sequence with ESM-2 (a protein language model) and regress its measured CAR T antitumor score, so that untested domain arrangements can be ranked - cannot be run on the public data: only 5 recombined designs were deposited and their functional scores were never released in machine-readable form. A fallback gene-level task (predict each gene's response to a given AP-1 factor from promoter sequence, 26,475 genes x 10 perturbations) has rows but only 10 perturbation groups, overlaps existing perturbation-response models, and needs its label constructed by differential expression.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated from the two count matrices I actually downloaded and parsed (0.9 MB and 1.3 MB gzipped, under a second each in pandas); embedding 12 protein sequences with a small ESM-2 checkpoint is minutes on CPU. The effort is trivial precisely because the dataset is tiny.",
+    "cheapest_killing_check": "Count the distinct engineered constructs in the GEO sample titles - it is 11 conditions and 5 DESynR fusions in total, which kills any design-level model in one API call."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A5 and A2: only 5 engineered designs and 11 conditions are public, and the per-design functional scores exist in no downloadable file."
+}

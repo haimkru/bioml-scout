@@ -1,0 +1,49 @@
+{
+  "paper_id": "cell2026-07-023",
+  "title": "Metabolic atlas of early human cortex reveals glycolytic remodeling and pentose phosphate pathway control of cell fate transitions.",
+  "doi": "10.1016/j.cell.2026.07.023",
+  "journal": "Cell, Aug 2026 (PMID 42551423, PMC13537306). Europe PMC: isOpenAccess=Y, licence cc by-nc; full text XML retrieved (HTTP 200, 292 KB).",
+  "data_url": "GEO GSE292425 (42 GSMs, no per-sample files; 7 Seurat RDS 4.8-22 GB, about 96 GB total) ; Mendeley Data 10.17632/yd6d2g8mkn.1 (one xlsx, 3,444,608 bytes, CC BY 4.0) ; UCSC Cell Browser https://cells.ucsc.edu/?ds=dev-metabolism (8 scRNA/snRNA datasets + metabolomics heatmaps)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Mendeley xlsx (sha256 0739cde1...; 25 sheets) downloaded and parsed. Metabolomics is wide, with multi-row headers, metabolite names only (no HMDB/KEGG IDs), arbitrary pool intensities and DNA ug per sample. Sample columns: HPCT atlas 76 (19 GA/CS groups, DP1-5); organoid atlas 45 (3 lines x 5 weeks x 3); glucose 27; PPPi 26; rescue 81; shPPP 14 (2 lines); mouse 18. Censoring: 482 cells in Table 1 are floored at exactly 1000 and 19% are blank. Cell-browser meta files opened for pppi-rescue (47,898), sufficiency (23,706), hpct-plated (77,627), 2d-diff (90,933) and invivo (52,110); dataset.json headers read for glucose (81,593), PPPi (106,047) and knockdown (62,214). Sufficiency matrix range-read: integer counts, gene symbols only. No duplicate cell IDs. Labels: CellType/predicted.id, Line, Treatment, Glucose_Concentration, source.sample; pppi-rescue CellType is NA in 39,812/47,898 cells. GEO directory listing: 7 RDS files, every GSM supplementary_file = NONE.",
+    "what_came_from_paper_text_only": "Cell types come from Seurat MapQuery predicted.id against a developmental meta-atlas. Metabolite normalization is DNA ug plus internal standard, then per-sample global scaling for 4 LC-MS batches. HPCT total is 31 patients (10 with every modality); the per-column donor identity is not stated in the sheets. Paper metabolite counts are 126 (HPCT), 123 (organoid) and 155 (glucose). Also from the text: tissue sex was not retained, and the paper's knockdown count is 51,105 cells. The RDS files, the mtx/exprMatrix files over 50 MB, and the isotopologue sheets beyond their headers were not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Pass (checked). Mendeley xlsx, cell-browser meta and matrices, and the GEO RDS all return HTTP 200 anonymously. Nothing is controlled-access, and raw reads (SRA) were not touched."},
+    "a2_label_is_a_column": {"pass": false, "note": "Partial fail (checked). Treatment, Line and GA/DP exist as columns or headers. Any transcriptome-to-metabolome target, though, has to be built by string-matching xlsx block headers ('orx-ribose', 'Ucla6') to cell-browser Line/Treatment values; no shared sample ID exists. The cell-type label is a column, but see A8."},
+    "a3_inputs_present": {"pass": true, "note": "Pass (checked). Counts matrices with gene symbols are present, as are metabolite intensities by name. Metabolites lack HMDB/KEGG/ChEBI IDs, so joins need about 160 name resolutions, which is manageable."},
+    "a4_units_stated": {"pass": true, "note": "Weak pass (checked). The DNA row is in ug and the glucose condition in mM. Metabolite values are arbitrary LC-MS intensities (relative only), and the floor value of 1000 is undocumented in the file."},
+    "a5_enough_rows": {"pass": false, "n_rows": 287, "note": "FAIL (checked). There are 287 metabolomics columns across 7 experiments, but the independent unit is the donor or line: about 19 GA groups (at most 31 patients per the paper) and 3 organoid lines (KOLF2, UCLA1, UCLA6). The 489k cells look huge but are nested in about 54 line x condition groups, the only level at which scRNA and metabolomics can be paired."},
+    "a6_fits_laptop": {"pass": true, "working_set": "Metabolomics 3.4 MB. Cell-browser matrices total about 1.83 GB gz (48-512 MB each); one experiment is roughly 1-3 GB sparse in memory (not loaded). The GEO RDS set is about 96 GB and not needed.", "note": "Passes per experiment on CPU. Pulling the matrices still breaks the 50 MB per-file cap."},
+    "a7_counts_match_paper": {"pass": false, "note": "Mixed (checked). Glucose 81,593, PPPi 106,047, rescue 47,898 and in vivo 52,110 all match the paper. Knockdown has 62,214 cells in the browser vs 51,105 in the paper. HPCT metabolomics has 162 named metabolites vs 126 in the paper, and glucose has 141 vs 155. Rescue CellType is 83% NA."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL for the high-n label (checked + paper). CellType/predicted.id is Seurat MapQuery output from a reference atlas, i.e. another model's prediction. Treatment, line and GA are true experimental labels, but they collapse to A5 (3 lines, ~19 donors), and treatment is nested in 10x lane (source.sample), so a per-cell classifier would learn batch."}
+  },
+  "part_a_verdict": "reject",
+  "scores": {
+    "b_model_readiness": 3,
+    "c_worth_asking": 7,
+    "d_backbone_fit": 5,
+    "g_integration": null,
+    "h_missing_data": null,
+    "i_does_anyone_care": null,
+    "j_fit_finishability": null
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scFEA (Genome Research 2021, PMC8494226; github changwn/scFEA)", "open_weights": true, "score_and_split": "Pa03c cells under APEX1-KD x hypoxia (162 cells, 14 bulk metabolites, 3 replicates per condition). PCC 0.86 between predicted flux changes and observed metabolite changes; no held-out split.", "authors_named_unsolved": "No theoretical proof of correctness, and fluxes are relative with no fixed scale. They name integrating metabolomics/kinetic parameters and spatial data as future work.", "runnable_as_baseline": true},
+      {"name": "MGFEA (bioRxiv 10.1101/2024.06.12.598759)", "open_weights": null, "score_and_split": "Search summary only (the fetch returned HTTP 429): validated on DepMap cancer cell lines with paired metabolomics, outperforming scFEA, with performance growing with dataset size.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "METAFlux (Nature Communications 2023, 10.1038/s41467-023-40457-w)", "open_weights": null, "score_and_split": "Search summary only: validated on cell lines, TCGA and cancer scRNA-seq; no neural-development data.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Compass (seen via review PMC8829761, search summary only)", "open_weights": null, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer on the organoid scRNA/snRNA (gene-symbol counts). This is irrelevant to the metabolite target at n of about 54 groups, where pseudobulk plus pathway scores is the honest feature set.", "freeze_and_head_viable": true, "hardware": "CPU embedding of one 50-100k-cell experiment would take hours (not timed). Pseudobulk needs no backbone.", "licence": "Article cc by-nc; Mendeley CC BY 4.0; cell browser has no stated licence. scGPT/Geneformer licences were not re-checked this session."},
+  "integration": {"partner_dataset": "Not scored (stopped at Part A). Plausible partners: the developmental cortex meta-atlas used as the MapQuery reference, and HMDB/KEGG for metabolites after name resolution.", "join_key": "Gene symbol (no Ensembl IDs in features.tsv) and metabolite name (no IDs).", "bigger_question_one_sentence": "Not scored: stopped at A5/A8."},
+  "controls": {"positive_control": "Glucose reduction (17.5 to 2.5 mM) should lower the glycolysis module and sedoheptulose-7-phosphate, as the paper reports. ORX should depress PPP intermediates.", "negative_control": "Shuffle condition labels within line, and use a lane-only (source.sample) model to expose batch leakage.", "external_validation": "Mouse in vivo ORX (18 metabolomics samples, 52,110 cells) is cross-species. HPCT vs organoid atlas is cross-system."},
+  "honest_claim_h3": "At best: 'in week-12 cortical organoids from 3 stem-cell lines under ~18 in-vitro metabolic perturbations, pseudobulk transcriptome-derived pathway scores do or don't rank the direction of LC-MS pool-size changes for ~120 targeted metabolites.' That is n of about 54 groups and 3 lines, with no sex information for the tissue arm.",
+  "ml_idea": "Benchmark scFEA/Compass-style transcriptome-to-metabolism inference against matched LC-MS on line x condition pseudobulks (glucose, PPPi, rescue, sufficiency, shPPP, mouse). Rejected because only about 54 matched groups from 3 lines exist, the pairing must be built by string matching, and the per-cell labels are MapQuery predictions.",
+  "effort": {"hours_to_feature_table": 12, "cheapest_killing_check": "Done. Count line x condition groups present in both the cell-browser meta and the xlsx headers: about 54 (glucose 9, PPPi 9, rescue 15, sufficiency 11, shPPP 6, mouse 4), drawn from 3 organoid lines. That is below the A5 threshold."},
+  "roi": null,
+  "verdict": "reject",
+  "verdict_reason": "The data is open and the main cell counts match. But the only high-n label is a Seurat MapQuery prediction (A8), and the measured labels (treatment, GA, metabolite levels) reduce to about 54 line x condition groups from 3 lines and about 19 donor groups (A5). The metabolomics is also a multi-header xlsx with 1000-floor censoring. B/C/D (3/7/5) are indicative only; G-J were not scored and ROI is null."
+}

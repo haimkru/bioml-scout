@@ -1,0 +1,97 @@
+{
+  "paper_id": "nar2026-gkag756",
+  "title": "Functional analysis of natural variation in the RNA-binding protein CsrA across the bacterial domain predicts regulatory activity.",
+  "doi": "10.1093/nar/gkag756",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13443453/supplementaryFiles",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked the full supplement (13.3 MB zip). It holds exactly two files: Supplementary_Data_CsrA_seqs_with_species_taxonomy.csv (141 KB) and a 21-page SI PDF. I loaded the CSV in pandas: 555 rows, 4 columns (uniprot_id, csrA_sequence, species, gtdb_taxonomy), no numeric column at all, 113 missing species and 79 missing taxonomy strings. I extracted all text from the SI PDF: it contains only figure legends plus Table S1 (strains), S2 (plasmids), S3 (primers) - no table of activity scores. I queried the NCBI SRA (Sequence Read Archive) deposit PRJNA1480018: 5 paired-end amplicon runs on an Illumina NextSeq 2000, 219-366 MB each, named Swarm_seq_rep1-rep5. I listed the senior author's 17 public GitHub repositories: none contains this paper's analysis code or scores.",
+    "what_came_from_paper_text_only": "That the measured activity readout ('motility inhibition score' = normalised read count in the non-motile inner swarm fraction divided by that in the motile outer fraction, plus a 0.001 pseudocount) was computed for the library; that a two-component Gaussian mixture model on the log2 score split homologs into Class I (represses motility) and Class II (does not), keeping only the ~400 homologs with cluster probability > 0.85; that a Random Forest was trained on those ~400 and applied to ~7500 homologs; that its receiver-operating-characteristic area under the curve was 'substantially greater than 0.5' (no number given in the text I retrieved). None of these numbers or labels appear in any released file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement zip and the raw SRA runs are public, no login (I downloaded and opened both listings). But the files that download do not contain the activity data, so A1 passing here is nearly empty."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL, verified in the files. The one released table has no score and no class column - only sequence, species and taxonomy. The motility inhibition score appears only inside figures (Fig. 2D histogram, Supplementary Fig. S2B dot plot, Supplementary Fig. S3 tree bars). Rebuilding it means re-implementing the whole Swarm-seq pipeline from raw reads, and the 25-nucleotide DNA barcode-to-homolog lookup table needed to assign reads to variants was never released (the CSV holds protein sequences, not the codon-optimised DNA)."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are fine: 555 full-length CsrA protein sequences are literally in the CSV, 61-80 amino acids each, with UniProt identifiers. No lookups needed."},
+    "a4_units_stated": {"pass": false, "note": "No units question can even be asked - the released table contains no measured quantity. The score's definition (a ratio of normalised read fractions) is stated in the methods but the values are unreleased."},
+    "a5_enough_rows": {"pass": true, "n_rows": 555, "note": "555 sequences verified in the CSV, but only ~400 carry a confident class label per the paper text, which is exactly at the ~400 floor for a classification task - marginal even if the labels existed."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.14 MB CSV; raw SRA would be ~1.4 GB", "note": "Trivially laptop-sized either way; 555 short proteins embed on CPU in minutes. Size is not the problem here."},
+    "a7_counts_match_paper": {"pass": true, "note": "The paper says 555 homologs in the library; the CSV has exactly 555 rows. The ~400 labelled subset cannot be checked because no labelled file exists."},
+    "a8_label_provenance": {"pass": true, "note": "Provenance of the published label is acceptable in principle: a Gaussian mixture clustering of a physically measured read-ratio, not another model's prediction. The problem is access, not circularity. The ~7500 'predicted functional' calls are Random Forest outputs and would be circular to learn from."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The paper's own Random Forest classifier of CsrA (carbon storage regulator A) functionality, trained on one-hot aligned amino acid positions",
+        "open_weights": false,
+        "score_and_split": "Stratified two-thirds/one-third split plus five-fold stratified cross-validation on ~400 labelled homologs; the text I retrieved says the area under the receiver-operating-characteristic curve was 'substantially greater than 0.5' without giving the value.",
+        "authors_named_unsolved": "They state that the regulatory differences they see are 'not captured by current sequence-based predictive models' and arise from RNA-binding specificity, complex stability, cofactor needs or network integration; and that sequence conservation does not predict function in a heterologous host.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Kulkarni et al. 2014 sequence-based predictor of CsrA/RsmA RNA targets (Nucleic Acids Research 42:6811-25), cited by this paper",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - I only saw the citation in this paper's reference list. It predicts RNA target sites, not protein activity, so it is a different task.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Machine-learning predictor of RsmA(CsrA)-regulating small RNAs (BMC Genomics 2017, 18:645), found by search",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the abstract-level summary returned by search: strong stem-loops and single-stranded GGA/GAG/AGA motifs were the informative features. Task is small-RNA target prediction, not CsrA protein activity.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model; the 8M-650M parameter checkpoints run on a laptop CPU)",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU only; 555 sequences of 61-80 amino acids embed in under 10 minutes",
+    "licence": "MIT (ESM-2); the paper itself is CC BY-NC 4.0 (non-commercial)"
+  },
+  "integration": {
+    "partner_dataset": "UniProt plus AlphaFold DB (200M+ predicted structures) and GTDB taxonomy, all joinable on the UniProt accessions already in the CSV",
+    "join_key": "UniProt accession (e.g. CSRA_ACTP2, A0A6J4MNQ6_9ACTN), present for all 555 rows",
+    "bigger_question_one_sentence": "Does the structural neighbourhood of the RNA-binding surface, rather than overall sequence identity, explain which CsrA homologs can repress a foreign host's flagellin message - unanswerable here because the activity measurement itself was never released."
+  },
+  "controls": {
+    "positive_control": "Would have been straightforward if labels existed: Bacillus subtilis CsrA itself scored high and the no-CsrA control scored low in the assay, and five residues (K7, S11, I25, E45, L47) are reported as class-discriminating, so a working model should recover them.",
+    "negative_control": "Label shuffling and position ablation are both runnable on 555 short sequences - but there is no label to shuffle.",
+    "external_validation": "Only four single-homolog validations reported in the paper (CsrA of Bdellovibrio bacteriovorus and RsmA of Pseudomonas putida as Class I, RsmE and RsmI of P. putida as the other outcome); no second independent dataset of CsrA activity exists."
+  },
+  "honest_claim_h3": "No claim is possible from the released files: with sequence, species and taxonomy but no measured activity, a model trained on this supplement alone could only predict taxonomy from sequence, which is not the paper's question.",
+  "plain_idea": {
+    "one_liner": "Use a bacterial protein's amino acid sequence to predict whether it switches off swimming in a different bacterium.",
+    "train_on": "The 555 CsrA (carbon storage regulator A) protein sequences I verified in the supplement, each 61-80 amino acids long, with a UniProt identifier and a species name; the paper's own model used the ~400 of these it could label confidently.",
+    "predict": "Whether a given CsrA homolog represses flagellum-driven swarming when expressed in Bacillus subtilis. The truth comes from Swarm-seq: the pooled library swarms on a plate, and each variant's abundance in the non-motile inner zone is divided by its abundance in the motile outer zone by amplicon sequencing. Those ratios were never released in machine-readable form.",
+    "why_worthwhile": "Microbiologists studying post-transcriptional control in uncultivable bacteria, and synthetic-biology groups porting regulators into chassis strains, would get a way to guess which homolog will work before cloning it - and the transfer question (does conservation predict function?) is informative either way."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would have strictly less data than the paper's own Random Forest: they had the ~400 labelled homologs, the released files give us 0 labelled homologs out of 555 sequences."},
+    "confidence_score": {"answer": "no", "why": "The assay has biological replicates (5 Swarm-seq runs in the SRA deposit, and Supplementary Fig. S2B plots per-replicate points with standard error bars), so a noise estimate is in principle available - but no per-replicate values are released, so no calibration is possible."},
+    "models_beatable": {"answer": "partly", "why": "The 2026 baseline is a 100-tree Random Forest on one-hot aligned positions with a random stratified split and no sequence-identity-aware holdout, so an ESM-2 embedding plus logistic head would very likely beat it - except its weights, code and training labels are all unavailable, so it cannot be run as a baseline and the comparison cannot be made."},
+    "guaranteed_improvement": {"answer": "no", "why": "The first condition fails outright: the existing model cannot be run as our baseline because neither its weights nor the ~400 labels it was trained on were released."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The intended project was: embed each CsrA homolog with ESM-2 (a protein language model), fit a small classifier head on the measured Swarm-seq motility-inhibition score, and test generalisation with a sequence-identity-clustered or phylum-held-out split instead of the paper's random split - directly attacking the authors' own statement that conservation does not predict function. It is dead on arrival because the measured score exists only inside figures.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": 0.2,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, not timed, from 555 sequences of 61-80 amino acids: ESM-2 650M on CPU runs roughly a sequence per second, and a logistic or random-forest head on 555 x 1280 features cross-validates in a couple of minutes. Compute was never the obstacle.",
+    "cheapest_killing_check": "Open the single released CSV and look for a score or class column. It has four columns - uniprot_id, csrA_sequence, species, gtdb_taxonomy - and none of them is the label. That check took two minutes and killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A2 fails in the files. The only machine-readable release is 555 CsrA protein sequences with species and taxonomy - the measured motility-inhibition score and the Class I/II labels appear only inside figures and were never deposited. Reconstructing them would mean re-processing raw amplicon reads from SRA PRJNA1480018 while lacking the 25-nucleotide DNA-barcode-to-homolog lookup table (the CSV gives protein, not the codon-optimised DNA) and with the deposit's 5 runs not labelled by inner/outer swarm fraction. No code repository and no Zenodo/Dryad deposit exists. Secondary concerns: only ~400 homologs were confidently labelled even by the authors, right at the classification floor, and the sequences are UniRef50 cluster representatives, leaving little room for an honest identity-based split."
+}

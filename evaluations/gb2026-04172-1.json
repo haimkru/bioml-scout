@@ -1,0 +1,43 @@
+{
+  "paper_id": "gb2026-04172-1",
+  "title": "A one-week automated genome-wide optical pooled screen using OttoSeq.",
+  "doi": "10.1186/s13059-026-04172-1",
+  "journal": "Genome Biology",
+  "data_url": "https://www.ebi.ac.uk/biostudies/bioimages/studies/S-BIAD3096",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "BioImage Archive S-BIAD3096 metadata and FTP listing: 150,480 files, about 2.8 TiB of raw TIFF microscopy images (input_ph/, input_sbs/ folders, plate_1 and plate_2) plus file_list.json/tsv, licence CC0. GitHub repo cheeseman-lab/whitney-analysis: opened significant_genes.tsv (3,716 rows, one 'gene' column mixing symbols, Ensembl IDs and non-targeting controls), essential_genes.tsv (5,049 symbols), cluster_genes_table.tsv (566 rows x 14 columns of LLM cluster annotations). Read brieflow_output_report.md (5,198,240 cells, 21,732 perturbations, median 224 cells/gene, 794 PC features) and deployment scripts showing the per-gene aggregate feature TSVs (~1.8 GB) live on a lab server / private Google Cloud bucket, not in any public archive.",
+    "what_came_from_paper_text_only": "Supplementary Tables S2-S4 (coverage and cluster assignments); the supplement endpoint timed out and was not retrieved. Whether the Streamlit viewer (whitney.broadinstitute.org) lets users download per-gene profiles was not verified; it is a JavaScript app that returned no data."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Raw images are public under CC0 at BioImage Archive (verified listing); processed per-gene and per-cell feature tables are not deposited anywhere public (verified via repo scripts pointing to private paths)."},
+    "a2_label_is_a_column": {"pass": false, "note": "No per-gene phenotype table is public. The only gene-level label is a 3,716-row hit list (significant_genes.tsv); negatives would have to be constructed from the library file, and any richer morphological label requires re-running the Brieflow image pipeline."},
+    "a3_inputs_present": {"pass": true, "note": "Genes are named by symbol or Ensembl ID (verified), so protein or gene embeddings would be a standard lookup."},
+    "a4_units_stated": {"pass": true, "note": "Not applicable for a binary hit label; features would be normalised CellProfiler-style measurements per the report."},
+    "a5_enough_rows": {"pass": true, "n_rows": 3716, "note": "3,716 hit rows verified (including some non-targeting controls), out of ~21,730 genes per the pipeline report."},
+    "a6_fits_laptop": {"pass": false, "working_set": "2.8 TiB raw TIFFs", "note": "Getting any quantitative per-gene phenotype means reprocessing 2.8 TiB of images with segmentation (Cellpose) and barcode calling; that needs a cluster, not a 16 GB laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "Pipeline report numbers (5,198,240 cells, 21,732 perturbations, 3,715 significant genes, 320 clusters) match the abstract."},
+    "a8_label_provenance": {"pass": true, "note": "Hit calls come from bootstrap statistics on measured Cell Painting features, not another model; the cluster pathway labels, however, are LLM (Claude) annotations and would be circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "ESM-2 (protein language model) for gene-level input embeddings, if the profiles were public", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "DepMap gene essentiality; CORUM / STRING complexes (benchmark files already in repo)", "join_key": "gene symbol / Ensembl gene", "bigger_question_one_sentence": "Could protein sequence predict which knockouts change HeLa morphology beyond what essentiality already explains? Not pursued because the profiles are not public."},
+  "controls": {"positive_control": "Essential genes (5,049-gene reference list in repo) should be enriched among hits.", "negative_control": "200 non-targeting guides; label shuffling.", "external_validation": "Other genome-wide optical pooled screens (e.g. Funk et al. 2022 HeLa screen); not checked here."},
+  "honest_claim_h3": "At best: predicts whether knocking out a gene produced a detectable Cell Painting change in one HeLa screen, a label strongly confounded with essentiality.",
+  "plain_idea": {
+    "one_liner": "Use a gene's protein sequence to predict whether knocking it out visibly changes cell shape and organelle staining in human cells.",
+    "train_on": "One example per gene (about 21,730 genes, from the pipeline report), described by a protein sequence embedding.",
+    "predict": "Whether the knockout was called a significant morphological hit (3,716-row list verified), from microscopy of 5.2 million barcoded HeLa cells.",
+    "why_worthwhile": "Would prioritise genes for imaging screens, but the binary label is thin and mostly tracks essentiality; the rich per-gene profiles that would make it worthwhile are not public."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict per-gene morphological profiles or hit status from protein/gene embeddings; blocked because only raw images (2.8 TiB) and a binary hit list are public.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 2800, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only: rebuilding per-gene features means segmenting ~34,000 image tiles from 2.8 TiB raw data, cluster-scale work.", "cheapest_killing_check": "Email the authors or inspect the Streamlit viewer for a downloadable per-gene aggregate TSV (~1.8 GB); if none, the project is dead."},
+  "verdict": "reject",
+  "verdict_reason": "Public deposit is 2.8 TiB of raw images only; the per-gene feature tables (~1.8 GB) sit on a private lab bucket, and the only public label is a 3,716-gene hit list, so a usable label table would have to be rebuilt from images (fails A2 and A6). Revisit if the aggregate profiles get deposited."
+}

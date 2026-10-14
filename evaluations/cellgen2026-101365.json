@@ -1,0 +1,54 @@
+{
+  "paper_id": "cellgen2026-101365",
+  "title": "Concentrating cell-type-specific transcriptional signatures in bone marrow from interspecies comparisons.",
+  "doi": "10.1016/j.xgen.2026.101365",
+  "journal": "Cell Genomics",
+  "data_url": "https://www.ebi.ac.uk/biostudies/studies/S-BSST2079",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Found BioStudies S-BSST2079 (licence CC0): two annotated R objects, sce_hsc.rds (2.25 GB) and sce_str.rds (510 MB, HEAD returned 200). Both are over the 50 MB cap, so I did not download them. I downloaded the E-MTAB-15073 SDRF (the ArrayExpress sample table): 66 10x libraries from 34 female mice, 4 species (BL6, CAST, SPRET, CAROLI), young (10-13 weeks) and old (84-109 weeks), 33 hematopoietic and 33 stromal libraries, each with a processed matrix.mtx/barcodes/features set. I read the GitHub repo (leawlb/conserved_signatures_bonemarrow): annotation_final.txt lists 22 cell types (12 HSPC, 10 niche).",
+    "what_came_from_paper_text_only": "Paper full text is not open access (no PMCID), so I read only the abstract. Per-cell counts and whether the cell-type label column sits in the RDS colData come from the BioStudies description and the repo README, not from opened files. The README says labels were made by clustering, subclustering and marker-based annotation after batch correction."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public CC0 BioStudies/ArrayExpress files, no login needed; HEAD on sce_str.rds returned 200."},
+    "a2_label_is_a_column": {"pass": true, "note": "The repo says the RDS objects hold cell-type labels; not verified because the files are over the cap. Age and species are real metadata columns in the SDRF, which I checked."},
+    "a3_inputs_present": {"pass": true, "note": "Expression count matrices (mtx) are deposited per library, per the ArrayExpress file listing."},
+    "a4_units_stated": {"pass": true, "note": "UMI counts and log-normalised counts, per the README; standard for 10x data."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Cell count not verified. The independent units for any biological label (age, species) are just 34 mice; there are tens of thousands of cells, but only for the circular cell-type label."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~2.8 GB of RDS (R format; needs R or zellkonverter to convert)", "note": "Fits in 16 GB with care; converting the 2.25 GB HSPC object is the heavy step."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checkable without full text. The SDRF and the repo's metadata.csv agree on 1,456 file rows (66 libraries)."},
+    "a8_label_provenance": {"pass": false, "note": "The cell-type labels come from clustering and marker genes applied to the same batch-corrected expression a model would take as input, so they are computed from the features (circular). The only physically measured labels are species and age, with just 34 individual mice."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scANVI (semi-supervised variational model for single-cell integration)", "open_weights": true, "score_and_split": "Best overall in Song et al. 2023 (Nature Communications) cross-species integration benchmark, scored on held-out species annotation transfer.", "authors_named_unsolved": "Benchmark authors note that performance depends on evolutionary distance and how gene homology is handled.", "runnable_as_baseline": true},
+      {"name": "SAMap / SATURN (cross-species mapping using gene sequences or protein embeddings)", "open_weights": true, "score_and_split": "A 2025 Briefings in Bioinformatics benchmark rates them most robust across taxonomic distances; scores are by held-out species.", "authors_named_unsolved": "Choosing a method for a given evolutionary distance.", "runnable_as_baseline": true},
+      {"name": "scGPT and Mouse-Geneformer (single-cell foundation models)", "open_weights": true, "score_and_split": "PLOS Genetics 2025: scGPT beat Mouse-Geneformer on 9 of 12 mouse cell-type classification tasks, including zero-shot.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "scGPT or Mouse-Geneformer", "freeze_and_head_viable": true, "hardware": "CPU feasible for embeddings of ~100k cells, slow", "licence": "scGPT MIT; data CC0"},
+  "integration": {"partner_dataset": "Tabula Muris / mouse bone marrow atlases (Dahlin 2018, Baccin 2020)", "join_key": "Ensembl mouse gene IDs", "bigger_question_one_sentence": "Do cell-type classifiers trained on lab mice transfer to wild-derived Mus species, and how does accuracy fall with divergence time?"},
+  "controls": {"positive_control": "Recover HSC versus erythroid separation from canonical markers (for example Procr, Klf1).", "negative_control": "Shuffle the cell-type labels within each species.", "external_validation": "Tabula Microcebus (mouse lemur) and motor-cortex cross-species data, which the paper itself uses."},
+  "honest_claim_h3": "A model trained on BL6 cells would only reproduce the authors' joint-clustering annotations in the other three species, not independently measured cell identities.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from lab mice to predict bone marrow cell types in three wild-derived mouse species.",
+    "train_on": "Gene-expression profiles of single bone marrow cells from 34 female mice of 4 species (cell count unknown; not verified).",
+    "predict": "One of 22 cell-type labels. These labels were assigned by the authors from clustering and marker genes on the same expression data, not by an independent measurement.",
+    "why_worthwhile": "It would show how well annotation tools transfer across about 3 million years of mouse divergence. But the labels are circular and the task is already well served by existing tools."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Four closely related Mus species is an unusual close-divergence ladder; existing benchmarks mostly use human-mouse-zebrafish. The data is small, though: 34 animals."},
+    "confidence_score": {"answer": "no", "why": "There is no independent measure of cell identity to calibrate against; the labels come from clustering."},
+    "models_beatable": {"answer": "no", "why": "scANVI, SAMap, SATURN and scGPT are open, recent (2021-2025) tools that are benchmarked on held-out species."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new data measures cell identity independently of expression, so the condition that new data measures the same quantity the same way fails."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Cross-species label transfer (train on BL6, test on CAROLI) with a frozen scGPT or Mouse-Geneformer plus a classification head. Rejected because the labels are cluster-derived and existing tools already do this.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 2.8, "needs_gpu": false, "peak_ram_gb": 12, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from file sizes only (2.25 GB + 0.51 GB RDS); nothing timed. The R-to-Python conversion dominates.", "cheapest_killing_check": "Load sce_str.rds colData and check whether the cell-type column came from clustering (it does, per the README). If so, the label is circular."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A8: the 22 cell-type labels come from clustering the same expression a model would use, so they are circular. The only measured labels (age, species) cover just 34 mice, which fails A5. Cross-species annotation transfer is also already well covered by open tools (scANVI, SAMap, scGPT)."
+}

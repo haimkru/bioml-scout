@@ -1,0 +1,53 @@
+{
+  "paper_id": "natgen2026-02676-x",
+  "title": "Enhancer control of promoter activity and variability via frequency modulation of clustered transcriptional bursts.",
+  "doi": "10.1038/s41588-026-02676-x",
+  "journal": "Nature Genetics",
+  "data_url": "https://zenodo.org/records/17572944",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo API record 17572944 (licence CC-BY-4.0): one file, tracks.csv, 169,065,928 bytes (over the 50 MB cap, so not fully downloaded). Ranged reads of the first 300 KB and the last 265 KB: 12 columns (unique_id, clone, frame, x, y, mean_spot, mean_spot_bleach, corrected_intensity, mean_localbackground, mean_localbackground_bleach, mean_completecell, spotdetected). Clone names such as 5G7 and 5E10 seen. unique_id goes past 10,000 and frame reaches 600. There is no enhancer-position column and no intensity units are given (raw camera counts).",
+    "what_came_from_paper_text_only": "30 s frame interval over 5 h; 3–7 biological replicates per cell line; 1,000–2,500 tracks per line, coming from about 200–400 cells per condition; mapping of clone to enhancer distance (only 5G7 = −5 kb and 5F11 = −149 kb are named in the text I searched). I did not count the total number of clones or rows in the full file. Raw images are available only on request."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Processed intensity tracks are openly on Zenodo under CC-BY-4.0 (169 MB CSV, checked via the API and ranged reads). Raw images are 'on request' only, but those aren't needed."},
+    "a2_label_is_a_column": {"pass": false, "note": "The only natural target, enhancer position, is not in the file: it would have to be mapped from the clone name using the paper's figures. The other candidate, 'spotdetected' (burst on/off), is a computed detection call, not a measured outcome."},
+    "a3_inputs_present": {"pass": true, "note": "Per-frame intensity traces are present as numbers (seen in the file head and tail)."},
+    "a4_units_stated": {"pass": false, "note": "Intensities are unnamed camera counts with no units. The frame interval (30 s) comes only from the paper text."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "About 1M frame rows (estimated from file size), but the independent unit is the clonal line (enhancer position). Each line is a single clone with about 200–400 cells, and there are only a handful of lines. Holding out whole clones leaves far fewer than 400 labelled units."},
+    "a6_fits_laptop": {"pass": true, "working_set": "169 MB CSV", "note": "Fits easily in RAM, and no GPU is needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not fully verified. The 10,000+ track IDs I saw are consistent with the paper's 1,000–2,500 tracks per line across several lines."},
+    "a8_label_provenance": {"pass": false, "note": "'spotdetected' comes from Trackpy (a spot-tracking tool) plus a filter applied to these same intensities, so it is computed from the features. Enhancer position is a real experimental setting but has the A2/A5 problems above."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Paper's own double-regime two-state promoter model (BurstingDynamicsInference, a mechanistic stochastic model)", "open_weights": true, "score_and_split": "Fitted to burst and gap-duration survival curves for each clone; not a predictive train/test model.", "authors_named_unsolved": "Which molecular mechanism sets the switch from the low-frequency to the high-frequency burst regime.", "runnable_as_baseline": true},
+      {"name": "DART (a convolutional plus LSTM neural network that turns MS2 traces into promoter on/off states; bioRxiv 2025)", "open_weights": null, "score_and_split": "Reported to beat hidden Markov model binarisation on simulated and published traces; I did not retrieve its numbers.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "BurstInfer (a compound hidden Markov model for MS2 kinetics; Bioinformatics 2022)", "open_weights": true, "score_and_split": "Kinetic-parameter inference validated on simulated data; no held-out split.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "BurstDECONV (signal deconvolution of live-cell bursting; NAR 2023)", "open_weights": true, "score_and_split": "Mechanistic deconvolution; no ML split.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "none (no pretrained foundation model for MS2 intensity time series)", "freeze_and_head_viable": false, "hardware": "laptop CPU", "licence": "CC-BY-4.0 (data)"},
+  "integration": {"partner_dataset": "Companion Nature Genetics paper 'The genomic position of an enhancer modulates bursting dynamics of the cognate promoter' (s41588-026-02693-w), not inspected", "join_key": "none shared; different constructs and cell lines", "bigger_question_one_sentence": "Does the way burst frequency depends on enhancer distance carry over between independent engineered loci? That can't be answered from the few clones here."},
+  "controls": {"positive_control": "Burst frequency in the −5 kb clone (about 7 per trace) should exceed the −149 kb clone (about 1), as stated in the paper.", "negative_control": "Shuffle clone labels across traces.", "external_validation": "None joinable; the companion paper uses a different construct."},
+  "honest_claim_h3": "A model could only say that traces from a few specific clonal lines of one mouse embryonic stem cell construct are distinguishable. It could not show that it learned how enhancer distance shapes bursting.",
+  "plain_idea": {
+    "one_liner": "Use single-cell live-imaging traces of RNA production to predict how far the controlling enhancer sits from the gene.",
+    "train_on": "Per-cell fluorescence traces (one frame every 30 s for 5 h) of nascent RNA at one engineered gene. Roughly 10,000 tracks, but they come from only a handful of clonal lines.",
+    "predict": "The enhancer's position (the clone it belongs to). That is set by the experiment, but it isn't a column: it has to be mapped from clone names using the paper.",
+    "why_worthwhile": "It would test whether the timing of single-cell bursts encodes regulatory distance. But with only a few distances, any classifier mostly learns clone identity, so little would be learned."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify or regress enhancer–promoter distance from single-cell MS2 bursting traces (MS2 is a tag that makes newly made RNA glow). This is not viable: there are only a handful of clones, so a leave-one-clone-out split leaves a few labelled units.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 0.17, "needs_gpu": false, "peak_ram_gb": 1.5, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from the 169 MB file size; nothing was timed.", "cheapest_killing_check": "Count distinct 'clone' values in tracks.csv and map each to an enhancer distance. If there are fewer than about 15 clones, the project is dead."},
+  "verdict": "reject",
+  "verdict_reason": "This is a mechanistic study of a handful of clonal lines. The real independent unit is the enhancer position, of which there are only a few, so A5 fails. Enhancer position isn't a column and has to be mapped from clone names (A2), the only per-frame label is a computed burst call (A8), and intensities have no units (A4)."
+}

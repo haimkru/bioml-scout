@@ -1,0 +1,96 @@
+{
+  "paper_id": "nar2026-gkag787",
+  "title": "Partitioning of parental histones between leading and lagging strands is modulated by DNA polymerase dosage.",
+  "doi": "10.1093/nar/gkag787",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327335",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the GEO (Gene Expression Omnibus) series GSE327335 file manifest: 320 bigwig coverage tracks (one forward and one reverse per sample) totalling 2,483 MB, plus a 2.3 GB RAW.tar; the SOFT metadata file confirms 160 samples, all ChIP-Seq, genome build sacCer3. I downloaded two tracks (GSM9653865, wild-type H3K4me3 eSPAN 30 min, forward and reverse) and opened them with pyBigWig: 16 chromosomes, 12,071,326 bp covered, raw integer read-coverage values (maximum 584 forward / 235 reverse, sum 39.5M each), no normalisation applied. On chromosome III in 1 kb bins, 247 of 316 bins had non-zero signal on both strands and the log2 Watson/Crick ratio had standard deviation 1.31. The article supplement is a single 2.7 MB Word file (strain and primer lists); there is no tabular data file anywhere in the deposit.",
+    "what_came_from_paper_text_only": "That the biological readout is the log2 Watson-over-Crick ratio at the 10 nucleosomes either side of each replication origin, computed with 'self-developed python scripts' using the Brogaard et al. 2012 nucleosome map; that cells were alpha-factor arrested and released, and that polymerase levels were lowered with auxin-inducible degron strains. No code repository is cited and I did not find the origin list or nucleosome map inside the deposit."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Fully public on the NCBI FTP site with no login; I downloaded two 1.5 MB bigwig tracks and parsed them successfully."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL, checked in the files. The deposit contains only raw strand-separated read-coverage tracks. The prediction target (parental-histone strand bias) exists nowhere as a column: it must be built by importing an external nucleosome-position map (Brogaard 2012) and a replication-origin list (OriDB), assigning fork direction, normalising eSPAN signal against BrdU and input tracks, then re-implementing the authors' unreleased scripts."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Not fully assessed because A2 failed. The yeast genome sequence (sacCer3) is freely available, so sequence features are obtainable, but no feature table ships with the data."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Checked in the files. Bigwig values are unnormalised integer read coverage; neither GEO nor the paper states a normalisation (no reads-per-million or spike-in), so tracks from different samples and sequencing depths are not directly comparable."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 160,
+      "note": "Rows in the sense that matters are samples: 160 sequencing libraries across roughly ten genotypes and a handful of time points. Genomic bins (about 12,000 at 1 kb, or roughly 8,000 origin-nucleosome positions) are strongly autocorrelated pseudo-replicates of the same few experiments, not independent examples."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "2.5 GB of bigwigs, or about 0.5 GB for a subset of eSPAN and input tracks",
+      "note": "Verified by file sizes and by opening two tracks; a 12 Mb genome at 1 kb bins is trivial for 16 GB of RAM and no GPU is needed."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO summary, SOFT file and FTP manifest all agree: 160 samples, 320 bigwig files, sacCer3, 12,071,326 bp."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Provenance is a physical measurement (sequencing read counts), not another model's output. But flagging a real leakage-by-construction risk: the sign of the strand bias is mechanically set by which side of the nearest origin a position sits on, so any model given origin distance and orientation would recover most of the label without learning biology."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "",
+    "freeze_and_head_viable": null,
+    "hardware": "",
+    "licence": ""
+  },
+  "integration": {
+    "partner_dataset": "",
+    "join_key": "",
+    "bigger_question_one_sentence": ""
+  },
+  "controls": {
+    "positive_control": "",
+    "negative_control": "",
+    "external_validation": ""
+  },
+  "honest_claim_h3": "Any model built here could only claim to predict the strand asymmetry of a histone-mark sequencing signal around yeast replication origins, in one strain background from one laboratory, after the analyst had already reconstructed that asymmetry by hand from coverage tracks.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and chromatin context around yeast replication origins to predict which new DNA strand inherits old histones.",
+    "train_on": "Positions around replication start sites in baker's yeast, each described by local DNA sequence, nucleosome position and distance from the origin. Verified example count: 160 sequencing samples; roughly 8,000 origin-nucleosome positions per sample, but these are not independent.",
+    "predict": "A number saying how much more old-histone signal lands on one newly made strand than the other. The true answer comes from eSPAN (a strand-specific method that sequences DNA attached to a chosen protein), read as the log2 Watson-over-Crick coverage ratio.",
+    "why_worthwhile": "Chromatin-replication labs argue about what makes histone recycling symmetric; a sequence-level predictor would say whether local DNA context matters at all. As built here it would mostly rediscover that strand bias flips at the origin."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: regress the per-nucleosome log2 Watson/Crick eSPAN bias (old-histone strand preference) around replication origins on local DNA sequence, nucleosome occupancy and origin geometry, with genotype as a covariate, to ask whether sequence context modulates histone recycling. Rejected: the target has to be rebuilt from raw coverage tracks plus two external annotation sets, the tracks are unnormalised, and the honest sample size is 160 libraries from roughly ten strains in one lab.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 2.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed end to end: opening two 1.5 MB bigwigs took under a second, so binning all 320 tracks over a 12 Mb genome is minutes. The 40 hours is for rebuilding the label pipeline (origin list, nucleosome map, strand assignment, cross-sample normalisation, replicate agreement checks) without the authors' scripts.",
+    "cheapest_killing_check": "Count how many origin-nucleosome positions have enough reads on both strands in both replicates for the log2 ratio to be stable: on chromosome III only 247 of 316 1 kb bins had non-zero signal on both strands in one wild-type sample, so per-position labels will be noisy before any modelling starts."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2: the prediction target exists only as raw strand-separated coverage tracks and must be reconstructed from external nucleosome and origin annotations using the authors' unreleased scripts. Also fails A4 (unnormalised coverage, no units) and A5 (160 libraries, about ten genotypes, one lab, one strain background; genomic bins are pseudo-replicates). The underlying experiments are excellent molecular biology and the deposit is genuinely public and laptop-sized, but there is no feature/label table and the one target that could be built is largely determined by fork geometry, so a good score would mean little."
+}

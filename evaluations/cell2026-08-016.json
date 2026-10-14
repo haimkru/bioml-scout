@@ -1,0 +1,52 @@
+{
+  "paper_id": "cell2026-08-016",
+  "title": "The complete gustatory connectome of adult Drosophila reveals how taste guides feeding; foraging; and social behavior.",
+  "doi": "10.1016/j.cell.2026.08.016",
+  "journal": "Cell",
+  "data_url": "https://male-cns.janelia.org/download/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the male CNS (central nervous system) v1.0 neuron annotation table (body-annotations-male-cns-v1.0-minconf-0.5.feather, 14.5 MB, 211,577 rows, 36 columns), which opens without a login. 1,428 rows have class 'gustatory', spread over 60 types (LgLG3 162 ... many types with fewer than 10 neurons). receptorType is filled for 751 of them, with only 3 values, all prefixed 'putative_' (ppk23 269, ppk25 257, IR52b 225); 677 are blank. Checked file sizes only (HEAD request) for connectome-weights (1.05 GB), body-stats (778 MB) and body-neurotransmitters (43 MB); I did not download them.",
+    "what_came_from_paper_text_only": "From the bioRxiv preprint (2025.08.25.671814v2): the data statement (body IDs in Supplementary Table 2, plus the public male-cns, FlyWire and MANC connectomes), the 58 GRN (gustatory receptor neuron) types, and that molecular identity was assigned by matching to known markers, GAL4 driver-line projections and the literature, with types from connectivity-based clustering. The Cell paper itself is paywalled and not in Europe PMC; I did not see its supplement."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Bulk feather files are on a public Google Cloud bucket under CC-BY 4.0 (a permissive licence); the annotation file downloaded without a login. neuPrint API access does need an account, but it is not required."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in files: the 'type' column exists, but there is no measured functional label (taste response, ligand, behaviour) per neuron. receptorType is a 3-value 'putative' column covering 751 of 1,428 GRNs. A real biological target would have to be built by joining calcium-imaging or receptor-expression data from other papers."},
+    "a3_inputs_present": {"pass": true, "note": "Connectivity weights and per-body statistics are present as bulk files (sizes checked by HEAD request, not opened)."},
+    "a4_units_stated": {"pass": true, "note": "Inputs are synapse counts, which need no units; there is no continuous label."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1428, "note": "Checked in files: 1,428 gustatory neurons over 60 types. Enough for classification by row count, but many types have fewer than 10 members, and left/right copies of one type are not independent."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.1 GB weights file, filtered to edges touching the 1,428 GRNs (likely <100 MB)", "note": "Estimated, not run: stream or filter the 1.05 GB edge table with pyarrow."},
+    "a7_counts_match_paper": {"pass": true, "note": "60 types in the v1.0 annotations versus 58 in the preprint; close enough, with the difference probably from catch-all labels such as SNxxxx. The total GRN count was not stated in the preprint text I read."},
+    "a8_label_provenance": {"pass": false, "note": "Circular. Per the preprint, GRN types were defined by connectivity-based clustering, so predicting type from connectivity just recovers the clustering. receptorType is 'putative', meaning it was inferred from projection matching rather than measured in these neurons, so predicting it means distilling the authors' annotation."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "kostas52675/fly-connectome (GitHub project predicting FlyWire cell type and neurotransmitter from connectivity)", "open_weights": true, "score_and_split": "Not retrieved; I saw only the repository description.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "none (no pretrained foundation model for connectome graphs; a plain graph neural network or node2vec embeddings would be trained from scratch)", "freeze_and_head_viable": false, "hardware": "CPU", "licence": "Data CC-BY 4.0"},
+  "integration": {"partner_dataset": "FlyWire FAFB (female brain connectome) and MANC (male ventral nerve cord) GRN annotations", "join_key": "flywireType / mancType cross-matched cell type", "bigger_question_one_sentence": "Do gustatory cell types keep the same wiring across sexes and datasets? The paper already answers this itself."},
+  "controls": {"positive_control": "Predict entryNerve (the nerve a neuron enters through) from connectivity", "negative_control": "Label shuffling", "external_validation": "FlyWire FAFB types, but they were matched by the same annotators"},
+  "honest_claim_h3": "A model would predict the authors' connectivity-derived GRN type, or a putative receptor label, from that same connectivity. It would recover how the dataset was annotated, not taste biology.",
+  "plain_idea": {
+    "one_liner": "Use each taste neuron's wiring pattern to predict which taste receptor it carries or which taste it detects.",
+    "train_on": "Synapse-count connectivity profiles for 1,428 gustatory neurons from the male fly central nervous system connectome (count verified in the annotation file).",
+    "predict": "Neuron type or putative receptor (ppk23, ppk25, IR52b). Types came from connectivity clustering and receptors from projection matching, not from measuring receptors in these neurons.",
+    "why_worthwhile": "If a real measured receptor or taste-response label existed, it would show how much of taste identity is written in the wiring. With only derived labels, the result is circular."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The field is not crowded, but the data adds no measured label; only the open FlyWire connectivity-to-type project was found, and its training data are not comparable."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements; each neuron has one annotation."},
+    "models_beatable": {"answer": "partly", "why": "The only project found is an unpublished GitHub repository whose scores I did not retrieve."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new data measures the same label the same way; receptor labels are putative."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Graph classification of GRN type or putative receptor from male CNS connectivity. Rejected as circular, because the labels were derived from that same connectivity or inferred by matching.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 1.1, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": 2, "compute_note": "Estimated only: filter the 1.05 GB edge feather to GRN rows, then build a 1,428 × partner matrix.", "cheapest_killing_check": "Done: receptorType holds only 3 'putative' values for 751 of 1,428 GRNs, with no measured functional label."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A8: the files have 1,428 gustatory neurons but no measured functional label. Types come from connectivity clustering, so predicting them from connectivity is circular, and the 3-value receptorType column is 'putative' (inferred by matching)."
+}

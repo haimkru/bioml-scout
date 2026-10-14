@@ -1,0 +1,237 @@
+{
+  "paper_id": "nature2026-11077-3",
+  "title": "Sugar-rich foods exacerbate antibiotic-induced microbiome disruption.",
+  "doi": "10.1038/s41586-026-11077-3",
+  "journal": "Nature",
+  "data_url": "https://zenodo.org/records/22019158 (concept DOI 10.5281/zenodo.14538105, CC-BY-4.0); mirror of the same tables in https://github.com/Anqi-Dai/Nutrition_microbiome_reproducibility (released_data/, MIT code)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 10 files from the Zenodo deposit with pandas. 152_combined_DTB.csv = 40,702 rows, one food item per row, 16 columns, zero missing values, 173 patients, 622 USDA food codes; its unique patient-day-meal combinations count exactly 9,419, matching the abstract. 153_combined_META.csv = 1,009 stool samples from 158 patients, zero missing values, with the alpha-diversity label (simpson_reciprocal, range 1.00-49.02) and the prior-two-day food-group and macronutrient intake already as columns. R59_meta_expanded.csv = the same 1,009 rows plus the Enterococcus abundance label (asv_1_clr) and antibiotic-exposure category. 63_asv_count_relab_res.csv = 104,969 rows, 14,430 bacterial variants, median 52,040 sequencing reads per sample. 45_quality_asv_relab_pident97_genus.csv = 394 genera; I computed Enterococcus relative abundance per sample myself (142/1,009 samples above 30%). Data_S4 medication table = 26,593 rows for all 1,009 samples with drug class and route. df_main_clinical_outcome.csv = 173 patients with survival and length-of-stay. Zero duplicate sample IDs and zero duplicate patient-day rows. I then joined the sample IDs to the public Memorial Sloan Kettering microbiome compilation on figshare (Liao et al. 2021, 12,546 samples, 1,870 patients, CC-BY): 709 of 1,009 matched one-to-one, and 11,496 samples from 1,789 non-overlapping patients remain as an external cohort. Finally I timed a real baseline: gradient-boosted trees on 22 diet-plus-antibiotic columns, 5-fold cross-validation grouped by patient, gave an area under the ROC curve of 0.697 +/- 0.041 for low diversity (majority-class rate 0.616) in 2.9 seconds.",
+    "what_came_from_paper_text_only": "The published effect sizes and the absence of any out-of-sample prediction metric come from the bioRxiv preprint full text (2024.10.14.617881), not from the paywalled Nature version: sweets-by-antibiotic interaction of -0.28 natural-log units of diversity per 100 g (95% interval -0.46 to -0.07) and +0.67 for Enterococcus (95% interval -0.01 to 1.33), fitted with the brms Bayesian package, with no train/test split reported. The stated limitations (portions recorded only as 0/25/50/75/100% eaten, single centre, possible observer effect from thrice-weekly dietician visits) are also from that text. The mouse supplementary workbook (6.5 MB) refused to open with openpyxl because of a malformed workbook attribute; I read its sheet names from the raw archive (including raw_counts_matrix, mouse_16s_asv_relab, mouse_16s_sample_meta) but did not read its contents."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo record 22019158, CC-BY-4.0, no login, no application. I downloaded 10 of its 27 files directly. The code mirror on GitHub carries the same tables under an MIT licence."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Both labels are existing columns I opened: simpson_reciprocal (gut bacterial diversity) in 153_combined_META.csv and asv_1_clr (Enterococcus abundance) in R59_meta_expanded.csv. The binary domination label is a threshold on a measured abundance column I computed with one group-by."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "All inputs are in the files: per-food-item grams of sugar, fat, protein, fibre and calories already attached to each of 40,702 items, the prior-two-day food-group totals already aggregated per stool sample, and 26,593 medication rows with drug class. No identifier lookups needed. Caveat: the bacterial DNA sequences are absent (taxonomy only), which only limits the optional sequence-model variant."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are in the column names and documented in the repository README: Calories_kcal, Protein_g, Sugars_g, dehydrated_weight in grams, food-group columns in grams of dehydrated weight, fdrt/sdrt in days relative to transplant. Inverse Simpson diversity is unitless by definition."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 1009,
+      "note": "1,009 labelled stool samples from 158 patients; 387 are low-diversity and 142 are Enterococcus-dominated, so the classification version clears the ~400-row bar comfortably. Honest caveat: this is marginal for regression (under ~1,500) and the generalisation unit is only 158 patients. The drug-and-clinical half of the model can be trained on 11,496 extra public samples I verified are patient-disjoint."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~45 MB of CSV; the widest matrix I built was 1,009 samples x 394 genera = 3.2 MB in memory",
+      "note": "Every file is under 10 MB. I ran a full 5-fold grouped cross-validation in 2.9 seconds on CPU, so this is comfortably a laptop project."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Exact agreement, computed not assumed: 9,419 unique patient-day-meal combinations versus the abstract's 9,419 meals; 173 patients in the diet table versus 173 claimed; 1,009 samples from 158 patients versus the 158 patients with paired longitudinal samples."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels are physical measurements: inverse Simpson diversity and Enterococcus relative abundance both computed from 16S rRNA gene sequencing read counts, which are themselves in the deposit (median 52,040 reads per sample). No label is any model's output. One real trap, not a failure: diversity and community composition come from the same read counts, so genus abundances must never be used as features when predicting diversity."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One ready 1,009-row analysis table with labels and features; side tables join cleanly on sample ID. Seen in files."},
+    "B2": {"score": 2, "why": "All nine CSVs parsed on first try in pandas; only the secondary mouse spreadsheet needed a workaround."},
+    "B3": {"score": 2, "why": "Single centre, single 16S pipeline; authors already supply log and centred-log-ratio transformed outcomes. Seen in files."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; zero missing cells in the diet and main sample tables. Verified."},
+    "B5": {"score": 2, "why": "Zero duplicate sample IDs and zero duplicate patient-day rows; 32 of 40,702 food rows repeat exactly. Verified."},
+    "B6": {"score": 2, "why": "Repository README documents every released table and its columns; Zenodo description documents Data S1-S6."},
+    "C1": {"score": 2, "why": "'Does the sugar signal predict dysbiosis out of sample, beyond antibiotics?' is informative either way."},
+    "C2": {"score": 1, "why": "Models exist for the adjacent task (Bi-LSTM benchmark, DynaBiome, MDSINE2) but none uses diet; this paper reports no predictive metric."},
+    "C3": {"score": 2, "why": "Diet table released 2026-08-19 and never modelled; the paper used it only for association, not prediction."},
+    "C4": {"score": 2, "why": "Alternative is thrice-weekly dietician food-record review plus serial stool 16S sequencing: slow and costly."},
+    "C5": {"score": 2, "why": "Published posterior coefficients to reproduce, plus my own timed grouped baseline (ROC area 0.697 vs 0.616 majority)."},
+    "D1": {"score": 1, "why": "Abundance-level microbiome foundation models exist (MGM, BiomeGPT, Waypoint) but weights unverified; DNA sequences absent from files."},
+    "D2": {"score": 1, "why": "Freeze-and-head would be cheap (1,009 x 394 vectors) but the primary model is tabular boosting, so a backbone is optional."},
+    "D3": {"score": 2, "why": "Data CC-BY-4.0, code MIT; candidate backbones are academic-free or permissive. Licence seen on Zenodo record."},
+    "E1": {"ok": true, "why": "pid column present (158 groups); also time-forward split on sdrt and a six-BioProject batch split."},
+    "E2": {"ok": true, "why": "158 patients, 113 with three or more samples, 10 weekly time bins. Counted in files."},
+    "E3": {"ok": true, "why": "Majority class 0.616 for low diversity, 0.141 base rate for Enterococcus domination, per-patient means. Computed."},
+    "E4": {"ok": true, "why": "Cross-assay check: 429-row shotgun Enterococcus table overlaps the 16S samples; plus 786 within-patient pairs under 7 days apart."},
+    "E5": {"ok": true, "why": "Model must recover the textbook antibiotic effect (exposure_type: 247 empiric, 101 C. difficile, 91 bloodstream, 570 none)."},
+    "E6": {"ok": true, "why": "Label shuffling and diet-only vs drug-only block ablation are trivial here; the ablation is the main experiment."},
+    "E7": {"ok": true, "why": "11,496 public samples from 1,789 patients disjoint from this cohort (verified by join); plus 111 mouse 16S samples."},
+    "E8": {"ok": true, "why": "Published sweets-by-antibiotic coefficient (-0.28, 95% interval -0.46 to -0.07) refittable with the archived brms script."},
+    "G1": {"score": 2, "why": "Standard identifiers present: USDA food codes (622), SRA run accessions, and MSK sample IDs that join to a public resource."},
+    "G2": {"score": 2, "why": "Liao et al. 2021 MSK compilation on figshare: 12,546 samples, 1,870 patients, CC-BY, joins on sample ID. Verified 709 matches."},
+    "G3": {"score": 2, "why": "One-to-one on sample ID; zero patients mapped to more than one partner patient ID. Verified by join."},
+    "G4": {"score": 2, "why": "Big cohort has drugs but no diet; this one has diet but 158 patients. Together they size diet against antibiotics."},
+    "H1": {"score": 2, "why": "Every sample in the window is reported regardless of outcome; 570 of 1,009 samples had no broad-spectrum exposure."},
+    "H2": {"score": 1, "why": "One hospital, one patient population (allo-transplant), one standardised low-microbial menu; mouse arm adds a second species."},
+    "H3": {"score": 2, "why": "Honest claim writes cleanly in one sentence; see honest_claim_h3."},
+    "H4": {"score": 2, "why": "Preprint states portion granularity, observational design, observer effect and limited generalisability explicitly."},
+    "I1": {"score": 2, "why": "Named: the van den Brink/Peled/Taur transplant microbiome group, MSK clinical nutrition, and Bhatt lab at Stanford."},
+    "I2": {"score": 2, "why": "Would set the design of the microbiota-sparing diet trial the paper calls for: enrol everyone, or only flagged patients."},
+    "I3": {"score": 2, "why": "Metric is the decision: precision and recall for flagging the 14% of samples that become Enterococcus-dominated."},
+    "I4": {"score": 1, "why": "Honest doubt: my verified boosting run reached only 0.697 ROC area versus 0.616 majority; a simple rule may suffice."},
+    "J1": {"score": 2, "why": "Grouped splits, nested model comparison, calibration, external-cohort transfer, optional embedding head."},
+    "J2": {"score": 2, "why": "Quantities (diversity, Enterococcus share, antibiotics) are interpretable, and Stanford has a transplant-microbiome lab to ask."},
+    "J3": {"score": 2, "why": "A documented diet-plus-drug-plus-microbiome table and grouped benchmark are useful even if diet adds nothing."},
+    "J4": {"score": 2, "why": "Stated here: three weeks part-time, since the feature table already exists and one cross-validation takes seconds."},
+    "J5": {"score": 1, "why": "Kill condition written in this evaluation but not yet in NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "This paper's own Bayesian multilevel models (brms 2.16.3 with rstan), predicting log inverse-Simpson diversity and centred-log-ratio Enterococcus abundance from food groups, antibiotics and their interaction",
+        "open_weights": true,
+        "score_and_split": "No predictive score of any kind: the preprint reports posterior effect sizes only (sweets-by-antibiotic interaction -0.28 natural-log diversity units per 100 g, 95% interval -0.46 to -0.07; Enterococcus +0.67, 95% interval -0.01 to 1.33) with no train/test split, only prior and posterior predictive checks.",
+        "authors_named_unsolved": "They state that generalisation beyond hospitalised transplant patients is unknown and call explicitly for independent cohorts and for trials of microbiota-sparing dietary interventions; they also flag that portions were recorded only as 0/25/50/75/100% eaten.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "HCT-Microbiome-Benchmark (IEEE International Conference on Knowledge Graph 2026): an autoregressive bidirectional long short-term memory network plus XGBoost, random forest and logistic regression baselines for early dysbiosis forecasting",
+        "open_weights": true,
+        "score_and_split": "Code, Colab notebooks and a prebuilt feature matrix are public, built from the same public Memorial Sloan Kettering tables (sample, taxonomy, count, transplant metadata, temperature, white-cell counts). I could not retrieve any reported accuracy number: the repository README has no results section and the paper itself was not retrievable. Uses no dietary data.",
+        "authors_named_unsolved": "Not retrievable (no results or discussion text available in the repository).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DynaBiome (BMC Bioinformatics 2026): unsupervised temporal deep models for interpretable gut dysbiosis detection",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the abstract-level description in search results; it is an unsupervised dysbiosis-characterisation method rather than a supervised diet-to-outcome predictor.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "MDSINE2 (Nature Microbiology 2025): Bayesian ecological dynamical-systems inference for microbiome time series with antibiotic perturbations, from the Gerber lab",
+        "open_weights": true,
+        "score_and_split": "Open-source Python package and command-line tool; evaluated on densely sampled gnotobiotic mouse time series with diet and antibiotic perturbations, reporting forecast error and Bayes factors rather than a comparable classification score. Models interactions and perturbation response, not food intake.",
+        "authors_named_unsolved": "Framed around needing dense time series; human clinical cohorts with sparse sampling are outside their demonstrated regime.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Interpretable machine-learning model (Q-Lattice symbolic regression) predicting clinical Enterococcus faecium infection from gut metagenomes in stem-cell transplant recipients (Open Forum Infectious Diseases 2023 abstract)",
+        "open_weights": null,
+        "score_and_split": "Conference abstract only; predicts clinical infection from microbiome composition, not dysbiosis from diet. No split or score retrieved.",
+        "authors_named_unsolved": "Not retrieved (abstract only).",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Primary model needs no backbone: gradient-boosted trees on ~40 tabular diet, drug and clinical features. Optional abundance-level backbone candidates are MGM (a transformer pretrained on 260,000 microbiome samples, Advanced Science 2026), BiomeGPT and the Waypoint family (GPT-2-style, 6M-170M parameters, trained on 539,308 MGnify datapoints). A DNA language model such as DNABERT-2 or Nucleotide Transformer is NOT usable from these files: the bacterial variant sequences are absent (taxonomy only) and the variant keys here share zero overlap with the public compilation's 17,865 sequenced variants.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU. A full 5-fold grouped cross-validation took 2.9 seconds when I ran it; embedding 1,009 abundance vectors through a small transformer would take minutes.",
+    "licence": "Data CC-BY-4.0, analysis code MIT. Backbone licences not verified; I found a HuggingFace repository named microbiome-fm/abundance-pretrained-model but did not confirm usable weights."
+  },
+  "integration": {
+    "partner_dataset": "Liao et al. 2021 Memorial Sloan Kettering longitudinal microbiota and 'hospitalome' compilation on figshare (collection 5271128, CC-BY-4.0): 12,546 stool samples from 1,870 transplant patients, with full drug courses (5.0 MB table), white-cell counts, temperatures, infections, vancomycin-resistance screens and 17,865 sequenced bacterial variants.",
+    "join_key": "Memorial Sloan Kettering stool sample ID (e.g. 1361G). Verified: 709 of this paper's 1,009 samples match one-to-one, covering 81 of its 158 patients; 11,496 samples from 1,789 patients are patient-disjoint and usable as an external cohort.",
+    "bigger_question_one_sentence": "Antibiotics are the dominant driver of transplant dysbiosis, so once drug exposure is modelled properly on 1,789 patients, how much additional and actionable variance in gut collapse does what the patient actually ate explain?"
+  },
+  "controls": {
+    "positive_control": "Two, chosen in advance. First, the model must recover the textbook antibiotic effect: samples with broad-spectrum or bloodstream-infection treatment exposure (247 empiric, 101 Clostridioides difficile, 91 bloodstream, versus 570 unexposed, all in the exposure_type column I opened) must show lower diversity and higher Enterococcus. Second, a plumbing check: predict total daily calories from the per-item food table, which must come out near-perfect.",
+    "negative_control": "Shuffle the diversity label globally and again within patient; both must collapse to the per-patient mean and to a 0.5 ROC area. Also deliberately feed genus abundances as features for the diversity label: this should look almost perfect, proving the known leak exists and confirming it was correctly excluded.",
+    "external_validation": "Three tiers. (1) 11,496 public samples from 1,789 patients not in this cohort, same centre and assay, for the drug-and-clinical model. (2) The 300 samples here that are absent from the public compilation, which come from newer sequencing projects. (3) Direction-only cross-species check against the mouse sucrose experiments (111 16S samples plus colony-count data in the supplementary workbook)."
+  },
+  "honest_claim_h3": "Among hospitalised allogeneic-transplant patients at a single United States cancer centre eating a standardised low-microbial hospital menu, a model using the previous two days of recorded food intake plus antibiotic exposure predicts the next stool sample's gut bacterial diversity and Enterococcus overgrowth this much better than antibiotics and clinical covariates alone; it says nothing about outpatients, other diets or other centres.",
+  "plain_idea": {
+    "one_liner": "Use what a hospitalised patient ate and which antibiotics they received to predict whether their gut bacteria will collapse.",
+    "train_on": "1,009 stool samples from 158 transplant patients (verified count), each paired with the grams of sweets, grains, fruit, meat, milk, fat, vegetables, eggs and legumes plus calories, sugar, fat, protein and fibre consumed in the two preceding days, the antibiotics and other drugs given in that window (26,593 medication rows), and clinical covariates. The underlying food record is 40,702 individual food items across 9,419 meals.",
+    "predict": "Two measured outcomes: gut bacterial diversity (inverse Simpson index) and the share of the gut community taken over by Enterococcus, a hospital-acquired pathogen. Both come from 16S ribosomal RNA gene sequencing of the stool sample itself (median 52,040 reads per sample), so the answer is a laboratory measurement, not a derived guess.",
+    "why_worthwhile": "The paper's authors explicitly call for trials of diet changes that spare the microbiome; whoever designs that trial needs to know whether sugar intake is predictive enough at the individual level to target, or whether it is a real but small effect swamped by antibiotics. Either answer changes the trial design, and the negative answer is as useful as the positive one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "No existing model has any dietary data at all. The nearest model, the HCT-Microbiome-Benchmark bidirectional long short-term memory network, is built from the public Memorial Sloan Kettering tables (samples, taxonomy, counts, transplant metadata, temperature, white-cell counts) with no food records. This deposit adds 40,702 itemised food entries across 9,419 meals for 173 patients, released 2026-08-19 and never modelled."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "There are no technical replicates of the same stool sample, so per-prediction uncertainty cannot be anchored to assay noise directly. But two proxies exist and I verified both: 786 within-patient sample pairs taken 7 days or fewer apart, and a 429-row shotgun-sequencing Enterococcus table that overlaps the 16S samples and gives a cross-assay disagreement estimate. The existing deep-learning benchmark reports no calibration."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The paper's own model (brms 2.16.3, 2024-2026) reports no out-of-sample number whatsoever, so any honest grouped-split result is the first. The HCT-Microbiome-Benchmark repository (created 2026-05, zero stars, anonymous handle) has no results section I could retrieve, so its bar is unknown rather than high."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The partner data (11,496 public samples with drugs but no food records) measures the same microbiome outcomes the same way and joins on sample ID, and the paper's model is runnable as a baseline. But it fails one condition: it does not contain the diet block, so it enlarges the drug-only model rather than strictly adding information to the diet model, and the comparison split necessarily differs between the two cohorts."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Verified by downloading and joining: the Liao et al. 2021 Memorial Sloan Kettering compilation on figshare (CC-BY-4.0) carries the same 16S-derived community composition for 12,546 samples from 1,870 patients, from which both labels (inverse Simpson diversity and Enterococcus share) are computable with the same formula. Known larger resources with the same label definition, not opened here: Qiita and the American Gut Project, curatedMetagenomicData, and MGnify.",
+    "approx_items": 12546,
+    "join_key": "Memorial Sloan Kettering stool sample ID for the directly joinable compilation (709 of 1,009 matched); SRA run accession for the sequencing-level link, supplied in the deposit's Data S1 for all 1,009 human samples.",
+    "why": "The outcome can be recomputed identically for roughly 12 times more samples from nearly 1,800 extra patients, which gives a properly powered drug-and-clinical baseline and a patient-disjoint external test set, so the diet block's contribution can be measured against a strong rather than an underpowered reference."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The same patient contributes up to 28 stool samples with a median gap of only 2 days, so a random split would place near-identical consecutive samples in both training and test sets.",
+      "Gut bacterial diversity and the genus abundance table are computed from the same sequencing read counts, so using community composition as a feature would leak the diversity label almost perfectly.",
+      "Sequencing batch effects: the 1,009 samples span six sequencing projects and many Miseq pools, and batch correlates with calendar period and therefore with changing antibiotic practice.",
+      "Drug exposure must be restricted to the window before the stool sample; the full-admission medication table includes courses that start after the sample date, which would be information from the future.",
+      "Food-group grams and macronutrient averages are both derived from the same food items, so they are redundant; a model given both can look better than it is if the split is loose.",
+      "Patients who stopped eating entirely (a dedicated file lists them) are plausibly sicker, so zero intake may act as a proxy for severe illness that independently causes dysbiosis - a confound that behaves like leakage."
+    ],
+    "split": "Primary: GroupKFold or leave-one-patient-out on the pid column (158 groups, present and clean in 153_combined_META.csv - I saw it and counted it). Secondary, both using columns I saw: a forward-in-time split on sdrt (days relative to transplant, train on early samples, test on later), and a held-out-sequencing-project split using the BioProject column in Data S1 (476/484/38/5/5/1 samples across six projects).",
+    "checks": [
+      "Shuffle the label within patient and confirm the ROC area collapses to about 0.5 and the regression collapses to the per-patient mean.",
+      "Deliberately train on genus composition alone for the diversity label; it should be near-perfect, which proves the leak is real and must stay excluded.",
+      "For every test sample, report the time gap to its nearest training sample from the same patient; after grouping this must be undefined (zero same-patient pairs).",
+      "Fit drug-block-only, diet-block-only and both-blocks models separately, so it is visible which block does the work."
+    ],
+    "verdict": "Manageable. The grouping column is present and clean, the dataset is small enough that every control runs in seconds, and the one serious trap (composition features leaking the diversity label) is obvious once named."
+  },
+  "success_criteria": {
+    "metric": "Area under the precision-recall curve for flagging a stool sample as Enterococcus-dominated (relative abundance above 30%; I counted 142 of 1,009 samples, a 14.1% base rate), evaluated leave-one-patient-out. Precision-recall rather than ROC because the decision is whom to act on in a heavily imbalanced setting, and the clinical action (restrict sweets, tighten antibiotic stewardship for this patient) applies to a short flagged list. The headline number is the change in this metric when the diet block is added to a drug-plus-clinical-plus-prior-sample model.",
+    "baselines": "Trivial: the 0.141 base rate, which is what a random classifier scores on precision-recall area; plus the previous stool sample's Enterococcus share carried forward (851 of 1,009 samples have a preceding sample, 786 within 7 days - counted). Mine, timed: gradient-boosted trees on 22 diet-and-antibiotic columns gave ROC area 0.697 +/- 0.041 for the low-diversity label under 5-fold patient-grouped cross-validation, against a 0.616 majority-class rate. Published: none exists for prediction; the paper reports only posterior coefficients.",
+    "success": "The diet block adds at least 0.05 absolute precision-recall area over the drug-plus-clinical-plus-prior-sample model under leave-one-patient-out, with the gain surviving a within-patient label shuffle and holding in the same direction on the 300 samples absent from the public compilation. A clean negative - a confidence interval that excludes a 0.05 gain - also counts as success, because it sizes the sugar effect against antibiotics.",
+    "noise_ceiling": null,
+    "kill": "If after one week the drug-plus-clinical-plus-prior-sample model's precision-recall area is not at least 0.10 above the 0.141 base rate, the outcome is simply not predictable at this sample size and the diet question cannot be answered; stop."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning with clinical consequence; it would take a diet-aware model that clearly flags Enterococcus takeover before it happens and holds up on the 1,789-patient patient-disjoint public cohort."
+    },
+    "realistic": {
+      "journal": "PLOS Computational Biology",
+      "why": "Publishes careful nested-model benchmarks with honest grouped splits; the likely result - a quantified, probably modest gain from diet over antibiotics, with calibration and ablations - fits squarely."
+    },
+    "fallback": {
+      "journal": "Bioinformatics (Application Note), or a bioRxiv preprint plus a machine-learning-for-health workshop",
+      "why": "Even if diet adds nothing predictive, the documented diet-plus-drug-plus-microbiome feature table, the patient-grouped benchmark and the published-coefficient reproduction are a reusable resource worth an application note."
+    }
+  },
+  "pitch": {
+    "headline": "9,419 itemised hospital meals paired with 1,009 stool samples, one ready table, zero missing values, and nobody has modelled it.",
+    "what_makes_the_data_unusual": "Diet is itemised, not recalled: 40,702 food entries with grams of sugar already attached, from a standardised hospital menu, paired to 16S sequencing of the same patients. Released 2026-08-19 under CC-BY-4.0. All verified by opening the files.",
+    "the_win": "The first out-of-sample number for this claim: diet adds at least 0.05 precision-recall area over antibiotics alone for flagging Enterococcus takeover, against a 0.141 base rate and my verified 0.697 ROC-area diet-plus-antibiotic baseline.",
+    "even_if_it_fails": "A clean negative sizes the sugar effect against antibiotics and tells whoever designs the microbiota-sparing diet trial to enrol everyone rather than target predicted-high-risk patients. That is a real, publishable result, not a dead end.",
+    "who_wants_it": "The van den Brink, Peled and Taur transplant-microbiome group who wrote the paper and called for intervention trials; MSK clinical nutrition; and Stanford's Bhatt lab, who work on transplant gut microbiomes."
+  },
+  "ml_idea": "Build the first predictive benchmark on this deposit. Unit of prediction: one stool sample (1,009 of them, 158 patients). Features in three blocks: (a) drugs and clinical - antibiotic class and route in the two days before the sample from the 26,593-row medication table, conditioning intensity, enteral and parenteral nutrition, day relative to transplant, disease, age; (b) prior state - the same patient's previous stool sample's diversity and Enterococcus share plus the time gap (851 samples have one); (c) diet - the nine food-group grams and five macronutrient averages already in the table, plus richer features built from the 40,702-row item table (added sugars via the bundled USDA Food Patterns Equivalents tables, the 622 food codes, food-tree phylogenetic diversity already supplied for 4,081 patient-days). Targets: low diversity (inverse Simpson below 4; 387 of 1,009) and Enterococcus domination (above 30%; 142 of 1,009), with the continuous versions as secondary. Model: gradient-boosted trees, evaluated leave-one-patient-out, with the headline result being the nested comparison a versus a+b versus a+b+c. Then extend the drug-and-clinical model to the 11,496 patient-disjoint public Memorial Sloan Kettering samples to get a properly powered baseline, and test transfer back onto this cohort. Optional extension: swap the genus-abundance block for embeddings from an abundance-level microbiome foundation model to see whether pretraining on hundreds of thousands of external communities helps at n=1,009.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0,
+    "cv_run_minutes": 2,
+    "compute_note": "Timed, not guessed: I downloaded all ten files (under 45 MB total), parsed them, and ran a 5-fold patient-grouped gradient-boosting cross-validation in 2.9 seconds on CPU. Leave-one-patient-out across 158 folds with a few model variants is therefore a couple of minutes. The 4 hours to a feature table is an estimate: the 1,009-row labelled table already exists, so the work is joining drug classes and building prior-sample features.",
+    "cheapest_killing_check": "Ten minutes: fit the drug-plus-clinical-plus-prior-sample model for Enterococcus domination and see whether its precision-recall area clears the 0.141 base rate by 0.10. If the outcome is not predictable from the dominant driver, no diet signal can be detected on top of it. The supporting counts are already verified: 142 positives, 851 samples with a preceding sample, 158 patient groups."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer verified in the files, with the paper's headline counts reproducing exactly (9,419 meals, 173 patients, 1,009 samples from 158 patients). The labels are measured columns, the main table is already model-ready with zero missing values, the whole thing is 45 MB and one cross-validation takes 3 seconds. The paper reports no out-of-sample prediction metric at all, so the first honest grouped-split number is unclaimed, and the diet table has never been modelled. The question is informative either way: either sugar intake predicts gut collapse well enough to target, or it is a real association too small to act on individually, which is exactly what the trial designers the authors are addressing need to know. Real weaknesses, stated: only 158 patients at one centre, my own quick baseline reached just 0.697 ROC area, and no sequence-level backbone is usable from these files. The verified one-to-one join to 11,496 patient-disjoint public samples is what rescues the power problem."
+}

@@ -1,0 +1,135 @@
+{
+  "paper_id": "natgen2026-02713-9",
+  "title": "APOE-stratified genome-wide association analyses provide insights into the genetic etiology of Alzheimers's disease.",
+  "doi": "10.1038/s41588-026-02713-9",
+  "journal": "Nature Genetics",
+  "data_url": "https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90861001-GCST90862000/ (GCST90861026-GCST90861031)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the article PDF (CC BY-NC-ND, 19 pages) and read its Data availability statement verbatim. Listed all six GWAS Catalog FTP directories (HTTP 200, no login): GCST90861026 124.2 MB, 027 183.0 MB, 028 189.2 MB, 029 222.9 MB, 030 130.4 MB, 031 359.0 MB, each with a metadata YAML and md5sum. Read all six metadata files (format GWAS-SSF v1.0, genome build GRCh38, 1-based coordinates, case-control, ancestry 'European', declared sample sizes 20,229 / 116,073 / 193,328 / 387,191 / 72,994 / 568,304). Pulled the first 400 KB of two files with a ranged request and decompressed them: header of GCST90861026 is chromosome, base_pair_location, effect_allele, other_allele, beta, standard_error, effect_allele_frequency, p_value; GCST90861031 adds beta_SNPxAPOEe4c, SE_SNPxAPOEe4c, pvalue_SNPxAPOEe4c. Read the first data rows of both.",
+    "what_came_from_paper_text_only": "Per-stratum variant counts (10,336,311 for the e22+e32 stratum, 17,127,662 for e33, 14,672,059 for e44+e43), case/control counts, the list of 25 genome-wide-significant loci and 9 new ones, the SNP x APOE-e4 interaction result (only APOE significant; DDHD1 at P = 1.62e-6), and the contents of the ~80 supplementary tables and figures, which I did not retrieve. I did not count rows in any summary-statistics file because every file is far above the project's 50 MB download limit."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified by listing and partially downloading: six open files on the European Bioinformatics Institute GWAS Catalog FTP, no login, no access application, md5 checksums provided. Code is on GitHub and Zenodo (10.5281/zenodo.21358786)."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified in the file headers: beta (effect size), standard_error and p_value are columns, and the interaction file has beta_SNPxAPOEe4c and pvalue_SNPxAPOEe4c. No construction needed for the raw statistic."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Only just. The files contain chromosome, position, two alleles and allele frequency and no predictive features at all; a sequence model would need the GRCh38 reference genome fetched separately (one download, local lookups). There is also no rsID column, so joins to rsID-keyed resources need a position-based mapping."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Verified in the metadata YAML: GWAS-SSF v1.0, genome_assembly GRCh38, coordinate_system 1-based, case_control_study true, so beta is log-odds per copy of the effect allele. Consistent across all six files."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "This is the killer, and it is the 'big number hides a small one' failure. Nominally 10.3-17.1 million variant rows per stratum (paper's figure; not counted, files exceed the 50 MB cap). But variants in a genomic neighbourhood are not independent observations: the real unit is the linkage-disequilibrium block (roughly 1,700 in European-ancestry data) and the labelled positives are the 25 genome-wide-significant loci the paper reports, 9 of them new. For the paper's headline question - which variants act differently in APOE e4 carriers - exactly one locus (APOE itself) passes significance in the interaction test. One to twenty-five independent positive examples cannot train or honestly evaluate a model. Same failure mode as the scCT-DB example in the checklist (6.19M cells, but n = 1,142 patients)."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~1.2 GB compressed for all six files; a HapMap3-style subset of ~1.1M variants x 6 strata is well under 1 GB in memory",
+      "note": "Verified sizes by HTTP HEAD. Streaming with chunked reads keeps peak memory low. Computing DNA-language-model embeddings for millions of variants on a CPU would not fit, but a subset would."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Partially verified. Metadata sample sizes match the paper exactly for two strata (e44+e43: 29,122 + 164,206 = 193,328; e22+e32: 2,606 + 70,388 = 72,994) and differ by 3 for the e33 stratum (387,191 in the metadata vs 387,194 implied by the paper). Per-variant row counts not checked because the files exceed the download cap."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label is a real statistic, not another model's output: logistic regression or mixed models (SNPTEST, PLINK2, REGENIE) on imputed genotypes against clinical Alzheimer's diagnoses, meta-analysed across eight European-ancestry consortia. Important caveat: the beta at a variant mostly reflects correlation with an unknown nearby causal variant, so it is not a property of that variant's own sequence - any sequence-input model is being asked to predict something its input does not determine."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DDML_PRS (Bayesian variational autoencoder polygenic risk score), Mostafaei et al., Alzheimer's Research & Therapy 2026, PMC13063846",
+        "open_weights": false,
+        "score_and_split": "Time-dependent area under the curve 0.847 in UK Biobank participants aged 65-70, on a prespecified 2:1 train/test split of 276,566 unrelated European-ancestry individuals with 1,328 incident dementia cases; compared against SBayesR and clumping-and-thresholding baselines.",
+        "authors_named_unsolved": "They state classification accuracy 'remains modest, limiting immediate clinical utility' and call for external replication and multi-modal (biomarker, clinical) validation.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "AlphaGenome, a DNA sequence model that predicts regulatory tracks and variant effects (Avsec et al., Nature, January 2026)",
+        "open_weights": true,
+        "score_and_split": "Reported to outperform specialist models on 25 of 26 variant-effect-prediction benchmarks and to resolve roughly 4-fold more fine-mapping credible sets than COLOC in the lowest minor-allele-frequency quintile. Numbers taken from the paper's own summary, which I read in search results rather than retrieving the benchmark tables.",
+        "authors_named_unsolved": "Linking regulatory predictions to disease mechanism for GWAS signals is framed as a hypothesis-generating step, not a solved problem.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Borzoi-informed fine-mapping and other sequence-to-omics functionally informed fine-mapping pipelines (bioRxiv 2025; PMC12889643)",
+        "open_weights": true,
+        "score_and_split": "Reported to substantially improve prioritisation accuracy of reproducible causal variants over earlier sequence models; I read the summary, not the benchmark tables.",
+        "authors_named_unsolved": "Reproducibility of fine-mapped variants across cohorts.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "AlphaGenome or Nucleotide Transformer (DNA sequence models) would be the natural backbone for a variant-level task",
+    "freeze_and_head_viable": false,
+    "hardware": "Embedding even one million variant windows on a 16 GB CPU laptop is impractical; the fit would need a GPU, and there is no label set large enough to justify it.",
+    "licence": "AlphaGenome weights are non-commercial; the summary statistics themselves are open under the GWAS Catalog terms, and the paper is CC BY-NC-ND 4.0."
+  },
+  "integration": {
+    "partner_dataset": "GTEx v10 and ROSMAP brain expression quantitative trait loci (eQTL), joinable because the paper already uses them; also the AlphaGenome variant-effect atlas",
+    "join_key": "GRCh38 chromosome + position + alleles (no rsID column in the files, so a position-based mapping is needed)",
+    "bigger_question_one_sentence": "Do the genetic signals that only appear in APOE e4 carriers act through different brain gene-regulatory programmes than the signals seen in non-carriers? - a good question, but with ~25 loci it is an enrichment test on a handful of points, not a machine-learning project."
+  },
+  "controls": {
+    "positive_control": "The APOE locus itself and the nine loci significant in both strata (CR1, BIN1, HLA, TREM2, CLU, MS4A6A, PICALM, APH1B, ABCA7) must come out as the strongest signals in any pipeline.",
+    "negative_control": "Shuffle variant positions within chromosome and confirm any enrichment collapses; also check that the e22+e32 stratum, where the paper found nothing genome-wide significant, yields nothing.",
+    "external_validation": "The East Asian (Japanese, Chinese, Korean), African American, Asian American and admixed American replication cohorts described in the paper - but those results live in supplementary tables, not in the deposited files, and the deposited statistics are European-ancestry only."
+  },
+  "honest_claim_h3": "Any model trained on these files could only claim to predict a linkage-disequilibrium-tagged association statistic, estimated in European-ancestry cohorts with clinically diagnosed Alzheimer's disease, at variants that passed imputation quality control - not the causal effect of any variant, and not anything about APOE-dependent biology beyond the single locus where the interaction test is significant.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around a variant to predict how strongly it raises Alzheimer's risk in people who carry APOE e4 versus those who do not.",
+    "train_on": "Per-variant effect sizes from six genome-wide association summary-statistic tables (10-17 million variant rows each), with features built from the GRCh38 reference genome and public functional annotations, since the files themselves contain no features.",
+    "predict": "The stratum-specific effect size (log-odds per allele) or the APOE-e4 interaction effect. The truth comes from logistic regression of clinically diagnosed Alzheimer's disease on imputed genotypes in eight European-ancestry cohorts, meta-analysed.",
+    "why_worthwhile": "If genetic risk really works differently in APOE e4 carriers, trial designers would enrol differently and drug hunters would pick different targets - but the data can only answer this at a handful of loci, which is why I am not recommending the project."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "These summary statistics are derived from the same consortia (UK Biobank, FinnGen, EADB, ADSP) that existing Alzheimer's polygenic models already use, and the deposited files are European-ancestry only; the multi-ancestry replication results stay in supplementary tables."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Every row carries a standard error, so uncertainty per variant is available - but that is already standard in every GWAS summary-statistics file and is what existing polygenic methods such as SBayesR consume, so it is not an edge."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The directly competing work is 2026 and honestly split: DDML_PRS used a prespecified 2:1 UK Biobank split and reported area under the curve 0.847; AlphaGenome (Nature, January 2026) is a current-generation sequence model with open weights. Neither is an old, weak target."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The baseline cannot even be run as ours: DDML_PRS needs UK Biobank individual-level genotypes, which require an access application, so we could not train on everything it sees, let alone evaluate on the same split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: predict each variant's APOE-stratum-specific Alzheimer's effect size (or its SNP x APOE-e4 interaction effect) from DNA sequence context and functional annotations, using the six deposited summary-statistic files as labels, with a held-out-chromosome split. It fails because the number of independent labelled signals is ~25 loci (and one for the interaction), not 10 million rows, and because the label is a linkage-disequilibrium tagging statistic rather than a property of the input sequence. A defensible non-ML use remains: test whether existing sequence models (AlphaGenome, Borzoi) rank the e4-specific loci differently from the e3 loci - an enrichment analysis on a few dozen points, publishable at most as a short note.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 1.2,
+    "needs_gpu": true,
+    "peak_ram_gb": 4,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes measured by HTTP HEAD (1.2 GB compressed across six files); RAM estimated for chunked reading of one file at a time into a pandas frame subset to a common variant list. Embedding and cross-validation times left null because no feasible supervised task survives the row-count failure. Nothing was timed.",
+    "cheapest_killing_check": "Count the independent labelled units, not the rows: the paper itself states 25 genome-wide-significant loci across all strata and exactly one significant SNP x APOE-e4 interaction (APOE). That single sentence, read before any download, kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The data is genuinely open and clean - six GWAS-SSF v1.0 summary-statistic files on the EBI GWAS Catalog FTP (GCST90861026-31, 124-359 MB each, GRCh38, units unambiguous, headers and metadata verified by ranged download), which is better than most Nature Genetics papers manage. But it fails A5 in disguise. Ten to seventeen million variant rows collapse to roughly 1,700 independent linkage-disequilibrium blocks with only 25 significant loci, and for the paper's actual novelty - APOE-context-dependent genetic effects - exactly one locus reaches interaction significance. There are no features in the files at all, the label is a tagging statistic rather than a property of any input, and the uses that would matter (polygenic scores, fine-mapping) need either individual-level cohort data behind an access application or compete directly with 2026 models (DDML_PRS, AlphaGenome, Borzoi fine-mapping) that are current and honestly evaluated. Excellent resource for statistical genetics; not a machine-learning project."
+}

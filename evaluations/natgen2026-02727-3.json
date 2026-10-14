@@ -1,0 +1,156 @@
+{
+  "paper_id": "natgen2026-02727-3",
+  "title": "Prediction of human missense variant effects from functional evidence.",
+  "doi": "10.1038/s41588-026-02727-3",
+  "journal": "Nature Genetics",
+  "data_url": "https://doi.org/10.5281/zenodo.18432730 (resolves to Zenodo record 20595206, v2). NOTE: the paper's own Data Availability statement cites https://zenodo.org/records/17036008, whose file listing returns HTTP 403 Forbidden.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I read the ZIP central directories of the two main Zenodo archives by HTTP range request (no full download), then pulled individual members out by range request and decompressed them locally; every extracted file matched its recorded uncompressed size byte-for-byte. Opened and counted: variant_labels.txt (17,731 rows, 17,726 unique variant IDs, 1,587 Ensembl genes; functional train 8,732 = 4,366 PS3 damaging + 3,926 proxy_benign + 440 BS3, functional test 971 = 612 PS3 + 359 BS3; clinical train 7,606 = 3,803 P + 3,803 B, clinical test 2,996 = 1,498 P + 1,498 B); the six per-model training_set.txt files (FuncVEP 8,732 rows, ClinVEP 7,606 rows, matching the labels file exactly); curation.txt (28,977 rows), text_mining.txt (19,513), mave.txt (133,820 rows, 57,243 unique variants, 10 genes, 25 studies, continuous score from -7.57 to 278.49, per-study AUC 0.71-0.9996), DD_dataset.txt (3,488), cancer_hotspot_dataset.txt (2,614), clinvar_missense_jan2025.txt (156,978). I also read the LICENSE (PolyForm Strict 1.0.0) and the Zenodo metadata (license: null, rights: null). I computed the gene-overlap and gene-majority dummy myself: the functional held-out set is fully gene-disjoint (0 of 971 test variants share a gene with training) and every training gene is label-balanced (0 of 1,197 functional and 0 of 876 clinical training genes are label-pure), so a gene-identity-only dummy scores AUC (area under the receiver operating characteristic curve) of exactly 0.500 on both.",
+    "what_came_from_paper_text_only": "All reported performance numbers (84.6% accuracy on functional benchmarks, 92.4% on clinical, 48 competing predictors, 210 gene-phenotype associations) come from the paper's text; I ran no model. The claimed dataset sizes (18,556 functional variants from 1,576 genes; 11,629 or 11,718 clinical variants) are from the paper only and are contradicted by the files. I did NOT open feature_matrix.parquet (579 MB) or feature_matrix_imputed.parquet (723 MB): they sit inside a 1.25 GB deflate-compressed ZIP, so there is no random access, and downloading exceeds the 50 MB policy cap. I therefore could not confirm that all 17,731 labelled variants actually have features, nor measure feature missingness. The UK Biobank and Mount Sinai cohort analyses rest on controlled-access data (the release contains an empty data/restricted/ directory)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Open Zenodo, no login: I successfully range-fetched and decompressed seven real data files. Caveat: the DOI the paper itself cites (zenodo 17036008) returns HTTP 403 on its file listing, so the working data is only reachable via a different, newer record found by web search."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Strong pass, verified in the file. variant_labels.txt has four ready-made label columns (functional_training_label, functional_testing_label, clinical_training_label, clinical_testing_label) keyed on a GRCh38 chr-pos-ref-alt ID that also keys the precomputed 571-feature matrix. Nothing has to be constructed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified from the ZIP directory and the feature-list files: feature_matrix.parquet and feature_matrix_imputed.parquet are present, and training_features.txt lists 581 / 549 / 535 named feature columns per model variant. No identifier resolution needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The classification labels are documented ACMG/AMP evidence codes (PS3 = damaging functional evidence, BS3 = neutral functional evidence, P/B = pathogenic/benign) plus an explicit proxy_benign tag, so units are categorical and unambiguous. The MAVE score column is on an arbitrary per-study scale (-7.57 to 278.49 across 25 studies) and would need per-study normalisation, but that only affects the regression variant."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 17731,
+      "note": "Counted in the file: 17,731 labelled variants (9,703 functional, 10,602 clinical, 2,574 in both) across 1,587 genes. Comfortably over the 1,500-row bar."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "1.25 GB download; ~1.5 GB to read the imputed feature parquet; the labelled subset is only 17,731 x 571 values (~0.1 GB in memory)",
+      "note": "Laptop-feasible on 16 GB with CPU-only LightGBM; no GPU needed. The one-time 1.25 GB download exceeds this tool's 50 MB cap but is not a real-world obstacle."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "FAILS, and this is the killer. The released functional label set is 9,703 variants (4,978 damaging / 4,725 neutral; 3,926 proxy benign) across 1,222 genes; the paper claims 18,556 variants (9,357 / 9,199; 6,641 proxy benign) across 1,576 genes - off by a factor of 1.9, which I cannot reconcile by any grouping. The clinical set has three different values: 11,629 in the paper's Results, 11,718 in its own Methods, and 10,602 in the download. The paper therefore disagrees with itself as well as with the files. The released trained models (model.pkl) were fitted on the 8,732-row training_set.txt I extracted, so the downloadable models are demonstrably not the models the paper describes, and no published number can be reproduced from this release. The Zenodo record is dated 2026-06-08, before the 2026-08-26 paper, and its README still says 'Updated scores will be made available upon publication' - consistent with a pre-publication snapshot that was never refreshed."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Passes technically but with a serious caveat I verified by counting. The damaging labels trace to real functional assays, literature curation and ClinVar submissions. But in the released functional TRAINING set the neutral class is 3,926 gnomAD proxy_benign versus only 440 true BS3 functional-neutral labels - i.e. 90% of the negatives are an allele-frequency heuristic, not a functional measurement, and 45% of the whole training set. The paper's headline claim of training 'exclusively on functional data' does not hold for the negative class in the released data. Not a formal A8 failure, because allele frequency was deliberately excluded from the features so the label is not computed from them, and the BioBERT text-mining step only decides whether a submission reports an experiment rather than predicting the effect itself."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "FuncVEP / ClinVEP (this paper; a family of six LightGBM gradient-boosted tree classifiers)",
+        "open_weights": true,
+        "score_and_split": "Paper reports 84.6% accuracy on functional benchmarks (up from 78.8%) and 92.4% on clinical (up from 90.1%), evaluated on 10% held-out splits of its own training data. I verified in the files that the functional held-out split is genuinely gene-disjoint (25 test genes, none among the 1,197 training genes) and that every training gene is label-balanced, so gene identity alone gives AUC 0.500. This is an honest split - better than the paper's bare phrase '90/10 train-test split' suggests.",
+        "authors_named_unsolved": "The Discussion names two gaps explicitly: FuncVEP gives no directionality (it cannot say loss-of-function versus gain-of-function), and 'as a classifier trained on binary labels, FuncVEP is not designed to estimate the magnitude of functional impact, which would require a regression-based approach'.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AlphaMissense (DeepMind, Science 2023), a deep model scoring all human missense variants",
+        "open_weights": false,
+        "score_and_split": "I did not retrieve a specific benchmark number. I verified it is present as the feature column 'AlphaMissense_score' in the released all_veps.txt, and it is one of the 48 predictors this paper benchmarks against.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ProteinGym (OATML-Markslab), the standard benchmark suite for variant effect prediction",
+        "open_weights": true,
+        "score_and_split": "Its substitution benchmark covers ~2.7M missense variants across 217 deep mutational scanning assays plus 2,525 clinical proteins, and reports both Spearman rank correlation and mean squared error in an explicitly supervised regime. This means the 'predict the magnitude by regression' gap FuncVEP's authors name is already an established, actively leaderboarded task.",
+        "authors_named_unsolved": "Not retrieved in detail.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Livesey & Marsh independent VEP benchmarks (Molecular Systems Biology 2023 and follow-ups)",
+        "open_weights": true,
+        "score_and_split": "Benchmarked 55 predictors against deep mutational scanning data for 26 human proteins, later extended to 97 predictors across 36 human proteins, explicitly designed to minimise data circularity; the protein language model ESM-1v ranked first overall. They formalised type-1 (reused training variants) and type-2 (gene-level label skew) circularity.",
+        "authors_named_unsolved": "They report that VEP performance varies widely and unpredictably across genes.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "VARITY, a supervised missense predictor built to control data circularity",
+        "open_weights": true,
+        "score_and_split": "Named in the Livesey & Marsh benchmark as the strongest supervised VEP and as evidence that developers take circularity seriously. I verified VARITY_R, VARITY_R_LOO, VARITY_ER and VARITY_ER_LOO are feature columns in the released all_veps.txt.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "LoGoFunc, a loss-of-function versus gain-of-function missense classifier",
+        "open_weights": null,
+        "score_and_split": "I did not retrieve its paper; I verified only that LoGoFunc_LOF, LoGoFunc_GOF and LoGoFunc_neutral appear as feature columns in the released all_veps.txt. This matters because it means the 'directionality' gap FuncVEP's Discussion names is already occupied by a tool FuncVEP itself consumes.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model that reads amino acid sequence)",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only laptop; and largely redundant here, because four ESM-2-derived features (log-likelihood difference, perplexity, embedding shift) are already precomputed as columns in the released feature matrix, and ESM-1b, ESM-1v and popEVE scores are columns too.",
+    "licence": "ESM-2 itself is MIT-licensed, but the dataset it would be used on is not: the code is PolyForm Strict 1.0.0 (academic use allowed, derivative works and redistribution forbidden) and the Zenodo data declares no licence at all."
+  },
+  "integration": {
+    "partner_dataset": "MaveDB / ProteinGym deep mutational scanning assays, and ClinVar releases after January 2025",
+    "join_key": "GRCh38 chr-pos-ref-alt variant string (present as the ID column) plus Ensembl gene ID (the ensg column)",
+    "bigger_question_one_sentence": "Does a model trained on direct functional evidence keep its edge on genes that no functional assay has ever touched, or does its advantage disappear outside the ~1,200 genes somebody chose to measure?"
+  },
+  "controls": {
+    "positive_control": "The gene-identity-only dummy must score AUC 0.500 - I already ran this and it does, exactly, on both the functional and clinical splits, which confirms the per-gene label balancing works and that gene memorisation cannot inflate results.",
+    "negative_control": "Shuffle the damaging/neutral labels within gene and confirm performance collapses to chance; separately ablate the 465 gene-level features, which per-gene balancing should have rendered nearly uninformative.",
+    "external_validation": "Genuinely strong and already in the release: clinvar_missense_2025_2026.txt (1.15 MB, newly classified ClinVar variants) gives a clean temporal split, and DD_dataset.txt (3,488 de novo mutations) plus cancer_hotspot_dataset.txt (2,614 hotspot variants) are independent held-out evaluation sets."
+  },
+  "honest_claim_h3": "A model built on this release would predict whether a missense variant would be called damaging by a functional assay or by a literature curator, among the ~1,200 genes somebody chose to assay - and because 90% of the neutral training examples are gnomAD proxy-benign rather than measured-neutral, on the negative side it would largely be predicting 'is this variant common enough in the population to be presumed harmless'.",
+  "plain_idea": {
+    "one_liner": "Use precomputed sequence, structure and gene features to predict whether a human missense variant damages protein function.",
+    "train_on": "One row per missense variant with 571 precomputed features (45 other predictors' scores, 13 conservation metrics, 17 structural features, 20 amino-acid substitution matrices, 4 protein-language-model features, 465 gene-level features). I verified 17,731 labelled variants exist across 1,587 genes.",
+    "predict": "A damaging/neutral call. The true answer comes from functional assays (deep mutational scans and literature-curated experiments, coded as the ACMG evidence codes PS3 and BS3) for the damaging class, but for 90% of the neutral class it comes from a gnomAD population-frequency rule rather than any measurement.",
+    "why_worthwhile": "Clinical genetics labs resolve variants of uncertain significance by hand, so a better-calibrated functional predictor would directly cut that workload; and testing whether functionally-trained predictors survive on genes with no assay is informative whichever way it comes out."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The released functional set is 9,703 variants across 1,222 genes - roughly half what the paper claims and tiny beside ProteinGym's ~2.7M missense measurements across 217 assays. We would have less data than the incumbents, not more."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The MAVE table carries per-study discrimination AUCs (0.71 to 0.9996) and 25 studies with repeated variants, which would support an assay-quality-weighted confidence estimate. But the paper already calibrates its scores to ACMG PP3/BP4 evidence strengths, so the obvious version of this is done."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "FuncVEP is a 2026 model whose functional held-out split I verified to be genuinely gene-disjoint, with every training gene label-balanced so that gene identity gives AUC exactly 0.500, and with recursive omission of each competitor's own training variants. That is an honestly evaluated recent model - the hardest case to enter."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails two conditions. The evaluation split cannot be matched, because the released models were trained on 8,732 variants while the paper describes ~16,700, so we would not be comparing against the published model. And the only obvious new data (more MaveDB assays) is measured on different scales in different labs, not the same quantity the same way."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was an independent re-evaluation of FuncVEP: refit the same 571-feature LightGBM under leave-one-gene-out and temporal splits, and ablate the gnomAD proxy-benign negatives to measure how much of the reported advantage actually comes from functional evidence rather than from allele frequency. The ablation question survives as a genuinely interesting one, but the re-evaluation half collapses because the downloadable models and labels are a different, roughly half-size version of what the paper reports, so there is no published number to re-evaluate against.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 0,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed end-to-end. Embedding cost is zero because the ESM-2 protein-language-model features are already columns in the released matrix. I did time the parts I ran: the range-based extraction and parsing of seven data files took under a minute, and the gene-overlap and dummy-baseline computation on 17,731 rows was instant. LightGBM on 17,731 rows by 571 columns is a few minutes per cross-validation run on a laptop CPU.",
+    "cheapest_killing_check": "Open variant_labels.txt and count the functional labels, then compare with the paper's stated 18,556. I did exactly this: it returns 9,703, and that single count killed the project in about ten minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A7. The released data does not match the paper and cannot reproduce it: the functional label set holds 9,703 variants across 1,222 genes against the paper's claimed 18,556 across 1,576, and the clinical set has three different sizes (11,629 in the Results, 11,718 in the Methods, 10,602 in the download). I confirmed from the per-model training_set.txt files that the downloadable trained models were fitted on 8,732 functional variants, so they are not the models the paper describes and no published figure can be checked against them; the Zenodo record predates publication and its README still promises updated scores 'upon publication'. The paper's own cited data DOI returns HTTP 403. Three supporting reasons: the licence is PolyForm Strict 1.0.0, which forbids derivative works and redistribution, while the data itself carries no licence at all, so a derived model would be unpublishable; the field is saturated (48 benchmarked predictors, plus ProteinGym and the Livesey & Marsh benchmarks as established independent auditors), and the two gaps the authors name are already occupied by ProteinGym's supervised regression benchmark and by LoGoFunc; and in the released training data 90% of the 'functional' neutral labels are gnomAD allele-frequency proxies rather than measurements, which undercuts the premise. Credit where due: the authors' per-gene label balancing genuinely works - I measured a gene-identity dummy at AUC 0.500 - so the usual gene-leakage angle is closed too."
+}

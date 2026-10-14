@@ -1,0 +1,111 @@
+{
+  "paper_id": "nar2026-gkag800",
+  "title": "23S rRNA modifications stimulate catalytic activity and prevent the formation of alternative structures.",
+  "doi": "10.1093/nar/gkag800",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/emdb/EMD-55349 ; https://doi.org/10.2210/pdb9SYH/pdb ; https://www.ebi.ac.uk/empiar/EMPIAR-13296",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed one deposited structure (9SYH.cif.gz, 5.0 MB): 151,053 atoms, 61 chains, 53 distinct residue types including modified nucleotides (PSU = pseudouridine 300 atoms, 2MG, 5MU, G7M, OMC...). Confirmed open download with HTTP 200 for the structure and for the cryo-EM map EMD-55349 (271 MB gzipped). Queried the EMPIAR API: raw movie archive holds 9,602 + 8,488 + more multi-frame micrographs (terabyte scale, which project rules forbid downloading).",
+    "what_came_from_paper_text_only": "All of the quantitative measurements. The kinetic rate constants (peptide bond formation, k-observed), the thermal stability numbers (enthalpy/free energy per strain) and the tRNA occupancy percentages exist only in Supplementary Tables S1-S5, which I could not retrieve: the Europe PMC supplementary-files endpoint returned HTTP 500 and then timed out on a second attempt. Row counts for those tables come from how the main text describes them (a 13-modification list, k-observed at a handful of temperatures for 3 strains, 5 named PTC sub-regions, refinement statistics)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Fully open, no login: ~33 Protein Data Bank entries, ~30 Electron Microscopy Data Bank maps, raw movies in EMPIAR-13296. I verified HTTP 200 and real content for one structure and one map."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FIRST FAILED KILLER. Nothing in the deposited data is a prediction target. The only thing that could be modelled per item is whether a given 23S rRNA nucleotide adopts an alternative or disordered conformation when modifications are removed, and that label does not exist anywhere as a column: it would have to be constructed by aligning structures, comparing local map density and judging misfolding by eye, exactly the 'build the thing you are predicting' case the checklist rejects."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are genuinely present rather than referenced: full atomic coordinates and the 23S/16S rRNA sequences are inside the mmCIF files I parsed, with modified nucleotides annotated as distinct residue codes."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Where numbers exist they are properly united in the paper (k-observed per second, enthalpy and free energy in kcal/mol, resolution in angstroms, occupancy in percent). Not a failure point, but I read these in the text, not in a file."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 33,
+      "note": "ALSO FAILS, independently of A2. The experiment has four biological conditions (wild type, delta-9, delta-10, delta-RlmE) and about 33 deposited structures. The kinetic table covers 3 strains across roughly 5 temperatures, i.e. tens of measurements. Even counting every 23S nucleotide as a row gives ~2,900 x 4 genotypes with only 4 independent groups, far below the ~1,500 labelled independent rows the checklist requires."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "~165 MB for all 33 structures; ~8 GB for the ~30 cryo-EM maps; terabytes for EMPIAR raw movies",
+      "note": "Coordinates alone fit easily. But any project about alternative conformations needs the density maps, and 30 maps at 271 MB gzipped each is roughly 8 GB, over the ~5 GB working-set limit; the raw movies are off-limits by project rules."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The accession list in the data availability statement matches what I found at the repositories, and 9SYH cross-references EMD-55349 as the paper implies. No count disagreement detected."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "No circularity problem: the kinetic rates are real bench measurements and the structures are experimental. A8 is not where this dies. The problem is that the measurements are too few and no label column exists."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "YModPred (deep-learning predictor of multiple RNA modification site types in baker's yeast, BMC Biology 2025)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the abstract; it predicts where modifications occur from sequence, which is a different task from this paper's question of what removing them does.",
+        "authors_named_unsolved": "Not read in full.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "CryoREAD / EMRNA (deep-learning tools that build RNA atomic models from cryo-electron microscopy density maps, Nature Biotechnology 2024 and related)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond abstracts. These consume maps like the ones deposited here, but they do model building, not prediction of a biological outcome.",
+        "authors_named_unsolved": "Abstracts note that RNA conformational flexibility and heterogeneous density remain hard.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model) or a graph network over the deposited coordinates",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU would suffice for embedding ~2,900 nucleotides, which is the point: the data is far too small to need or justify a backbone.",
+    "licence": "RNA-FM weights are open, but irrelevant here given the Part A failure."
+  },
+  "integration": {
+    "partner_dataset": "MODOMICS (a curated database of RNA modifications across species) joinable on organism plus rRNA nucleotide position",
+    "join_key": "species name + 23S rRNA residue number",
+    "bigger_question_one_sentence": "Which rRNA modifications are conserved across bacteria and therefore likely to be load-bearing for the catalytic centre? A real question, but it would be answered from MODOMICS and sequence conservation, with this paper contributing only four E. coli data points."
+  },
+  "controls": {
+    "positive_control": "None usable. The textbook expectation a model should recover (pseudouridine and 2'-O-methyl groups stabilise local structure) is the paper's own conclusion drawn from four conditions, so recovering it would prove nothing.",
+    "negative_control": "Label shuffling is runnable in principle but meaningless with four biological groups.",
+    "external_validation": "No second source measures the same thing. Other hypo-modified ribosome structures exist in the PDB (the paper fits against 8CGK, 8CGJ, 8CF1, 7K00), but they are from the same group and lineage of work, so they are not independent."
+  },
+  "honest_claim_h3": "At best: 'in four E. coli strains, nucleotides near the peptidyl transferase centre that lose a nearby chemical modification are more likely to show alternative conformations in cryo-EM density' - a restatement of the paper's finding on its own four samples, not a prediction that generalises to anything.",
+  "plain_idea": {
+    "one_liner": "Use ribosomal RNA sequence and structure context to predict which nucleotides misfold when nearby chemical modifications are removed.",
+    "train_on": "The project I considered would show the model each 23S ribosomal RNA nucleotide with its sequence neighbourhood, its contacts in the wild-type structure, and its distance to the nearest chemical modification. About 2,900 nucleotides per structure across 33 structures, but only 4 genuinely independent biological conditions (wild type and three modification-deficient bacterial strains).",
+    "predict": "Whether that nucleotide shows an alternative or disordered conformation in the modification-deficient ribosome. The true answer would come from a human comparing cryo-electron microscopy density maps and fitted atomic models between strains - a judgement call, not a column in any file.",
+    "why_worthwhile": "Ribosome researchers and antibiotic developers care which rRNA modifications hold the catalytic centre together, since that region is where many antibiotics bind. But with four conditions from one lab and one species, a model here could only memorise the four answers it was given."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: a per-nucleotide classifier for 'does this 23S rRNA position misfold when nearby modifications are lost', trained on the ~33 deposited ribosome structures. It dies because the label is a human structural judgement that must be constructed by comparing maps (A2), and because the independent sample size is four strains, not thousands of rows (A5). The structures themselves remain a perfectly good input source for someone else's cryo-EM model-building benchmark, which is a methods project, not a biology prediction project.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 8.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4.0,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed beyond the one structure I actually parsed: 9SYH.cif.gz is 5 MB compressed and parsed in seconds with ~1 GB of memory, so 33 structures is trivial. The 8 GB figure is 30 maps at the 271 MB gzipped size I measured for EMD-55349. The 40-hour estimate is for manually constructing per-nucleotide misfolding labels by structural comparison, which is the step that makes this a non-project.",
+    "cheapest_killing_check": "Count the independent biological conditions before anything else. The paper's own abstract gives it away: ribosomes lacking 11 or 12 modifications, i.e. a handful of strains. Four groups cannot support a held-out-group evaluation, so no amount of nucleotide-level row inflation rescues it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "No prediction target exists as a column (A2): the only modellable outcome - which rRNA nucleotides misfold without their modifications - would have to be constructed by hand from comparing cryo-electron microscopy maps. Sample size also fails (A5): four bacterial strains, ~33 structures, tens of kinetic measurements. Excellent structural biology, no ML dataset."
+}

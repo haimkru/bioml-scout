@@ -1,0 +1,93 @@
+{
+  "paper_id": "nature2026-09573-z",
+  "title": "Single-cell atlas of transcriptomic vulnerability across brain disorders.",
+  "doi": "10.1038/s41586-025-09573-z",
+  "journal": "Nature",
+  "data_url": "https://cellxgene.cziscience.com/collections/84ce6837-548d-4a1f-919f-0bc0d9a3952f",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Queried the CELLxGENE (public single-cell portal) collection API: 4 public h5ad files, CC-BY-4.0, sizes 6.28 GB (RADC, 693,682 cells, 152 donors), 14.15 GB (HBCC, 1,486,324 cells, 300 donors), 36.09 GB (MSSM, 4,140,453 cells, 1,042 donors), 12.42 GB (Aging, 1,332,155 cells, 291 donors, flagged not-primary, i.e. duplicate cells). Read obs (per-cell metadata) of RADC, HBCC and MSSM by ranged HTTP reads without downloading: columns AD_status, DLBD_status, Vascular_status, Parkinson_disease, Schizophrenia, Bipolar_Disorder, FTD_status, Tauopathy_status, sex, genetic_ancestry, age, class/subclass/subtype; labels constant within donor; X is a 34,176-gene sparse matrix with no separate raw layer. Donor-level counts: MSSM AD 447 yes/595 no, Schizophrenia 127 yes; RADC AD 72 yes/75 no/5 not evaluated, 89 of 152 donors African ancestry; HBCC Schizophrenia 56, Bipolar 69 of 300. Zenodo 14606776 (Xenium spatial data) lists 11 tarballs of 2-18.7 GB each.",
+    "what_came_from_paper_text_only": "That 1,494 is the unique donor count (it matches 152+300+1,042 primary donors, but I did not verify the Aging cohort donors are all duplicates); that Braak stage, CDR (Clinical Dementia Rating) and neuropsychiatric-symptom labels exist only in the controlled-access AD Knowledge Portal (Synapse, data-use agreement); how diagnoses were made. Did not check whether X holds raw integer counts, did not download any expression values, and did not check if the collection is in CELLxGENE Census (the streaming query API). Supplement not retrievable (over 50 MB)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public CELLxGENE h5ad files with no login, verified via API and ranged reads. Richer phenotypes (Braak, CDR, symptoms) are controlled access on the AD Knowledge Portal (Synapse) and are out of scope."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: per-donor diagnosis flags (AD_status, Schizophrenia, etc.) are obs columns, constant within each donor. No construction needed beyond one row per donor."},
+    "a3_inputs_present": {"pass": true, "note": "Checked in files: expression matrix (34,176 genes, sparse) is inside the h5ad, with cell-type labels at three levels."},
+    "a4_units_stated": {"pass": true, "note": "Binary diagnosis labels need no units; expression is a count matrix per the CELLxGENE schema (no raw layer present, so X should be raw counts; not verified on values)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1494, "note": "Unit is the donor, not the cell. Verified 1,494 primary donors; AD task has 1,189 evaluated donors (519 yes, 670 no). Smaller tasks are thin (FTD 16, Tauopathy 45 yes)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "56.5 GB to stream (3 primary h5ad files); ~0.5 GB after pseudobulk per donor x cell subclass", "note": "Passes only via streaming: read the sparse matrix row-chunk by chunk in backed mode and sum per donor and subclass. Download or remote-stream cost is many hours; final table is small."},
+    "a7_counts_match_paper": {"pass": true, "note": "Verified 152+300+1,042 = 1,494 primary donors, matching the paper's 1,494; primary cells total 6,320,459, matching 'over 6.3 million'."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are clinical/neuropathological diagnoses from brain banks (per paper), not derived from expression or another model. The paper's per-cell 'model predictions' in Supplementary Data 1 must not be used as labels."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three cohort h5ad files sharing schema and gene space; join is a concatenation on donor_id, verified in obs."},
+    "B2": {"score": 1, "why": "h5ad parsed via h5py on first try, but 36 GB file needs chunked streaming, not one load."},
+    "B3": {"score": 1, "why": "Diagnoses come from three different brain banks with different criteria; 'Not Evaluated' differs per cohort (seen in files)."},
+    "B4": {"score": 1, "why": "'Not Evaluated' category for AD in 5 RADC and all 300 HBCC donors; easy to drop."},
+    "B5": {"score": 1, "why": "Aging cohort file is flagged not-primary (duplicate cells); drop it. Otherwise no duplicates seen."},
+    "B6": {"score": 2, "why": "CELLxGENE schema documents standard columns; disease flags self-explanatory; data descriptor paper in Scientific Data."},
+    "C1": {"score": 1, "why": "Cross-cohort / cross-ancestry transfer is informative either way, but within-cohort AD classification mostly re-runs known work."},
+    "C2": {"score": 1, "why": "PASCode, scAGG and a graph-network donor model already classify AD from this or ROSMAP data; openness not verified."},
+    "C3": {"score": 1, "why": "Diversity angle: test training on mostly-European MSSM donors and testing on mostly-African RADC donors (verified ancestry counts)."},
+    "C4": {"score": 1, "why": "Diagnosis is already known post-mortem; value is biological insight into transferable signatures, not replacing a costly assay."},
+    "C5": {"score": 2, "why": "Obvious baselines: majority class, age+sex logistic regression, cell-type-proportion model; published scAGG/PASCode numbers exist."},
+    "D1": {"score": 2, "why": "Geneformer and scGPT, single-cell foundation models, have open downloadable weights."},
+    "D2": {"score": 1, "why": "CPU embedding of 6.3M cells is impractical; must subsample (~200 cells/donor) to cache embeddings."},
+    "D3": {"score": 2, "why": "Data CC-BY-4.0 (checked in API/Zenodo); Geneformer Apache-2.0, scGPT MIT per their repos (not re-checked)."},
+    "E1": {"ok": true, "why": "Held-out cohort (brain bank) split and held-out ancestry split exist; donor-grouped CV mandatory."},
+    "E2": {"ok": true, "why": "1,189 AD-evaluated donors across 2 banks and 4+ ancestry groups; cohort-level holdouts are few (2-3)."},
+    "E3": {"ok": true, "why": "Majority class and age+sex-only model computable from obs columns."},
+    "E4": {"ok": false, "why": "No replicate donors; diagnostic disagreement between banks not measurable from public data."},
+    "E5": {"ok": true, "why": "Predict donor sex from expression (XIST, Y genes) must be near-perfect; AD donors should show neuron loss (paper result)."},
+    "E6": {"ok": true, "why": "Shuffle donor labels; ablate cell-type proportions versus expression features."},
+    "E7": {"ok": true, "why": "RADC cohort is an independent brain bank; SEA-AD (public) is a further external AD set."},
+    "E8": {"ok": false, "why": "Paper's own Braak/dementia classifiers use controlled-access labels; scAGG numbers are on ROSMAP, not this data."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs in var, Cell Ontology cell types, MONDO disease IDs, all seen in files."},
+    "G2": {"score": 2, "why": "SEA-AD (Seattle AD brain atlas) and ROSMAP snRNA-seq on CELLxGENE, joinable on Ensembl gene + Cell Ontology."},
+    "G3": {"score": 2, "why": "Gene-level join on Ensembl IDs is one-to-one; cell types map via Cell Ontology terms."},
+    "G4": {"score": 1, "why": "Combined question (does a donor-level AD signature transfer across banks and ancestries) is mostly answerable within this atlas."},
+    "H1": {"score": 2, "why": "Controls and cases both present: AD 519 yes / 670 no donors, verified."},
+    "H2": {"score": 1, "why": "One brain region (dorsolateral prefrontal cortex), one assay (10x 3' v3), three US brain banks."},
+    "H3": {"score": 2, "why": "Claim stated precisely below."},
+    "H4": {"score": 1, "why": "Cohort-specific 'Not Evaluated' and ancestry skew visible only in files, partly in data descriptor."},
+    "I1": {"score": 1, "why": "PsychAD consortium and AD single-cell modelling community; no external group's decision hinges on it."},
+    "I2": {"score": 1, "why": "A failure to transfer across ancestry would flag European-trained AD signatures; marginal otherwise."},
+    "I3": {"score": 1, "why": "AUROC (area under the ROC curve) on held-out cohort matches the transfer question roughly; no clinical decision."},
+    "I4": {"score": 1, "why": "Cell-type proportions plus age may already do most of the work; must test first."},
+    "J1": {"score": 2, "why": "Grouped splits, multiple-instance pooling, foundation-model embeddings, transfer evaluation."},
+    "J2": {"score": 1, "why": "Sex and neuron-loss controls help; AD neurobiology judgement needs a domain collaborator."},
+    "J3": {"score": 2, "why": "A donor x subclass pseudobulk table is reusable even if the model is mediocre."},
+    "J4": {"score": 1, "why": "Roughly 3-4 weeks, dominated by streaming 56 GB; not formally set."},
+    "J5": {"score": 0, "why": "No kill date written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PASCode (Phenotype Associated Single Cell encoder), Nature Medicine 2025", "open_weights": null, "score_and_split": "Scores per-cell phenotype association on 584 PsychAD donors with AD phenotypes; split and numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "scAGG (sample-level aggregation classifier), Comput Struct Biotechnol J 2025", "open_weights": null, "score_and_split": "Classifies AD vs control donors; trained on ROSMAP, tested externally on SEA-AD; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Knowledge-guided graph neural network for personalized AD transcriptomics, Nature Communications 2026", "open_weights": null, "score_and_split": "Donor-level AD phenotype classification with cross-cohort validation over 1,900+ brains (PsychAD data); numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "This paper's per-cell Braak and dementia classifiers (Supplementary Data 1)", "open_weights": null, "score_and_split": "Not retrieved; labels used are controlled access.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "Geneformer (single-cell transformer, ~10M-parameter checkpoint) or scGPT", "freeze_and_head_viable": true, "hardware": "CPU with subsampling (~200 cells per donor, ~300k cells); full 6.3M cells would need a GPU", "licence": "Geneformer Apache-2.0, scGPT MIT (from memory of repos, not re-checked); data CC-BY-4.0"},
+  "integration": {"partner_dataset": "SEA-AD (Seattle Alzheimer's Disease Brain Cell Atlas) on CELLxGENE", "join_key": "Ensembl gene ID + Cell Ontology cell-type term", "bigger_question_one_sentence": "Does a donor-level Alzheimer's expression signature learned in one brain bank and ancestry hold in another bank, another ancestry and another cortical dataset?"},
+  "controls": {"positive_control": "Predict donor sex from expression (must be near-perfect); recover the paper's reported loss of neurons in AD donors from cell-type proportions.", "negative_control": "Shuffle donor-level labels and confirm collapse to majority class; within-cohort shuffles to check grouping.", "external_validation": "Hold out the RADC brain bank (152 donors, 89 African ancestry); further test on public SEA-AD."},
+  "honest_claim_h3": "Among post-mortem prefrontal-cortex donors from three US brain banks, a model trained on one bank's mostly-European donors predicts the bank-assigned Alzheimer's diagnosis of another bank's mostly-African-ancestry donors with AUROC X, beyond what age, sex and cell-type proportions explain.",
+  "plain_idea": {
+    "one_liner": "Use gene activity in single brain cells from one brain bank to predict Alzheimer's diagnosis in donors from another bank and ancestry.",
+    "train_on": "For each donor, summed gene counts per cell type from prefrontal-cortex nuclei; 1,189 donors have an Alzheimer's yes/no label (verified).",
+    "predict": "Whether the donor had Alzheimer's disease, as recorded by the brain bank from clinical and post-mortem neuropathology assessment.",
+    "why_worthwhile": "Alzheimer's single-cell signatures are mostly learned from European-ancestry donors; showing whether they transfer to a mostly-African-ancestry cohort tells the field whether those signatures are general."
+  },
+  "pitch": {
+    "headline": "1,494 donors and 6.3 million brain nuclei, public under CC-BY-4.0, with per-donor Alzheimer's labels and 89 African-ancestry donors in one held-out bank.",
+    "what_makes_the_data_unusual": "Verified 1,189 Alzheimer's-labelled donors (519 cases) across two brain banks; the RADC bank is 59% African ancestry versus 78% European in MSSM, allowing an ancestry-transfer test in one consistent assay.",
+    "the_win": "A cross-bank AUROC (area under the ROC curve) that beats an age+sex+cell-proportion baseline by a clear margin; no published number on this exact split was retrieved.",
+    "even_if_it_fails": "A failure to transfer from European-heavy to African-heavy donors is itself a reportable warning about existing Alzheimer's single-cell classifiers, and the pseudobulk table remains reusable.",
+    "who_wants_it": "PsychAD consortium (Mount Sinai, Roussos lab) and groups building donor-level Alzheimer's classifiers such as scAGG and PASCode, deciding whether their signatures need ancestry-diverse training."
+  },
+  "ml_idea": "Build donor x cell-subclass pseudobulk (and optionally subsampled Geneformer embeddings mean-pooled per donor) from the three primary CELLxGENE files; train a logistic regression / gradient boosting donor-level AD classifier on MSSM and test on RADC, stratified by genetic ancestry, against an age+sex+cell-proportion baseline.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 56.5, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 8, "cv_run_minutes": 5, "compute_note": "Estimated, not timed: streaming 56.5 GB of sparse matrix in row chunks dominates; Geneformer on ~300k subsampled cells at ~10 cells/s CPU is about 8 hours; pseudobulk classifiers on ~1,200 rows train in minutes.", "cheapest_killing_check": "Using only obs columns (already readable remotely), fit age+sex+cell-type-proportion logistic regression on MSSM and test on RADC; if AUROC is already near 0.85+ the expression model has little room."},
+  "verdict": "park",
+  "verdict_reason": "Data is public, labels are clean donor columns and counts match the paper, but the field (PASCode, scAGG, a graph-network model on PsychAD) already covers donor-level AD classification, the richest labels are controlled access, and the job needs streaming 56.5 GB. Worth reviving only for the cross-ancestry transfer question."
+}

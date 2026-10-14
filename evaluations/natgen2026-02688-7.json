@@ -1,0 +1,128 @@
+{
+  "paper_id": "natgen2026-02688-7",
+  "title": "Pioneer transcription factors direct tissue-specific cohesin chromatin entry and three-dimensional genome organization.",
+  "doi": "10.1038/s41588-026-02688-7",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE293172",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed all files in GEO series GSE293172 (ChIP-seq, 68 samples), GSE293073 (Hi-C, 7 .hic files, 119 MB-1.7 GB), GSE293071 (RNA-seq count CSVs). Downloaded and parsed all 16 peak files (narrowPeak/BED): 22Rv1 prostate-cancer NIPBL 26,575 peaks (0h) and 26,551 (24h after FOXA1 degradation); A549 lung NIPBL 11,343 (control), 2,576 (FOXA1 knockdown), 3,110 (ETS1 knockdown); FOXA1 wild-type/R219S NIPBL 18,533/1,349; RAD21 14,384-41,263; H3K27ac 36,666-41,698. Overlaps computed: only 19% of 22Rv1 NIPBL peaks overlap A549 NIPBL peaks; 65% of 0h peaks persist at 24h. 0 duplicate intervals; median width 516 bp. GEO metadata states hg19 (human) and mm10 (mouse).",
+    "what_came_from_paper_text_only": "Only the abstract was available (no open full text, no PMCID). Paper's own peak counts, replicate strategy, and motif results were not checked. Mouse liver/lung/stomach NIPBL and LNCaP NIPBL exist only as bigWig signal tracks (263-505 MB each, over the 50 MB cap), not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public GEO series, no login; peak files 32 KB-1 MB downloaded directly. Checked in files."},
+    "a2_label_is_a_column": {"pass": true, "note": "Binary 'NIPBL bound here' label comes straight from narrowPeak intervals; only genome binning and sampling of unbound background windows are needed (standard, ~hours). A 'FOXA1-dependent site' label would have to be constructed by overlapping conditions, so that variant is weaker. Checked in files."},
+    "a3_inputs_present": {"pass": true, "note": "Input is DNA sequence at hg19 coordinates; needs one reference-genome download, not thousands of lookups. Checked coordinates in files."},
+    "a4_units_stated": {"pass": true, "note": "Standard MACS2 (a peak-calling tool) narrowPeak columns: fold enrichment, -log10 p and q values; genome build hg19 stated in GEO metadata. Checked."},
+    "a5_enough_rows": {"pass": true, "n_rows": 26575, "note": "26,575 NIPBL peaks in 22Rv1 and 11,343 in A549 as positives, plus as many background windows as wanted. Counted in files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<1 GB (peak files ~5 MB total plus hg19 reference ~0.9 GB gzipped)", "note": "Baseline motif/k-mer model or cached DNA language-model embeddings runs on CPU. Hi-C and bigWig files are not needed for the core task."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO sample count (68 ChIP-seq samples) matches the series summary; paper's peak counts could not be compared because no full text is available."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are peak calls from measured ChIP-seq (chromatin immunoprecipitation sequencing) reads by a statistical threshold, not another model's prediction and not computed from DNA sequence."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "One peak file per condition; joins are by genomic interval overlap, not a key. Seen in files."},
+    "B2": {"score": 1, "why": "Parses cleanly, but chromosome naming mixed ('1' in dTAG files vs 'chr1' elsewhere). Seen in files."},
+    "B3": {"score": 1, "why": "Same lab and pipeline, but peak counts swing with depth (1,349 vs 18,533 for R219S vs WT)."},
+    "B4": {"score": 2, "why": "No censored values; binary peak membership with continuous fold enrichment."},
+    "B5": {"score": 2, "why": "0 duplicate intervals in the 22Rv1 NIPBL file. Checked."},
+    "B6": {"score": 1, "why": "narrowPeak is a standard format and GEO states hg19; no methods text available beyond GEO."},
+    "C1": {"score": 1, "why": "Cross-cell-line transfer (22Rv1 to A549) is informative either way; within-line accuracy alone is not."},
+    "C2": {"score": 1, "why": "No NIPBL-specific model found, but sequence-to-binding and sequence-to-3D-genome models are numerous."},
+    "C3": {"score": 1, "why": "Unique application: cohesin-loader binding never modelled, but the task type is standard."},
+    "C4": {"score": 2, "why": "NIPBL ChIP-seq is lab-based, costly, and must be repeated per cell type or tissue."},
+    "C5": {"score": 1, "why": "Obvious dummy baselines (GC content, FOXA1/ETS motif scan); no published ML number."},
+    "D1": {"score": 2, "why": "DNABERT-2 and Nucleotide Transformer, open-weight DNA language models, fit 500-bp windows."},
+    "D2": {"score": 2, "why": "~50k windows of 1 kb can be embedded once on CPU, then a linear head trained."},
+    "D3": {"score": 2, "why": "DNABERT-2 permissively licensed; AlphaGenome alternative is non-commercial."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes; 24 chromosomes present in 22Rv1 file."},
+    "E2": {"ok": true, "why": "24 chromosomes give many held-out groups of reasonable size."},
+    "E3": {"ok": true, "why": "GC-content and motif-count logistic regression are easy dummies."},
+    "E4": {"ok": false, "why": "NIPBL tracks are single replicates; only H3K27ac has two replicates per condition."},
+    "E5": {"ok": true, "why": "RAD21 peaks should be predictable from CTCF motif; FOXA1 motif should rank high for 22Rv1 NIPBL."},
+    "E6": {"ok": true, "why": "Label shuffling and dinucleotide-shuffled sequences are straightforward."},
+    "E7": {"ok": true, "why": "A549 NIPBL peaks (11,343) are a second cell line; only 19% overlap with 22Rv1."},
+    "E8": {"ok": false, "why": "No published ML number exists to reproduce; full text unavailable."},
+    "G1": {"score": 2, "why": "Genomic coordinates with stated build (hg19)."},
+    "G2": {"score": 2, "why": "ENCODE cohesin/TF ChIP-seq and AlphaGenome predictions, joinable on coordinates after liftover."},
+    "G3": {"score": 1, "why": "Interval overlaps are manageable but need a liftover and overlap rule."},
+    "G4": {"score": 1, "why": "Combining with ENCODE could test whether FOXA1-like pioneer factors explain NIPBL loading across cell types."},
+    "H1": {"score": 1, "why": "Negatives are unbound background windows, constructed rather than measured."},
+    "H2": {"score": 1, "why": "Two human cell lines with peak files; mouse tissues only as large bigWigs."},
+    "H3": {"score": 2, "why": "Claim stated precisely below, limited to two cancer cell lines and single replicates."},
+    "H4": {"score": 1, "why": "Missing peak files for mouse/LNCaP are visible in GEO; replicate limits not obvious."},
+    "I1": {"score": 1, "why": "3D-genome and cohesin community; prostate-cancer FOXA1 groups."},
+    "I2": {"score": 1, "why": "Could prioritise cell types or loci for NIPBL ChIP, marginal impact."},
+    "I3": {"score": 1, "why": "PR-AUC on held-out chromosomes roughly matches a ranking-of-sites use."},
+    "I4": {"score": 1, "why": "A motif scan may do nearly as well; that must be tested first."},
+    "J1": {"score": 2, "why": "Real modelling: chromosome splits, frozen DNA embeddings, cross-cell transfer."},
+    "J2": {"score": 1, "why": "Motif enrichment gives some sanity checks; no domain expert lined up."},
+    "J3": {"score": 2, "why": "Motif-baseline cross-cell analysis is shareable before any deep model."},
+    "J4": {"score": 1, "why": "Roughly two weeks implied, not formally set."},
+    "J5": {"score": 1, "why": "Kill condition written below; not yet in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "FOXA1 sequence CNN (Molecular Cell 2024, PMC10659273)", "open_weights": null, "score_and_split": "auPRC (area under the precision-recall curve) 0.20 vs 0.01 random for FOXA1 binding across 13 cell lines/tissues; split not checked.", "authors_named_unsolved": "Not retrieved; models FOXA1 itself, not NIPBL.", "runnable_as_baseline": null},
+      {"name": "C.Origami (Nature Biotechnology 2023)", "open_weights": true, "score_and_split": "Predicts cell-type-specific Hi-C contact maps from sequence + CTCF + accessibility; reported to beat Akita, DeepC, Orca. Split not checked.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "AkitaV2 (PLOS Computational Biology)", "open_weights": true, "score_and_split": "Sequence-to-contact-map model used to interpret CTCF grammar; numbers not retrieved.", "authors_named_unsolved": "Only a minority of CTCF sites individually affect folding (from search snippet).", "runnable_as_baseline": false},
+      {"name": "Cohesin/RNA Pol II interaction CNN (NAR 2026, gkag258)", "open_weights": null, "score_and_split": "Predicts cohesin-associated chromatin interactions; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 (DNA language model); alternative AlphaGenome via alphagenome-ft", "freeze_and_head_viable": true, "hardware": "Laptop CPU, ~1-3 h to embed ~50k 1-kb windows (estimate)", "licence": "DNABERT-2 permissive (Apache-style); AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "ENCODE cohesin (RAD21/SMC3) and transcription-factor ChIP-seq across many cell lines", "join_key": "Genomic coordinates (hg19, liftover to GRCh38 needed)", "bigger_question_one_sentence": "Do the pioneer-factor motifs that predict NIPBL loading in prostate and lung cells also explain where cohesin enters chromatin in other cell types?"},
+  "controls": {"positive_control": "CTCF motif should predict RAD21 peaks; FOXA1 forkhead motif should be top feature for 22Rv1 NIPBL peaks (paper's main claim).", "negative_control": "Shuffle labels; dinucleotide-shuffled sequences; per-chromosome shuffling.", "external_validation": "A549 NIPBL peaks (11,343, 19% overlap with 22Rv1) as a second cell line; ENCODE cohesin peaks."},
+  "honest_claim_h3": "Predicts whether a 500-bp hg19 window is a NIPBL ChIP-seq peak in one prostate-cancer (22Rv1) or one lung-cancer (A549) cell line, from single-replicate peak calls with randomly sampled unbound windows as negatives.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence to predict where the cohesin-loading protein lands in a given cell type, and test if it transfers between cell types.",
+    "train_on": "500-1,000-letter DNA windows from the human genome; 26,575 bound sites in prostate-cancer cells and 11,343 in lung-cancer cells (counted), plus sampled unbound windows.",
+    "predict": "Whether the window is bound by NIPBL, measured by ChIP-seq (pulling down the protein and sequencing attached DNA) and called as peaks by MACS2.",
+    "why_worthwhile": "Tells 3D-genome researchers whether cohesin entry sites are written in DNA plus cell-type factors, or need measuring in every new cell type."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "NIPBL ChIP-seq in prostate and lung lines with FOXA1 perturbations is rare, but it is ~38k peaks from two cell lines, single replicates; generic models train on thousands of ENCODE tracks."},
+    "confidence_score": {"answer": "no", "why": "NIPBL tracks have one replicate each, so no replicate noise estimate is possible."},
+    "models_beatable": {"answer": "partly", "why": "No NIPBL-specific model was found, so a motif baseline is the real competitor; generic sequence models (C.Origami 2023, AkitaV2) target contact maps, not loader binding."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing NIPBL model to run as baseline, so the 'same model plus new data on same split' condition fails."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "ENCODE hosts cohesin (RAD21/SMC3) ChIP-seq in many cell lines (known resource); NIPBL ChIP-seq exists in only a few public datasets (not searched systematically).", "approx_items": null, "join_key": "Genomic coordinates (hg19/GRCh38)", "why": "Cohesin peaks elsewhere would let a model trained here be tested on other cell types, though NIPBL itself is sparsely measured."},
+  "leakage_plan": {
+    "risks": [
+      "Neighbouring or overlapping windows from the same peak landing in both train and test.",
+      "Background negatives with different GC content or mappability than peaks, letting the model learn GC rather than binding.",
+      "Repeat elements or segmental duplications that are near-identical across chromosomes.",
+      "Sequencing depth differences between conditions changing peak counts (1,349 vs 18,533) and masquerading as biology."
+    ],
+    "split": "Hold out whole chromosomes (e.g. chr8 and chr9 test, chr10 validation) using the narrowPeak chromosome column, seen in files; for transfer, train on 22Rv1 and test on A549.",
+    "checks": [
+      "Shuffle labels and confirm PR-AUC drops to the positive fraction.",
+      "GC-matched negatives, and a GC-only model as a leaky-feature check.",
+      "Mask repeats and check test-train sequence similarity with a k-mer nearest-neighbour search."
+    ],
+    "verdict": "Manageable: chromosome hold-out and GC-matched negatives are standard, but depth confounds between conditions need care."
+  },
+  "success_criteria": {
+    "metric": "PR-AUC on held-out chromosomes in A549 for a model trained on 22Rv1, because the use is ranking candidate loading sites in an unmeasured cell type.",
+    "baselines": "Positive fraction (set by negative sampling); GC-content logistic regression; FOXA1 + ETS + CTCF motif-count logistic regression. No published number exists.",
+    "success": "Frozen-embedding model beats the motif-count baseline by at least 0.10 PR-AUC on held-out chromosomes, both within 22Rv1 and transferred to A549 (thresholds set here, not from data).",
+    "noise_ceiling": null,
+    "kill": "If after one week the embedding model is under 0.03 PR-AUC better than the motif baseline on held-out chromosomes, stop and write up the motif result."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes sequence-determinant studies of 3D genome; would need a clear, transferable sequence code for NIPBL loading validated on ENCODE cell types."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Takes modest computational re-analyses of public ChIP-seq; a cross-cell-line motif-versus-embedding comparison fits."},
+    "fallback": {"journal": "bioRxiv preprint", "why": "A negative result (motifs explain as much as deep embeddings) is still a useful short note."}
+  },
+  "pitch": {
+    "headline": "Public NIPBL binding maps in two human cancer lines share only 19% of sites, a cell-type specificity no sequence model has targeted.",
+    "what_makes_the_data_unusual": "NIPBL ChIP-seq with FOXA1 degradation (26,575 vs 26,551 peaks, 65% retained) and FOXA1/ETS1 knockdowns in A549, all hg19 narrowPeak files under 1 MB. Mouse tissue tracks exist only as 263-505 MB bigWigs.",
+    "the_win": "A sequence model trained on 22Rv1 that ranks A549 NIPBL sites at least 0.10 PR-AUC (precision-recall area) above a FOXA1/ETS motif scan on held-out chromosomes.",
+    "even_if_it_fails": "Learn whether a simple motif scan already captures NIPBL placement, which tests the paper's pioneer-factor claim with an independent method.",
+    "who_wants_it": "3D-genome and cohesin labs, and prostate-cancer FOXA1 groups deciding whether NIPBL loading sites must be mapped experimentally in each new cell type."
+  },
+  "ml_idea": "Binary classifier of NIPBL-bound 500-bp windows from DNA sequence (frozen DNABERT-2 embeddings plus logistic head, against GC and FOXA1/ETS/CTCF motif-count baselines), evaluated on held-out chromosomes and transferred from 22Rv1 prostate to A549 lung cells.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 2, "cv_run_minutes": 10, "compute_note": "Estimated, not timed: ~75k windows (positives plus matched negatives) at ~10 windows/s for DNABERT-2 on CPU; logistic head CV is minutes.", "cheapest_killing_check": "Fit a FOXA1+ETS+CTCF motif-count logistic regression on 22Rv1 NIPBL peaks vs GC-matched background; if held-out-chromosome PR-AUC is already near ceiling, there is no room for a deep model."},
+  "verdict": "park",
+  "verdict_reason": "Data is public and clean but small in scope: NIPBL peak files exist for only two human cell lines, single replicates, negatives must be sampled, and mouse tissue data are only large bigWigs. Sequence-to-binding is a standard task where a motif scan may suffice; worth doing only as a short transfer study."
+}

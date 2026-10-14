@@ -1,0 +1,113 @@
+{
+  "paper_id": "nar2026-gkag458",
+  "title": "Ligify 2.0: a web server for predicted small molecule biosensors.",
+  "doi": "10.1093/nar/gkag458",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://raw.githubusercontent.com/groov-bio/ligify-ui/main/public/ligifyDB.json",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the full database file ligifyDB.json (11.8 MB, MIT licence, no login) and parsed it: 3,164 transcription factor (TF, a protein that switches genes on or off) records, 13,435 candidate TF-ligand entries (13,314 unique pairs), SMILES (a text format for chemical structure) present for all 13,435 with 0 missing, protein sequences present (3,133 unique), promoter DNA sequences for 3,161 records, Rhea reaction IDs and NCBI taxon IDs present, 936 unique organisms. Confirmed by direct computation that the 'rank' score equals 100 + the sum of its three listed deductions for 3,164 of 3,164 records, and that those three deductions ('Genes within operon', 'Enzyme-regulator distance', 'Additional regulators') are computed from fields stored in the same file. Counted that only 241 of 3,164 records carry any homology hit to groovDB, the companion database of experimentally validated biosensors.",
+    "what_came_from_paper_text_only": "That the Ligify algorithm's default parameters produced these predictions, the list of cofactor molecules removed by hand, and the two wet-lab case studies (two TFs tested, for 4-hydroxybenzoate and Pseudomonas Quinolone Signal). Ligify's own accuracy figure (31 of 100 known validated biosensors recovered) comes from the 2024 ACS Synthetic Biology Ligify paper found by search, not from files I opened. groovDB's current size (588 curated interactions, 216 TFs) comes from search results, not from a file I parsed."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "One 11.8 MB JSON file on GitHub under MIT licence, no login; I downloaded and parsed it successfully."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no measured outcome column. The 'interaction' is a hypothesis list (candidate_ligands) and the only score ('rank') is a heuristic. To get a real label — does this TF actually respond to this chemical? — you would have to join to groovDB or the literature, and only 241 of 3,164 records have even a homology hit there."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are genuinely embedded: full TF protein sequences, ligand SMILES, promoter DNA, and operon gene coordinates. No identifier lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Coordinates in base pairs, rank on a documented 0-100 scale (negatives allowed), deductions in rank points; README documents every field."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 13435,
+      "note": "13,435 TF-ligand entries over 3,164 TFs, counted in the file. Plenty of rows — but all of them are unlabelled predictions."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.1 GB",
+      "note": "11.8 MB JSON parses in seconds on a laptop; ESM-2 embeddings for 3,133 sequences would fit easily on CPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "File gives exactly 3,164 TFs, 1,362 unique ligand names and 13,435 ligand entries, matching the abstract's numbers precisely."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Fails both ways. Circularity: all 13,435 interactions are output of the Ligify genome-mining heuristic, never measured, and that heuristic recovered only 31 of 100 known biosensors in its own benchmark. Leakage by construction: I verified rank = 100 + sum(three deductions) for 3,164/3,164 records, and those deductions are arithmetic on operon fields stored alongside, so any model predicting rank would just relearn the authors' formula."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Ligify (2024, ACS Synthetic Biology) — the rule-based genome-mining tool that generated this database",
+        "open_weights": true,
+        "score_and_split": "Recovered 31 of 100 previously validated regulator-ligand pairs curated from groovDB and the literature; a single fixed benchmark list, not a train/test split.",
+        "authors_named_unsolved": "Their own text frames the 31/100 result as highlighting 'strategies for further improvement', i.e. recall of true biosensors is the unsolved part.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TFBMiner — a comparable rule-based search tool for ligand-inducible transcription factors",
+        "open_weights": true,
+        "score_and_split": "Recovered 26 of the same 100 validated pairs, as reported in the Ligify paper; same fixed list, no split.",
+        "authors_named_unsolved": "Not retrieved — I only have the comparison number as reported by the Ligify authors.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ESM-2 based transcription factor identification (fine-tuned protein language model, 2026)",
+        "open_weights": true,
+        "score_and_split": "Reported accuracy 0.910 +/- 0.019 and Matthews correlation coefficient 0.820 +/- 0.038 for the ESM2-8M checkpoint; task is 'is this protein a transcription factor', not which ligand it senses.",
+        "authors_named_unsolved": "Not retrieved (abstract only).",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model) for the TF sequence plus ChemBERTa (a molecule language model) for the ligand SMILES",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; 3,133 sequences embed in roughly an hour with the 8M or 35M checkpoint",
+    "licence": "MIT for the data; ESM-2 is MIT, ChemBERTa Apache-2.0 — no licence obstacle"
+  },
+  "integration": {
+    "partner_dataset": "groovDB (2026 release: reportedly 588 manually curated, literature-verified TF-ligand interactions across 216 transcription factors) plus Rhea and ChEBI for chemistry",
+    "join_key": "UniProt accession for the regulator, and ChEBI ID or InChIKey for the ligand",
+    "bigger_question_one_sentence": "Can a protein-plus-molecule language model rank which chemical a previously uncharacterised bacterial transcription factor senses better than genome-context rules do? — a good question, but groovDB's ~588 positives-only interactions are the dataset for it, not this prediction dump."
+  },
+  "controls": {
+    "positive_control": "Would be the 241 records with a groovDB homology hit (some at 100% identity and coverage, e.g. the GntR/AraR match I saw) — the model must get these right. Too few to carry a project.",
+    "negative_control": "Label shuffling is runnable, but meaningless here because there is no measured label to shuffle.",
+    "external_validation": "groovDB and the two wet-lab case studies in this paper (n = 2 transcription factors). Not enough to validate anything."
+  },
+  "honest_claim_h3": "A model trained on this file could only claim 'I reproduce the Ligify heuristic's own genome-context score', since every interaction in it is that heuristic's unverified hypothesis and the score is arithmetic on columns sitting next to it.",
+  "plain_idea": {
+    "one_liner": "Use a bacterial regulator protein's sequence and a chemical's structure to predict whether that chemical switches the regulator on",
+    "train_on": "Each example would pair one transcription factor (a protein that turns genes on or off) with one small molecule: 3,164 protein sequences and 13,435 protein-molecule entries, all counts I verified in the downloaded file.",
+    "predict": "Whether the molecule is the regulator's true trigger. The honest answer would have to come from a lab experiment — growing cells and measuring fluorescence from a reporter gene — but this file contains no such measurement; its entries are computer-generated guesses.",
+    "why_worthwhile": "Synthetic biology labs need biosensors for specific chemicals and currently find them by slow manual genome inspection plus cloning. A working sequence-to-ligand model would shortcut that, but it needs measured answers to learn from."
+  },
+  "label_elsewhere": null,
+  "pitch": null,
+  "ml_idea": "The intended project was: freeze ESM-2 on the 3,133 regulator sequences and ChemBERTa on the ligand SMILES, concatenate, and train a small head to score transcription-factor/chemical pairs. It cannot be done with this file because no pair carries a measured outcome. The salvageable version is to train on groovDB's ~588 literature-curated interactions (positives only, so negatives would have to be sampled) and then use Ligify 2.0's 13,435 hypotheses purely as a ranked shortlist to compare against — that is a different dataset and a much smaller one.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 1,
+    "cv_run_minutes": 10,
+    "compute_note": "Estimated, not timed end to end: the 11.8 MB JSON parsed in a couple of seconds and holds comfortably in memory, and 3,133 sequences through a small ESM-2 checkpoint on CPU is about an hour by the usual few-sequences-per-second rate. Effort is low; the data is the problem, not the compute.",
+    "cheapest_killing_check": "Compute rank minus (100 + sum of the three deductions) for every record. I did it: zero mismatches in 3,164 records, so the only numeric target is a closed-form function of columns in the same file. Second check: count records with a groovDB homology hit — 241 of 3,164."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A8 twice over and A2. The 13,435 'interactions' are the Ligify rule-based tool's unverified hypotheses — a tool that recovered only 31 of 100 known biosensors in its own published benchmark — so training on them distils a roughly 31%-accurate heuristic rather than learning biology. The one numeric column, rank, is exactly 100 plus the sum of its three deductions in all 3,164 records I checked, each deduction being arithmetic on operon fields stored in the same file, so predicting it is pure leakage. No measured outcome exists anywhere in the file: the paper's experimental validation is two transcription factors, and only 241 of 3,164 records even have a homology link to the experimentally curated groovDB. The data itself is exemplary — one clean MIT-licenced JSON, counts matching the abstract exactly, sequences and SMILES embedded, 936 organisms — which is why it is worth recording that the obstacle is the complete absence of labels, not the file quality. Anyone wanting this task should start from groovDB's ~588 curated interactions instead."
+}

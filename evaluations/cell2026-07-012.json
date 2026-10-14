@@ -1,0 +1,52 @@
+{
+  "paper_id": "cell2026-07-012",
+  "title": "Coordinated RNA- and protein-templated synthesis of double-stranded DNA by a dual reverse transcriptase immune system.",
+  "doi": "10.1016/j.cell.2026.07.012",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE329894 (plus GSE329895, GSE329897, GSE330639, GSE330641)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened all three processed tables from the five linked GEO (Gene Expression Omnibus) series: Tn-seq gene counts (4,646 lines, 20 samples), RNA-seq counts (4,705 lines, 6 samples), RIP-seq counts (4,788 lines, 22 sample pairs). All are raw featureCounts matrices of read counts per Escherichia coli gene, with no outcome, score or label column. Also listed the supplementary file directory of each series: the other two series (cDIP-seq, miniprep-seq) ship only BigWig genome coverage tracks, no tables.",
+    "what_came_from_paper_text_only": "Everything biological: the DRT3a/DRT3b mechanism, the cryo-EM hexamer, the RecBCD toxicity result and the Gam trigger come from the abstract only. The Cell full text is paywalled (Europe PMC isOpenAccess=N and its fullTextXML endpoint returned HTTP 500), and the supplementary-file endpoint returned a 297-byte non-archive, so the paper's own supplementary tables were not retrievable. I therefore could not rule out a labelled table hidden in the supplement, but nothing in the abstract or GEO metadata suggests one."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All five GEO series are public and open. I downloaded the three count tables (55-247 KB gzipped each) with no login."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL, verified in the files. There is no prediction target anywhere: the only tables are raw read-count matrices (gene x sample). Any label (a transposon-sequencing fitness effect, an RNA-immunoprecipitation enrichment) would have to be constructed by running differential analysis myself, and the sample columns are opaque BAM filenames (A3585, ST190_01i) that need a separate lookup to GEO sample records just to learn which condition each is."},
+    "a3_inputs_present": {"pass": false, "note": "No sequences, structures or molecular features are in the files, only gene names. Inputs would have to be pulled from the E. coli reference genome separately (easy, but they are not present)."},
+    "a4_units_stated": {"pass": true, "note": "Units are unambiguous read counts, documented in the featureCounts command header preserved at the top of the file. This is the one killer that clearly passes."},
+    "a5_enough_rows": {"pass": false, "n_rows": 4646, "note": "Misleading count. The tables have ~4,600 gene rows, but the experimental unit is the sample: 6 to 22 per series, two conditions each, one strain, one lab. The protein variants actually assayed (DRT3b R71A, R71K, R241K, E22D, E22A/R241A, E262R, R170E, Y666F plus two non-coding RNA point mutants) number about ten, far under the ~400 minimum."},
+    "a6_fits_laptop": {"pass": true, "note": "Trivially small: all three tables together are under 600 KB gzipped. BigWig tracks not downloaded but a bacterial genome is ~4.6 Mb, so also small."},
+    "a7_counts_match_paper": {"pass": true, "note": "Sample counts in each downloaded table matched the GEO series metadata (20 Tn-seq, 6 RNA-seq, 20 RIP-seq samples). Paper text unavailable for cross-checking."},
+    "a8_label_provenance": {"pass": false, "note": "Not scorable because no label exists. If one were constructed from these counts it would be a statistic computed from the same reads that would serve as features, which is the leakage-by-construction pattern A8 warns about."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "No honest claim is available: the deposited data contains no measured outcome to predict, only raw sequencing read counts from a mechanistic study of one bacterial strain.",
+  "plain_idea": {
+    "one_liner": "Considered: use bacterial gene features to predict which genes change the toxicity of a viral-defence enzyme pair.",
+    "train_on": "Would have trained on E. coli genes described by sequence or functional features, taken from the transposon-sequencing screen. About 4,646 gene rows exist, but they come from a single screen with two growth conditions and five replicates, so the real number of independent measurements is 20.",
+    "predict": "Would predict each gene's fitness effect when the DRT3 defence system is switched on. The true answer would have to be derived by the evaluator from raw read counts, because the deposited files contain counts only and no computed effect size.",
+    "why_worthwhile": "Phage-defence biologists would like a general predictor of which host genes constrain these antiviral reverse transcriptases, but this one screen in one strain cannot support it; at most it confirms the paper's own finding that RecBCD limits double-stranded DNA accumulation."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "None viable. This is a mechanistic structural-biochemistry paper: cryo-electron microscopy of a reverse transcriptase hexamer plus confirmatory sequencing in one E. coli strain. The five GEO series are experimental readouts supporting specific figures (coverage tracks showing where complementary DNA is made, counts showing which host genes matter), not a modelling resource. The only thing resembling a machine-learning task would be predicting gene-level fitness effects from a single transposon screen, which has no label column, about ten biologically interesting variants, and no second dataset to validate against.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Measured, not estimated: the three downloaded count tables total under 600 KB gzipped and load instantly. Compute is not the problem here; the absence of a label is.",
+    "cheapest_killing_check": "Open any one of the three GEO processed tables and look for an outcome column. I did this in under five minutes: all three are raw featureCounts read-count matrices with no score, effect size or label of any kind."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A2 fails in the files: the deposited data is raw per-gene read counts across 6-22 samples from one E. coli strain, with no prediction target column anywhere. Any label would have to be constructed by differential analysis from the same reads that would supply the features. A3 (no sequences present) and A5 (about ten assayed protein variants, versus the ~400 minimum) also fail. This is a mechanistic cryo-electron-microscopy and biochemistry paper whose sequencing data exists to support figures, not to train models."
+}

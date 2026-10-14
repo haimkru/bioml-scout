@@ -1,0 +1,57 @@
+{
+  "paper_id": "natgen2026-02704-w",
+  "title": "Multi-ancestry genome-wide association analyses provide insights into the genetic basis of Hashimoto's thyroiditis.",
+  "doi": "10.1038/s41588-026-02704-w",
+  "journal": "Nature Genetics",
+  "data_url": "https://genepi.med.uni-greifswald.de/thyroidomics/datasets/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the ThyroidOmics datasets page: 5 Hashimoto summary-statistics files (overall 186 MB, European-only 193 MB, women 181 MB, men 135 MB, MR-MEGA 334 MB), no login, but the terms forbid redistribution. A HEAD request on the overall file gave 194,310,983 bytes, which is over the 50 MB cap, so I did a ranged read of the first 200 KB: space-separated columns MarkerName (chr:pos:type, GRCh37), Allele1, Allele2, Freq1, Effect, StdErr, P.value, N, I2, rsid. That chunk held 7,851 rows.",
+    "what_came_from_paper_text_only": "48,694 cases, 1,044,134 controls, 155 independent genome-wide significant signals, 19 new loci, and the colocalisation counts. Individual-level data is available only by application (UK Biobank and other cohorts). The total variant count (roughly 7–8 million, extrapolated from the 200 KB chunk) is not verified. The supplement listing was not retrievable (Europe PMC timed out)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Summary statistics download without a login (HTTP 200 and 206 seen). Individual-level case/control data needs an application (UK Biobank and the other cohorts), so person-level prediction fails A1."},
+    "a2_label_is_a_column": {"pass": false, "note": "The only columns are per-variant association statistics (effect, standard error, p-value). Any useful target, such as which variant is causal or which gene drives a locus, would have to be built by fine-mapping or gene prioritisation, i.e. inferred, not measured. Checked in the file header."},
+    "a3_inputs_present": {"pass": true, "note": "Variants come as GRCh37 coordinates plus alleles, so sequence windows can be pulled from the reference genome without thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "Columns are documented on the download page: effect is the logistic-regression log-odds per coded allele; frequency and N are explicit."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "There are millions of variant rows (total not counted), but they are strongly correlated through LD (linkage disequilibrium: neighbouring variants inherited together). The truly independent signal is the 155 associations reported in the paper, well under the ~400 needed even for classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~194 MB gzipped per stratum; roughly 1–2 GB in memory as a table (estimated)", "note": "Fits in 16 GB, but each file is over the 50 MB download cap, so I only read a 200 KB range."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not fully checked: the N column (about 1.05–1.11 million) matches the paper's 48,694 + 1,044,134 total sample size. Total variant count not verified."},
+    "a8_label_provenance": {"pass": false, "note": "Effect and p-value are statistical estimates, and a causal-variant label would be the output of a fine-mapping model (SuSiE or FINEMAP), so a model would be distilling another model's posterior."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PolyFun (functionally informed fine-mapping, Weissbrod et al. 2020, Nature Genetics)", "open_weights": true, "score_and_split": "On 49 UK Biobank traits, found 3,025 variant–trait pairs with causal probability >0.95, 32% more than SuSiE alone; checked by simulation, not a held-out split.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "MIFM (multiple-instance fine-mapping, a deep DNA-sequence model, PLOS Genetics 2026)", "open_weights": null, "score_and_split": "Trained on more than 13,000 GWAS (genome-wide association studies); validated through polygenic scores that transferred better to other ancestries (exact numbers not retrieved).", "authors_named_unsolved": "Not retrieved; it was built to cope with weak causal-variant labels.", "runnable_as_baseline": null},
+      {"name": "sscNOVA (semi-supervised convolutional network for regulatory variants in autoimmune disease)", "open_weights": null, "score_and_split": "Not retrieved (abstract only).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Nucleotide Transformer (DNA sequence models) could score variant windows", "freeze_and_head_viable": null, "hardware": "CPU is feasible for a few thousand variants", "licence": "AlphaGenome non-commercial; the summary statistics forbid redistribution"},
+  "integration": {"partner_dataset": "GTEx v8 eQTLs (expression quantitative trait loci: variants that change gene expression) and Open Targets Genetics", "join_key": "rsid or GRCh37 chr:pos:alleles", "bigger_question_one_sentence": "Do DNA-sequence models pick out the Hashimoto risk variants that colocalise with immune-cell eQTLs? The paper already answers this statistically with 161 immune colocalisations."},
+  "controls": {"positive_control": "HLA region and known loci (TG, VAV3, IRF5) should rank at the top.", "negative_control": "Shuffle variant labels within LD blocks.", "external_validation": "FinnGen hypothyroidism summary statistics would be a second independent source (not checked)."},
+  "honest_claim_h3": "A model could only claim to rank variants by their fine-mapped causal probability for Hashimoto's thyroiditis. That probability is a statistical estimate across about 155 correlated signals, not a measured causal effect.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around each genetic variant to predict whether it truly drives the Hashimoto's thyroiditis risk seen in this study.",
+    "train_on": "DNA sequence windows and functional annotations for each variant in the meta-analysis. There are millions of variant rows (count not verified), but only about 155 independent risk signals.",
+    "predict": "Whether a variant is causal. There is no measured answer: it would have to come from statistical fine-mapping of the effect and p-value columns.",
+    "why_worthwhile": "Thyroid geneticists would get a ranked list of variants to test in the lab. But established fine-mapping tools already produce exactly this, so a failure would teach little."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "48,694 cases is the largest Hashimoto GWAS, but PolyFun and MIFM were developed on dozens to more than 13,000 GWAS, and this is one more trait."},
+    "confidence_score": {"answer": "no", "why": "Fine-mapping methods (SuSiE, PolyFun) already output calibrated posterior probabilities for each variant."},
+    "models_beatable": {"answer": "no", "why": "PolyFun (2020) is open, well calibrated in simulation and standard in the field; MIFM (2026) is a recent deep sequence model."},
+    "guaranteed_improvement": {"answer": "no", "why": "There is no measured causal-variant label, so 'better' cannot be defined against ground truth, and no new data measures the same quantity the same way."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rank causal variants at Hashimoto risk loci from sequence. Rejected: the label must be built by fine-mapping, and only ~155 independent signals exist.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.2, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "RAM estimated from a 194 MB gzipped file with about 10 columns; nothing timed.", "cheapest_killing_check": "Count independent LD-clumped signals: 155 per the paper, far below the ~400 minimum."},
+  "verdict": "reject",
+  "verdict_reason": "The open data is GWAS summary statistics (effect, standard error and p-value per variant). Any useful target, causal variant or causal gene, has to be built by fine-mapping (A2, A8), and only ~155 independent signals exist (A5). Individual-level data needs an application, and the field already has PolyFun and MIFM."
+}

@@ -1,0 +1,113 @@
+{
+  "paper_id": "nature2026-10840-w",
+  "title": "The past and future impact of climate change on childhood malaria in Africa.",
+  "doi": "10.1038/s41586-026-10840-w",
+  "journal": "Nature",
+  "data_url": "https://zenodo.org/records/20399793",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 20399793 (CC-BY 4.0, no login) holds one 12.4 GB zip; I read its central directory with a ranged request (105 entries listed), then range-fetched and opened the analysis-ready file data/output/prevalence_and_climate_adm1.rds (3.3 MB) in R: 9,875 rows x 37 columns, 0 missing values, 0 duplicate unit-month pairs, 587 ADM1 (province-level) units, 43 countries, PfPR2 range 0-99.79 with 878 zeros; rows by era 980 (1901-1950), 4,690 (1951-2000), 4,205 (2001-2016); region counts East 5,300, West 3,311, Central 707, Southern 557; diagnostics 8,381 microscopy, 1,466 RDT (rapid diagnostic test). Also opened the ERA5 version (9,305 rows, same columns). The raw Snow et al. 2017 survey table on Harvard Dataverse (6.2 MB) returned 'required Guestbook response' and was not downloaded.",
+    "what_came_from_paper_text_only": "That the label is PfPR2-10 (prevalence in children aged 2-10) converted from raw survey prevalence by the Muench catalytic model; the 50,425 surveys and 36,966 locations behind the aggregation; climate units (CRU-TS degrees C and mm/month are implied, no codebook in the zip); the paper's statement of 853 ADM1 fixed effects (file has 587 units); that the column 'Pf' is raw unstandardised prevalence (inferred from values)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: Zenodo zip is open CC-BY with no login; the 3.3 MB analysis table can be pulled by HTTP range request without the 12.4 GB download. Raw Snow survey points need a Dataverse guestbook form, but are not needed."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked: PfPR2 (standardised childhood prevalence, %) is a column in the analysis table; raw prevalence 'Pf' is also present."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: monthly temperature, precipitation, flood/drought flags with 3 lags, intervention era, diagnostic method, month, year, country and ADM1 ID are all columns. Feature set is thin (climate only); elevation and urban files sit elsewhere in the zip."},
+    "a4_units_stated": {"pass": true, "note": "Partly checked: PfPR2 is clearly percent (0-99.79); temp ~21-26 and ppt in mm/month match CRU-TS conventions but no codebook in the zip states them. Implied but internally consistent."},
+    "a5_enough_rows": {"pass": true, "n_rows": 9875, "note": "Checked: 9,875 province-month rows, but only 587 provinces, so the effective unit for honest splits is far smaller."},
+    "a6_fits_laptop": {"pass": true, "working_set": "3.3 MB RDS (about 2-3 MB as CSV)", "note": "Checked size; trivially fits in memory, CPU only."},
+    "a7_counts_match_paper": {"pass": true, "note": "Checked: 9,875 rows matches the paper exactly. Paper mentions 853 ADM1 fixed effects while the file has 587 unique units; likely the full shapefile count, minor and explainable."},
+    "a8_label_provenance": {"pass": true, "note": "PfPR2-10 is measured survey prevalence age-standardised by the Muench model (from paper text), not derived from climate features, so no circularity; raw 'Pf' column allows a check against the conversion."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One 9,875 x 37 table holds label and all features; seen in the file."},
+    "B2": {"score": 1, "why": "R .rds inside a 12.4 GB zip; needs range extraction and one R call to convert to CSV."},
+    "B3": {"score": 1, "why": "Authors standardised to ages 2-10, but microscopy, RDT and PCR rows mixed (8,381/1,466/27), seen in file."},
+    "B4": {"score": 2, "why": "No censored values; 878 true zeros, 0 missing values, checked in file."},
+    "B5": {"score": 2, "why": "0 duplicate province-month pairs, checked in file."},
+    "B6": {"score": 1, "why": "Column names guessable and Methods explain them; zip output README is 77 bytes, no codebook."},
+    "C1": {"score": 1, "why": "Temporal or cross-region transfer of a climate-prevalence model is informative, but climate-only prediction likely weak either way."},
+    "C2": {"score": 1, "why": "Paper's open fixed-effects regression and MAP's geostatistical PfPR maps exist; neither benchmarks flexible ML on this panel."},
+    "C3": {"score": 1, "why": "Weak 'better/unique application' angle: nonlinear ML versus econometric panel on public 1901-2016 data."},
+    "C4": {"score": 1, "why": "Prevalence surveys are costly, but modelled PfPR maps from MAP already fill gaps since 2000."},
+    "C5": {"score": 2, "why": "Per-province mean and the paper's released R regression are obvious, reproducible baselines."},
+    "D1": {"score": 1, "why": "No biology backbone fits climate tabular data; TabPFN, a tabular foundation model, is the only option."},
+    "D2": {"score": 1, "why": "TabPFN at ~10k rows is slow on CPU; no embedding-cache workflow applies."},
+    "D3": {"score": 1, "why": "TabPFN weights carry an attribution or non-commercial licence depending on version."},
+    "E1": {"ok": true, "why": "Hold out whole provinces, countries or post-2000 years; OBJECTID, country, yearnum columns seen."},
+    "E2": {"ok": true, "why": "43 countries, 587 provinces, 4 regions in the file."},
+    "E3": {"ok": true, "why": "Per-province mean and per-region-month mean are computable from the table."},
+    "E4": {"ok": false, "why": "Rows average several surveys but per-row survey count is absent; no replicate spread."},
+    "E5": {"ok": true, "why": "Known thermal optimum near 25 degrees C (Mordecai et al.) should reappear in learned temperature response."},
+    "E6": {"ok": true, "why": "Label shuffling and dropping climate features to leave only fixed effects are straightforward."},
+    "E7": {"ok": true, "why": "Year column enables pre/post-2000 split; ERA5 version and MAP survey points are alternatives."},
+    "E8": {"ok": true, "why": "Paper's code on GitHub reproduces regression coefficients from this exact file."},
+    "G1": {"score": 1, "why": "GADM 3.6 OBJECTID and ISO codes; not a standard bio ID, needs shapefile for geography."},
+    "G2": {"score": 2, "why": "Malaria Atlas Project intervention-coverage rasters (bednets, treatment) 2000-2022, joinable by province and year."},
+    "G3": {"score": 1, "why": "Raster-to-province aggregation required; one value per province-year after averaging."},
+    "G4": {"score": 1, "why": "Measured intervention coverage could replace era dummies, but paper already controls interventions crudely."},
+    "H1": {"score": 2, "why": "Full prevalence range 0-99.79 including 878 zero rows, seen in file."},
+    "H2": {"score": 1, "why": "43 countries but East Africa is 5,300 of 9,875 rows; central Africa only 707."},
+    "H3": {"score": 2, "why": "Claim is precise: province-month climate predicts surveyed prevalence where surveys happened."},
+    "H4": {"score": 2, "why": "Paper states pre/post-2000 counts, diagnostic mix and aggregation rationale explicitly."},
+    "I1": {"score": 1, "why": "Climate-health attribution community (Carlson lab, MAP); no named user of an ML version."},
+    "I2": {"score": 1, "why": "Could temper attribution estimates if nonlinear models disagree; marginal decision impact."},
+    "I3": {"score": 1, "why": "RMSE on held-out provinces loosely matches attribution use, which needs causal effects, not prediction."},
+    "I4": {"score": 1, "why": "Province fixed effects likely explain most variance; ML may add little over the panel regression."},
+    "J1": {"score": 1, "why": "Grouped and temporal splits are good practice, but no transfer learning or backbone."},
+    "J2": {"score": 1, "why": "Thermal response curves give some sanity check; epidemiology expertise not on hand."},
+    "J3": {"score": 1, "why": "Reproducing paper coefficients is shareable; ML comparison only meaningful if it differs."},
+    "J4": {"score": 1, "why": "Roughly one to two weeks; not formally set."},
+    "J5": {"score": 1, "why": "Kill condition stated here, not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Carlson et al. 2026 panel fixed-effects regression (this paper)", "open_weights": true, "score_and_split": "Reports coefficients and randomisation tests, not out-of-sample predictive accuracy (from paper text); code open at github.com/cjcarlson/falciparum.", "authors_named_unsolved": "Climate model simulations not public; adult malaria and incidence not modelled; aggregation to provinces loses local variation (paper text).", "runnable_as_baseline": true},
+      {"name": "Malaria Atlas Project Bayesian geostatistical PfPR2-10 model (Lancet 2025, 2000-2022)", "open_weights": null, "score_and_split": "Out-of-sample validation reported; a 2015 covariate study (Weiss et al., Malaria Journal) reported pseudo-R2 rising from 0.43 to 0.52 on held-out data (search snippet only).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "Kenya county-level LightGBM / random forest / GAM malaria model (Journal of Decision Systems, 2026)", "open_weights": null, "score_and_split": "Explained 85-90% of spatial and temporal variance, 2001-2020 Kenya counties; split not seen (search snippet only).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "TabPFN (tabular foundation model) as the only candidate; no biology backbone applies", "freeze_and_head_viable": false, "hardware": "CPU, slow at ~10k rows", "licence": "Prior Labs licence (attribution / non-commercial depending on version)"},
+  "integration": {"partner_dataset": "Malaria Atlas Project intervention coverage rasters (insecticide-treated nets, antimalarial treatment, indoor spraying), 2000-2022", "join_key": "GADM ADM1 polygon + year (raster aggregated to province)", "bigger_question_one_sentence": "After replacing crude intervention-era dummies with measured coverage, does the estimated temperature effect on childhood malaria since 2000 survive?"},
+  "controls": {"positive_control": "Learned temperature response should peak near 25 degrees C (Mordecai et al. 2013 thermal optimum); a model trained to predict temperature from month and province should be near-perfect.", "negative_control": "Shuffle PfPR2 within region and confirm collapse to the per-province mean; drop all climate columns and see how much accuracy is lost.", "external_validation": "Train 1901-2000, test 2001-2016 using yearnum; or retrain on the ERA5-based table (9,305 rows) as a climate-data robustness check."},
+  "honest_claim_h3": "A model could claim that monthly temperature and rainfall predict surveyed childhood malaria prevalence in African provinces where and when surveys happened to be done, heavily weighted to East Africa, and not causal effects or unsurveyed areas.",
+  "plain_idea": {"one_liner": "Use monthly temperature, rainfall and extreme-weather flags for an African province to predict the share of children carrying malaria parasites.", "train_on": "9,875 province-month rows (587 provinces, 43 countries, 1901-2016), each with climate averages, flood/drought flags, intervention era and diagnostic method.", "predict": "Childhood malaria prevalence (percent of children 2-10 testing positive), from field surveys by microscopy or rapid tests, age-standardised by Snow et al.", "why_worthwhile": "Tests whether a flexible model agrees with the econometric climate-malaria curve behind a Nature attribution claim; disagreement would flag fragile attribution numbers."},
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Covers 1901-2016 (980 rows before 1950) where MAP maps start in 2000, but it is aggregated from the same public survey compendium others use, and only 587 provinces."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements or per-row survey counts in the file, and the paper already gives bootstrap confidence intervals."},
+    "models_beatable": {"answer": "partly", "why": "The paper's 2026 regression is not tuned for prediction, so beating its out-of-sample error is plausible, but province fixed effects likely leave little room."},
+    "guaranteed_improvement": {"answer": "no", "why": "MAP intervention coverage only exists from 2000, measures something different from climate, and is itself modelled; no same-quantity data guarantees a gain."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Malaria Atlas Project public parasite-rate survey points (malariaAtlas R package; known resource) and DHS/MIS malaria biomarker surveys (known resource); heavy overlap with Snow et al. likely.", "approx_items": null, "join_key": "Coordinates or GADM ADM1 polygon + survey month/year", "why": "Post-2016 surveys from MAP or DHS could form a genuinely later test set for a model trained on this table."},
+  "leakage_plan": {
+    "risks": ["The same province appears in many months, so a random split lets the model memorise each province's typical level.", "Temperature and precipitation polynomial columns (temp2-temp5, ppt2-ppt5) are deterministic copies of temp and ppt and inflate apparent feature count, not leakage but misleading importance.", "Diagnostic method and intervention era correlate with year, so a model can learn time trends instead of climate effects.", "The precipitation percentile thresholds behind flood/drought flags were computed over the whole 1901-2016 record, using future information in a temporal split."],
+    "split": "Hold out whole provinces (OBJECTID) or whole countries, plus a temporal split train 1901-2000 / test 2001-2016 on yearnum; all columns seen in the file.",
+    "checks": ["Shuffle PfPR2 and confirm performance drops to the per-province mean baseline.", "Train on OBJECTID plus year alone and compare with the full model to measure what climate adds.", "Recompute flood/drought thresholds on training years only and confirm the temporal-split score does not drop sharply."],
+    "verdict": "Manageable: grouping columns exist, but the dominant risk is mistaking province identity and time trends for climate signal."
+  },
+  "success_criteria": {
+    "metric": "RMSE (root mean squared error) of PfPR2 on held-out provinces, since attribution maps are applied to provinces not surveyed in every month.",
+    "baselines": "Per-region-by-month mean and the paper's fixed-effects regression refit on training provinces; neither number is published, both must be computed.",
+    "success": "Gradient boosting with climate features beats the refit panel regression by at least 10% RMSE on held-out provinces and recovers a temperature peak within 22-28 degrees C (threshold chosen, not from a published number).",
+    "noise_ceiling": null,
+    "kill": "If climate features improve held-out-province RMSE by under 5% over the region-by-month mean after three days, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "PLOS Computational Biology", "why": "Publishes method comparisons on public epidemiological data; would need ML to reveal a materially different climate-malaria curve than the econometric model."},
+    "realistic": {"journal": "Malaria Journal", "why": "Takes re-analyses of malaria prevalence-climate relationships; a held-out-province comparison of ML versus fixed-effects regression fits."},
+    "fallback": {"journal": "medRxiv preprint", "why": "A negative result (climate adds little beyond province identity) is still a useful short note for the attribution debate."}
+  },
+  "pitch": {
+    "headline": "A clean 9,875-row table of childhood malaria prevalence and monthly climate across 43 African countries spanning 1901-2016, openly licensed.",
+    "what_makes_the_data_unusual": "980 rows predate 1950, long before modern control programmes; zero missing values and zero duplicate province-months, checked in the file.",
+    "the_win": "Show on held-out provinces whether a nonlinear model recovers the paper's roughly 25 degrees C thermal peak, or a different curve that would shift its attribution numbers.",
+    "even_if_it_fails": "Quantifies how much of prevalence variation climate explains beyond province identity, a useful caveat for climate-health attribution.",
+    "who_wants_it": "The Carlson lab and climate-health attribution researchers deciding how much to trust econometric climate-malaria curves."
+  },
+  "ml_idea": "Compare gradient boosting (and TabPFN) against the paper's fixed-effects panel regression for predicting province-month PfPR2 from climate, on held-out provinces and a pre/post-2000 temporal split, and compare learned temperature response curves.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.003, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 3, "compute_note": "Estimated from the 3.3 MB file I opened; gradient boosting on 9,875 rows x ~20 features runs in seconds per fold; TabPFN on CPU would take much longer. Nothing timed.", "cheapest_killing_check": "Fit per-province mean versus province mean plus climate features on held-out provinces; if climate adds under 5% RMSE, stop."},
+  "verdict": "park",
+  "verdict_reason": "Passes Part A cleanly (open, one 9,875-row table, label present), but it is a small climate-only tabular panel with no pretrained backbone (Part D fails), province identity likely dominates, and the realistic output is a re-analysis note rather than an ML project."
+}

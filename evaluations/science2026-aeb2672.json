@@ -1,0 +1,47 @@
+{
+  "paper_id": "science2026-aeb2672",
+  "title": "A Hormone Cell Atlas maps the human endocrine system at cellular resolution.",
+  "doi": "10.1126/science.aeb2672",
+  "journal": "Science",
+  "data_url": "https://hormonecellatlas.cellgeni.sanger.ac.uk/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened four small tables from hormonecellatlas.org.uk/accounts/downloads: Table S1A (171 rows: study per tissue, with GEO accessions, donor counts, sex/age/BMI groups), S2C (about 388 endocrine genes with category and include/exclude status), S2D (hormone-producing cell definitions: 1-8 marker genes per hormone), S2E (hormone-receiving definitions: receptor genes per hormone). HEAD on the per-tissue h5ad (AnnData single-cell files): Adipose 3.66 GB, Blood 2.96 GB, Pituitary 348 MB, Thyroid 134 MB; 47 tissues are listed, plus CellTypist cell-type classifier bundles. The Science supplement zip returned 403. The PMC ID that NCBI links to (PMC13278015) is a different paper (PanKbase islet atlas), not this one.",
+    "what_came_from_paper_text_only": "14 million cells, 47 tissues, 379 hormone and receptor genes, and the hormone2cell scoring method come from the abstract and the site's About page; no full text was available. I did not open any h5ad, so per-tissue cell counts are unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "h5ad files and small tables download without login (checked with HEAD and real downloads); the Science supplement zip is blocked (403)."},
+    "a2_label_is_a_column": {"pass": false, "note": "The atlas's new outputs, hormone-producing and hormone-receiving cell scores, are not measured labels; they would have to be rebuilt by applying the hormone2cell rules to the expression matrix. The only ready-made per-cell column is the cell-type annotation."},
+    "a3_inputs_present": {"pass": true, "note": "Expression matrices are inside the h5ad files (seen only through HEAD; not opened)."},
+    "a4_units_stated": {"pass": true, "note": "Not relevant for count matrices; not checked inside the files."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "The paper claims 14M cells; not counted. At the level of donors or studies the real unit is about 171 study-tissue entries (Table S1A)."},
+    "a6_fits_laptop": {"pass": false, "working_set": "Several GB per large tissue (Adipose 3.66 GB, Blood 2.96 GB); the full atlas is likely tens of GB", "note": "Single small tissues fit; the cross-tissue task the atlas is built for does not fit without heavy subsetting."},
+    "a7_counts_match_paper": {"pass": true, "note": "47 tissues on the download page matches the abstract; cell counts not verified."},
+    "a8_label_provenance": {"pass": false, "note": "Circular. The hormone-producing and hormone-receiving scores are computed from the expression of the marker and receptor genes listed in Tables S2D and S2E, so a model predicting them from expression only learns the scoring formula. Cell-type labels come from author annotation, and the authors already release CellTypist models for them."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "CellTypist models released by the authors (47 tissues, level 1 and level 2 cell types)", "open_weights": true, "score_and_split": "Not reported on the download page; not retrieved.", "authors_named_unsolved": "The About page says the scores are transcript-based and putative, and need functional validation.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "scGPT / Geneformer (single-cell foundation models)", "freeze_and_head_viable": null, "hardware": "CPU possible only for subsets", "licence": "Not checked"},
+  "integration": {"partner_dataset": "Genomics England PanelApp (already used by the authors), GTEx", "join_key": "gene symbol", "bigger_question_one_sentence": "None that avoids reusing the expression-derived scores as labels."},
+  "controls": {"positive_control": "Classical endocrine cells (pituitary corticotrophs producing POMC, thyroid follicular cells producing TG) should score as hormone-producing.", "negative_control": "Shuffled labels", "external_validation": "None with a measured hormone secretion label"},
+  "honest_claim_h3": "A model could only reproduce the hormone2cell rule-based expression scores; it could not claim to predict actual hormone secretion or response.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression to predict which cell types make or respond to each hormone across human tissues.",
+    "train_on": "Per-cell expression profiles from 47 tissues (14M cells claimed; not counted).",
+    "predict": "Hormone-producing and hormone-receiving scores, which the authors compute from the expression of listed marker and receptor genes, so they are not measured outcomes.",
+    "why_worthwhile": "Endocrinologists could find unexpected sites where hormones are made, but the labels add nothing that the authors' scoring rule doesn't already give."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict hormone-producing or receiving status per cell type from expression. Rejected because the labels are a deterministic function of the input genes.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": null, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because the project was rejected at Part A; file sizes come from HEAD requests.", "cheapest_killing_check": "Read Table S2D: hormone-producing status is defined by marker-gene expression, so it is circular."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A8 and A2: the atlas's hormone-producing and hormone-receiving labels are computed from the expression of marker and receptor genes listed in Tables S2D and S2E, so predicting them from expression is circular. The only measured-style label, cell type, already has released CellTypist models. Large tissues are also 3-4 GB each (A6)."
+}

@@ -1,0 +1,46 @@
+{
+  "paper_id": "nature2026-10951-4",
+  "title": "Functional role of skull lymphoid structures in CNS immunosurveillance.",
+  "doi": "10.1038/s41586-026-10951-4",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE309634",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Fetched GEO (Gene Expression Omnibus) records and file lists for GSE309632 (4 samples: skull and brain-tumour single-cell RNA plus BCR, i.e. B-cell receptor, tables; RAW.tar 470 MB), GSE309634 (4 samples: skull and sternum B cells; 142 MB) and GSE313969 (3 samples: dura, skull, sternum T cells; 148 MB). Downloaded and parsed the two GSE309634 BCR contig tables: skull 6,348 contigs / 3,614 cells / 3,019 clonotypes; sternum 6,547 contigs / 3,927 cells / 3,036 clonotypes; 31 standard 10x Genomics columns (V/D/J/C gene, CDR3 amino-acid and nucleotide sequences, reads, UMIs).",
+    "what_came_from_paper_text_only": "That each sample is one sorted pool from mice (no per-mouse replicate in GEO metadata); that other data are 'available on request'; source data with the paper (not retrieved; Europe PMC supplement endpoint timed out). Did not open the 10x count-matrix tarballs (65-255 MB each)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO files download openly; checked file lists and opened BCR CSVs. Imaging and other data are 'available on request' only."},
+    "a2_label_is_a_column": {"pass": false, "note": "No measured outcome column. The only candidate label is tissue of origin (skull vs sternum vs dura vs brain), which is the sample identity itself; isotype (c_gene) is a column but is a generic, already-solved antibody task unrelated to this paper's biology."},
+    "a3_inputs_present": {"pass": true, "note": "CDR3 and framework sequences are present in the BCR CSVs; gene-by-cell count matrices are in the tarballs (not opened)."},
+    "a4_units_stated": {"pass": true, "note": "Standard 10x Cell Ranger outputs (UMI counts, reads); units implicit but standard."},
+    "a5_enough_rows": {"pass": false, "n_rows": 11, "note": "11 GEO samples across 3 series, one pooled sample per tissue per experiment. ~3,600-3,900 B cells per tissue, but the unit of replication for a tissue label is the sample, so effectively n=1 per class."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.8 GB compressed across all three series", "note": "Small 10x datasets; would fit easily."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not cross-checked against paper cell counts; GEO sample counts are internally consistent."},
+    "a8_label_provenance": {"pass": false, "note": "Tissue label equals the 10x lane/batch, so any cell-level classifier learns batch (sort, capture, sequencing run) as much as biology; leakage by construction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "scGPT or Geneformer (single-cell models); AntiBERTy or ESM-2 for BCR sequences", "freeze_and_head_viable": null, "hardware": "CPU laptop", "licence": "n/a"},
+  "integration": {"partner_dataset": "", "join_key": "mouse gene symbol", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "A classifier could only claim to separate one pooled skull sample from one pooled sternum sample, not skull from sternum biology, because tissue and batch are the same thing.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression and antibody receptor sequences to predict whether a B cell came from skull or sternum bone marrow.",
+    "train_on": "Per-cell gene counts and B-cell receptor sequences from GEO; 3,614 skull and 3,927 sternum B cells (verified in BCR tables), one pooled sample per tissue.",
+    "predict": "The tissue a cell was sorted from, which is just the sample label assigned at sorting, not a separate measurement.",
+    "why_worthwhile": "Would show whether skull-marrow B cells carry a distinct signature, but with one sample per tissue the answer can't be separated from batch effects."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Tissue-of-origin classification of B/T cells (skull vs sternum vs dura) from expression and BCR/TCR sequence; not viable because each tissue is a single pooled sample.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.8, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from GEO file sizes; nothing timed.", "cheapest_killing_check": "Count biological replicates per tissue in GEO: one sample per tissue per series, already done."},
+  "verdict": "reject",
+  "verdict_reason": "Mouse mechanistic study with 11 pooled single-cell samples (one per tissue); no measured outcome column (A2), tissue label is confounded with batch (A8), and effectively n=1 per class (A5). Existing-model search skipped because Part A failed."
+}

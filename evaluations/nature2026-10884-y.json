@@ -1,0 +1,57 @@
+{
+  "paper_id": "nature2026-10884-y",
+  "title": "The Virtual Tissues foundation model resolves spatial proteomics across scales.",
+  "doi": "10.1038/s41586-026-10884-y",
+  "journal": "Nature",
+  "data_url": "https://spora.epfl.ch/datasets.html",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "The spora data portal (spora.epfl.ch/datasets.html and docs-data.html) returned HTTP 404 or timed out on two attempts each. The spora-io README describes the data layout: per-cohort OME-Zarr multiplex images plus tissues.parquet/cells.parquet metadata, downloaded with rclone, and its own docs links say 'TBD'. The spora-bench GitHub config lists 14 dataset configs. The cords2024cancer tissue-level task config has label columns cancer_type, grade, survival_class_ADDED and disease_free_survival_class_ADDED. The Hugging Face model bunnelab/virtues is public and not gated, with 43.4M parameters; HEAD on virtues-sp31/model.safetensors returned 200 and 173,543,760 bytes. One linked Zenodo record (IMMUcan IMC, 12912567) holds 0.08–1.17 GB .rds files plus an 899 MB image zip; I did not download any of them.",
+    "what_came_from_paper_text_only": "Corpus size: 32 cohorts, 4 imaging technologies, more than 5,100 patients, 239 markers; the IMC (imaging mass cytometry) core is 15 cohorts, 3,102 patients and 8,887 images. Cell-type labels came from the original studies' gating, clustering and ML on the same marker intensities. The Wang et al. NeoTRIP response cohort cannot be redistributed. Reported scores (macro-F1, AUROC 0.823) and the A100 GPU compute also come from the paper."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "The spora data portal returned 404 or timed out, and the download instructions (rclone) are marked 'TBD' in the spora-io README, so I could not download or list a single cohort file. The headline treatment-response cohort (Wang et al., triple-negative breast cancer) is explicitly not redistributable."},
+    "a2_label_is_a_column": {"pass": true, "note": "From the bench config only, not the files: patient-level label columns (cancer_type, grade, survival_class_ADDED) exist in tissues.parquet. The '_ADDED' survival classes look like binarisations the authors built themselves."},
+    "a3_inputs_present": {"pass": true, "note": "From the README only: the inputs are the multiplex images themselves (OME-Zarr), not accession numbers. I did not open them."},
+    "a4_units_stated": {"pass": true, "note": "Image intensities are standardised by quantile clipping, per the spora-io README. Not checked in the files."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "The real unit for clinical labels is the patient, and each cohort holds only hundreds: 541 ER-positive (oestrogen-receptor-positive) patients in METABRIC, 68 patients in NeoTRIP (and that cohort is restricted). Pooling cohorts mixes different labels. Counts are from the paper; I verified none."},
+    "a6_fits_laptop": {"pass": false, "working_set": "Multi-GB per cohort of OME-Zarr images (one IMC cohort on Zenodo is 1.17 GB for 179 patients); the full corpus is likely well over 100 GB, an estimate I did not verify", "note": "The baseline needs VirTues embeddings computed on images. The paper ran everything on A100 GPUs, and the README says even the demo notebooks need a modern GPU."},
+    "a7_counts_match_paper": {"pass": false, "note": "Could not check: no data file was retrievable."},
+    "a8_label_provenance": {"pass": false, "note": "The main cell-level label (cell type) was assigned by the original authors through gating, clustering and ML applied to the same marker intensities the model sees, so it is partly computed from the features. The paper itself calls it 'imperfect ground truth'. Patient outcomes (survival, response) are real measurements, but too few per cohort (see A5)."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "VirTues (this paper), a ViT (vision transformer) masked-autoencoder foundation model for multiplex tissue images", "open_weights": true, "score_and_split": "Linear-probe cell typing macro-F1 (the average of per-class F1 scores) on a patient-level split: 0.705 on CODEX, 0.652 on Orion. Leave-one-dataset-out zero-shot macro-F1: 0.691 on CODEX, 0.607 on Orion. Response-prediction AUROC (area under the ROC curve) 0.823 on NeoTRIP pre-treatment samples (cross-validated, 59 patients).", "authors_named_unsolved": "Cell-type ground truth is imperfect and caps achievable performance; further limitations are deferred to the Supplementary Discussion, which I did not retrieve.", "runnable_as_baseline": false},
+      {"name": "KRONOS (Mahmood lab), a panel-agnostic spatial proteomics foundation model trained on 47M single-marker patches", "open_weights": true, "score_and_split": "In this paper's benchmarks it scored about 6% below VirTues on cell typing and 9–22% below on tissue-level tasks, on the same patient-level splits.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "CA-MAE (channel-agnostic masked autoencoder)", "open_weights": null, "score_and_split": "Matched VirTues on NeoTRIP pre-treatment response (macro-F1 0.685 vs 0.676) and lagged it elsewhere, per this paper.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "VirTues virtues-sp31 (MIT licence) or virtues-sp32 (CC BY-NC 4.0), 43M parameters", "freeze_and_head_viable": null, "hardware": "GPU in practice; the paper ran on A100 80 GB cards", "licence": "Code MIT; weights MIT (sp31) or CC BY-NC 4.0 (sp32, imc14)"},
+  "integration": {"partner_dataset": "Markers carry UniProt IDs, which could join to the Human Protein Atlas", "join_key": "UniProt accession", "bigger_question_one_sentence": "Not pursued; rejected at Part A."},
+  "controls": {"positive_control": "Not defined (rejected).", "negative_control": "Not defined (rejected).", "external_validation": "The paper used Meyer et al. 2025 as an independent disease-free-survival cohort."},
+  "honest_claim_h3": "A model could only claim to reproduce marker-derived cell-type labels, or to stratify a few hundred patients per cohort, from images that need a GPU to embed.",
+  "plain_idea": {
+    "one_liner": "Use multiplexed protein images of tumour tissue to predict each patient's survival or treatment response, using a pretrained tissue-image model as the feature extractor.",
+    "train_on": "Per-patient tissue images stained for about 40 proteins each, turned into embeddings by the pretrained model; the number of patients per cohort with outcomes is unknown (hundreds, per the paper).",
+    "predict": "Patient survival class or response to chemo-immunotherapy, taken from clinical follow-up records in the original studies.",
+    "why_worthwhile": "Oncologists would gain spatial biomarkers that work across cohorts, but the strongest outcome cohort is restricted and the rest need GPU-scale image processing."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same corpus VirTues was trained and benchmarked on (32 cohorts, more than 5,100 patients), so we would have no data advantage."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements of patient outcomes, and per-cohort patient counts are in the hundreds."},
+    "models_beatable": {"answer": "no", "why": "VirTues (2026, ViT masked autoencoder) and KRONOS (2025) both have open weights, and VirTues was evaluated on patient-level and leave-one-dataset-out splits; beating them needs GPU retraining."},
+    "guaranteed_improvement": {"answer": "no", "why": "No accessible new data measures the same outcomes the same way on the same split, and the response cohort (Wang et al.) is not redistributable."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Survival and clinical labels exist in other public IMC/CODEX cohorts (e.g. METABRIC IMC, Jackson et al. breast); known from the paper, not searched.", "approx_items": null, "join_key": "None standard; patient IDs are cohort-specific", "why": "More cohorts add patients but with different marker panels and endpoints, so the labels do not join cleanly."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: freeze VirTues, embed patient images, and fit outcome heads under leave-one-cohort-out validation. Rejected because the data portal is not reachable, the image working set and embedding step need a GPU, cell-type labels are derived from the same marker intensities, and patient-outcome labels number only hundreds per cohort.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": null, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Nothing timed. The paper used A100 GPUs, and one cohort's raw images on Zenodo are about 1.2 GB, so the full image corpus is far beyond a 16 GB CPU-only laptop.", "cheapest_killing_check": "Get spora's rclone listing for one cohort with outcomes (cords2024cancer) and count patients with a non-null survival label, plus the image size in GB."},
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A: the spora data portal returned 404 and its download docs are 'TBD'; the image corpus and VirTues embeddings need a GPU; cell-type labels are derived from the same marker intensities; and patient outcomes number only hundreds per cohort, with the key response cohort restricted. It is also a crowded field (VirTues and KRONOS, both open)."
+}

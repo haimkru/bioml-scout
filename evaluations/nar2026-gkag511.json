@@ -1,0 +1,135 @@
+{
+  "paper_id": "nar2026-gkag511",
+  "title": "PROPTIMUS LIVE: local constrained α-carbon optimization of proteins.",
+  "doi": "10.1093/nar/gkag511",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.58074/93w8-9226",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the whole GitHub repository tree (169 files: 62 .tsx, 27 .ts, 20 .png, only 3 .py; no .csv/.tsv/.pdb/.xlsx and no test or benchmark directory). Resolved the OneData archive DOI 10.58074/93w8-9226 to a public share whose metadata I read (name 'Proptimus Live', type DIR, description says it holds source code plus testing results), but every attempt to list its contents returned HTTP 503 'serviceUnavailable' from the Onezone API, so no file inside was retrievable. Downloaded the Europe PMC supplement zip listing: 4 files, 0.13 MB, all figure images (gkag511fig1.gif/jpg, graphical abstract). Confirmed the web service at proptimus.ceitec.cz/live returns HTTP 200.",
+    "what_came_from_paper_text_only": "The claim that 'detailed benchmarking data and comparative metrics are available in the Supplementary Files' (comparison against GalaxyRefine, GalaxyRefine2, ModRefiner and Rosetta Relax on counts of inter-residue interactions, and a partial-atomic-charge deviation comparison against GFN1-xTB). I could not retrieve any such file: Europe PMC flags the article hasSuppl = N and the only supplementary items are figure images. The size of the test set used for that benchmark is never stated in the text."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "No dataset downloads. The GitHub repository (MIT licence) holds only web-application source code, verified file by file. The OneData archive that the data availability statement says holds 'results of PROPTIMUS LIVE testing' returns HTTP 503 service-unavailable on every listing attempt, and the PMC supplement contains only figure images."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no table and therefore no label column anywhere in the released material. Any prediction target (optimized atom coordinates, interaction counts, partial charges) would have to be manufactured by us running the tool on structures we choose."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "No structures are distributed with the paper. The eight demonstration cases are named by identifier only (UniProt A4QJE9, Q9RS06, Q57N56, Q3M859, B7ZW16; PDB 5xht, 1ao8), so inputs would have to be fetched from PDB and AlphaFold DB."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Not assessable: no data file with any column, let alone units, was retrievable. The paper describes benchmark quantities (interaction counts, charge deviations) only in prose."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "Zero labelled rows obtained. The paper never states how many structures were in its test set, and the eight worked examples shown in Figure 1 are the only concrete items named."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "<1 MB of retrievable material",
+      "note": "Whatever exists is tiny; size was never the problem here. Generating data ourselves would be the expensive part (the paper quotes about 1000 atoms per minute of optimization)."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot be checked: the paper gives no count to compare against and no downloadable file to count."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "The only label this work could offer is the output of a deterministic physics calculation (GFN-FF, a semi-empirical force field, run under the RAPHAN divide-and-conquer scheme) applied to the input coordinates. Predicting it is distilling a simulator: the label is computed from the features, which is exactly the A8 failure mode."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "PROPTIMUS LIVE / RAPHAN (this paper's own method: a physics-based force-field optimizer, not a learned model)",
+        "open_weights": true,
+        "score_and_split": "No quantitative number is given in the article text; it reports only that its optimized structures contained 'the greatest number' of inter-residue interactions across an unnamed test set versus GalaxyRefine, GalaxyRefine2, ModRefiner and Rosetta Relax, and that partial-charge deviation from GFN1-xTB was three times smaller than for unoptimized AlphaFold structures.",
+        "authors_named_unsolved": "They state the tool deliberately does no conformational sampling, is limited to the PDB file format, and that optimization can fail to converge, especially for protein-ligand cases where no atoms are constrained.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepAccNet (deep-learning accuracy estimator that steers Rosetta refinement; Hiranuma et al., Nature Communications 2021)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; I only saw the search-result abstract describing the method, so I am recording no number.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "GNNRefine (graph neural network that predicts refined inter-atomic distance distributions, then runs PyRosetta FastRelax)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; search-result abstract only, so no number recorded.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable without data; for the hypothetical task a machine-learned interatomic potential or an equivariant graph network would be the natural choice, not a frozen sequence backbone such as ESM-2 (a protein language model).",
+    "freeze_and_head_viable": false,
+    "hardware": "Generating any training set would mean running the xtb/GFN-FF optimizer on thousands of structures; the paper quotes roughly 1000 atoms per minute, so a few thousand proteins is CPU-weeks, and training a coordinate-level network needs a GPU.",
+    "licence": "Application code is MIT; xtb (the quantum-chemistry program providing GFN-FF) is LGPL-3.0."
+  },
+  "integration": {
+    "partner_dataset": "AlphaFold DB and the Protein Data Bank, joinable in principle because the tool takes UniProt accessions and PDB IDs as input.",
+    "join_key": "UniProt accession / PDB ID",
+    "bigger_question_one_sentence": "Which AlphaFold-predicted residues have locally unphysical geometry, and does fixing it change downstream electrostatics — but answering this needs a dataset that this paper does not release, so the join is hypothetical."
+  },
+  "controls": {
+    "positive_control": "None available: with no released test set there is nothing in the data whose answer we already know.",
+    "negative_control": "Not runnable — there are no labels to shuffle.",
+    "external_validation": "None released. CASP refinement targets would be an external source, but they come from elsewhere, not from this paper."
+  },
+  "honest_claim_h3": "Nothing can honestly be claimed from this paper's released material, because the only artefacts are web-application source code and an archive that will not open; the benchmark the paper describes was never published in a retrievable file.",
+  "plain_idea": {
+    "one_liner": "Use a protein's rough atomic coordinates to predict the cleaned-up coordinates a physics calculation would produce.",
+    "train_on": "Pairs of before-and-after protein structures: each example is one protein's atoms before optimization and the same atoms after the GFN-FF force-field clean-up. Number of such pairs available from this paper: zero (none released).",
+    "predict": "The corrected position of every atom, or equivalently the per-atom shift. The 'true answer' is not a laboratory measurement at all — it is the deterministic output of the xtb software's energy minimization.",
+    "why_worthwhile": "A fast learned stand-in for the force field would let people clean up the 200 million AlphaFold-predicted structures cheaply; but since the target is a calculation rather than a measurement, the best possible outcome is to imitate an existing program, not to learn new biology."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper releases no data at all — zero structures, zero benchmark rows — while learned refinement methods such as DeepAccNet and GNNRefine were trained on thousands of CASP and PDB models."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "The optimizer is explicitly deterministic (the paper states repeated runs on identical input give identical output), so there are no replicates and no way to estimate measurement noise or calibrate uncertainty."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Not meaningfully assessable: the paper reports no quantitative score for its own method, and I did not retrieve the numbers or splits for DeepAccNet or GNNRefine, so there is no baseline figure to aim at."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: there is no released dataset to run any baseline on, and the 'new data' would have to be generated by us from the very program we would be imitating."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only project this paper suggests is a learned surrogate for the GFN-FF local optimizer: feed in a raw AlphaFold or PDB structure, predict the optimized coordinates, and skip the minutes of quantum-chemistry computation. It is rejected here because the training pairs do not exist in the release and would have to be manufactured by running the very program being imitated, making the label a deterministic function of the input.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "No estimates are possible because no dataset exists; the only timing figure available is the paper's own claim of roughly 1000 atoms optimized per minute, which I did not verify by running the service.",
+    "cheapest_killing_check": "Try to list the OneData share at doi.org/10.58074/93w8-9226 — it returns HTTP 503, and the GitHub repository has no data files. That took two commands and settles it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "This is a web-server tool paper, not a dataset. Part A fails on nearly every killer: the only downloadable artefact is 169 files of TypeScript/Python web-application source code under MIT licence (verified in the repository tree), the OneData archive said to contain the testing results is unreachable (HTTP 503 on every listing attempt), the PMC supplement is four figure images, and the benchmark the text points to as 'Supplementary Files' does not exist in Europe PMC. There is no table, no label column, no row count and no input structures. Even if the archive came back online, the natural prediction target — optimized atomic coordinates — is the deterministic output of a force-field calculation applied to the input coordinates, which is an A8 failure by construction: the project would be distilling the xtb program rather than learning anything measured."
+}

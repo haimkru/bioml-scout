@@ -1,0 +1,43 @@
+{
+  "paper_id": "gb2026-04178-9",
+  "title": "Decoding 3D chromatin architecture reveals distinct enhancer classes underlying hierarchical gene regulation in prostate cancer.",
+  "doi": "10.1186/s13059-026-04178-9",
+  "journal": "Genome Biology",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE314777",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "GEO series metadata for GSE314774 (ATAC-seq, 6 samples), GSE314775 (RNA-seq, 21 samples), GSE314776 (ChIP-seq, 24 samples) and GSE314777 (Region Capture Micro-C, 10 samples): all public since Jun 15 2026, each supplied only as a single RAW.tar of per-sample files. I did not download the tars. The Europe PMC supplementary-file request timed out (one attempt), so I could not open Table S2 (the enhancer coordinates).",
+    "what_came_from_paper_text_only": "The 3,216 prostate cancer-specific enhancers (PCEs), which were called by integrating 201 H3K27ac ChIP-seq datasets (H3K27ac is a histone mark of active enhancers); CRISPR deletions of a handful of enhancers at one locus (chr6q24.1) in the 22Rv1 prostate cancer cell line; and the classification of those enhancers as central versus redundant."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All four GEO series are public, with no login (checked the metadata). The supplementary tables were not retrievable through Europe PMC."},
+    "a2_label_is_a_column": {"pass": false, "note": "The only candidate label with many rows is 'is this region a cancer-specific enhancer', and it would have to be rebuilt from the coordinate list plus a set of negative regions we would choose ourselves. The interesting label (central versus redundant enhancer) exists for only a few deletions at a single locus."},
+    "a3_inputs_present": {"pass": true, "note": "Genomic coordinates on hg38 (paper text), so DNA sequence can be pulled from the reference genome."},
+    "a4_units_stated": {"pass": true, "note": "Not applicable for a yes/no enhancer label; the differential tables (log fold change, FDR) are standard."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "The perturbation experiments cover a few enhancers at one locus across 61 GEO samples. 3,216 PCEs is the paper's count, and I did not open the file to confirm it."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<1 GB if using peak and coordinate tables only", "note": "Processed peak files are small, but the raw tars are not size-checked."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not verified. The GEO sample counts look consistent with the experiments the paper describes."},
+    "a8_label_provenance": {"pass": false, "note": "The PCE label is computed from H3K27ac signal thresholds. Predicting it from chromatin features is circular, and from sequence alone it just re-derives a peak-calling rule. The CRISPR outcomes are real measurements, but there are too few of them."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "AlphaGenome or Enformer-style DNA sequence models could score these enhancers, but there is not enough label to train a head on", "freeze_and_head_viable": false, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "ENCODE cCREs (candidate regulatory elements) and published prostate CRISPRi enhancer screens", "join_key": "hg38 genomic coordinates", "bigger_question_one_sentence": "Can sequence models tell 'central' enhancers inside a hub from redundant ones? This one locus cannot train or test that."},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "At most: a sequence model separates H3K27ac-defined cancer-specific enhancers from background regions in prostate cell lines, which mostly restates the peak-calling rule.",
+  "plain_idea": {
+    "one_liner": "Use enhancer DNA sequence and 3D contact features to predict whether deleting an enhancer collapses the expression of its target genes.",
+    "train_on": "Enhancer regions with their sequence and chromatin-contact context; only a handful of deletions were actually measured, all at one locus (exact number unknown).",
+    "predict": "Whether an enhancer is central (its deletion drops target-gene RNA) or redundant, measured by CRISPR deletion followed by RNA-seq in 22Rv1 prostate cancer cells.",
+    "why_worthwhile": "It would let enhancer-targeting therapies prioritise the essential enhancers, but one locus is far too little data to learn that."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify central versus redundant enhancers from sequence and contact features. Not feasible: the measured perturbations are a few enhancers at one locus.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": null, "needs_gpu": null, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because the project failed Part A.", "cheapest_killing_check": "Count the distinct enhancers with CRISPR deletion plus RNA-seq readouts in GEO GSE314775: 21 samples, so a handful of deletions."},
+  "verdict": "reject",
+  "verdict_reason": "This is a mechanistic single-locus study: the measured enhancer-perturbation outcomes cover only a few enhancers at chr6q24.1 (A5). The 3,216-enhancer list is a label computed from H3K27ac signal, so predicting it is circular (A2 and A8)."
+}

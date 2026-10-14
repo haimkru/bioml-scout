@@ -1,0 +1,96 @@
+{
+  "paper_id": "natgen2026-02770-0",
+  "title": "Reactivation of the embryonic ζ-globin gene ameliorates severe forms of α-thalassemia.",
+  "doi": "10.1038/s41588-026-02770-0",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE328559 and https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE320586",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the paper's two GEO (Gene Expression Omnibus) deposits by searching NCBI: GSE328559 (human, 5 samples) and GSE320586 (mouse, 12 samples), both submitted by Siyu Liu, MRC Weatherall Institute, Oxford, matching the paper's lead author. Read the full series and per-sample metadata and both supplementary filelist.txt files: every deposited file is a .bw (bigWig genome coverage track), 17 tracks totalling 5.9 GB, no tables, no peak calls, no count matrices. Did a ranged HTTP request on two of them and parsed the binary headers: both are genuine bigWig version 4 files (magic 0x888FFC26), covering 3.10 billion human and 2.73 billion mouse bases at mean coverage ~1.0 and ~1.2. Zenodo search on the paper returned 0 records; NCBI elink from the PubMed record returned no GEO, SRA or BioProject links.",
+    "what_came_from_paper_text_only": "The paper itself is paywalled (Nature Genetics, not open access, no PMC identifier, Europe PMC reports no full text and no supplementary files), so the abstract is all the text I have. Everything about the therapeutic readouts — the alpha-like to beta-like globin ratios, the base-editing efficiencies of 25-90%, the rescue of mouse embryos to embryonic day 17.5, the number of patient samples — comes from the abstract plus a press summary, not from any file I opened. The data availability statement itself was not retrievable."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Both GEO series are public and download without login. Verified by ranged HTTP requests that returned real bigWig bytes. The paper's own supplementary tables, however, sit behind the Nature paywall and could not be retrieved."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL, and this is the killer. There is no label column anywhere in the deposit. The 17 files are continuous base-pair coverage tracks (chromatin accessibility and GATA1 transcription-factor binding). Any prediction target — silencer strength, zeta-globin expression level, the effect of an edit — would have to be built from scratch by calling peaks, defining regions, and then joining to quantitative measurements that were never deposited."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Reference genome sequence (human hg38-style, mouse mm10, plus a custom DZIA edited genome) is freely available, so sequence inputs could be obtained. But nothing in the deposit is itself a feature table."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "bigWig values are normalized read coverage; the mouse tracks show mean 1.23 and the human 0.95, consistent with per-million normalization. The exact normalization method is in the paywalled methods section, so the scale is inferred rather than documented."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 17,
+      "note": "FAIL. 17 samples total: 5 human (one cell line, HUDEP-2, in 3 genotypes, plus 2 GATA1 binding tracks) and 12 mouse (2 genotypes times 2 cell stages times 2 replicates, with some tracks mapped twice to two genome builds). The checklist needs roughly 1,500 labelled rows, or 400 for classification. Counting genomic bins instead of samples does not rescue this: the bins all come from one cell line and one lab, so there are effectively 3 biological conditions in human and 4 in mouse."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "5.9 GB of bigWig across both series; a single locus or a set of peak regions would be a few megabytes",
+      "note": "bigWig is a random-access indexed format, so a laptop could stream just the alpha-globin locus or a peak set without loading everything. Size is not the problem here."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO sample counts (5 human, 12 mouse) are internally consistent with the stated experimental design in each series record. The paper's own counts could not be checked because the full text is paywalled."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL by absence rather than by circularity. There is no label to trace. If one invented a label from these files — for example 'is this region an accessible peak' — it would be computed directly from the same coverage signal that would serve as the features, which is leakage by construction, exactly the second failure mode the checklist warns about."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "AlphaGenome or Enformer-class DNA sequence models would be the natural fit for predicting chromatin accessibility from sequence",
+    "freeze_and_head_viable": false,
+    "hardware": "N/A — no training table exists to fit a head on",
+    "licence": "GEO data is public domain; backbone licences not assessed because the project does not get past Part A"
+  },
+  "integration": {
+    "partner_dataset": "ENCODE and the Human Protein Atlas / IHEC blood atlases carry hundreds of erythroid chromatin accessibility tracks joinable on genomic coordinates",
+    "join_key": "genomic coordinates plus genome build (hg38 / mm10)",
+    "bigger_question_one_sentence": "A join would let you ask whether the two silencer elements found here are accessible in other blood cell types, but that is a browser-track comparison, not a machine-learning question, and the 17 tracks add nothing to the thousands already public."
+  },
+  "controls": {
+    "positive_control": "Would be straightforward if a model existed: the alpha-globin enhancers (the MCS-R2 / HS-40 element) must show up as strongly accessible in every erythroid track.",
+    "negative_control": "Label shuffling, but there is no label to shuffle.",
+    "external_validation": "ENCODE erythroid ATAC-seq and the group's own earlier deposits (GSE174110, GSE174593) exist as independent sources, so external validation would be possible if the project were viable."
+  },
+  "honest_claim_h3": "No honest machine-learning claim can be made from this deposit: 17 genome coverage tracks from one human cell line and two mouse models support a mechanistic conclusion about two DNA switches, but they contain no outcome variable a model could predict.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around the alpha-globin cluster to predict which regions silence the embryonic zeta-globin gene in adult red blood cells.",
+    "train_on": "The project I considered would train on short DNA windows tiling the alpha-globin locus, with chromatin accessibility and GATA1 transcription-factor binding from the deposited tracks as features. Verified count of samples: 17 tracks; verified count of labelled regions: zero.",
+    "predict": "Whether a given regulatory element represses zeta-globin, and by how much. The true answer would come from reporter assays or editing experiments measuring zeta-globin messenger RNA or protein — measurements this paper made but did not deposit.",
+    "why_worthwhile": "Gene-therapy groups working on alpha-thalassemia (the Higgs lab in Oxford, the MacKenzie lab at UCSF, Editas/Beam-style editing companies) would use a silencer-strength predictor to pick edit sites without a screen. But the data to build it is not here."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only machine-learning idea these files support would be 'predict chromatin accessibility from DNA sequence', which is already the training task of AlphaGenome, Enformer and Basenji, trained on thousands of tracks. Adding 17 tracks from one cell line to that is not a project. The genuinely interesting dataset implied by the paper — per-guide or per-element effects of base edits on zeta-globin output across a tiled locus — would be a real project, but no such table was deposited and the paper's supplementary tables are paywalled.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 5.9,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working-set size read directly from the two GEO supplementary filelist.txt files (2.4 GB plus 3.3 GB of tar). No other estimate is meaningful because there is no feature/label table to build.",
+    "cheapest_killing_check": "Read the GEO filelist.txt for both series — it takes one HTTP request and shows that every deposited file is a bigWig coverage track and that there are only 17 of them. That alone kills the project in under a minute."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A2, A5 and A8 together. The deposited data is 17 bigWig genome coverage tracks (chromatin accessibility and GATA1 binding) from one human cell line and two mouse models — verified by reading both GEO filelists and parsing two bigWig headers directly. There is no label column, no count matrix, no table of any kind; any target would have to be constructed from the same signal used as features. The quantitative therapeutic readouts the paper reports (globin ratios, editing efficiencies) sit in paywalled supplementary tables and were not deposited. This is a strong, clinically important mechanistic paper that simply left no machine-learnable artefact behind."
+}

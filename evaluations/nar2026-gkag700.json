@@ -1,0 +1,50 @@
+{
+  "paper_id": "nar2026-gkag700",
+  "title": "Trans-species microRNAs from the parasitic plant Cuscuta campestris specifically avoid loading onto self Argonautes.",
+  "doi": "10.1093/nar/gkag700",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE333475 (plus GSE333470, GSE333156)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked all three GEO (Gene Expression Omnibus) archives GSE333156_RAW.tar (9.6 MB), GSE333470_RAW.tar (7.2 MB), GSE333475_RAW.tar (7.6 MB); 27 processed CSV files, 52,471-52,573 rows each, 1,418,274 rows total. Counted entities: 52,573 unique names per file, of which only 268 are mature microRNAs with an actual RNA sequence in the 'Locus or Sequence' column; the other 52,305 are small-RNA clusters given as genome coordinates only (e.g. Cuca_chr1:932453-932945). Computed the paper's own final loading score (median over replicates of log2(immunoprecipitate/input) in the tagged-Argonaute line minus the same ratio in the untagged Col-0 control): 190 microRNAs have it for AGO1, 192 for AGO2, 189 for both. Measured replicate agreement (Spearman) and the fraction of variance explained by the 5' nucleotide alone.",
+    "what_came_from_paper_text_only": "The biology (primary transcript timing, Dicer-Like 1 requirement, duplex accumulation in the parasite), the microRNA annotation provenance (miRBase v22 filtering plus Cerda et al. Cuscuta annotation), and the wet-lab design. The paper's supplementary file list was not retrievable from Europe PMC (request timed out), so supplementary tables were not inspected."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All three GEO series are public, no login; processed CSVs sit inside small RAW.tar files on the NCBI FTP site and downloaded on the first try."},
+    "a2_label_is_a_column": {"pass": true, "note": "log2_ratio (immunoprecipitate over input) is already a column per replicate; the paper's final score needs one subtraction of the Col-0 control column and a median over three replicates - arithmetic on existing columns, not construction across sources."},
+    "a3_inputs_present": {"pass": false, "note": "Sequences are present for only 268 of 52,573 entities (the mature microRNAs). The 52,305 small-interfering-RNA entities are genome coordinates, so their input sequence would have to be pulled from the 1 Gb-scale Cuscuta campestris assembly GCA_052055255.1. Verified in the files."},
+    "a5_enough_rows": {"pass": false, "n_rows": 189, "note": "KILLER. Only 189 microRNAs have a computable Argonaute-loading score for both AGO1 and AGO2 (190 and 192 separately); 268 microRNAs exist in total. Far below the ~1,500 rows for regression or ~400 for classification. Verified by counting in the files."},
+    "a4_units_stated": {"pass": true, "note": "Units documented in the GEO sample records and consistent in the files: RPM21-24 (reads per million reads of 21-24 nucleotide length), log2 ratio, log10 abundance."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~130 MB uncompressed CSV, 1.4M rows", "note": "Trivially laptop-sized; loaded all 27 files into pandas in seconds."},
+    "a7_counts_match_paper": {"pass": true, "note": "All files carry the same 52,573 (or 52,471) entity rows, consistent across series; the paper gives no competing explicit count to contradict, so nothing disagrees."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a physical measurement: small-RNA sequencing read ratio between an antibody immunoprecipitate and its input, with an untagged-plant control subtracted. Not a model output. Verified against the GEO data-processing text."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Support-vector-machine classifier of Argonaute-small-RNA affinity (bioRxiv 173575, 'Learning sequence patterns of AGO-sRNA affinity from high-throughput sequencing libraries')", "open_weights": null, "score_and_split": "Not retrieved in detail; search result states it learns 5' and 3' k-mer patterns plus length and first-nucleotide composition from Argonaute immunoprecipitation libraries.", "authors_named_unsolved": "Not retrieved (abstract only seen through search snippet).", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM, an RNA language model (or a small k-mer logistic model, since the sequences are 20-24 nucleotides)", "freeze_and_head_viable": true, "hardware": "CPU only; 268 sequences of 24 nucleotides embed in seconds", "licence": "RNA-FM is open (MIT-style) but irrelevant here given the row count"},
+  "integration": {"partner_dataset": "Published Arabidopsis Argonaute immunoprecipitation small-RNA libraries (AGO1, AGO2, AGO4, AGO5, AGO7, AGO10) in GEO; miRBase v22 for mature sequences", "join_key": "mature small-RNA sequence (exact string) and miRBase microRNA family name", "bigger_question_one_sentence": "Do the sequence rules that sort small RNAs into plant Argonautes generalise across species well enough to explain why a parasite's export-only microRNAs escape its own Argonautes?"},
+  "controls": {"positive_control": "The 5' nucleotide sorting rule must be recovered: in these files the median AGO2 enrichment is +7.33 for 5'-adenosine microRNAs versus -0.53 for 5'-guanosine, and AGO1 favours 5'-uridine (+3.39).", "negative_control": "Shuffle the loading scores across microRNAs and confirm collapse; also train on 5' nucleotide alone, which already explains 37% (AGO1) and 41% (AGO2) of the variance.", "external_validation": "Independent Arabidopsis Argonaute immunoprecipitation datasets from other labs, joined on mature microRNA sequence."},
+  "honest_claim_h3": "Given only this paper's data, a model could claim at most: among 189 microRNAs annotated in Arabidopsis and Cuscuta campestris and detected in one lab's haustorial-interface tissue, sequence features predict relative enrichment in AGO1 versus AGO2 immunoprecipitates - a claim that the 5' nucleotide alone already largely supports.",
+  "plain_idea": {
+    "one_liner": "Use a small RNA's sequence to predict which Argonaute protein will pick it up, and which escape loading entirely.",
+    "train_on": "Each example is one mature microRNA, 20-24 nucleotides, with its sequence, length, 5' nucleotide and origin category. Verified count: 268 microRNAs, of which 189 have usable loading scores.",
+    "predict": "The loading score: log2 of the small-RNA sequencing read count in an Argonaute immunoprecipitate divided by the count in the matched input, with the untagged-plant control subtracted, measured in Arabidopsis stem tissue under a Cuscuta attachment.",
+    "why_worthwhile": "Plant RNA-silencing labs and anyone designing small RNAs for crop protection would like a rule for which sequences load onto which Argonaute, and the parasite's export-only microRNAs would be a natural test of that rule - but 189 examples cannot support it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict Argonaute loading (AGO1 versus AGO2 enrichment, or loaded versus avoided) from the 20-24 nucleotide small-RNA sequence, using the paper's immunoprecipitation sequencing data as labels. The data gives 189 labelled microRNAs - two orders of magnitude too few - and the 52,305 larger-n entities are small-interfering-RNA clusters with no sequence in the file and replicate Spearman agreement of only 0.14-0.20 on the loading score, i.e. the per-locus label is mostly noise.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.13, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": 0.05, "cv_run_minutes": 1, "compute_note": "Measured, not estimated: I downloaded all three archives, loaded all 27 CSV files (1,418,274 rows, ~130 MB) into pandas in a few seconds and built the loading-score table in one script.", "cheapest_killing_check": "Count the distinct mature microRNAs that have a computable Argonaute enrichment score. The answer is 189 (190 for AGO1, 192 for AGO2), and that kills it in ten minutes."},
+  "verdict": "reject",
+  "verdict_reason": "A5 fails hard: only 189 microRNAs carry the Argonaute-loading label, verified by counting in the downloaded files. A3 also fails for the one subset with large n - the 52,305 small-interfering-RNA entities are genome coordinates with no sequence, and their loading score barely reproduces between replicates (Spearman 0.14-0.20). On top of that, a single categorical feature, the 5' nucleotide, already explains 37-41% of the variance in the 189 usable rows, so the mapping is close to a four-row lookup table rather than a modelling problem. The data is clean, well documented and genuinely downloadable - it is simply a small, elegant mechanistic experiment, not a training set."
+}

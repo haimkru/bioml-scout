@@ -1,0 +1,109 @@
+{
+  "paper_id": "natgen2026-02640-9",
+  "title": "Multiscale analysis and functional validation of the cellular and genetic determinants of skeletal disease.",
+  "doi": "10.1038/s41588-026-02640-9",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE317069",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE317069 file list: 141 processed files (46 matrix.mtx.gz count matrices with barcodes/genes), 14 mouse samples (diaphysis, metaphysis, marrow) totalling 0.98 GB and human samples totalling 4.67 GB; no cell-type annotation file deposited. I downloaded one mouse genes.tsv: 27,998 rows with Ensembl mouse IDs plus symbols. IMPC (International Mouse Phenotyping Consortium) Solr API: 8,374 genes have X-ray or DEXA (bone-density scan) statistical results; 1,563 genes carry at least one 'skeleton phenotype' call (3,696 calls, with MGI IDs, p-value, effect size, zygosity and centre). The GitHub repo holds only R/Python analysis scripts, and the Zenodo record holds 3 code zips (under 40 KB each).",
+    "what_came_from_paper_text_only": "That more than 1,000 OBCD (Origins of Bone and Cartilage Disease) knockout lines were phenotyped on 19 bone parameters and called as outliers against 320 wild-type mice; that these calls, the 34 cell clusters, the gene programs and the 133,942 mouse / 125,063 human cell counts are in Supplementary Tables 2–8. The Europe PMC supplement endpoint timed out for both the paper and its preprint, and the OBCD website (boneandcartilage.com) is now a parked domain, so I never saw the OBCD knockout table."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO count matrices and the IMPC API both download openly (checked). The paper's OBCD knockout table (Supplementary Tables) was not retrievable through Europe PMC; that is a gap in my access, not a login wall."},
+    "a2_label_is_a_column": {"pass": true, "note": "In the IMPC route, the label 'knockout has a significant skeletal phenotype' is a column of per-gene calls (checked). It only needs a group-by over genes, with negatives taken from the 8,374 genes tested by X-ray/DEXA. The OBCD outlier calls are reportedly a supplementary column (not seen)."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are processed count matrices keyed by Ensembl gene ID (checked). Per-cell-type gene features still have to be computed by re-clustering, because no cell annotations were deposited."},
+    "a4_units_stated": {"pass": true, "note": "The inputs are raw UMI (unique molecular identifier) counts and the label is binary with an IMPC p-value and effect size, so no unit ambiguity."},
+    "a5_enough_rows": {"pass": true, "n_rows": 8374, "note": "8,374 genes tested by IMPC X-ray/DEXA, of which up to 1,563 have skeletal calls (both counts from the API). Positives tested specifically by X-ray/DEXA will be somewhat fewer."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1 GB compressed mouse matrices (checked); human 4.7 GB optional", "note": "134k cells × 28k genes as a sparse matrix fits in about 6 GB RAM; aggregate to cell-type pseudobulk once."},
+    "a7_counts_match_paper": {"pass": true, "note": "14 mouse and 32 human matrix sets are present. Cell counts (133,942 mouse) and the OBCD line count (>1,000) were not checked against files, and the IMPC counts have no paper claim to match."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are statistical calls on physically measured bone density, X-ray and strength data in knockout mice, independent of the expression features. No model output is involved."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two sources (GEO matrices, IMPC calls) joined on Ensembl/MGI gene IDs; a standard MGI mapping is needed."},
+    "B2": {"score": 1, "why": "mtx/tsv parse cleanly (checked); IMPC JSON needs paging and flattening."},
+    "B3": {"score": 1, "why": "IMPC calls come from 13 centres and several procedures (DEXA, X-ray, gross pathology), not harmonised."},
+    "B4": {"score": 1, "why": "No censoring, but genes missing a procedure or with only heterozygote data need a policy."},
+    "B5": {"score": 1, "why": "Several alleles, zygosities and centres per gene; collapse to one gene-level label."},
+    "B6": {"score": 1, "why": "IMPC fields documented; GEO matrices lack cell-type labels, so the paper's clusters must be rebuilt."},
+    "C1": {"score": 2, "why": "Whether bone-cell expression adds to generic gene features is informative either way."},
+    "C2": {"score": 2, "why": "No predictive model of knockout skeletal phenotype from bone single-cell data found in 3 searches; likely novel."},
+    "C3": {"score": 2, "why": "Unique application: the paper only runs enrichment tests; nobody has trained a predictor on these data."},
+    "C4": {"score": 2, "why": "Each knockout line needs breeding and 16-week phenotyping; the paper says it couldn't cover all candidates."},
+    "C5": {"score": 1, "why": "Dummy baselines (expression level, constraint) are obvious; no published predictive number exists."},
+    "D1": {"score": 2, "why": "Geneformer and scGPT are open-weight single-cell foundation models with downloadable gene embeddings."},
+    "D2": {"score": 2, "why": "Static gene embeddings for about 20k genes are cached once on CPU, then a logistic head is fitted."},
+    "D3": {"score": 2, "why": "Geneformer Apache-2.0, scGPT MIT (known licences, not rechecked); IMPC data CC-BY."},
+    "E1": {"ok": true, "why": "Hold out gene families or whole chromosomes; IMPC phenotyping centre also gives a grouping."},
+    "E2": {"ok": true, "why": "13 IMPC centres and thousands of genes give many holdout groups (API facet)."},
+    "E3": {"ok": true, "why": "Positive rate, plus expression-level-only and gene-constraint-only logistic regressions."},
+    "E4": {"ok": true, "why": "Genes phenotyped at more than one centre, or by both OBCD and IMPC, give agreement rates; unmeasured."},
+    "E5": {"ok": true, "why": "528 skeletal dysplasia genes (ISDS nosology) and osteoblast-program genes must score high."},
+    "E6": {"ok": true, "why": "Label shuffling and dropping feature blocks are straightforward on a gene-level table."},
+    "E7": {"ok": true, "why": "OBCD outlier calls (paper supplement, not yet opened), human bone atlas, and eBMD GWAS genes."},
+    "E8": {"ok": false, "why": "No published predictive number; the paper's enrichment p-values need the unretrieved supplements."},
+    "G1": {"score": 2, "why": "Ensembl mouse IDs in GEO files, MGI IDs in IMPC (both checked)."},
+    "G2": {"score": 2, "why": "IMPC genotype-phenotype API and GWAS Catalog GCST90726625 eBMD summary statistics."},
+    "G3": {"score": 1, "why": "MGI-to-Ensembl is mostly one-to-one; mouse-human orthologs are sometimes one-to-many."},
+    "G4": {"score": 2, "why": "Does bone cell-type expression predict which untested genes control the skeleton in vivo?"},
+    "H1": {"score": 2, "why": "Tested genes with no skeletal call are true negatives (8,374 tested vs 1,563 hits)."},
+    "H2": {"score": 1, "why": "One mouse background (C57BL/6N), mostly adult knockouts; the atlas comes from one lab."},
+    "H3": {"score": 2, "why": "Claim stated precisely, bounded to C57BL/6N knockouts and IMPC tests."},
+    "H4": {"score": 1, "why": "The paper says not all candidates were phenotyped; IMPC's choice of which genes get knocked out isn't discussed."},
+    "I1": {"score": 2, "why": "OBCD (Bassett/Williams, Imperial), the Kemp lab (UQ), IMPC, and Relation Therapeutics (funder) choose knockout targets."},
+    "I2": {"score": 1, "why": "Could re-rank which genes are knocked out next; adoption is uncertain."},
+    "I3": {"score": 1, "why": "Precision among top-ranked untested genes matches the decision; AUROC alone would not."},
+    "I4": {"score": 1, "why": "A cell-type-specificity threshold may do nearly as well; that must be tested first."},
+    "J1": {"score": 1, "why": "Much of the work is single-cell re-clustering before modelling."},
+    "J2": {"score": 1, "why": "Skeletal biology intuition is moderate; known dysplasia genes help sanity checks."},
+    "J3": {"score": 2, "why": "A gene × bone-cell-type specificity table joined to IMPC calls is useful on its own."},
+    "J4": {"score": 1, "why": "About 2 weeks suggested, not committed."},
+    "J5": {"score": 1, "why": "Kill condition proposed below, not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "Geneformer (single-cell transformer; static gene embeddings) or scGPT gene embeddings", "freeze_and_head_viable": true, "hardware": "Laptop CPU; embeddings for about 20k genes extracted once", "licence": "Geneformer Apache-2.0; scGPT MIT (known licences, not rechecked)"},
+  "integration": {"partner_dataset": "IMPC genotype-phenotype calls (8,374 genes tested by X-ray/DEXA); GWAS Catalog GCST90726625 eBMD (estimated bone mineral density) summary statistics", "join_key": "Ensembl mouse gene ID ↔ MGI ID; human orthologs for GWAS", "bigger_question_one_sentence": "Can where a gene is expressed among bone cell types predict, before anyone breeds the mouse, whether knocking it out changes the skeleton?"},
+  "controls": {"positive_control": "The 528 skeletal dysplasia genes from the ISDS (International Skeletal Dysplasia Society) nosology should rank near the top; osteoblast markers (e.g. Sp7, Bglap) should get high scores.", "negative_control": "Shuffle the IMPC labels and check that AUROC collapses to 0.5; also train on random features of the same shape.", "external_validation": "OBCD outlier calls from the paper's supplement (independent 19-parameter screen), plus repeating the analysis with features from the human bone atlas."},
+  "honest_claim_h3": "Among genes that IMPC chose to knock out in C57BL/6N mice, bone-cell-type expression patterns rank which knockouts produced a significant DEXA (bone-density scan) or X-ray skeletal phenotype better (or not) than generic gene features do.",
+  "plain_idea": {
+    "one_liner": "Use where each gene is switched on across 34 bone cell types to predict whether knocking it out in mice changes the skeleton.",
+    "train_on": "One row per mouse gene: its expression level in each bone cell type, computed from 14 single-cell samples (~134k cells, per the paper). 8,374 genes have an IMPC bone test (verified).",
+    "predict": "Whether the knockout mouse showed a significant skeletal abnormality on DEXA bone-density or X-ray tests, as measured and called statistically by IMPC; 1,563 genes have such a call.",
+    "why_worthwhile": "Knockout phenotyping costs months per gene, so ranking untested genes would help the OBCD/IMPC groups choose lines. A null result would show that bone cell-type expression alone doesn't foretell an in-vivo effect."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 2, "sources": "IMPC genotype-phenotype API (queried: 1,563 genes with skeleton calls among 8,374 tested by X-ray/DEXA); MGI mammalian phenotype annotations (known resource, not queried); OBCD screen in this paper's supplement (not opened).", "approx_items": 8374, "join_key": "MGI gene ID / Ensembl mouse gene ID", "why": "The label exists for thousands of genes beyond this paper's validations, which gives both training data and an independent OBCD test set."},
+  "leakage_plan": {
+    "risks": ["Paralogous genes share expression patterns and phenotypes, so a random split leaks family members across train and test.", "Generally essential or highly expressed genes cause phenotypes in every IMPC test, so the model may learn 'pleiotropy' rather than bone biology.", "DEXA body-composition calls (1,843 of 3,696 skeletal calls) can reflect body size rather than bone, which mixes in a confounded label.", "The cell-type clusters are re-derived using marker genes, some of which are known skeletal genes, so features partly encode prior knowledge of the label."],
+    "split": "Group genes by gene family (or by chromosome) and hold out whole groups. Build groups from Ensembl paralog annotations, which are not in the GEO files and must be fetched from BioMart.",
+    "checks": ["Shuffle labels and confirm AUROC is about 0.5.", "Train on mean expression plus gene constraint alone and report the gain from bone cell-type features.", "Restrict labels to X-ray-only and to BMD-only calls and see whether performance holds.", "Re-run after removing marker genes used to define clusters."],
+    "verdict": "Manageable: the main risk is confounding by pleiotropy, which a constraint-only baseline exposes."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 100 ranked genes held out by family, because a lab would knock out the top-ranked untested genes.",
+    "baselines": "The positive rate among X-ray/DEXA-tested genes (about 1,563/8,374 ≈ 19% upper bound, exact X-ray/DEXA-only rate not computed), and a logistic regression on mean expression plus gene constraint; no published predictive number exists.",
+    "success": "Top-100 precision at least 1.5× the constraint-plus-expression baseline on held-out gene families, with recovery confirmed on OBCD calls.",
+    "noise_ceiling": null,
+    "kill": "Bone cell-type features add less than 0.02 AUROC over the mean-expression-plus-constraint baseline after one week."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Cell Genomics", "why": "Publishes biology-first ML linking single-cell atlases to in-vivo genetics; needs predictions validated on the OBCD set."},
+    "realistic": {"journal": "Journal of Bone and Mineral Research", "why": "Field venue for skeletal gene prioritisation; a modest, honestly evaluated ranker of untested knockouts fits."},
+    "fallback": {"journal": "NAR Genomics and Bioinformatics", "why": "Accepts benchmark and negative results, e.g. 'bone expression does not beat constraint at predicting knockout phenotypes'."}
+  },
+  "pitch": {
+    "headline": "8,374 IMPC-tested mouse knockouts (1,563 with skeletal calls) can be joined to a new bone single-cell atlas that nobody has used for prediction.",
+    "what_makes_the_data_unusual": "Endosteal bone cells (14 mouse samples, 0.98 GB of counts) are rarely captured. An independent screen of more than 1,000 knockout lines on 19 parameters (per the paper; supplement not opened) gives a second labelled set.",
+    "the_win": "Top-100 precision for untested genes clearly above a constraint-plus-expression baseline on held-out gene families, confirmed on OBCD outlier calls.",
+    "even_if_it_fails": "A clear measurement of how much bone cell-type expression adds over generic gene features for predicting skeletal knockouts, which bears directly on how the paper ranks candidate genes.",
+    "who_wants_it": "The OBCD (Bassett/Williams) and Kemp groups and the IMPC deciding which lines to phenotype; Relation Therapeutics prioritising bone targets."
+  },
+  "ml_idea": "Pseudobulk the 14 mouse GEO matrices into bone cell types, then build per-gene features: specificity scores plus frozen Geneformer/scGPT gene embeddings. Join these to IMPC skeletal calls on MGI/Ensembl IDs, train a logistic or GBM head with a gene-family-held-out split, and validate on the paper's OBCD outlier calls and on features from the human atlas.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 0.2, "cv_run_minutes": 2, "compute_note": "Estimated, nothing timed: 134k cells × 28k genes as a sparse matrix for clustering; static gene embeddings are a lookup, and the gene table has about 8k rows.", "cheapest_killing_check": "Pull IMPC X-ray/DEXA results for the 8,374 genes and compute the exact positive rate. Then check whether a gene's mean expression in an existing public bone atlas alone predicts the call (AUROC); if constraint plus expression already gives nearly everything, stop."},
+  "verdict": "verify_first",
+  "verdict_reason": "Labels are open and large (IMPC, verified) and expression matrices are on GEO, but cell types must be rebuilt (B = 6/12) and the paper's OBCD knockout table was never opened; retrieve the supplement and run the expression-only baseline first."
+}

@@ -1,0 +1,148 @@
+{
+  "paper_id": "nature2026-10794-z",
+  "title": "Precise DNA base editing using AlphaFold3-based contact modelling.",
+  "doi": "10.1038/s41586-026-10794-z",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.20487747 (code only; GitHub mirror https://github.com/menghaowei/ContactSeek)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked the Zenodo v1.0.0 archive (7,866,512 bytes) and listed the GitHub tree (32 entries). Parsed all six AlphaFold3 '_confidences.json' files with numpy: contact-probability matrices of 1557x1557 (SpCas9-ABE8e on-target and off-target), 1554x1554 (cas9_complex), 343x343 (TadA8e dimer + RNA), 216x216 (APOBEC3A + RNA), 93x93 (designed DNA-binding protein). Reproduced the README's on-minus-off contact-probability difference block exactly. Confirmed the two .npz 'embedding' files are 133/134-byte Git-LFS pointers, not real arrays. Read ContactSeek/Model.py: it expects an undistributed 'data_list' of dicts holding cp_raw_cas_nuc, cp_diff_cas_nuc and labels y_g2/y_g3/y_g4, and splits samples with sklearn train_test_split plus StratifiedKFold (a random split). Checked for the real data: PubMed elink to GEO/SRA/BioProject returned no links; GEO esearch for ContactSeek, the authors and 2026 base-editor off-target series returned nothing matching; Zenodo DOI and keyword search returned only the code snapshot; NGDC (Chinese Genome Sequence Archive / OMIX) search endpoints returned 404 or nothing; Crossref lists no related dataset; OpenAlex and Semantic Scholar both report the article as fully closed with no open copy.",
+    "what_came_from_paper_text_only": "Everything about the experiments themselves: the genome-wide off-target mapping, targeted amplicon sequencing, R-loop assay, RNA sequencing, the claim that the best double mutant beats known high-fidelity adenine base editors, and the Cas12a cytosine-base-editor generalisation. All of this comes from the abstract only. The article is behind a paywall (Europe PMC isOpenAccess = N, no PubMed Central identifier) and nature.com redirects to a login page, so I could not read the Data availability statement, the Methods, or any supplementary table. I therefore do not know whether an accession exists that I failed to find."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified. The only public deposit is a 7.9 MB code archive holding seven example AlphaFold3 output files. The labelled off-target dataset the code consumes is in no repository I could reach (GEO, SRA, BioProject, Zenodo, Dryad, NGDC all empty), and the paper is paywalled so its data availability statement is unreadable."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "The label does exist as a named field ('y_g3', measured off-target editing efficiency binned into three classes) in the data structure the code documents, but that structure is never shipped. In practice you would have to rebuild it from paywalled supplementary tables, so the target must be constructed."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL, verified. The model inputs are AlphaFold3 contact-probability matrices for every off-target complex at five random seeds. Only two SpCas9 complexes (one on-target, one off-target) plus four other examples are deposited. Regenerating the rest needs AlphaFold3 weights, which DeepMind releases only on application under non-commercial terms."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Contact probabilities are unitless 0-1 values, which is fine, but the label 'y_g3' is a three-level bin of editing efficiency and the bin thresholds are documented nowhere in the code or README. Those thresholds live in the paywalled methods."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 6,
+      "note": "FAIL, verified by file count. Six distinct AlphaFold3 complexes are deposited (a seventh file duplicates one of them). The checklist needs roughly 1,500 labelled rows; this is three orders of magnitude short."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "0.06 GB downloaded; the real working set is unbounded",
+      "note": "The deposited files are tiny, but building the actual dataset means running AlphaFold3 on thousands of ~1,557-token protein-RNA-DNA complexes at five seeds each. That is many GPU-days and is impossible on a 16 GB CPU laptop."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Not verifiable. The paper is closed access, so there is no stated off-target count to compare the files against. I record this as unchecked rather than as a mismatch."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Conceptually clean: the label is a real sequencing measurement of off-target editing (amplicon and genome-wide profiling), not another model's output, and the features (AlphaFold3 contact probabilities) are computed independently of it. This is the one killer that would have passed, if the data existed."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ContactSeek (this paper's own model: a random-forest ensemble over AlphaFold3 contact-probability features)",
+        "open_weights": false,
+        "score_and_split": "No performance number is reachable (paper paywalled). I read the code: it uses sklearn train_test_split with StratifiedKFold, i.e. a random split over off-target sites with no grouping by guide RNA or genomic locus, which is a weak and leakage-prone evaluation.",
+        "authors_named_unsolved": "Unknown - the discussion section is behind the paywall.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "BE-DICT (attention-based deep learning for base-editing outcomes, Marquart et al., Nature Communications 2021, doi 10.1038/s41467-021-25375-z)",
+        "open_weights": true,
+        "score_and_split": "Reported in the retrieved abstract/summary as 93.1-93.7% accuracy and 93.8-94.7% area under the receiver-operating curve, trained on 28,294 lentivirally integrated target sequences. Split details not checked in full text.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BE-Hive (Arbab et al.; gradient-boosted trees for efficiency plus a neural network for bystander edits)",
+        "open_weights": true,
+        "score_and_split": "Retrieved summary reports Pearson correlation about 0.7 for editing efficiency on large cytosine- and adenine-base-editor libraries.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepBE (deep learning across multiple Cas9 and base-editor variants)",
+        "open_weights": null,
+        "score_and_split": "Retrieved summary reports correlation of 0.8-0.94 across variants; split not verified.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "CRISPR-Net, R-CRISPR, CRISPR-M, CrisprDNT, Crispr-SGRU (sequence-based Cas9 off-target activity predictors)",
+        "open_weights": true,
+        "score_and_split": "A 2025 benchmark across six public datasets and the CRISPRoffT validated off-target database found no single winner, with CRISPR-Net, R-CRISPR and Crispr-SGRU strongest overall. These predict whether a site is edited, not which protein residues to mutate.",
+        "authors_named_unsolved": "The benchmark's own conclusion - that no model wins across scenarios - is the named open problem.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "AlphaFold3 (required by the method, weights access-restricted); open substitutes would be Boltz-2 or OpenFold3 for complex contact prediction, or ESM-2 for protein-only features",
+    "freeze_and_head_viable": false,
+    "hardware": "GPU required: AlphaFold3-class inference on 1,557-token protein-RNA-DNA complexes, multiplied by thousands of off-targets and five seeds each, is many GPU-days. Nothing here runs on a 16 GB CPU laptop.",
+    "licence": "AlphaFold3 weights are granted only on application to DeepMind under non-commercial terms. The ContactSeek code itself is permissive (MIT per the README, CC-BY-4.0 on the Zenodo record), but code without data is not a project."
+  },
+  "integration": {
+    "partner_dataset": "CRISPRoffT and the GUIDE-seq/Detect-seq off-target collections used by CRISPR-Net-style benchmarks would be the natural partners, joined on genomic coordinates plus guide-RNA sequence.",
+    "join_key": "genome build plus genomic coordinate, plus the 20-nucleotide guide sequence and PAM",
+    "bigger_question_one_sentence": "Does a structure-derived contact-probability signal add anything over pure sequence mismatch patterns for predicting which off-target sites a base editor actually edits? It is a good question, but it cannot be asked here because neither the contact probabilities nor the matched measurements were released."
+  },
+  "controls": {
+    "positive_control": "Would have been strong if the data existed: the PAM-distal mismatch positions must show the large negative contact-probability drop that I did verify in the two deposited SpCas9 matrices, and known high-fidelity Cas9 residues (e.g. the R661/Q695/Q926 cluster) should rank highly.",
+    "negative_control": "Shuffling the editing-efficiency class labels and confirming collapse to the majority-class rate would be trivial to run - on data we do not have.",
+    "external_validation": "CRISPRoffT and published GUIDE-seq datasets exist as an independent second source, but joining to them needs this paper's off-target site list, which is paywalled."
+  },
+  "honest_claim_h3": "No claim is supportable: with six deposited AlphaFold3 complexes and no measured editing-efficiency labels anywhere public, any model built from what is downloadable would be describing six structures, not learning base-editor specificity.",
+  "plain_idea": {
+    "one_liner": "Use predicted contact strengths between a gene-editing protein and its DNA target to predict how much unintended editing happens.",
+    "train_on": "The intended project: for each unintended ('off-target') DNA site, a matrix of predicted contact strengths between every amino acid of the editing protein and the DNA and guide RNA, computed by AlphaFold3 (a structure-prediction system), repeated over five random seeds. The number of such sites is unknown - the table is not public.",
+    "predict": "How strongly that off-target site is edited, measured by sequencing the DNA of treated cells and counting converted bases. The paper bins this into three levels and calls it 'y_g3'.",
+    "why_worthwhile": "Gene-therapy developers need to know which protein residues to mutate to cut unintended edits without losing on-target activity; today that means building and testing variants one by one in the lab. A working predictor would shortlist residues before any cloning."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "We have six AlphaFold3 complexes. BE-DICT alone was trained on 28,294 integrated target sequences, and the CRISPR-Net family of models train on multiple public off-target datasets. There is no sense in which our accessible data is bigger or better."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "The five-random-seed design in the code would in principle give a spread per off-target site, which is a genuine route to a per-prediction confidence, but the multi-seed outputs were never deposited - only single predictions for six complexes."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "ContactSeek itself uses a random train/test split over off-target sites with no grouping by guide RNA (verified in Model.py), which is exactly the kind of weak evaluation that is worth redoing. But we cannot redo it: neither its training table nor its trained models were released."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The first condition fails outright - the existing model cannot be run as our baseline, because its input features and labels are not downloadable and regenerating them needs access-restricted AlphaFold3 weights and many GPU-days."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project would have been: predict a base editor's measured off-target editing level at each unintended genomic site from the change in AlphaFold3-predicted contact probability between the on-target and off-target complexes, then use feature importance to nominate protein residues to mutate for higher specificity. It is a genuinely attractive idea and the deposited on/off contact matrices show the signal is real (PAM-distal mismatches drop contact probability by up to 0.93, which I verified). It is not executable: the labelled table is unpublished, and regenerating the features needs restricted AlphaFold3 weights on GPUs.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.06,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "The 0.06 GB figure is the measured size of everything that is actually downloadable (a 7.9 MB zip expanding to about 62 MB of JSON and CIF files). I could not estimate the real costs because the real dataset does not exist publicly; the binding cost would be AlphaFold3 inference on thousands of ~1,557-token complexes, which is GPU-days, not laptop-hours."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A1, A3 and A5 all fail, verified by opening the files. The public deposit is a code snapshot plus six example AlphaFold3 output files; the labelled dataset the code is written to consume (contact-probability features plus measured off-target editing classes) is in no repository I could find, and the paper is fully paywalled with no PubMed Central copy, so even its data availability statement is unreadable. Reproducing the features would require AlphaFold3 weights, which are granted only on application, plus GPU-days of inference. The underlying idea is good and the signal is visibly real in the two deposited SpCas9 matrices, so this is worth revisiting if the authors later deposit the off-target table - but as of today there is nothing to model."
+}

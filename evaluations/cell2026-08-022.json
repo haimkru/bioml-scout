@@ -1,0 +1,52 @@
+{
+  "paper_id": "cell2026-08-022",
+  "title": "Architecture of the serotonergic projectome in the mouse brain.",
+  "doi": "10.1016/j.cell.2026.08.022",
+  "journal": "Cell",
+  "data_url": "https://github.com/junhsong92/serotonin_projectome (data/starmap_data.csv); raw images at Brain Image Library https://doi.org/10.35077/g.1213",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded data/starmap_data.csv from the authors' MIT-licensed GitHub repo: 109,124 rows x 22 columns (5 barcode read counts bc_type1-5, 12 gene counts including Tph2/Sert, 3 position columns, DR-vs-MR flag, mouseID 1-14), no NaNs, no duplicate rows. Naive counting (Tph2 or Sert >0, exactly one barcode >0) gives 19,296 cells, far from the paper's 430. Read Figure5_script.m: serotonin cells are kept by a Tph2 cutoff, and barcode positivity uses a per-mouse, per-channel threshold chosen to maximise Cramer's V (an association score) against transcriptomic clusters. The clusters come from a separate reference matrix (sert.matrix.csv) that is not in the repo. The Brain Image Library DOI resolves (HTTP 200); I did not open the images.",
+    "what_came_from_paper_text_only": "Paper has no PMC full text; from bioRxiv v2: 6,214 quality-controlled serotonin neurons, 430 single-group barcode cells used in the classifier, random-forest 10-fold CV accuracy 74.0% (combined), 58.4% (spatial only), 41.4% (transcriptome only), chance 22.0%."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public 10 MB CSV on GitHub, MIT licence; downloaded and parsed."},
+    "a2_label_is_a_column": {"pass": false, "note": "The file has raw barcode read counts, not a projectomic-group label. The label has to be built through per-mouse thresholds tuned by the authors' MATLAB pipeline, and only for the barcode channels injected in each mouse (checked in the script)."},
+    "a3_inputs_present": {"pass": true, "note": "12 gene counts and 3D soma position are columns. The transcriptomic cluster assignment needs an external reference matrix that is absent from the repo."},
+    "a4_units_stated": {"pass": true, "note": "Positions labelled mm/um in column names; genes are raw spot counts."},
+    "a5_enough_rows": {"pass": false, "n_rows": 430, "note": "The paper's usable labelled set is 430 single-target neurons across 5 classes (paper text). That is at the classification floor, and the smallest classes have 35-61 cells. The 109,124 rows are mostly unlabelled or non-serotonin cells."},
+    "a6_fits_laptop": {"pass": true, "working_set": "10 MB CSV", "note": "Trivial size."},
+    "a7_counts_match_paper": {"pass": false, "note": "File has 109,124 cells; a naive filter gives 19,296 labelled serotonin cells versus 6,214 QC cells and 430 classifier cells in the paper. Matching these needs the authors' undocumented cutoffs plus a missing reference file."},
+    "a8_label_provenance": {"pass": false, "note": "Barcode thresholds are optimised for association with transcriptomic clusters (Cramer's V in Figure5_script.m). So the label is partly tuned on the very features you would use to predict it: leakage by construction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Authors' random-forest classifier (this paper, Fig. 5H)", "open_weights": true, "score_and_split": "74.0% accuracy, 10-fold random CV on 430 cells (chance 22%); MATLAB code in GitHub repo.", "authors_named_unsolved": "Not retrieved; full discussion not read.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "None suitable (a 12-gene panel is too small for scGPT or Geneformer)", "freeze_and_head_viable": false, "hardware": "CPU", "licence": "MIT (code/data)"},
+  "integration": {"partner_dataset": "Ren et al. 2019 eLife serotonin scRNA-seq (reference clusters)", "join_key": "gene symbols / cluster identity", "bigger_question_one_sentence": "Not pursued; failed Part A."},
+  "controls": {"positive_control": "DR-vs-MR flag predicted from position", "negative_control": "Shuffle labels within mouse", "external_validation": "None independent; 14 mice only."},
+  "honest_claim_h3": "Among about 430 barcode-labelled raphe serotonin neurons in 14 mice, soma position plus 12 marker genes partly predict which of 5 brain-region groups a neuron projects to, under labels thresholded with help from those same genes.",
+  "plain_idea": {
+    "one_liner": "Use a serotonin neuron's position and a dozen marker genes to predict which brain region its axon targets.",
+    "train_on": "Per neuron: 3D soma position and counts for 12 genes from in-situ sequencing; about 430 usable labelled neurons according to the paper (the raw file has 109,124 cells, mostly unlabelled).",
+    "predict": "Which of 5 target groups the neuron projects to, read from retrograde viral barcodes (genetic tags carried back from the injection site) detected in the cell body.",
+    "why_worthwhile": "Neuroscientists could infer a neuron's wiring from cheap molecular and position readouts, but the authors already did this with a random forest."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same 430 cells as the authors' classifier; there is no larger dataset."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements; 14 mice with differing injected channels."},
+    "models_beatable": {"answer": "partly", "why": "The authors' 2026 random forest scored 74% on random 10-fold CV; a leave-one-mouse-out split might lower it, but the gain would be marginal on 430 cells."},
+    "guaranteed_improvement": {"answer": "no", "why": "No joinable new data measures barcoded projections for these cells."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict projectomic group from STARmap gene counts plus soma position. Rejected: the label must be built from raw barcode counts with thresholds tuned against the features, and only about 430 labelled cells exist.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 0.5, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated from file size; nothing timed.", "cheapest_killing_check": "Reproduce the 430-cell label count from starmap_data.csv; it fails without the missing reference matrix and the Cramer's V threshold tuning."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2, A5, A7 and A8. The file holds raw barcode counts, not labels. The authors' thresholds are tuned against the transcriptomic features (leakage), the counts cannot be matched to the paper's 6,214/430, and only about 430 labelled neurons exist, which the authors already modelled."
+}

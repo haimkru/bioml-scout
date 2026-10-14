@@ -1,0 +1,58 @@
+{
+  "paper_id": "nature2026-10833-9",
+  "title": "CRISPR-Cas regulates expression of embedded anti-phage defence systems.",
+  "doi": "10.1038/s41586-026-10833-9",
+  "journal": "Nature",
+  "data_url": "https://www.nature.com/articles/s41586-026-10833-9#Sec (Supplementary Tables 1-7 XLSX + Source Data MOESM5-17); raw RNA-seq at NCBI BioProject PRJNA1159167",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened all 13 supplementary/source-data XLSX files (total under 0.5 MB). Counted every sheet: largest curated table is Supplementary Table 1 with 91 CRISIS loci (columns: locus number, defence system, strain, GenBank ID, cas3-IG bp, IG-cas5 bp, pseudo-repeat, pseudo-spacer, target sequence, spacer length); Supplementary Table 2 has 134 genomes; all figure source data are luminescence, plaque and growth assays of 3-30 rows per sheet. The one 1,388-row sheet (Extended Data Fig. 7c) is a raw mass-spectrometry chromatogram trace, not a feature/label table. Checked NCBI: BioProject PRJNA1159167 has no linked GEO series, so only raw sequencing reads are deposited.",
+    "what_came_from_paper_text_only": "The abstract and the Data availability statement scraped from the article landing page (the paper is paywalled, no PMC full text). The Methods description of how the systematic genome search for CRISIS loci was done was not readable, so I could not confirm how Supplementary Table 2's negatives (if any) were defined."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All supplementary and source-data XLSX files download freely from Springer Nature with no login; I opened all 13. Raw RNA-seq is public at BioProject PRJNA1159167."},
+    "a2_label_is_a_column": {"pass": false, "note": "For the only ML reframing with any scale - predict from genome sequence whether a CRISPR locus embeds a defence system - the label is not a column anywhere. Supplementary Table 2 lists only positives (134 genomes that have a CRISIS locus); negatives would have to be built by running a defence-system finder over thousands of genomes we download ourselves."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are present in the files: pseudo-repeat, pseudo-spacer and target sequences in Supplementary Table 1, full gene nucleotide sequences in Supplementary Table 7; genome accessions (GCA_/NZ_) given for the rest."},
+    "a4_units_stated": {"pass": true, "note": "Source-data sheets state units (Luminescence/OD600, bp, plaque-forming units); checked in the sheet headers."},
+    "a5_enough_rows": {"pass": false, "n_rows": 91, "note": "Counted in the files: largest curated table is 91 CRISIS loci; Supplementary Table 2 is 134 genomes; every figure source-data sheet is 3-30 rows (total 2,682 non-empty rows across all 13 workbooks, most of them chemicals, primers and plasmid lists). Far under the ~400 minimum for classification, let alone 1,500."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<1 MB of XLSX", "note": "Entire supplement is under 0.5 MB; trivially fits. Raw RNA-seq reads would be larger but are forbidden and unnecessary."},
+    "a7_counts_match_paper": {"pass": true, "note": "No conflict found: the abstract and news coverage mention 'more than 20' embedded defence modules, and Supplementary Table 1 contains 24 distinct defence-system labels across 91 loci."},
+    "a8_label_provenance": {"pass": true, "note": "The experimental readouts (luminescence, phage plaque counts, growth) are real physical measurements; the bioinformatic CRISIS calls come from homology search, not from another predictive model. Provenance is fine - there is simply far too little of it."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DefensePredictor (2025, bioRxiv/PNAS; a machine-learning classifier built on protein language model embeddings that labels bacterial proteins as defensive or not)", "open_weights": true, "score_and_split": "Reported in the retrieved abstract as validating 45 previously unknown systems across 69 Escherichia coli strains at a ~45% experimental hit rate; the exact held-out split was not visible in the search snippet, so I did not verify it.", "authors_named_unsolved": "Snippet states homology tools DefenseFinder and PADLOC recover only 3-4% of its novel calls, implying detection of non-homologous, divergent defence proteins is the open problem.", "runnable_as_baseline": true},
+      {"name": "DefenseFinder (rule- and homology-based detector of known prokaryotic anti-phage systems from genome sequence)", "open_weights": true, "score_and_split": "Not a learned model; reported in the retrieved snippet as finding ~4.5 defence systems per genome. No split applies.", "authors_named_unsolved": "Limited to systems with known homologues - it cannot find new families.", "runnable_as_baseline": true},
+      {"name": "PADLOC (Nucleic Acids Research web server and command-line tool for identifying antiviral defence systems in microbial genomes)", "open_weights": true, "score_and_split": "Homology/HMM-based, no learned score or split reported in the retrieved abstract.", "authors_named_unsolved": "Coverage restricted to curated system models.", "runnable_as_baseline": true},
+      {"name": "ESM-DefenseFinder (ESM-2 35M parameter protein language model fine-tuned with LoRA adapters for defence-protein classification)", "open_weights": null, "score_and_split": "Mentioned only in a search snippet; I did not retrieve the paper, so no score or split is recorded.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model) or Nucleotide Transformer / DNABERT-2 (DNA language models) would fit the data type", "freeze_and_head_viable": true, "hardware": "Laptop CPU would suffice for 91-134 sequences, which is itself the problem", "licence": "ESM-2 MIT; Nucleotide Transformer CC-BY-NC"},
+  "integration": {"partner_dataset": "NCBI GenBank/RefSeq bacterial genomes plus the DefenseFinder/PADLOC system catalogues", "join_key": "GenBank assembly accession (GCA_/NZ_) present in Supplementary Tables 1 and 2", "bigger_question_one_sentence": "Can a sequence model tell, from a CRISPR locus alone, whether it hides a transcriptionally-silenced defence cassette - a question that would need thousands of annotated loci we would have to build ourselves, not the 91 this paper provides."},
+  "controls": {"positive_control": "The Neisseria mucosa Sir2-HerA, Gabija and IV Thoeris loci whose repression by the Cascade complex the paper measured directly by luminescence - a model would have to rank these as repressed.", "negative_control": "The crlRNA-minus and mutated-target constructs in Fig. 1e-g, which show no repression, are a built-in label-shuffle equivalent.", "external_validation": "None usable: the paper's own type I-F and I-B loci are the same assay from the same lab, and no second dataset of measured crlRNA-mediated repression exists."},
+  "honest_claim_h3": "With these files a model could at best claim: 'among 91 hand-curated type I CRISPR loci chosen because they already contain a defence system, these sequence features distinguish the defence-system families' - a descriptive statement about one lab's curated positives, with no negatives and no held-out measurement.",
+  "plain_idea": {
+    "one_liner": "Use CRISPR locus DNA sequence to predict whether it hides a silenced anti-phage defence system and how strongly it is switched off.",
+    "train_on": "Each example would be one bacterial CRISPR locus: its spacer-like guide sequence, the matching promoter target site, and the surrounding gene annotations. Verified count: 91 loci in Supplementary Table 1 and 134 genomes in Supplementary Table 2.",
+    "predict": "Either a yes/no call that the locus embeds a defence system, or how much the CRISPR machinery dials down that system's promoter. The true answer comes from the paper's light-emitting reporter assay (luminescence per unit cell density), measured for roughly a dozen loci only.",
+    "why_worthwhile": "Groups mining genomes for new anti-phage defences (the DefenseFinder and PADLOC communities, phage-therapy labs) would gain a way to spot defence cassettes that homology search misses because they sit inside CRISPR loci; even a failed model would map how often this arrangement occurs."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "DefensePredictor was trained on protein language model embeddings across many bacterial proteomes; this paper contributes 91 curated loci and 134 genomes, orders of magnitude less."},
+    "confidence_score": {"answer": "no", "why": "Replicates exist only for the dozen or so reporter assays (3-5 technical replicates each), which is far too few examples to calibrate per-prediction confidence."},
+    "models_beatable": {"answer": "partly", "why": "DefenseFinder and PADLOC are homology rules from 2021-2022 and are beatable in principle, but DefensePredictor (2025, protein language model based, with wet-lab validation) is recent and strong."},
+    "guaranteed_improvement": {"answer": "no", "why": "The paper's 91 loci do not measure the same quantity as any existing model's training labels (promoter repression versus defence-protein identity), and there is no shared evaluation split."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict from CRISPR-locus sequence whether a defence cassette is embedded and how strongly its promoter is repressed by the Cascade complex. Dead on arrival - 91 curated loci, all positives, and quantitative repression measured for roughly a dozen of them.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.001, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 0.1, "cv_run_minutes": 1, "compute_note": "Estimated from the actual file sizes I downloaded: all 13 workbooks total under 0.5 MB and parse in seconds with openpyxl; embedding 91-134 short sequences with ESM-2 on CPU is minutes.", "cheapest_killing_check": "Count the rows in Supplementary Table 1 - I did it: 91 loci, which kills the project in five minutes."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on verified counts: the biggest curated table has 91 rows (134 genomes in the next one), and every figure source-data sheet is a 3-30 row reporter assay. Also fails A2, because the only scalable task (does this locus embed a defence system?) has no negative class anywhere in the files - it would have to be constructed by running DefenseFinder or PADLOC over genomes we fetch ourselves. Excellent biology, no ML dataset."
+}

@@ -1,0 +1,157 @@
+{
+  "paper_id": "cellgen2026-101338",
+  "title": "Optimized parameters for CRISPR-Cas9 interference library design.",
+  "doi": "10.1016/j.xgen.2026.101338",
+  "journal": "Cell Genomics",
+  "data_url": "https://github.com/ssrikant2/Katsano-Manuscript (archived: https://doi.org/10.5281/zenodo.18773405, CC-BY-4.0)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 11 files from the GitHub repo. CleanedScaledData.csv = 163,534 rows x 17 cols, 469 genes, zero missing values, zero duplicates on (gene, 30-nucleotide context sequence, KRAB domain). CombinedCleanedDatasets.csv = 257,416 rows x 22 cols from three sources (InHouse 170,332 / Nunez 68,575 / Gilbert 18,509) across cell lines K562, A549, HCT116 and two repressor domains (Kox1 172,263 / Zim3 85,153). trainData_rs3i.csv = 95,318 x 8 (372 genes); testData_rs3i.csv = 23,419 x 8 (94 genes); trainData.csv = 128,420 x 415; testData.csv = 32,834 x 415. CRITICAL: the shipped train and test files share 59 gene symbols and 13,724 byte-identical (gene, context sequence, label) rows, i.e. 58.6% of test rows are also training rows, label correlation 1.000. The trained model RS3i.json parsed as JSON: XGBoost regressor, 92 trees, 5 features (TSS offset, rs3ChenSeqScore, 3 ATAC one-hot bins), objective reg:squarederror. Notebook 06's stored outputs give median within-gene Spearman on the 94-gene test set: RS3i 0.486, full-featured 0.482, RS3i-without-ATAC 0.432; notebook 04 gives test RMSE 0.8314. Katsano genome-wide validation screens (zscored_sgrna_lfcs.csv) = 147,150 rows, A375 and K562 (73,575 each), 6,000 negative-control rows; essential-targeting guides mean z = -5.95 (n=8,602) vs non-essential +0.08 (n=5,114). I computed reproducibility myself: 42,104 guides measured under both Kox1 and Zim3 correlate r=0.922 (Spearman 0.879); 62,904 guides measured in both A375 and K562 correlate Spearman 0.522 (Pearson 0.775). External table hCRISPRiv2_k562_zscored_sgrna_lfcs.csv = 120,970 rows x 8. Off-target table CleanedOffTargetTiling.csv = 33,231 rows x 20 with a 'promiscuous' boolean and 956 intergenic controls.",
+    "what_came_from_paper_text_only": "From the bioRxiv preprint (10.64898/2026.02.25.708018), not from files: that the primary tiling library contained 108,574 guides over 201 essential and 198 non-essential genes tiling 1 kb either side of the MANE Select transcription start site; that the authors intended an 80/20 random gene split; that Zim3-dCas9 outperforms Kox1-dCas9; and that the final Katsano library covers 20,120 Ensembl Canonical transcripts plus 1,927 extra. The Cell Genomics version of record has no PubMed Central record and no Europe PMC full text, so all narrative text came from the preprint. I did not verify that the authors' reported figures were produced by exactly the shipped CSVs, only that notebook 04 reads those filenames and that RS3i.json's 92 trees match the shipped hyperparameter file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open GitHub repo plus a Zenodo archive under Creative Commons CC-BY-4.0. No login, no application. I downloaded 11 files directly, verified in the files."},
+    "a2_label_is_a_column": {"pass": true, "note": "The prediction target is already a column: 'doubleZscore' in CleanedScaledData.csv and 'z_scored_avg_lfc' in the screen tables. Nothing has to be constructed. Verified by opening."},
+    "a3_inputs_present": {"pass": true, "note": "Every row carries the full 30-nucleotide guide context sequence (all 95,318 training rows are exactly 30 characters), plus hg38 coordinates and chromatin features. No accession lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Label is a z-scored log2 fold change of guide abundance in a pooled growth screen; column names (avg_lfc, z_scored_avg_lfc) make this explicit and the scale is consistent. No separate data dictionary though."},
+    "a5_enough_rows": {"pass": true, "n_rows": 163534, "note": "163,534 labelled rows in the master cleaned table (257,416 in the combined multi-source table); the authors' own training split is 95,318 rows. Counted in the files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.1 GB", "note": "Core modelling tables total about 85 MB of comma-separated text; the largest single file is 58 MB. Peak memory under 2 GB. No graphics card needed for the baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "469 genes = 372 train + 94 test as shipped. One mismatch: the split notebook's stored output claims 375 train genes, but the shipped training file has 372. Flagged, not fatal."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a physical measurement: sequencing read counts of guide abundance before and after growth, log-ratioed and z-scored. One feature (rs3ChenSeqScore) is an older model's output, but it is a feature and can be dropped."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One table, CleanedScaledData.csv, 163,534 rows, holds features and label together; verified by opening it."},
+    "B2": {"score": 2, "why": "All ten comma-separated files parsed first try with pandas; no encoding or delimiter fixes needed."},
+    "B3": {"score": 2, "why": "Authors already z-scored every screen against its own negative controls onto a common scale; verified in files."},
+    "B4": {"score": 2, "why": "Zero missing values and no censored or qualitative entries in CleanedScaledData.csv; checked every column."},
+    "B5": {"score": 1, "why": "No duplicates inside the master table, but 13,724 rows are duplicated across the shipped train/test files."},
+    "B6": {"score": 1, "why": "README is three sentences with no data dictionary; column meanings recoverable only from the 97 notebooks."},
+    "C1": {"score": 2, "why": "Asks how much reported accuracy survives a clean split; informative whichever way it resolves."},
+    "C2": {"score": 1, "why": "Several open models (RS3i, Rule Set 3, hCRISPRi-v2, EpiCas-DL) but RS3i's split is demonstrably contaminated."},
+    "C3": {"score": 2, "why": "Clear 'better' angle (honest re-evaluation) plus unique application: no DNA language model published on CRISPRi efficacy."},
+    "C4": {"score": 2, "why": "A genome-wide CRISPRi screen costs tens of thousands of dollars; guide choice is the expensive upfront decision."},
+    "C5": {"score": 2, "why": "Trained model file ships, and notebook outputs give median within-gene Spearman 0.486; both verified in repo."},
+    "D1": {"score": 2, "why": "HyenaDNA and DNABERT-2, open-weight DNA language models, match 30-nucleotide guide context exactly."},
+    "D2": {"score": 2, "why": "Only 121,430 unique 30-mers to embed; cache once on laptop CPU, then fit a small head."},
+    "D3": {"score": 2, "why": "HyenaDNA and DNABERT-2 are Apache-2.0; the data itself is CC-BY-4.0. Nothing blocks reuse."},
+    "E1": {"ok": true, "why": "Gene-disjoint, sequence-disjoint, chromosome-disjoint, held-out cell line and held-out source study all constructible from columns I saw."},
+    "E2": {"ok": true, "why": "469 genes, 23 chromosomes, 3 source studies, 6 cell-line-by-domain-by-dataset groups; all counted in the files."},
+    "E3": {"ok": true, "why": "Per-gene mean is a natural dummy (z-scores are gene-centred, so dummy near zero); RS3-sequence-score-alone is a second dummy."},
+    "E4": {"ok": true, "why": "I measured it: 42,104 guides across two repressor domains r=0.922; 62,904 guides across two cell lines Spearman 0.522."},
+    "E5": {"ok": true, "why": "Verified: essential-targeting guides mean z = -5.95 (n=8,602) versus non-essential +0.08 (n=5,114) in validation screens."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation trivial on a 95,318-row, 5-feature table; authors' own ablation drops 0.486 to 0.432."},
+    "E7": {"ok": true, "why": "hCRISPRi-v2 K562 (120,970 rows) and the Katsano genome-wide A375/K562 screens (147,150 rows) ship alongside and are independent."},
+    "E8": {"ok": true, "why": "RS3i.json plus hyperparameters plus notebook 04 ship; median Spearman 0.486 and RMSE 0.8314 reproducible in an afternoon."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs, NCBI gene IDs, HGNC symbols and hg38 chromosome:position:strand all present; seen in the files."},
+    "G2": {"score": 2, "why": "DepMap gene dependency and ENCODE chromatin tracks; repo already ships Achilles essential-gene lists and ENCODE peak overlaps."},
+    "G3": {"score": 2, "why": "Gene symbol to DepMap is one-to-one; coordinate to ENCODE peak is one-to-many with the authors' existing overlap rule."},
+    "G4": {"score": 2, "why": "Asks whether guide efficacy is predictable in a cell line never screened, from its chromatin tracks alone."},
+    "H1": {"score": 2, "why": "198 non-essential genes tiled plus 6,000 negative-control and 956 intergenic-control guides; inactive guides systematically recorded."},
+    "H2": {"score": 1, "why": "Three labs, five cell lines, two repressor domains, but all human cancer lines and only a growth readout."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one sentence; see the honest_claim_h3 field."},
+    "H4": {"score": 1, "why": "Cell lines and gene selection are explicit in the paper, but the train/test row overlap is undocumented."},
+    "I1": {"score": 2, "why": "The Broad Genetic Perturbation Platform (Doench lab) serves these scores through its public CRISPick design server."},
+    "I2": {"score": 2, "why": "A materially lower honest score would change how CRISPick ranks guides and how many guides per gene are ordered."},
+    "I3": {"score": 1, "why": "Reported metric is within-gene Spearman; the real decision is 'pick top 3 guides', needing a top-k metric."},
+    "I4": {"score": 1, "why": "A TSS-offset window plus an open-chromatin flag already does much of the work; sequence effects give the remaining headroom."},
+    "J1": {"score": 2, "why": "Grouped splits, leakage forensics, cross-cell-line transfer, frozen language-model embeddings plus a head: real modelling."},
+    "J2": {"score": 2, "why": "Essential-versus-non-essential separation, TSS-distance curve and the Pol III TTTT terminator penalty are all checkable by eye."},
+    "J3": {"score": 2, "why": "The corrected split and re-measured baseline are shareable on their own, whether or not a new model wins."},
+    "J4": {"score": 1, "why": "Estimable at three to four weeks given the ready tables, but no budget has been committed in writing."},
+    "J5": {"score": 0, "why": "No kill date or condition written down anywhere yet; needs a line in NOTES.md on day one."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Rule Set 3 Interference (RS3i) - the model introduced by this very paper, a gradient-boosted decision-tree regressor",
+        "open_weights": true,
+        "score_and_split": "Median within-gene Spearman correlation 0.486 across 94 held-out genes (full-featured variant 0.482, no-chromatin variant 0.432); test root-mean-square error 0.8314. I read these from the stored notebook outputs. But I also verified that 13,724 of the 23,419 test rows (58.6%) are byte-identical copies of training rows, so that split is contaminated.",
+        "authors_named_unsolved": "The authors present the chromatin-accessibility feature as what lifts performance from 0.432 to 0.486, implying cell-type-specific chromatin is the limiting input; they do not report cross-cell-line generalisation of the scorer.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Rule Set 3 (DeWeirdt et al. 2022), a sequence-only guide-activity model whose output is used here as the single feature 'rs3ChenSeqScore'",
+        "open_weights": true,
+        "score_and_split": "Published in Nature Communications 2022 and distributed in the open crisprScore/crisprVerse package. I did not retrieve its own reported correlation numbers, so I quote none. Within this paper it serves as one of five RS3i inputs.",
+        "authors_named_unsolved": "Its central finding is that Pol III transcription termination in the guide sequence drives activity; it is sequence-only and carries no chromatin or transcription-start-site information.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "hCRISPRi-v2 scoring model (Horlbeck et al. 2016, eLife), a machine-learning scorer trained on 30 CRISPRi and 9 CRISPRa screens",
+        "open_weights": true,
+        "score_and_split": "Code is public at github.com/mhorlbeck/CRISPRiaDesign. Its library of about 200,000 guides identified over 2,100 essential genes. I did not retrieve a guide-level correlation on a held-out split, so I quote none.",
+        "authors_named_unsolved": "Its features weight nucleosome positioning heavily, predating current high-resolution chromatin-accessibility data; it is a decade old and predates DNA language models.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "EpiCas-DL (2022), a deep neural network for guide activity in epigenome editing including CRISPR interference",
+        "open_weights": null,
+        "score_and_split": "Published in Computational and Structural Biotechnology Journal; trained partly on the hCRISPRi-v2 set of 199,523 guides over 18,549 genes. I did not retrieve its split or correlation numbers and quote none.",
+        "authors_named_unsolved": "Frames cell-type-specific epigenetic context as the thing that must be supplied per prediction.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "HyenaDNA-tiny-1k or DNABERT-2 (open-weight DNA language models) over the 30-nucleotide guide context; Nucleotide Transformer v2-50M as an alternative",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM. Only 121,430 unique 30-nucleotide sequences to embed, cached once to disk and reused for every experiment.",
+    "licence": "HyenaDNA and DNABERT-2 are Apache-2.0 (permissive); Nucleotide Transformer v2 weights are CC-BY-NC-SA (non-commercial). The data is CC-BY-4.0."
+  },
+  "integration": {
+    "partner_dataset": "DepMap/Achilles gene-dependency scores across roughly 1,100 cell lines (the repo already ships AchillesCommonEssentialControls.csv with 1,247 genes), plus ENCODE ATAC-seq, DNase-hypersensitivity and histone ChIP-seq tracks (the repo already ships eight per-cell-line ATAC overlap tables and six histone tables).",
+    "join_key": "HGNC gene symbol / Ensembl gene ID for DepMap; hg38 chromosome:position:strand coordinates for ENCODE tracks. Both identifier types are already columns I saw in the files.",
+    "bigger_question_one_sentence": "Can you predict which guide RNAs will work in a cell line that was never screened, using only that cell line's public chromatin tracks plus the guide sequence, and how fast does accuracy decay as the cell line gets more distant from the three that were screened?"
+  },
+  "controls": {
+    "positive_control": "Guides targeting essential genes must deplete far more than guides targeting non-essential genes: I verified mean z = -5.95 (n=8,602) versus +0.08 (n=5,114) in the genome-wide validation screens. Second control: the model must rediscover the textbook window of maximum repression just downstream of the transcription start site, and the known penalty for a run of four T nucleotides that terminates Pol III transcription.",
+    "negative_control": "Shuffle the label within each gene and confirm collapse to the per-gene mean (z-scores are already gene-centred, so the dummy sits near zero). Ablate the chromatin-accessibility feature block, which by the authors' own numbers should cost about 0.054 Spearman (0.486 to 0.432). Also replace the sequence embedding with random vectors of the same shape.",
+    "external_validation": "Three independent held-out sets all ship in the same repository: the hCRISPRi-v2 K562 table (120,970 rows, Weissman lab), the Katsano genome-wide screens in A375 and K562 (147,150 rows, run after the training screens), and the Dolcetto A375 screen. Also a source-study split, since the training table is labelled InHouse / Nunez / Gilbert."
+  },
+  "honest_claim_h3": "Among guide RNAs tiling the promoters of 469 human genes that were pre-selected as either essential or non-essential, measured by growth depletion in three human cancer cell lines using two KRAB repressor domains, the model ranks guides by how strongly they repress their target; it makes no claim about genes outside this essentiality-selected set, about phenotypes other than proliferation, or about cell types whose chromatin was never measured.",
+  "plain_idea": {
+    "one_liner": "Use a guide RNA's DNA sequence and its target promoter's openness to predict how strongly it will silence that gene.",
+    "train_on": "Each example is one guide RNA: its 30-nucleotide DNA context, how far it sits from the gene's transcription start site, and how open the surrounding chromatin is in that cell line. I counted 163,534 such labelled examples across 469 genes (95,318 in the authors' own training split).",
+    "predict": "A continuous repression-strength score. The true answer comes from a pooled growth experiment: cells carrying each guide are sequenced before and after growth, and the log2 change in that guide's abundance is z-scored against thousands of negative-control guides. Verified as a measured column, not a model output.",
+    "why_worthwhile": "Anyone designing a CRISPR interference screen picks three guides per gene from a scorer, and a bad pick wastes a screen costing tens of thousands of dollars. Even if a new model does not win, measuring the current scorer's accuracy on a contamination-free split tells the field what its guide rankings are really worth."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "We would use the same 163,534 measured rows RS3i used, not more. The edge is representation, not volume: RS3i compresses sequence into a single scalar from an older model, while we would feed the full 30-nucleotide context, plus the 415-column feature table that already ships."},
+    "confidence_score": {"answer": "yes", "why": "The data supports per-prediction uncertainty: two replicates per guide, 42,104 guides measured under both repressor domains (r=0.922) and 62,904 measured in two cell lines (Spearman 0.522). I confirmed RS3i.json is a plain squared-error regressor with no quantile or uncertainty output."},
+    "models_beatable": {"answer": "yes", "why": "RS3i is a 92-tree, depth-4 gradient-boosted model over just five features, and I verified its shipped evaluation split shares 58.6% of test rows with training. Rule Set 3 (2022) is sequence-only; hCRISPRi-v2's scorer is from 2016 and predates modern chromatin data."},
+    "guaranteed_improvement": {"answer": "no", "why": "RS3i runs as our baseline and we would see everything it sees plus raw sequence, but no genuinely new measurement joins in. The joinable extra data (hCRISPRi-v2, Dolcetto) comes from different labs, libraries and repressor domains, so it fails the 'same quantity measured the same way' condition."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Guide-level CRISPR interference depletion scores exist well beyond this paper: hCRISPRi-v2 (Horlbeck 2016) and the Dolcetto library screens (Sanson 2018) both ship inside this repository and I opened the hCRISPRi-v2 K562 table myself; Nunez 2021 and Gilbert 2014 are folded into the combined table; BioGRID ORCS aggregates many more published CRISPR screens (known resource, not searched).",
+    "approx_items": 120970,
+    "join_key": "The 20-nucleotide protospacer sequence or the 30-nucleotide guide context sequence, both present as columns; HGNC gene symbol and Ensembl gene ID for gene-level joins.",
+    "why": "A model trained here can be tested on roughly 121,000 independently measured guides from a different lab and library, so we find out whether it learned guide biology or one screening platform's quirks."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes new computational methods for functional genomics with rigorous benchmarking; would need the frozen DNA-language-model head to clearly beat RS3i on a contamination-free split and to hold up on a held-out cell line."},
+    "realistic": {"journal": "Bioinformatics", "why": "Publishes method and benchmark papers with released code; a corrected gene- and sequence-disjoint benchmark for CRISPR interference guide scoring plus a modestly improved scorer is exactly its remit."},
+    "fallback": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes short benchmark and re-evaluation notes; even the purely negative result, that the published 0.486 does not survive a clean split or that it does, is publishable there as a corrected baseline."}
+  },
+  "pitch": {
+    "headline": "The Broad's new CRISPR interference guide scorer ships with a test set where 58.6% of rows are byte-identical copies of its training rows.",
+    "what_makes_the_data_unusual": "163,534 measured guide activities over 469 genes, three labs, three cell lines, two repressor domains, plus the trained model file and all 97 notebooks, under CC-BY-4.0. I downloaded and counted every one of these.",
+    "the_win": "Report RS3i's median within-gene Spearman on the 35 genuinely held-out genes against the published 0.486, then beat it with a frozen DNA language model plus a head on the same clean split.",
+    "even_if_it_fails": "If the clean-split number stays near 0.486, the overlap was harmless and we have still produced the first contamination-free benchmark for CRISPR interference guide scoring, plus a measured noise ceiling (cross-cell-line Spearman 0.522).",
+    "who_wants_it": "The Broad Genetic Perturbation Platform (Doench lab), whose public CRISPick server hands RS3i scores to every lab designing a CRISPR interference library; it would decide whether to re-fit and redeploy that scorer."
+  },
+  "ml_idea": "Two-part project on one ready-made table. Part one, forensics and an honest baseline: rebuild the train/test split so that no gene and no guide sequence appears on both sides (the shipped files violate both), reload the shipped RS3i.json gradient-boosted model, and re-measure median within-gene Spearman on the 35 genes that are genuinely held out, against the published 0.486. Part two, a better model: embed each 30-nucleotide guide context with a frozen open-weight DNA language model (HyenaDNA-tiny or DNABERT-2), concatenate the transcription-start-site offset and the per-cell-line chromatin-accessibility features already in the table, and fit a small head. Evaluate on three increasingly hard splits: held-out gene, held-out repressor domain (Kox1 to Zim3), and held-out cell line, then externally on the hCRISPRi-v2 K562 table (120,970 rows) and the Katsano genome-wide A375/K562 screens (147,150 rows). Report top-3 precision, the metric that matches the actual library-design decision, not only correlation.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 1.5,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, with the table sizes timed: all eleven files loaded into pandas in seconds and the largest is 58 MB. Embedding time assumes 121,430 unique 30-nucleotide sequences at roughly 30 to 60 sequences per second on a laptop CPU with a small DNA language model; I did not time the embedding step. The gradient-boosted baseline on 95,318 rows by 5 features is a couple of minutes per cross-validation run.",
+    "cheapest_killing_check": "Drop the 59 genes shared between the shipped train and test files, then recompute RS3i's median within-gene Spearman on the 35 remaining genes. If it stays near the published 0.486, the contamination was harmless and the project loses its headline, though the clean benchmark and the cross-cell-line transfer question survive. One afternoon, needs only xgboost installed and two files already downloaded."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Everything a project needs is already in one open CC-BY-4.0 repository and I opened it: a single 163,534-row table with the label as a column and zero missing values, the trained baseline model file, the notebook that produced the published number, three independent external validation sets, and genuine replicate structure for a noise floor. On top of that, the cheapest check found something real: the shipped training and test files share 59 genes and 13,724 byte-identical rows, 58.6% of the test set, even though the authors' own split notebook asserts disjoint genes. That turns the project into a question that cannot produce a useless answer, since both outcomes are worth reporting. Effort is very low (about three hours to a feature table, no graphics card, 0.1 GB working set), the backbone fit is clean (30-nucleotide sequences, open Apache-2.0 DNA language models, embeddings cached once on CPU), and a named group acts on the result through the public CRISPick server. The main honest caveats: the shipped-file overlap is a property of the published artifacts and I cannot prove from them alone whether it is a bug or a regenerated file, so the inflation must be framed as a hypothesis to test; and a simple transcription-start-site window plus an open-chromatin flag already captures much of the signal, so the headroom for a fancier model may be modest."
+}

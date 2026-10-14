@@ -1,0 +1,53 @@
+{
+  "paper_id": "cell2026-08-028",
+  "title": "4D spatiotemporal landscape of mitochondrial phenotypes across cellular states unlocked through representation learning.",
+  "doi": "10.1016/j.cell.2026.08.028",
+  "journal": "Cell",
+  "data_url": "s3://mitospace4d/processed_data/manifest.parquet (also huggingface.co/schoeneberglab/mitospace, gated)",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Hugging Face API for schoeneberglab/mitospace: the repo is gated ('auto') under a 'review-license-uc-regents-2026' licence that allows peer-review use only and forbids derivative works; its files are the weights only (68.4M parameters), with no dataset repo under that author. Unsigned HTTPS requests to the S3 bucket mitospace4d (a bucket listing and manifest.parquet) both returned 403 Forbidden. The GitHub README says Hugging Face access needs a token 'while the repo is private', and that inference needs a CUDA GPU (a graphics card). The mitospace.ai page shows only a viewer page with no download links.",
+    "what_came_from_paper_text_only": "Everything about the dataset: 'terabytes' of single-cell lattice light-sheet movies (a fast 3D live-cell microscope), the drug perturbations, the membrane-potential R2 of 0.91 and the lung organoid data. No full text was available (no PMCID, paywalled), so I saw no cell counts, label tables or data availability statement."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Checked: the S3 bucket returns 403 Forbidden and the Hugging Face repo is gated under a review-only licence that forbids derivative works. Both fail A1 (needs login or access approval)."},
+    "a2_label_is_a_column": {"pass": false, "note": "Not checked, because the files were unreachable. From the README, the manifest is sample metadata plus file paths; the drug class may be a column, but whether per-cell membrane-potential values (a MitoTracker-type dye readout) exist as a table is unknown."},
+    "a3_inputs_present": {"pass": false, "note": "Not checked. The inputs are processed 3D+time image volumes (.npy arrays) at terabyte scale; I could not open any."},
+    "a4_units_stated": {"pass": false, "note": "Not checked; no label table seen."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Cell count unknown; the abstract says only 'terabytes'."},
+    "a6_fits_laptop": {"pass": false, "working_set": "terabytes of raw volumes (paper), or unknown if precomputed embeddings exist", "note": "The README says the released model needs a CUDA GPU for inference, and it was trained on 60 V100 GPUs (a data-centre graphics card)."},
+    "a7_counts_match_paper": {"pass": false, "note": "Could not compare; no files accessible."},
+    "a8_label_provenance": {"pass": false, "note": "Not assessed. Drug identity is an experimental label, but any membrane-potential label comes from a second imaging channel of the same cells, so it may share imaging artefacts with the inputs."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "MitoSpace (this paper; 3D-ResNet + BiLSTM self-supervised encoder)", "open_weights": false, "score_and_split": "Membrane-potential regression probe R2 = 0.91 (from the abstract; split not seen).", "authors_named_unsolved": "Not retrieved (no full text).", "runnable_as_baseline": false},
+      {"name": "MoDL (Nature Communications 2025), supervised mitochondrial segmentation and function prediction", "open_weights": null, "score_and_split": "Trained on 20,000 manually labelled mitochondria and over 100,000 super-resolution images with assay labels (from the search snippet); scores and split not checked.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "MitoSpace encoder (68.4M parameters)", "freeze_and_head_viable": false, "hardware": "CUDA GPU required, per the README", "licence": "Review-only licence from the UC Regents; no derivative works until re-release"},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "Not reached; the data are inaccessible.",
+  "plain_idea": {
+    "one_liner": "Use 3D time-lapse movies of mitochondria in single cells to predict which drug was applied and how charged the mitochondria are.",
+    "train_on": "Per-cell 3D+time image volumes of mitochondria from lattice light-sheet microscopy (a fast 3D live-cell microscope), or precomputed embeddings of them; number of cells unknown.",
+    "predict": "Drug treatment class, and mitochondrial membrane potential measured with a dye channel on the same cells.",
+    "why_worthwhile": "Linking mitochondrial shape to mitochondrial function could support label-free drug screening, but the paper already reports R2 = 0.91 for this."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would only have the authors' own data, and it is not accessible."},
+    "confidence_score": {"answer": "no", "why": "No replicate structure could be inspected."},
+    "models_beatable": {"answer": "no", "why": "MitoSpace (2026) already reports R2 = 0.91 on its own data, and MoDL (2025) covers prediction of function from shape."},
+    "guaranteed_improvement": {"answer": "no", "why": "The baseline can't be run (gated weights, GPU needed), and no joinable new data was identified."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Fit light heads on frozen MitoSpace embeddings to predict drug class or membrane potential, testing on held-out drugs. This is blocked until the data and weights are released publicly.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": null, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated: no files accessible, and the README says inference needs a CUDA GPU.", "cheapest_killing_check": "Re-try an unsigned download of s3://mitospace4d/processed_data/manifest.parquet after the post-publication re-release, and check whether per-cell embeddings and membrane-potential values exist as a table."},
+  "verdict": "reject",
+  "verdict_reason": "A1 fails: the S3 bucket returns 403, and the Hugging Face weights are gated under a review-only, no-derivatives licence. The raw data are terabyte-scale 4D microscopy, and inference needs a CUDA GPU. Reconsider if a public release of embeddings plus labels appears."
+}

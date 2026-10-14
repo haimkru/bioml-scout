@@ -1,0 +1,114 @@
+{
+  "paper_id": "nature2026-10832-w",
+  "title": "Subnuclear genome compartmentalization controls bivalent chromatin activity.",
+  "doi": "10.1038/s41586-026-10832-w",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE274038",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Read GEO file lists for GSE274038 (one 17 GB RAW tar holding ~120 bigWig signal tracks of 30-340 MB each plus small BED domain calls) and GSE274039 (8 bulk RNA-seq TPM files from cell-line neural progenitors and neurons). Downloaded and opened 4 domain BEDs: GW17 radial glia has 345 LADs (lamina-associated domains) covering 1.28 Gb, GW17 excitatory neurons 794 LADs; speckle-associated domains (SPADs): 740 in radial glia, 612 in neurons, with a score column. One H3K27me3 peak file has 49,357 peaks; one TPM file has 60,719 Ensembl genes. A ranged read of one lamina bigWig returned a valid bigWig header, so remote range reads work. GitHub repo holds analysis scripts only, no tables.",
+    "what_came_from_paper_text_only": "Assay details (GO-CaRT, a CUT&RUN-based method, against LMNB1 and SON), the three cell types (radial glia, intermediate progenitors, excitatory neurons) sorted from GW16-20 cortex, the 'hundreds of relocating genes' and eightfold expression change. Raw reads are controlled access in dbGaP phs000989; fetal cortex expression sits in the NeMO archive (not opened). I did not open any bigWig body, so per-bin values, normalisation and replicate agreement are unverified; the paper's LAD/SPAD counts were not compared with the BEDs."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Processed bigWigs and BEDs download from GEO with no login (checked file lists and fetched BEDs). Raw reads are controlled access in dbGaP, but the project doesn't need them."},
+    "a2_label_is_a_column": {"pass": true, "note": "Label = lamina or speckle signal (log2 ratio over an IgG antibody control) per genomic window, read out of one bigWig per sample by fixed-window averaging. No joining across sources needed, but no ready table exists: every label must be binned out of the tracks first."},
+    "a3_inputs_present": {"pass": true, "note": "Input is the hg38 reference DNA sequence at given coordinates, plus histone tracks from the same series. Coordinates checked in the BEDs; the genome build is assumed hg38 from the paper, not stated in the files."},
+    "a4_units_stated": {"pass": true, "note": "File names state 'scaled.log2' ratio over IgG for lamina/speckle tracks and RPGC (reads per genomic content) for histone coverage. Units are implied by file names, not by a units column."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "About 30,000 windows of 100 kb across the genome per sample (my estimate, not counted from files). The independent units are much fewer, though: 345-794 domains per cell type (checked in BEDs), all from one lab."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~4.5 GB of raw bigWigs for 18 lamina/speckle tracks (GEO sizes); <50 MB after binning", "note": "Each bigWig exceeds the 50 MB download cap, but remote ranged reads (pyBigWig-style) let you bin without downloading the whole file. Header read verified."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not cross-checked: paper's domain counts not extracted. Files are internally consistent (replicate pairs present for each cell type and mark)."},
+    "a8_label_provenance": {"pass": true, "note": "Per-window signal is a direct sequencing measurement. The LAD/SPAD BEDs are outputs of a domain caller (an HMM-based caller, and SEACR, a peak caller), so use the raw signal rather than the calls."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 0, "why": "~120 separate bigWig tracks plus BEDs; no window-by-feature table exists (seen in GEO file list)."},
+    "B2": {"score": 1, "why": "BEDs parsed first try; bigWigs need a reader library and binning code, not plain csv."},
+    "B3": {"score": 1, "why": "Tracks are scaled log2 over IgG per sample; cross-sample comparability across donors needs checking (paper text, not verified)."},
+    "B4": {"score": 2, "why": "Continuous signal, no censored values; only unmappable windows need masking."},
+    "B5": {"score": 2, "why": "One track per sample/replicate; no duplicated measurements beyond intentional replicates."},
+    "B6": {"score": 1, "why": "File names encode cell type, week, mark and replicate; normalisation described only in paper methods."},
+    "C1": {"score": 1, "why": "Transfer question (do sequence features predict cell-type-specific relocation?) is informative, but the per-window task means beating existing models."},
+    "C2": {"score": 1, "why": "Nucleotide GPT was fine-tuned on this exact GW17 cortex data; LADDER and UNADON exist; code and splits unclear."},
+    "C3": {"score": 1, "why": "Weak angle: cell-type-resolved relocation in fetal cortex over neurogenesis, which LADDER (cell-type independent) ignores."},
+    "C4": {"score": 2, "why": "GO-CaRT on sorted fetal cortex cells is rare, costly tissue work; a predictor would substitute."},
+    "C5": {"score": 1, "why": "Nucleotide GPT reports 73.6% LAD / 79.4% SPAD accuracy, split unspecified; GC/gene-density baseline obvious."},
+    "D1": {"score": 2, "why": "DNABERT-2, Nucleotide Transformer and HyenaDNA are open-weight DNA models."},
+    "D2": {"score": 1, "why": "Embedding ~3 Gb of sequence on CPU is many hours; feasible only with small windows or subsampling."},
+    "D3": {"score": 1, "why": "Mixed: DNABERT-2 Apache-2.0; Nucleotide Transformer CC BY-NC-SA."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes; chromosome is in every BED/bigWig row."},
+    "E2": {"ok": true, "why": "22 autosomes give many held-out groups; donors only 2-3 (GW16, GW17, GW20 in names)."},
+    "E3": {"ok": true, "why": "GC content and gene density per window are trivial, known-strong baselines."},
+    "E4": {"ok": true, "why": "Two replicates per cell type and mark in GEO file list give replicate correlation."},
+    "E5": {"ok": true, "why": "Lamina signal must anticorrelate with GC/gene density and with speckle signal (textbook)."},
+    "E6": {"ok": true, "why": "Label shuffling within chromosomes and feature-block ablation are straightforward."},
+    "E7": {"ok": true, "why": "Public lamina/speckle maps in cell lines (4DN TSA-seq, DamID; Kind LAD atlas) offer external tests."},
+    "E8": {"ok": false, "why": "Nucleotide GPT code/weights and split not found; its numbers can't be reproduced as is."},
+    "G1": {"score": 2, "why": "Genomic coordinates in BEDs; TPM file uses versioned Ensembl gene IDs (checked)."},
+    "G2": {"score": 2, "why": "4DN Data Portal lamina DamID / SON TSA-seq in H1, K562, HFF, HCT116, joinable on hg38 coordinates."},
+    "G3": {"score": 2, "why": "Fixed genomic windows join one-to-one across resources once build is fixed."},
+    "G4": {"score": 1, "why": "Combined question: is nuclear position mostly sequence-encoded or cell-type-specific? Partly asked already by UNADON."},
+    "H1": {"score": 2, "why": "Genome-wide signal covers associated and non-associated regions alike."},
+    "H2": {"score": 0, "why": "One lab, 2-3 fetal donors, one tissue."},
+    "H3": {"score": 2, "why": "Claim stated precisely in honest_claim_h3."},
+    "H4": {"score": 1, "why": "Donor count and gestational weeks visible in file names; tissue limits partly documented."},
+    "I1": {"score": 1, "why": "3D-genome and neurodevelopment labs (e.g. Lim lab, UCSF; Ma lab, CMU) broadly."},
+    "I2": {"score": 1, "why": "Could prioritise genes for relocation experiments, but marginal over existing maps."},
+    "I3": {"score": 1, "why": "Per-window correlation roughly matches 'is this gene at the lamina in neurons?'."},
+    "I4": {"score": 1, "why": "GC/repeat density already explains much lamina association; ML adds some."},
+    "J1": {"score": 1, "why": "Heavy signal processing before modelling; DNA language-model embeddings are real ML."},
+    "J2": {"score": 1, "why": "Textbook LAD/GC relationships give sanity checks; chromatin biology needs expertise."},
+    "J3": {"score": 1, "why": "Binned multi-track table is shareable; model result may be marginal."},
+    "J4": {"score": 1, "why": "Not set; ~2-3 weeks plausible."},
+    "J5": {"score": 0, "why": "No kill date written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Nucleotide GPT (bioRxiv 2024.11.27.625761), a DNA transformer fine-tuned to classify LADs/SPADs", "open_weights": null, "score_and_split": "73.6% average LAD accuracy, 79.4% SPAD accuracy across GW17 radial glia, progenitors and neurons, 8 kb windows; split not specified.", "authors_named_unsolved": "8 kb window misses long-range dependencies; cell-type-specific factors beyond sequence modulate association during differentiation.", "runnable_as_baseline": false},
+      {"name": "LADDER (Patterns 2026), multimodal deep model on sequence plus gene/LINE1/SINE density", "open_weights": null, "score_and_split": "Held-out chromosome 15 test, chromosome 11 validation, 512 kb windows; strong Pearson/ROC-AUC reported (exact numbers not retrieved). Cell-type independent.", "authors_named_unsolved": "Cell-type-specific lamina patterns not captured; weak on chromosomes with little lamina association.", "runnable_as_baseline": null},
+      {"name": "UNADON (arXiv 2304.13230), transformer predicting SON and LMNB TSA-seq from sequence and epigenomic features", "open_weights": null, "score_and_split": "Cell lines K562, H1, HCT116, HFFc6; cross-cell-type evaluation; exact numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "SPIN (Genome Biology 2021), hidden Markov random field combining TSA-seq, DamID and Hi-C into nuclear states", "open_weights": true, "score_and_split": "Unsupervised state caller in K562, not a predictor.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 (open DNA language model) or HyenaDNA-small, frozen embeddings averaged per window", "freeze_and_head_viable": true, "hardware": "CPU feasible only on subsampled windows; full-genome embedding wants a GPU", "licence": "DNABERT-2 Apache-2.0; Nucleotide Transformer CC BY-NC-SA 4.0"},
+  "integration": {"partner_dataset": "4DN Data Portal lamina DamID and SON TSA-seq maps in H1, K562, HFF and HCT116 cell lines", "join_key": "hg38 genomic coordinates (fixed windows)", "bigger_question_one_sentence": "How much of a genome region's position at the lamina or speckle is fixed by its DNA sequence, and how much is rewritten cell-type-specifically during human cortical neurogenesis?"},
+  "controls": {"positive_control": "Lamina signal anticorrelates with GC content, gene density and speckle signal; a model must recover this.", "negative_control": "Shuffle labels within chromosomes; replace sequence embeddings with GC-matched random sequence.", "external_validation": "4DN cell-line DamID/TSA-seq maps and the Kind et al. LAD atlas; second donor (GW20) as a held-out donor."},
+  "honest_claim_h3": "Predicts lamina and speckle association of 100 kb genome windows in three sorted neural cell types from 2-3 mid-gestation fetal cortex donors profiled by one lab with GO-CaRT, tested on held-out chromosomes.",
+  "plain_idea": {"one_liner": "Use the DNA sequence of a genome region to predict whether it sits at the nuclear edge or near speckles in developing human brain cells.", "train_on": "About 30,000 genome windows of 100 kb (an estimate; not counted from the files), each with its DNA sequence and histone marks, in three brain cell types.", "predict": "How strongly each window contacts the nuclear lamina (the nucleus's inner edge) or nuclear speckles, measured by antibody-targeted cutting and sequencing (GO-CaRT) on cells sorted from fetal cortex.", "why_worthwhile": "Would tell neurodevelopment labs whether a gene's move from the nuclear edge to speckles during neuron birth is written in its sequence or set by the cell type."},
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Nucleotide GPT already used this lab's GW17 cortex data; ours adds GW20, H3K9me2 and continuous signal, but covers the same 3 cell types. LADDER used 4 non-brain-specific cell types."},
+    "confidence_score": {"answer": "partly", "why": "Two replicates per track allow a per-window noise estimate; none of the named models report calibrated uncertainty, as far as retrieved."},
+    "models_beatable": {"answer": "partly", "why": "Nucleotide GPT (2024 preprint) uses 8 kb windows and an unspecified split; LADDER (2026) uses an honest held-out chromosome but is cell-type independent, so cell-type-specific prediction is open."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model is runnable as a baseline (no code or weights found), and partner 4DN data comes from other cell types and assays (DamID, TSA-seq), so it doesn't measure the same quantity in the same way."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "4DN Data Portal (lamina DamID, SON TSA-seq in several cell lines; known resource), Kind et al. LAD atlas (known resource), van Steensel lab DamID datasets.", "approx_items": null, "join_key": "hg38 genomic coordinates", "why": "Cell-line lamina/speckle maps let a model trained on brain cells be tested on unrelated cell types, separating sequence-encoded from cell-type-specific positioning."},
+  "leakage_plan": {
+    "risks": ["Neighbouring windows inside the same multi-megabase LAD share both sequence features and label, so a random split leaks through spatial autocorrelation.", "Replicates and donors of the same cell type are near-copies; splitting them across train and test inflates scores.", "LAD/SPAD calls are derived from the signal itself, so using calls of one mark as features for the other is near-circular."],
+    "split": "Hold out whole chromosomes (chromosome column present in every BED row, seen); additionally hold out the GW20 donor for a donor-transfer test (donor in file names, seen).",
+    "checks": ["Shuffle labels within chromosome and confirm collapse to the GC-content baseline.", "Train on GC content plus gene density alone and report how much the sequence model adds.", "Report performance as a function of distance to the nearest training chromosome region (should be flat under chromosome holdout)."],
+    "verdict": "Manageable with chromosome holdout; spatial autocorrelation is the main trap."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured per-window change in lamina signal from radial glia to neurons on held-out chromosomes, because the open question is cell-type-specific relocation.",
+    "baselines": "GC content plus gene density linear model (to compute); Nucleotide GPT 73.6% LAD accuracy (split unspecified, not directly comparable).",
+    "success": "Spearman on held-out chromosomes for the radial-glia-to-neuron change at least 0.1 above the GC/gene-density baseline (threshold set by me, no published number on this split).",
+    "noise_ceiling": null,
+    "kill": "If the sequence model adds under 0.05 Spearman over GC plus gene density for the relocation target after one week, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes 3D-genome method papers; would need clear evidence that sequence predicts cell-type-specific relocation beyond GC content, validated in a held-out donor."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Fits a modest benchmark showing how much sequence explains of fetal-brain nuclear positioning versus simple baselines."},
+    "fallback": {"journal": "bioRxiv preprint plus MLCB workshop", "why": "A negative result (sequence adds nothing over GC for relocation) is still a short, citable note."}
+  },
+  "pitch": {
+    "headline": "Rare paired lamina and speckle maps for three sorted neural cell types from fetal human cortex, at two gestational weeks, with replicates.",
+    "what_makes_the_data_unusual": "Sorted primary fetal cortex cells, not cell lines: 345 versus 794 LADs in radial glia versus neurons (checked in BEDs), plus matched H3K27me3, H3K4me3, H3K9me2 and Pol II tracks.",
+    "the_win": "Sequence model beats a GC/gene-density baseline by at least 0.1 Spearman at predicting which windows leave the lamina from radial glia to neurons, on held-out chromosomes.",
+    "even_if_it_fails": "Quantifies that cell-type relocation during neurogenesis is not sequence-encoded, which supports the paper's claim that position is set by cell state.",
+    "who_wants_it": "Lim lab (UCSF, authors) and 3D-genome modellers (Ma lab, CMU; LADDER authors) deciding whether sequence-only nuclear-position models suffice for development."
+  },
+  "ml_idea": "Bin GO-CaRT lamina (LMNB1) and speckle (SON) bigWigs into 100 kb windows for radial glia, progenitors and neurons; predict per-window signal and radial-glia-to-neuron change from frozen DNA language-model embeddings plus GC/repeat density, with chromosome holdout and GW20 donor holdout; test transfer to 4DN cell-line maps.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 4.5, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": 5, "compute_note": "Estimated, nothing timed: binning 18 bigWigs via ranged reads is I/O-bound; a GC/repeat baseline on ~30k windows takes minutes; full-genome language-model embedding on CPU is impractical, so embedding cost depends on subsampling and is left null.", "cheapest_killing_check": "Bin one radial-glia and one neuron lamina bigWig at 100 kb and fit GC content plus gene density: if that already explains most of the change in lamina signal between the two cell types on held-out chromosomes, there's nothing left for a model."},
+  "verdict": "park",
+  "verdict_reason": "Part A passes, but the data is ~120 genome-wide signal tracks rather than a table (B scores 7 of 12), a 17 GB genomics resource, and Nucleotide GPT was already fine-tuned on this lab's same cortex data. Worth revisiting only for the cell-type relocation transfer question."
+}

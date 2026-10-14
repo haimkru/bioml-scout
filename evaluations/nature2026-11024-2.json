@@ -1,0 +1,59 @@
+{
+  "paper_id": "nature2026-11024-2",
+  "title": "Targeted genomic integration and rearrangement using prime assembly.",
+  "doi": "10.1038/s41586-026-11024-2",
+  "journal": "Nature",
+  "data_url": "https://www.nature.com/articles/s41586-026-11024-2#Sec25 (source data XLSX + Supplementary Tables); raw reads: https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1418097",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all 14 source-data XLSX files, the Supplementary Tables XLSX and the supplementary ZIP (7 more XLSX). Counted every sheet: 47 figure-panel sheets, 2,106 non-header rows in total, of which only 381 are editing-efficiency measurements (each row a free-text condition with 3 replicate columns); the three large sheets (771, 599, 373 rows) are off-target site nominations holding only chromosome, coordinate and UMI (unique molecular identifier) read count. Supplementary Table 2 lists 103 pegRNA/sgRNA spacer + extension sequences, Table 3 ~70 DNA donor sequences. Checked PRJNA1418097 in NCBI BioProject: 541 raw sequencing runs, 'Raw sequence reads' only.",
+    "what_came_from_paper_text_only": "Methods description that editing outcomes were called with CRISPResso2 plus a custom reclassification script, and that Donor-seq off-target nomination used a modified GUIDE-seq pipeline. I did not run either pipeline or download any FASTQ."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All supplementary and source-data files downloaded freely from the Nature article page with no login; raw reads are in open SRA BioProject PRJNA1418097."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in the files: efficiencies live as bar-chart source data in 47 separate panel sheets, keyed by free-text condition strings like \"3'-odsDNA, 25-nts flaps\" or \"Standard pegRNA scaffold, Vehicle\". Building a label column means hand-mapping those strings to the pegRNA and donor sequences in Supplementary Tables 2-3 - the target has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: spacer and pegRNA extension sequences (Supplementary Table 2, 103 guides) and donor sequences (Supplementary Table 3, ~70 donors) are present as literal DNA sequences, not accessions."},
+    "a4_units_stated": {"pass": true, "note": "Verified in the sheets: units are given per panel (% EGFP+ cells, % precise prime-assembly allele, UMI count), though they differ between panels and are not comparable across readouts."},
+    "a5_enough_rows": {"pass": false, "n_rows": 381, "note": "Counted in the files: 381 efficiency rows across all figure panels, spread over several incomparable readouts, cell types and loci. Far below the ~1,500 (or ~400 classification) bar, and the unique design-by-locus conditions are fewer still, roughly 130 with three replicates each."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.4 MB of XLSX", "note": "Whole processed dataset is under half a megabyte; the only large asset is 541 raw FASTQ runs in SRA, which policy excludes."},
+    "a7_counts_match_paper": {"pass": true, "note": "No headline row count is claimed in the paper to contradict; panel sheets match the figures they are labelled for."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are physical measurements - flow cytometry percentages and amplicon sequencing allele frequencies - not another model's output, though the allele classification does pass through CRISPResso2 plus a custom script."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PRIDICT / PRIDICT2.0 (prime editing guide RNA efficiency predictors, attention-based recurrent neural networks)", "open_weights": null, "score_and_split": "Search result reports Spearman correlation 0.85 for intended and 0.78 for unintended edits, trained on 92,423 pegRNAs across 13,349 pathogenic mutations; split details not checked this session.", "authors_named_unsolved": "Coverage limited to edits up to roughly 15 base pairs; large insertions are outside its scope.", "runnable_as_baseline": null},
+      {"name": "DeepPrime (deep learning predictor of prime editing efficiency)", "open_weights": null, "score_and_split": "Not retrieved; search summary says it handles non-NGG PAM sites but only edits up to 3 base pairs.", "authors_named_unsolved": "Longer edits and large insertions.", "runnable_as_baseline": null},
+      {"name": "ePRIDICT (chromatin-context model of prime editing rates, Nature Biotechnology 2024)", "open_weights": null, "score_and_split": "Not retrieved in detail; models how local chromatin environment changes prime editing rates.", "authors_named_unsolved": "Transfer across cell types and loci.", "runnable_as_baseline": null},
+      {"name": "OptiPrime (mechanistic machine learning for prime editing outcomes, Nature Biotechnology 2026)", "open_weights": null, "score_and_split": "Search summary: state-of-the-art accuracy on prime editing efficiency and, notably, predicts nicking-guide (PE3) and dual-pegRNA (twinPE) outcomes - the closest existing model to prime assembly's dual-flap design.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Prime-editing insertion efficiency model (Nature Biotechnology 2023, sequence features plus DNA repair determinants)", "open_weights": null, "score_and_split": "Search summary: library of 3,604 insertion sequences measured at four genomic sites in three human cell lines; combined sequence and repair features reach correlation R = 0.70 for relative insertion frequency.", "authors_named_unsolved": "3' flap nucleases TREX1/TREX2 suppress longer insertions; length limits remain unexplained.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer or DNABERT-2 (DNA language models) on spacer/flap/donor sequence", "freeze_and_head_viable": true, "hardware": "Laptop CPU would suffice for a few hundred short sequences", "licence": "Permissive for DNABERT-2; Nucleotide Transformer weights are openly downloadable"},
+  "integration": {"partner_dataset": "PRIDICT2.0 / DeepPrime training libraries (tens of thousands of measured pegRNAs) joinable in principle on spacer sequence and genomic coordinate (GRCh38)", "join_key": "spacer sequence / GRCh38 coordinate", "bigger_question_one_sentence": "Do the sequence rules learned from small prime edits transfer to dual-flap assembly of medium and large DNA fragments - a question this paper's ~130 conditions are far too few to answer, even as a test set."},
+  "controls": {"positive_control": "Flap-length dose-response is visible in Extended Data Fig. 1b (efficiency collapses from ~30% at 20-25 nucleotide flaps to <2% at 8-11 nucleotides) and any working model must recover it.", "negative_control": "Donor-only and vehicle-only wells are present in most panels and give 0.1-4% background.", "external_validation": "None within this paper; the PRIDICT and DeepPrime libraries measure a different (small-edit) quantity, so they are not a matched validation set."},
+  "honest_claim_h3": "A model fitted here could only claim to rank a few dozen hand-chosen pegRNA/donor designs at five loci in two or three cell lines, measured by two incomparable readouts - it could not claim to predict prime assembly efficiency at new sites.",
+  "plain_idea": {
+    "one_liner": "Use guide RNA and DNA donor design features to predict how efficiently a DNA fragment integrates at a chosen genome site.",
+    "train_on": "Each example would be one design (spacer sequence, 3' flap length, donor type and length, target gene, cell type) paired with a measured integration efficiency. I counted 381 measured rows, roughly 130 unique conditions with three replicates each.",
+    "predict": "Percentage of cells carrying the intended integration, measured either by flow cytometry (% green-fluorescent cells) or by amplicon sequencing allele frequency - two readouts that are not on the same scale.",
+    "why_worthwhile": "Genome-editing labs choosing between dozens of guide-and-donor designs currently test them in the lab one at a time; a reliable ranking model would cut that cost. With this paper's row count, though, nothing reliable can be fitted."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "381 measured rows (~130 unique conditions) here versus 92,423 pegRNAs behind PRIDICT and 3,604 insertion sequences behind the 2023 insertion-efficiency model. The one genuinely new slice - dual-flap assembly of medium-to-large fragments - is covered by only a few dozen designs."},
+    "confidence_score": {"answer": "no", "why": "Triplicate measurements do exist in every panel, so replicate noise is estimable, but with ~130 conditions there is no way to calibrate per-prediction uncertainty that would generalise."},
+    "models_beatable": {"answer": "no", "why": "The nearest competitor, OptiPrime (Nature Biotechnology 2026), already covers dual-pegRNA twinPE outcomes and is reported as state of the art; nothing fitted on 130 conditions would beat it."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails is sameness of measurement: this paper's readouts (% green-fluorescent cells, % precise allele) measure large-fragment assembly, not the small-edit efficiency the existing models were trained and evaluated on, so they cannot share a split or a baseline."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict prime assembly integration efficiency from pegRNA spacer, 3' flap length, donor chemistry and target locus, using a frozen DNA language model plus a small regression head, with existing prime-editing predictors as baselines. Dead on arrival at the row count.",
+  "effort": {"hours_to_feature_table": 14, "working_set_gb": 0.001, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 0.1, "cv_run_minutes": 1, "compute_note": "Estimated, not timed: all 22 spreadsheets total under 0.4 MB and parsed in seconds with pandas; the 14 hours is hand-mapping 47 figure-panel condition strings onto sequences in Supplementary Tables 2-3.", "cheapest_killing_check": "Count the efficiency rows across the source-data sheets - it is 381, which killed it in under an hour."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A2, verified in the files. The only processed data is bar-chart source data: 381 efficiency measurements across 47 figure panels, roughly 130 unique conditions, spread over incomparable readouts (% green-fluorescent cells, % precise allele, UMI read counts) and several cell types. The label is not a column - it would have to be reconstructed by matching free-text panel labels like \"3'-odsDNA, 25-nts flaps\" to the 103 guide and ~70 donor sequences in the Supplementary Tables. The three biggest sheets are off-target site nominations (chromosome, coordinate, UMI count) from only five or six guides, with no sequence features attached. The 541 raw sequencing runs in PRJNA1418097 are FASTQ, excluded by policy, and turning them into labels would mean rerunning CRISPResso2 plus the authors' custom classifier - label construction, not label reading. The field is also well served already: PRIDICT2.0, DeepPrime, ePRIDICT and OptiPrime exist, the last of which already handles dual-pegRNA outcomes."
+}

@@ -1,0 +1,55 @@
+{
+  "paper_id": "nature2026-11026-0",
+  "title": "Topographic structure and function of locus coeruleus noradrenaline neurons.",
+  "doi": "10.1038/s41586-026-11026-0",
+  "journal": "Nature",
+  "data_url": "https://data.nemoarchive.org/bican/grant/BICAN_Neuromodulation/aibs/transcriptome/nuclei/ ; https://dandiarchive.org/dandiset/001950 ; https://codeocean.allenneuraldynamics.org/collections/9cf044ce-93c7-4c7e-bfa1-5d8c37aa42ec",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Paper has no PMC full text (the NCBI PMC link 13262244 points to an unrelated J Neurochem review); read the bioRxiv preprint (PMC13082035) instead. Opened the GitHub index repo and capsule repos; the Code Ocean collection page is a JavaScript app, so its data assets were not listed. Listed the NeMO (Neuroscience Multi-omic Archive) directories without logging in. Downloaded the retro-seq cell metadata (Smart-seq v4, samp.dat.Rdata, 395 KB): 1,383 nuclei x 132 columns, with an injection_roi label column. Cross-tabulated the label against donor mouse: every mouse has exactly one injection site (19 mice, 1,307 nuclei pass alignment QC). HEAD checks: retro-seq counts are 19-30 MB; the 10x count matrix is 3.76 GB; DANDI 001950 (recordings) is 385 NWB files, 44.8 GB, open. Read the authors' projection_predict.ipynb: 566 LC-NE cells over 3 targets, test accuracy 0.47-0.55 on a random per-cell split, and near chance when whole mice are held out.",
+    "what_came_from_paper_text_only": "Single-nucleus RNA counts (398,912 nuclei, 4,845 LC-NE (locus coeruleus noradrenaline) neurons, 40 mice), 130-132 reconstructed neurons from 4 brains, 2,221 MERFISH (spatial gene-imaging) cells reused from Nardone et al. 2024, BARseq/MAPseq projection-barcoding data from 2 brains, and the number of recorded units. Not opened: the 10x matrix (3.76 GB), the NWB files and the Code Ocean assets."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked in files: NeMO HTTP directories list and serve files without login, and DANDI 001950 is OPEN. Code Ocean assets were not listable (JavaScript page), but are not needed for the retro-seq task."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: retro-seq metadata has an injection_roi column (MOs;PL cortex, AN;CUL;PRM cerebellum, C5 spinal cord, VAL/VPM thalamus, ml). That is the projection target, stored directly."},
+    "a3_inputs_present": {"pass": true, "note": "Checked by file listing only: matching count matrices (CPM, exon and intron sparse Rdata, 19-30 MB) sit next to the metadata. Not opened."},
+    "a4_units_stated": {"pass": true, "note": "Counts are labelled by file name (CPM, counts per million; FPKM; raw exon counts). The label is categorical, so no unit is needed."},
+    "a5_enough_rows": {"pass": false, "n_rows": 1383, "note": "Checked in files: 1,383 nuclei (1,307 pass QC; the paper's model uses 566 LC-NE cells over 3 targets). But each mouse got one injection site, so the real sample size is the mouse: 3 cortex, 3 cerebellum and 5 spinal cord mice (1-5 per site). The authors' own grouped split falls to chance."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 50 MB (retro-seq Rdata)", "note": "The retro-seq set is small. The 10x matrix (3.76 GB) and the recordings (44.8 GB) would only be needed for other tasks."},
+    "a7_counts_match_paper": {"pass": true, "note": "1,383 raw nuclei narrow to the 566 LC-NE cells in the authors' notebook after QC and dropping thalamus. Plausible, but the filter was not rerun."},
+    "a8_label_provenance": {"pass": true, "note": "The label is the experimental injection site (where the retrograde virus was placed), a physical fact. It is not a model output and not computed from expression. The paper's 'pseudospace' score in the big 10x set would fail A8, because it is computed from expression."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Authors' projection-target classifiers (logistic regression, random forest, SVC (support vector classifier), KNN (k-nearest neighbours), gradient boosting) in LCNE_transcriptomics/projection_predict.ipynb", "open_weights": true, "score_and_split": "Test accuracy 0.47-0.55 across models on a random 60/20/20 per-cell split of 566 cells, 3 classes (chance is about 0.33). With a 3-fold split that holds out whole mice, accuracy falls toward chance.", "authors_named_unsolved": "Notebook says the projection target is not predictable across animals with the current cohort (3-8 mice per target).", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models)", "freeze_and_head_viable": null, "hardware": "CPU feasible for about 600 cells", "licence": "not checked (project rejected)"},
+  "integration": {"partner_dataset": "Allen whole mouse brain taxonomy (ABC atlas) / Nardone 2024 MERFISH", "join_key": "gene symbol; CCF (Allen Common Coordinate Framework) coordinates", "bigger_question_one_sentence": "Not pursued: the rejection rests on too few mice."},
+  "controls": {"positive_control": "Dbh/Th/Slc6a2 marker expression separating LC-NE neurons from neighbouring cells.", "negative_control": "Label shuffling within mouse.", "external_validation": "BARseq/MAPseq (in-situ gene readout plus projection barcodes) from 2 brains, in Code Ocean assets that were not opened."},
+  "honest_claim_h3": "With 1-5 mice per injection site and the label fixed per mouse, a model could only claim to tell apart cells from different mice, not to predict a neuron's projection target from its gene expression.",
+  "plain_idea": {
+    "one_liner": "Use single-nucleus gene expression of brainstem noradrenaline neurons to predict which brain region (cortex, cerebellum, spinal cord) each neuron sends axons to.",
+    "train_on": "Full-transcriptome counts per nucleus, from retrogradely labelled locus coeruleus neurons; 1,383 nuclei in the file (566 LC-NE cells used by the authors) from 19 mice.",
+    "predict": "The injection site of the retrograde virus that labelled the neuron, recorded in the injection_roi metadata column.",
+    "why_worthwhile": "Would show whether projection identity is written in gene expression. But one site per mouse makes mouse and label inseparable, and the authors already report chance-level transfer across mice."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same 566 cells the authors' classifiers used; there is no bigger labelled retro-seq set."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements per cell, and with 1-5 mice per class there are too few groups to estimate uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "The 2026 baselines are simple scikit-learn models, but they already fail on a held-out-mouse split, and the cause is the number of mice, not the model."},
+    "guaranteed_improvement": {"answer": "no", "why": "No joinable dataset measures the same retrograde label in more mice; BARseq/MAPseq uses a different assay (103-gene in-situ panel) in only 2 brains."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict projection target from retro-seq expression. Killed by the mouse-label confound: 1-5 mice per site, and the authors' own held-out-mouse accuracy is at chance.",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.05, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": null, "cv_run_minutes": 2, "compute_note": "Estimated from file sizes (Rdata 19-30 MB, 566-1,383 cells); nothing timed.", "cheapest_killing_check": "Cross-tabulate injection_roi against external_donor_name. Done: one site per mouse, 1-5 mice per site, so the project fails."},
+  "verdict": "reject",
+  "verdict_reason": "A5 in disguise: the open retro-seq data has 1,383 nuclei, but each of its 19 mice got exactly one injection site. That leaves 1-5 mice per projection target, so mouse identity and label can't be separated, and the authors' own held-out-mouse classifier is already at chance. The other modalities are too small (132 reconstructed neurons, 2 BARseq brains), have labels computed from the features (pseudospace), or are 45 GB of recordings with no clean label column."
+}

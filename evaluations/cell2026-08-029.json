@@ -1,0 +1,106 @@
+{
+  "paper_id": "cell2026-08-029",
+  "title": "Comparative analysis of mitochondrial proteomes across the tree of life.",
+  "doi": "10.1016/j.cell.2026.08.029",
+  "journal": "Cell",
+  "data_url": "https://mitocarta.org/ (per-organism xlsx) ; https://doi.org/10.5281/zenodo.17823713 (orthogroups, DeepLoc2.0-mito weights, proteome FASTAs)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all six MitoTOL organism spreadsheets from mitocarta.org (Acanthamoeba, Arabidopsis, Babesia, Giardia, Leishmania, Trypanosoma; 2.7-21 MB each). Counted genes and positives per organism: 15,944/1,122; 27,559/1,609; 4,132/525; 4,968/59; 8,470/1,594; 9,678/1,666 (70,751 genes, 6,575 positives). 0 duplicate gene IDs. Counted proteins detected by mass spectrometry (PCP score > -1): 9,561; 12,645; 3,414; 4,480; 7,403; 7,606. Scored the DeepLoc 2.1 mitochondrion score already in each sheet against the inventory label myself: AUROC (area under the ROC curve) 0.89-0.96, AUPRC (precision-recall area) 0.76-0.87. Listed the Zenodo record (CC-BY-4.0; data.tar.xz 3.77 GB, species_fastas.tar.xz 3.19 GB) and the GitHub code (MIT) README files.",
+    "what_came_from_paper_text_only": "8,619 proteins / 3,199 families across eight organisms and the ~200-species prediction set come from the abstract only. Full text is paywalled and not in Europe PMC. Did not open data.tar.xz (3.77 GB, over cap), so the DeepLoc2.0-mito training table, GraphPart homology partitions, and retrained weights were seen only in the Zenodo README. Human and yeast inventories were not downloaded. Protein sequences are not in the xlsx files; they would have to come from the proteome FASTAs (not opened)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Spreadsheets download without login from sites.broadinstitute.org; Zenodo CC-BY-4.0, checked."},
+    "a2_label_is_a_column": {"pass": true, "note": "Each sheet has a 0/1 inventory column (AcMitoCarta, AtMitoCarta, BdMitoCarta, GlMitoCarta, LtMitoCarta, TbMitoCarta) plus a continuous PCP score; verified in files. Giardia's column is NaN rather than 0 for negatives (trivial fix)."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are not in the xlsx; only gene IDs (e.g. Tb927.9.4630, LtaP18.1470, ACANB00001). Six whole-proteome FASTAs (one per organism, from Zenodo species_fastas or VEuPathDB/TAIR) are needed. That is a handful of bulk files, not thousands of lookups, so it passes, but the ID match is unverified."},
+    "a4_units_stated": {"pass": true, "note": "Binary label; PCP score is a documented Pearson correlation (cutoff ≥0.6), described in the Descriptions sheet."},
+    "a5_enough_rows": {"pass": true, "n_rows": 70751, "note": "70,751 genes, 6,575 positives across six organisms (counted). About 45,100 were detected by mass spectrometry, which is the cleaner negative set."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~55 MB xlsx + ~6 proteome FASTAs (tens of MB) + ESM-2 embeddings (~70k x 480 floats ≈ 135 MB)", "note": "CPU embedding of 70k proteins is hours, not days."},
+    "a7_counts_match_paper": {"pass": true, "note": "Acanthamoeba sheet says 15,944 genes and 1,122 inventory proteins; the file matches exactly. The paper's 8,619 total includes human and yeast, which I didn't open."},
+    "a8_label_provenance": {"pass": true, "note": "Inventory evidence is mass-spectrometry co-fractionation (protein correlation profiling, PCP), tagging microscopy, mtDNA encoding, or literature. It is a physical measurement, not a model output. The 'BenchmarkLabel' column does use DeepLoc scores and orthology, so it must NOT be used as the target or as a feature."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Six per-organism sheets with a shared schema; sequences must be joined from separate proteome FASTAs."},
+    "B2": {"score": 1, "why": "xlsx parses in pandas first try; column names differ per organism (e.g. 'Benchmark label' vs 'BenchmarkLabel')."},
+    "B3": {"score": 1, "why": "Same PCP method across organisms but different fractionation designs and cutoffs; evidence mix differs (TrypTag, literature)."},
+    "B4": {"score": 1, "why": "Undetected proteins (PCP=-1) are labelled 0 without being measured; ~25k such rows need a policy."},
+    "B5": {"score": 2, "why": "0 duplicate gene IDs in every sheet, checked."},
+    "B6": {"score": 2, "why": "Descriptions sheet documents every column, including evidence codes and abbreviations; seen in files."},
+    "C1": {"score": 1, "why": "Leave-one-organism-out transfer is informative either way; within-organism accuracy only matters if it beats DeepLoc."},
+    "C2": {"score": 0, "why": "DeepLoc 2.1, TargetP 2.0, MitoFates, and the authors' own retrained DeepLoc2.0-mito exist, with homology-partitioned training."},
+    "C3": {"score": 1, "why": "Weak angle: transfer to divergent protists (Giardia mitosomes) and calibrated per-protein confidence using the PCP score."},
+    "C4": {"score": 2, "why": "Each inventory needed organelle purification, 24-30 mass-spec runs, and tagging microscopy."},
+    "C5": {"score": 2, "why": "DeepLoc 2.1 score is a column in every sheet; I computed AUROC 0.89-0.96 myself."},
+    "D1": {"score": 2, "why": "ESM-2 open weights; protein sequences are the natural input."},
+    "D2": {"score": 2, "why": "Mean-pooled ESM-2 embeddings cached once on CPU, then a logistic head."},
+    "D3": {"score": 2, "why": "ESM-2 MIT, Zenodo CC-BY-4.0, code MIT; DeepLoc baseline is academic-only but its scores are already in sheets."},
+    "E1": {"ok": true, "why": "Leave-one-organism-out, plus orthogroup-held-out splits using the paper's orthogroup IDs."},
+    "E2": {"ok": true, "why": "Six organisms in hand (eight with human/yeast MitoCarta), thousands of orthogroups."},
+    "E3": {"ok": true, "why": "Per-organism positive rate, human-ortholog-is-mito lookup, and DeepLoc score."},
+    "E4": {"ok": true, "why": "Babesia has two PCP replicate scores and Arabidopsis has subset PCP scores, enough to estimate label noise; seen in columns."},
+    "E5": {"ok": true, "why": "mtDNA-encoded proteins and TOM40/ISCU/HSPD1 orthologs (the PCP markers) must score highly; predicting protein length from sequence is a trivial control."},
+    "E6": {"ok": true, "why": "Label shuffle and homology-only ablation (Human.MitoCarta3.0_List column) are straightforward."},
+    "E7": {"ok": true, "why": "Human MitoCarta3.0 and yeast mito proteome are independent experimental inventories; TrypTag microscopy for trypanosomes."},
+    "E8": {"ok": true, "why": "DeepLoc 2.1 numbers reproducible from the sheet; the paper's DeepLoc2.0-mito weights are on Zenodo (not opened)."},
+    "G1": {"score": 1, "why": "Organism gene IDs (VEuPathDB, TAIR, ACANB) plus human Entrez top hits; few UniProt accessions directly."},
+    "G2": {"score": 2, "why": "Human MitoCarta3.0 and UniProt/AlphaFold DB via TAIR/VEuPathDB mappings; TrypTag localisation atlas."},
+    "G3": {"score": 1, "why": "Gene-to-protein one-to-many (best transcript given); orthology joins are many-to-many."},
+    "G4": {"score": 1, "why": "Adding AlphaFold structures might help mitosome proteins lacking targeting signals; marginal over sequence alone."},
+    "H1": {"score": 2, "why": "All detected proteins are recorded with PCP scores, so negatives are measured, not assumed."},
+    "H2": {"score": 2, "why": "Six organisms spanning Amorphea, Archaeplastida, Discoba, SAR, Metamonada."},
+    "H3": {"score": 2, "why": "Claim stated precisely below, limited to proteins detectable by mass spectrometry."},
+    "H4": {"score": 1, "why": "Undetected-protein issue is implicit (PCP=-1 documented) but not flagged as a label gap."},
+    "I1": {"score": 1, "why": "Protist parasite mitochondria labs (MitoTOL consortium, TrypTag); not a specific decision owner."},
+    "I2": {"score": 1, "why": "Better predictions in unmeasured protists would guide which proteins to tag; marginal given DeepLoc."},
+    "I3": {"score": 1, "why": "Users want a ranked candidate list; AUPRC roughly matches."},
+    "I4": {"score": 1, "why": "Orthology to human MitoCarta already gives much of the signal; ML adds targeting-signal recognition."},
+    "J1": {"score": 2, "why": "Embeddings, grouped splits, transfer across species, calibration."},
+    "J2": {"score": 1, "why": "Mitochondrial biology is interpretable but protist specifics need an expert."},
+    "J3": {"score": 2, "why": "A clean six-organism benchmark table with DeepLoc scores is useful by itself."},
+    "J4": {"score": 1, "why": "Roughly 2 weeks plausible; not formally set."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepLoc 2.1 (DTU, NAR 2024; protein language model + attention pooling)", "open_weights": true, "score_and_split": "On these MitoTOL inventories (my calculation from sheet columns): AUROC 0.89-0.96, AUPRC 0.76-0.87 per organism. DeepLoc 2.1 was trained on SwissProt, so this is effectively out-of-distribution for these protists.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "DeepLoc2.0-mito (retrained by this paper's authors on MitoTOL inventories)", "open_weights": true, "score_and_split": "Trained with GraphPart homology partitioning per Zenodo README; scores not seen (paper paywalled).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "MitoFates (2015, targeting-sequence predictor)", "open_weights": true, "score_and_split": "Average precision 0.84 on model-organism data (search snippet).", "authors_named_unsolved": "CoMR authors note such tools are trained only on animals, plants, and fungi.", "runnable_as_baseline": true},
+      {"name": "NommPred (2018, non-model-organism mito/MRO predictor)", "open_weights": null, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "CoMR (2026 Briefings in Bioinformatics, integrative scoring pipeline)", "open_weights": null, "score_and_split": "Benchmarked on yeast and Paratrimastix; numbers not retrieved.", "authors_named_unsolved": "Targeting predictors lose agreement in divergent organisms; homology evidence needed.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (35M or 150M checkpoint), a protein language model", "freeze_and_head_viable": true, "hardware": "Laptop CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "Human MitoCarta3.0 + yeast mitochondrial proteome + TrypTag localisation atlas", "join_key": "Human.TopHit Entrez gene ID / orthogroup ID / TriTrypDB gene ID", "bigger_question_one_sentence": "Does a mitochondrial-localisation model learned from distant eukaryotes transfer to a newly sampled lineage, and how fast does accuracy decay with evolutionary distance?"},
+  "controls": {"positive_control": "mtDNA-encoded proteins and orthologs of the PCP marker proteins (TOM40, ISCU, HSPD1) must rank at the top; predicting protein length from embeddings must be near-perfect.", "negative_control": "Shuffle inventory labels within organism; ablate to the human-ortholog-is-mitochondrial feature alone.", "external_validation": "Leave-one-organism-out across six MitoTOL organisms, plus human MitoCarta3.0 and TrypTag microscopy."},
+  "honest_claim_h3": "Predicts whether a protein from a held-out eukaryote was found in its mitochondrion by co-fractionation mass spectrometry, among proteins abundant enough to be detected, compared with DeepLoc 2.1's AUROC of about 0.93 on the same proteins.",
+  "plain_idea": {
+    "one_liner": "Use a protein's amino-acid sequence to predict whether it lives in the mitochondrion, testing on a species the model never saw.",
+    "train_on": "Protein sequences from six experimentally mapped eukaryotes (plant, amoeba, four parasites): 70,751 genes, 6,575 mitochondrial, about 45,100 detected by mass spectrometry.",
+    "predict": "Whether the protein is in that organism's mitochondrial inventory, measured by co-fractionation mass spectrometry (proteins whose abundance tracks known mitochondrial markers) plus microscopy.",
+    "why_worthwhile": "Parasite and protist biologists without proteomics could rank candidate mitochondrial proteins. Even a failure shows how far localisation rules transfer across the eukaryote tree."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Six non-model eukaryotes with measured negatives is better protist coverage than SwissProt-trained DeepLoc 2.1, but the paper's own DeepLoc2.0-mito was already retrained on exactly these data."},
+    "confidence_score": {"answer": "partly", "why": "Continuous PCP scores and Babesia's two replicate PCP scores could calibrate uncertainty. DeepLoc gives scores but not calibrated per-protein confidence; not checked for DeepLoc2.0-mito."},
+    "models_beatable": {"answer": "no", "why": "DeepLoc 2.1 (2024, protein language model) already reaches AUROC 0.89-0.96 on these sets, and the 2026 retrained DeepLoc2.0-mito used homology partitioning."},
+    "guaranteed_improvement": {"answer": "no", "why": "The authors' retrained model already sees all MitoTOL inventories; no additional same-assay data exists to add on top of it."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "UniProt subcellular location (known resource), Human MitoCarta3.0 (known; referenced in sheets), yeast mito proteome, TrypTag (referenced as evidence in Tb/Lt sheets), Human Protein Atlas.", "approx_items": null, "join_key": "UniProt accession / organism gene ID / orthogroup", "why": "Mitochondrial localisation is annotated for many thousands of SwissProt proteins, so a model can be trained broadly and tested on these protists."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Would need a clear result that accuracy decays predictably with phylogenetic distance and a model that beats DeepLoc2.0-mito on held-out lineages."},
+    "realistic": {"journal": "Bioinformatics", "why": "A leave-one-lineage-out benchmark of mitochondrial localisation predictors on MitoTOL is an applications note or benchmark paper."},
+    "fallback": {"journal": "NAR Genomics and Bioinformatics", "why": "A negative result (no gain over DeepLoc, limits on mitosome proteins) plus a cleaned benchmark table is still publishable."}
+  },
+  "pitch": {
+    "headline": "Six mass-spectrometry-mapped mitochondrial proteomes from distant eukaryotes, 70,751 genes with measured negatives, in documented spreadsheets with DeepLoc scores already included.",
+    "what_makes_the_data_unusual": "Measured negatives in non-model protists: 45,100 proteins detected by co-fractionation, covering a plant, an amoeba and four parasites including Giardia's reduced mitosome (59 proteins). CC-BY licence.",
+    "the_win": "Leave-one-organism-out AUPRC above DeepLoc 2.1's 0.76-0.87 (my computed baseline), especially on Giardia and Babesia.",
+    "even_if_it_fails": "A curve of localisation accuracy versus evolutionary distance, and a measure of how much plain orthology to human MitoCarta explains.",
+    "who_wants_it": "MitoTOL consortium (Mootha lab, Broad), TrypTag and protist mitochondria labs choosing which proteins to tag next in unmapped species."
+  },
+  "ml_idea": "Embed all MitoTOL proteins with ESM-2, train a logistic head on detected proteins, and evaluate leave-one-organism-out against the DeepLoc 2.1 score column and a human-ortholog lookup; then model accuracy versus phylogenetic distance.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.3, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 3, "cv_run_minutes": 5, "compute_note": "Estimated, not timed: 70k proteins at ~6-10 sequences/s with ESM-2 35M-150M on CPU (long proteins truncated); logistic head on cached embeddings is minutes.", "cheapest_killing_check": "Download one proteome FASTA (e.g. TriTrypDB Tb927) and confirm that >95% of sheet gene IDs match; then check whether the authors' DeepLoc2.0-mito already reports leave-one-organism-out results (if so, the angle is gone)."},
+  "verdict": "park",
+  "verdict_reason": "Data is clean, open and passes Part A in the files. But the task is crowded: DeepLoc 2.1 already scores AUROC 0.89-0.96 on these proteins, and the authors retrained a localisation model on exactly these labels. Only a cross-lineage transfer study remains, and its gain is likely marginal."
+}

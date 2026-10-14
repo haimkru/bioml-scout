@@ -1,0 +1,142 @@
+{
+  "paper_id": "nar2026-gkag726",
+  "title": "Expression of conjugation genes is controlled by a novel zipper-type transcriptional attenuation mechanism.",
+  "doi": "10.1093/nar/gkag726",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/ena/browser/view/PRJEB115765",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Queried the two deposited projects directly: the SHAPE-MaP deposit PRJEB115765 returns exactly 2 raw FASTQ runs at the European Nucleotide Archive (SHAPE_treated 212 MB, SHAPE_untreated 308 MB, both RNA-Seq of one strain) and nothing processed; the RNA-seq project PRJNA1364995 is not found in either NCBI SRA (Sequence Read Archive) or BioProject, so it is not yet public. Read the full open-access text (172,763 characters) and counted the measured constructs (12 leader fragments F1-F9, 15 'DGA' reporter strains) and the in-silico set (423 unique 500 bp upstream regions, 339 with a terminator predicted by the ARNold web tool, in Supplementary Table S4). The whole supplement is a single archive, gkag726_supplemental_files.zip; Europe PMC's supplementaryFiles endpoint timed out on a HEAD and delivered only a truncated 2.82 MB fragment over 150 s that would not unpack even with archive repair, so supplement not retrievable.",
+    "what_came_from_paper_text_only": "Everything quantitative: the green fluorescent protein (GFP) percentages per construct, the in-vitro termination percentages, the free-energy values, and the contents of Supplementary Tables S1-S5. The paper states flow cytometry data are 'available from the corresponding author upon request' and that 'all other relevant data are given in the main text' (i.e. in figures)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The core measured phenotype (flow-cytometry GFP levels) is explicitly 'available from the corresponding author upon request'. The RNA-seq BioProject PRJNA1364995 returned 0 hits in SRA and BioProject (checked), so it is not public. Only the 2 raw SHAPE-MaP FASTQ files download, and raw sequencing is out of scope. The supplement zip would not transfer from Europe PMC."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no label column anywhere. Termination/read-through strength per construct exists only as bars in Figures 1-6 and percentages in running text, so the prediction target would have to be hand-transcribed from figures, i.e. constructed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Sequence inputs are obtainable: the plasmid pLS20 leader and the B. subtilis genome AL009126.3 are public, and Supplementary Table S4 reportedly lists the 423 upstream regions. Not verified in a file (supplement unavailable)."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are clearly stated in the methods: GFP fluorescence as % of the AND101 control, and in-vitro termination as %T = a/(a+b) x 100 with a stated U-residue correction factor. From the paper text only."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 423,
+      "note": "Measured rows: 12 leader fragments across 15 reporter strains, far under the ~400 minimum. The largest table, Supplementary Table S4, holds 423 upstream sequences, and the SHAPE-MaP deposit is 2 runs of a single transcript. Counts read from the paper text; ENA run count verified."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~520 MB of raw FASTQ plus a few kilobytes of sequence",
+      "note": "Small enough for a laptop, but the content is raw reads for one experiment, not a feature table."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The one count I could cross-check matched: the paper describes duplicate SHAPE-modified (+) and untreated (-) samples and ENA shows exactly 2 runs so named. Other counts unverifiable without the supplement."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "The only scalable label on offer is circular: the 339 'terminator-containing' sequences in Supplementary Table S4 are labelled by the ARNold prediction web tool, and the structures come from PASIFIC and RNAfold predictions. Training on those distils existing predictors rather than learning from measurement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "BacTermFinder (2025), a convolutional-neural-network ensemble that finds bacterial transcription terminators",
+        "open_weights": true,
+        "score_and_split": "Trained on roughly 41,000 terminators from 22 bacterial species of varying GC content; authors report high recall across species, evaluated with held-out species (from the paper's abstract, retrieved via search, not re-run by me).",
+        "authors_named_unsolved": "Generalising to species and terminator types absent from training, and distinguishing regulatory (conditional) termination from constitutive termination.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TerminatorNet (2026, Bioinformatics), a neural network for intrinsic terminator identification",
+        "open_weights": null,
+        "score_and_split": "Trained on 6,123 terminators from 11 species, tested on 5,646 from Bacillus subtilis and Escherichia coli; reported 98% sensitivity, 97% specificity, area under the curve 0.99 (from the abstract I retrieved).",
+        "authors_named_unsolved": "Not retrieved; I only read the abstract.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "PASIFIC, a machine-learning tool predicting terminator/antiterminator alternative structures in bacterial 5' leader regions (the exact task this paper's in-silico section needs)",
+        "open_weights": false,
+        "score_and_split": "82.5% sensitivity and 80.6% specificity at a 0.5 threshold, trained on riboregulators from 89 human-microbiome bacteria (from the abstract and tool help page). Web server only.",
+        "authors_named_unsolved": "Detecting riboregulators without relying on cross-species sequence conservation; attenuators with long antiterminators need manual parameter changes.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Terminator Strength Predictor (TerSP) and the E. coli terminator design model (2025-2026), regression models for quantitative termination strength",
+        "open_weights": true,
+        "score_and_split": "R-squared about 0.72 on E. coli intrinsic terminators from a FlowSeq-style library (from the abstracts I retrieved); split not stated in the abstract.",
+        "authors_named_unsolved": "Transfer to other species and to conditional/regulated termination.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or RNA-FM (open-weight DNA/RNA language models) would fit 400-nt leader sequences",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop is enough for a few hundred short sequences",
+    "licence": "Permissive to non-commercial depending on checkpoint; irrelevant here because there are no measured labels to fit a head to."
+  },
+  "integration": {
+    "partner_dataset": "BacTermFinder's ~41,000-terminator training set, or RegulonDB/Rfam riboswitch families, joinable by genome accession plus coordinates",
+    "join_key": "NCBI nucleotide accession + genomic coordinates",
+    "bigger_question_one_sentence": "Do conjugative-plasmid leader regions carry a distinguishable class of 'zipper-type' attenuator that general terminator finders systematically miss? Real, but this paper supplies 423 computationally labelled sequences, not the measurements needed to answer it."
+  },
+  "controls": {
+    "positive_control": "The paper's own validated cATTpLS20 leader must score as an attenuator; also the textbook B. subtilis trp and glyQS T-box leaders.",
+    "negative_control": "Shuffled leader sequences and coding-sequence interiors; label permutation.",
+    "external_validation": "Rfam/RegulonDB annotated attenuators in other Firmicutes, but no second source for this paper's own phenotype measurements."
+  },
+  "honest_claim_h3": "With these files a model could at best claim 'reproduces the ARNold/PASIFIC prediction of a terminator in 423 plasmid leader regions', which is a restatement of two existing tools and not a biological measurement.",
+  "plain_idea": {
+    "one_liner": "Use a bacterial gene-regulatory leader DNA sequence to predict whether it shuts off transcription of the operon behind it.",
+    "train_on": "The project I considered would train on short upstream DNA regions (a few hundred bases) from conjugative plasmids; this paper supplies 423 unique 500-base regions and about 12 experimentally tested fragments.",
+    "predict": "Whether the leader attenuates transcription, and by how much. The true answer here comes from green-fluorescent-protein reporter levels measured by flow cytometry and from gel-based in-vitro termination percentages.",
+    "why_worthwhile": "Synthetic-biology groups need terminators and switches that work outside Escherichia coli, and microbiologists want to predict which plasmids regulate conjugation; but this paper's measurements are too few and not deposited."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper offers 423 computationally labelled sequences and about 12 measured constructs, against roughly 41,000 terminators used by BacTermFinder and over 10,000 by TerminatorNet."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Only duplicate measurements for a single SHAPE-MaP condition and a handful of reporter strains; nowhere near enough replication to estimate per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "BacTermFinder (2025, CNN ensemble, held-out species) and TerminatorNet (2026) are recent and evaluated across species; PASIFIC (2016) is older and web-only but we have no measured labels to beat it with."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: there is no measured feature/label table from this paper to add to an existing model's inputs, so no like-for-like comparison is possible."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict transcriptional attenuation (terminate vs read through, or quantitative read-through fraction) from bacterial 5' leader sequence, fine-tuning a DNA language model head, using conjugative-plasmid leaders as an underrepresented slice. Dead here because the only labels available are other tools' predictions (ARNold, PASIFIC) and the measured phenotypes are figure-only or on request.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.52,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working set estimated from the two ENA FASTQ file sizes I read (212 MB + 308 MB); no modelling was attempted because there is no label table, so embedding and cross-validation times are null.",
+    "cheapest_killing_check": "Count the measured constructs: 12 leader fragments / 15 reporter strains, and confirm the flow-cytometry values are not deposited. That is one read of the data-availability statement and kills it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A mechanism paper, not a dataset. Four Part A killers fail: the quantitative phenotype is 'on request' and the RNA-seq BioProject is not public (A1), the labels live in figures rather than a column (A2), there are about 12 measured constructs versus a 400-row minimum (A5), and the only scalable labels are ARNold/PASIFIC predictions, which would make the model a distillation of existing tools (A8). Beautiful biology; no ML substrate."
+}

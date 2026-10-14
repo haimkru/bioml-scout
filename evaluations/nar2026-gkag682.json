@@ -1,0 +1,142 @@
+{
+  "paper_id": "nar2026-gkag682",
+  "title": "The Lomb-Scargle periodogram-based differentially expressed gene detection along pseudotime.",
+  "doi": "10.1093/nar/gkag682",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21216417",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the paper's only deposit, Zenodo record 21216417 (22,820-byte zip, CC-BY-4.0), and unzipped it: 8 entries, 91,250 bytes total, consisting of 5 R scripts (Figure2.R-Figure6.R), a LICENSE and a README. No expression matrix, no gene table, no results table. Listed the full file tree of the scLS R package on GitHub via the GitHub API: only R source, man pages, a vignette and two figure images; no bundled data. Grepped the R scripts: all count data are generated at runtime by the dyno/dyntoy/dyngen simulators, and the real-data analyses load local files the authors did not deposit (./data/KO_sce.rds, ./data/WT_sce_merged.rds, ./data/mutant_WT_integrated_seurat_scaleall, and a Monocle object from Dryad doi:10.5061/dryad.m63xsj454). Confirmed via the Dryad application programming interface that m63xsj454 is a third-party deposit, 'Data for: Emergent dynamics of adult stem cell lineages ... of Drosophila testes' (2023-01-13).",
+    "what_came_from_paper_text_only": "The claimed performance of scLS against tradeSeq, the runtime figures (dynamic test in seconds for ~5,000 cells), and the identity of the Trypanosoma brucei wild-type versus ZC3H20-knockout dataset come from the open-access text only. Europe PMC's supplementaryFiles endpoint timed out on two attempts, so the supplement is not retrievable and its contents are unverified; the paper flags hasSuppl=Y."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The deposit downloads fine but contains no data: 91 KB of R plotting scripts only. The expression matrices behind every real-data figure (.rds and Seurat objects) were never deposited; one is a third-party Dryad deposit from a different paper, the others are local file paths. Verified by unzipping the archive and listing the GitHub tree."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no label column anywhere in the deposit. A differential-expression status per gene would have to be constructed from scratch by either running a simulator or running a statistical test on data obtained elsewhere. Verified by inspecting all 8 archive files."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "No gene-by-cell expression values and no pseudotime values are present in any deposited file; inputs exist only as calls to dyntoy::generate_dataset() and as readRDS() of undeposited local objects. Verified by grepping the R scripts."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Not assessable: no data table exists to carry units. The paper describes counts and pseudotime but deposits neither."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 0,
+      "note": "Zero labelled rows in the deposit. Verified: the archive holds only scripts."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.00009 GB",
+      "note": "The 22 KB archive trivially fits; the simulated datasets the scripts generate (1,000 cells x 2,000 genes) would also fit easily. This is the only Part A item that passes, and it passes vacuously."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot be checked: there are no counts in the deposit to compare with the paper's 1,000-cell and 2,000-gene simulation figures."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Any available differential-expression label is itself a model output. Option one is scLS's or tradeSeq's own adjusted p-value, which means distilling the very method under test (circularity). Option two is dyngen/dyntoy simulator ground truth, which is computed from the same generative process that produced the features (leakage by construction, and synthetic rather than measured)."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "scLS (this paper's own method; a Lomb-Scargle periodogram test, which converts an unevenly sampled signal into a frequency spectrum, applied to gene expression ordered along pseudotime)",
+        "open_weights": true,
+        "score_and_split": "Reported as competitive with tradeSeq on dyno/dyntoy/dyngen simulations (receiver-operating-characteristic curves in Figure 2) and on three real single-cell RNA-sequencing datasets; no held-out-dataset split, because it is a statistical test with no trained parameters.",
+        "authors_named_unsolved": "The authors state that choosing the frequency grid and the distance statistic 'needs to be optimized in the future through comprehensive and fair comparisons', and that scLS is a gene-level screening test that cannot localise which branch or pseudotime window drives the signal.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "tradeSeq (generalized additive model fitted per lineage; tests startVsEnd, diffEnd, pattern, earlyDE)",
+        "open_weights": true,
+        "score_and_split": "Published in Nature Communications 2020 with simulation-based false-discovery-rate and power curves; used directly as the comparator in this paper's Figures 4-6.",
+        "authors_named_unsolved": "Sensitivity to the accuracy of the upstream trajectory and to branch assignment.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PseudotimeDE and PseudotimeDE-fast",
+        "open_weights": true,
+        "score_and_split": "Reported as the best-calibrated p-values among five methods (tradeSeq, Monocle3-DE, NBAMSeq, ImpulseDE2) on simulated and real data; PseudotimeDE-fast reported ~30x faster with comparable power.",
+        "authors_named_unsolved": "Uncertainty in the inferred pseudotime itself is the stated core difficulty.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Lamian (hierarchical model for differential pseudotime analysis across multiple samples)",
+        "open_weights": true,
+        "score_and_split": "Nature Communications 2023; controls false-discovery rate while retaining power on multi-sample simulations. Loaded by this paper's own Figure scripts.",
+        "authors_named_unsolved": "Sample-to-sample variability and trajectory topology differences between donors.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable. scGPT and Geneformer are single-cell backbones, but they embed cells, not gene-versus-pseudotime curves, and there is no labelled table here to attach a head to.",
+    "freeze_and_head_viable": false,
+    "hardware": "Not applicable",
+    "licence": "Zenodo deposit is CC-BY-4.0; scLS package carries an MIT-style LICENSE. Licences are permissive, but there is no data to licence."
+  },
+  "integration": {
+    "partner_dataset": "None usable. The identifiers that would join (gene symbols for Drosophila, Trypanosoma brucei and mouse) exist only inside datasets the paper did not deposit.",
+    "join_key": "gene symbol (not present in any deposited file)",
+    "bigger_question_one_sentence": "Cannot be written: there is no table in this deposit to join anything to."
+  },
+  "controls": {
+    "positive_control": "Would have been available in principle - the paper notes scLS recovers genes 'expected to be detected' in the Trypanosoma wild-type versus ZC3H20-knockout comparison - but the expression data needed to run it is not deposited.",
+    "negative_control": "Label shuffling is not definable without labels.",
+    "external_validation": "None in this deposit. The three real datasets used are third-party and would each have to be located and reprocessed from their original publications."
+  },
+  "honest_claim_h3": "No honest claim is possible from this deposit, because it contains 91 KB of plotting scripts and zero measurements; any claim would rest on data assembled from three other papers or generated by a simulator.",
+  "plain_idea": {
+    "one_liner": "Use a gene's expression curve along inferred cell ordering to predict whether that gene changes during the biological process.",
+    "train_on": "The project considered was: for each gene, its expression values across cells plus each cell's pseudotime (a number ordering cells along a developmental path), as a curve. Number of examples available from this paper: zero, because no expression data was deposited.",
+    "predict": "A yes/no call that the gene varies systematically along pseudotime. The true answer would have to come either from a simulator's known ground truth or from an existing statistical test's adjusted p-value, not from an independent measurement.",
+    "why_worthwhile": "A learned detector could in principle catch transient expression bumps that curve-fitting tests miss, which is exactly the gap the authors claim scLS fills. But because the only available label is another method's output or a simulator's construction, a good score would not show the model learned biology."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper deposits no data at all (91,250 bytes of R scripts, verified by unzipping). tradeSeq, PseudotimeDE and Lamian were each developed and evaluated on more real single-cell datasets than are available here."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements or per-gene uncertainty estimates in the deposit. PseudotimeDE already addresses exactly this, by producing well-calibrated p-values that account for pseudotime uncertainty."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "tradeSeq (2020), PseudotimeDE (2021, with PseudotimeDE-fast in 2025), Lamian (2023) and scLS (2026) are all open-source, all recent, and all evaluated with simulation-based false-discovery-rate and power curves, which is the honest evaluation for a statistical test. Four open competing tools is a served field."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: our model cannot see everything the baselines see, because the input data is not in the deposit. It also fails the same-quantity condition, since the only label on offer is a baseline's own output."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only project this paper supports would be a machine-learned differential-expression caller for pseudotime trajectories, trained on simulator ground truth and benchmarked against scLS, tradeSeq, PseudotimeDE and Lamian. It is not viable from this deposit: the features and labels would both have to be manufactured (by running dyngen) or borrowed from the baselines being tested, and the three real datasets used in the paper's figures belong to other publications and were not deposited.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.0001,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Only the 22.8 KB Zenodo zip was actually measured. Downstream estimates are null because there is no dataset to size; building one would mean installing the dyngen/dyno R stack and generating simulations, whose cost depends entirely on choices we would make, not on anything the paper provides.",
+    "cheapest_killing_check": "Unzip the Zenodo deposit and count the non-script files. The answer is zero, which kills the project in under a minute - done."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Pure software paper: the deposit is 91 KB of R plotting scripts with no expression matrix, no pseudotime values and no gene-level results table, so A1, A2, A3, A5 and A7 all fail on the files. A8 fails independently and fatally, because the only differential-expression label obtainable is either scLS's or tradeSeq's own p-value (circular) or dyngen simulator ground truth (synthetic and computed from the same process that made the features). The field also already has four open, recent, honestly evaluated tools (tradeSeq, PseudotimeDE, Lamian, scLS itself)."
+}

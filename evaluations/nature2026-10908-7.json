@@ -1,0 +1,45 @@
+{
+  "paper_id": "nature2026-10908-7",
+  "title": "The nutritional value of invertebrate aquatic foods.",
+  "doi": "10.1038/s41586-026-10908-7",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.20257513",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the Zenodo zip (3.1 MB, CC-BY-4.0). Opened data final/20250902_raw_spspecific_invertdata.csv: 18,052 rows x 173 columns in long format (one row per sample x nutrient), 474 species, 192 studies, 42 nutrients, units column (mg/mcg/g), 261 missing values, 125 'tr' (trace) flags, 543 zeros. Largest single nutrient (iron) has 1,038 rows from 334 species and 104 studies. sample_year filled on 4,763 rows. 70% of rows come from food composition tables. All .rds model outputs and predictions are Git LFS pointer stubs (133 bytes), not data. AllSLBSpecies_Traits.csv: 71,591 species x 20 trait columns. AllSLBSpecies_EdibleInverts.csv fails to parse as UTF-8 (needs latin-1).",
+    "what_came_from_paper_text_only": "The 13,888 samples / 465 species count, the Bayesian hierarchical model (brms) design, the leave-one-out and k-fold cross-validation comparisons in Supplementary Tables 5-6 (supplement not retrievable: Europe PMC endpoint timed out), and the 50,807-species prediction set."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked in files: Zenodo zip downloads openly, CC-BY-4.0; but model outputs and predictions are Git LFS stubs, so only the raw tables are usable."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: measured nutrient concentration is the 'value' column with 'nutrient' and 'nutrient_units' columns; would need pivoting per nutrient, not construction."},
+    "a3_inputs_present": {"pass": true, "note": "Checked in files: taxonomy (phylum to genus) and SeaLifeBase traits (Lmax maximum length, trophic level, depth, temperature regime, habitat flags) sit in the same table, 80-94% filled."},
+    "a4_units_stated": {"pass": true, "note": "Checked in files: units column present (mg, mcg, g per 100 g); one oddity, lysine listed in mcg while other amino acids are mg, so units need a sanity check."},
+    "a5_enough_rows": {"pass": false, "n_rows": 18052, "note": "Checked in files: 18,052 rows pooled, but each nutrient is a separate label and the largest (iron) has only 1,038 rows from 334 species; the real independent unit is the species (474 total), well under the ~1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "19 MB CSV", "note": "Checked in files: tiny tabular working set."},
+    "a7_counts_match_paper": {"pass": true, "note": "Checked in files: 18,052 sample-nutrient rows and 474 species vs paper's 13,888 samples and 465 species; plausibly explained by long format and name versions, not verified exactly."},
+    "a8_label_provenance": {"pass": true, "note": "Checked in files: values are laboratory measurements compiled from peer-reviewed papers (5,176 rows) and food composition tables (12,599 rows), not model output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "This paper's Bayesian hierarchical models (brms, taxonomy plus traits)", "open_weights": true, "score_and_split": "Compared to taxonomy-only and intercept-only models by leave-one-out and k-fold cross-validation (Supplementary Tables 5-6, not retrieved); fitted model files are Git LFS stubs in the Zenodo record.", "authors_named_unsolved": "Within- and between-species variation over space and time; data-poor species without trait data collapse to dominant patterns.", "runnable_as_baseline": true},
+      {"name": "Hicks et al. 2019 / Vaitla et al. 2018 fish nutrient models (NutrientFishbase, Bayesian phylogeny plus traits)", "open_weights": true, "score_and_split": "Fish only, not invertebrates; scores not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "None fits; inputs are taxonomy and ecological traits, not sequences or molecules", "freeze_and_head_viable": false, "hardware": "CPU", "licence": "Data CC-BY-4.0"},
+  "integration": {"partner_dataset": "SeaLifeBase traits (already included, 71,591 species)", "join_key": "SpecCode / scientific name", "bigger_question_one_sentence": "Which unmeasured edible invertebrates are likely nutrient-dense, already done by the paper itself."},
+  "controls": {"positive_control": "Molluscs higher in B12 and iron than crustaceans (paper's finding).", "negative_control": "Label shuffle within nutrient.", "external_validation": "Partial sample_year column (4,763 rows) for a temporal split; none independent."},
+  "honest_claim_h3": "Predicts the per-100 g concentration of one nutrient for an invertebrate species from its taxonomy and SeaLifeBase traits, among ~330 mostly commercially eaten mollusc and crustacean species measured in food composition tables.",
+  "plain_idea": {
+    "one_liner": "Use an aquatic invertebrate species' family tree position and ecological traits to predict how much of each nutrient its edible tissue contains.",
+    "train_on": "Per-sample nutrient measurements with species taxonomy, body part, cooking method and traits; 18,052 sample-nutrient rows but only 474 species, at most 1,038 rows per nutrient.",
+    "predict": "Concentration of a nutrient (for example iron in mg per 100 g), measured in laboratories and compiled from papers and national food composition tables.",
+    "why_worthwhile": "Nutrition and fisheries policy groups could prioritise unmeasured species, but the paper's own Bayesian model already does this for 50,807 species."
+  },
+  "pitch": null,
+  "ml_idea": "Multi-output regression of 30 nutrients from taxonomy plus traits with a leave-genus-out split, compared against the authors' Bayesian hierarchical model. Too few independent species per nutrient, no pretrained backbone, and the task is already done by the paper.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.02, "needs_gpu": false, "peak_ram_gb": 0.5, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated from the 19 MB CSV size; nothing timed.", "cheapest_killing_check": "Count distinct species per nutrient after dropping food-composition-table duplicates; iron already tops out at 334 species."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 in disguise: the independent unit is the species (474 total, at most 334 for any one nutrient, 1,038 rows max per nutrient), no pretrained backbone fits taxonomy-plus-trait inputs, and the paper already fits and cross-validates a predictive model for exactly this task."
+}

@@ -1,0 +1,268 @@
+{
+ "paper_id": "nature2026-11078-2",
+ "title": "Population-scale immune multiome atlas reveals regulatory disease mechanisms.",
+ "doi": "10.1038/s41586-026-11078-2",
+ "journal": "Nature",
+ "data_url": "gs://finngen-public-data-multiome (https://storage.googleapis.com/finngen-public-data-multiome/README.md); browser https://cascade.finngen.fi/; access form https://www.finngen.fi/en/access_results",
+ "verified": {
+  "opened_data_files": true,
+  "what_i_actually_checked": "Listed the public Google Cloud bucket finngen-public-data-multiome anonymously (no login): 6,433 objects, 682 GB total (eQTL 340 GB, caQTL 248 GB, accessibility tracks 90 GB, peak-gene links 3.8 GB, CASCADE 45 MB, coloc 293 MB). Read the 17.9 KB README, which documents every column. Downloaded and parsed (pandas, first try): manifest (6,431 rows with sizes and MD5); CASCADE variant table, 119,094 rows, 0 duplicate variants, 89.5% single-base changes, 46,475 inside a peak; CASCADE peak table 297,024 rows; CASCADE gene table 27,294 rows; PBMC (all-cell pseudobulk) caQTL peak table 297,024 rows, 185,928 at q<0.05; PBMC eQTL gene table 27,236 rows, 18,050 at q<0.05; PBMC chr1 caQTL credible-set file 27,202 sets, 18,995 pass purity, 3,328 single-variant; consensus peaks BED 298,224 rows; R12 eQTL colocalisation 82,931 rows. Ranged-read the first 400 KB of the PBMC chr22 caQTL fine-mapping file: 66 columns including beta, se and posterior inclusion probability per variant-peak pair.",
+  "what_came_from_paper_text_only": "From the abstract and search snippets only: 10 million nuclei, 1,108 donors, 51,083 eQTLs, 338,100 caQTLs, 593,765 peak-gene links, and the MPRA (massively parallel reporter assay) validation of 10,428 QTLs. I found no MPRA data in the bucket and no accession for it (paper is paywalled, no PMC copy). I did not stream any multi-GB fine-mapping or nominal file, so the count of fine-mapped variants with effect sizes per cell type is not verified."
+ },
+ "part_a_killers": {
+  "a1_downloadable": {
+   "pass": true,
+   "note": "Verified: the bucket lists and downloads anonymously. The README says FinnGen 'asks' users to fill a free form at finngen.fi/en/access_results; it is a courtesy request, not a gate. Single-cell count matrices are controlled access through the FinnGen Sandbox (GDPR) and are not used here."
+  },
+  "a2_label_is_a_column": {
+   "pass": true,
+   "note": "Verified in a file header: caQTL effect size (beta, se) and fine-mapping probability are columns of the SUSIE.snp files, per variant-peak pair per cell type. But these files are 32 GB for the PBMC set alone, so getting a label table means a streaming filter, not a download."
+  },
+  "a3_inputs_present": {
+   "pass": true,
+   "note": "Inputs are GRCh38 coordinates plus reference and alternate alleles (e.g. chr22_16522789_A_G), so DNA sequence comes from one local reference-genome file; no per-row lookups."
+  },
+  "a4_units_stated": {
+   "pass": true,
+   "note": "README states caQTL slope is in standard-deviation units of inverse-rank-normalised log2-CP10K accessibility, and warns eQTL betas (Poisson model) are not comparable."
+  },
+  "a5_enough_rows": {
+   "pass": true,
+   "n_rows": 119094,
+   "note": "Counted: 119,094 variants with fine-mapping probability >0.5 in the CASCADE table; 46,475 sit inside a peak. Per-cell-type counts with effect sizes not yet counted."
+  },
+  "a6_fits_laptop": {
+   "pass": true,
+   "working_set": "~1 GB after filtering (hg38 reference ~0.9 GB plus a <100 MB variant table); raw source to stream once is 32 GB (PBMC) to 180 GB (all cell types)",
+   "note": "Estimated. Fits if you stream-filter the tabix-indexed fine-mapping files once and keep only high-probability rows; storing them is not feasible on the laptop's 50 MB-per-file policy."
+  },
+  "a7_counts_match_paper": {
+   "pass": true,
+   "note": "Verified matches: 119,094 putative causal variants (abstract) equals CASCADE variant rows; 297,024 tested peaks equals README and peak table. Abstract's 210,584 caPeaks across cell types not recomputed."
+  },
+  "a8_label_provenance": {
+   "pass": true,
+   "note": "caQTL beta is a regression of measured accessibility on genotype across 1,108 donors, not another model's prediction. Caveats: which variants count as causal comes from SuSiE statistical fine-mapping, and the CASCADE mechanism category is derived from the QTL calls themselves, so using it as a label would be partly circular."
+  }
+ },
+ "part_a_verdict": "pass",
+ "score_items": {
+  "B1": {
+   "score": 1,
+   "why": "Verified: labels split over 23 chromosome files per cell type; joins on variant_id and peak_id are documented."
+  },
+  "B2": {
+   "score": 2,
+   "why": "Verified: all nine downloaded tsv.gz/bed.gz files parsed in pandas on first try, no missing core fields."
+  },
+  "B3": {
+   "score": 2,
+   "why": "README: caQTL slopes all from one tensorQTL pipeline, same normalisation, SD units, across cell types."
+  },
+  "B4": {
+   "score": 2,
+   "why": "No censored values; effect sizes and P values are continuous numbers (seen in file header)."
+  },
+  "B5": {
+   "score": 1,
+   "why": "No duplicate variants in CASCADE table (verified), but one variant maps to many peaks and cell types."
+  },
+  "B6": {
+   "score": 2,
+   "why": "Verified: README documents every column of every file type, including ID formats and coordinate conventions."
+  },
+  "C1": {
+   "score": 1,
+   "why": "Cell-type transfer question is informative either way; beating AlphaGenome on effect size is not."
+  },
+  "C2": {
+   "score": 1,
+   "why": "AlphaGenome and ChromBPNet are open and benchmarked on caQTLs, but not on this Finnish 24-cell-type set."
+  },
+  "C3": {
+   "score": 2,
+   "why": "Diversity: largest single-nucleus caQTL set, Finnish, 24 immune subtypes, released Aug 2026; likely unmodelled."
+  },
+  "C4": {
+   "score": 2,
+   "why": "Labels required multiome profiling of 1,108 donors; each new caQTL needs population-scale assays."
+  },
+  "C5": {
+   "score": 2,
+   "why": "AlphaGenome zero-shot scores give a ready baseline; sign-majority and per-cell-type mean dummies are obvious."
+  },
+  "D1": {
+   "score": 2,
+   "why": "AlphaGenome (weights released 2026) and Nucleotide Transformer are open-weight DNA models."
+  },
+  "D2": {
+   "score": 1,
+   "why": "Nucleotide Transformer embeddings cache on CPU; AlphaGenome 1 Mb context is slow on CPU."
+  },
+  "D3": {
+   "score": 1,
+   "why": "AlphaGenome non-commercial; Nucleotide Transformer CC BY-NC-SA; data has no stated licence."
+  },
+  "E1": {
+   "ok": true,
+   "why": "Hold out whole chromosomes, or hold out cell types, to stop linked-variant leakage."
+  },
+  "E2": {
+   "ok": true,
+   "why": "23 chromosomes and 24 level-2 cell types available as groups (file listing verified)."
+  },
+  "E3": {
+   "ok": true,
+   "why": "Majority effect sign, per-cell-type mean slope, and distance-to-peak-centre baselines are trivial."
+  },
+  "E4": {
+   "ok": true,
+   "why": "Standard error column per variant gives the noise floor; shared peaks across cell types act as replicates."
+  },
+  "E5": {
+   "ok": true,
+   "why": "Variants breaking known lineage motifs (SPI1/PU.1 in monocytes, CTCF) must show expected sign."
+  },
+  "E6": {
+   "ok": true,
+   "why": "Label shuffling within chromosome and allele-swap sign flip are straightforward."
+  },
+  "E7": {
+   "ok": true,
+   "why": "Other public caQTL sets (e.g. the Cell Genomics immune caQTL study) and the paper's MPRA, if located."
+  },
+  "E8": {
+   "ok": false,
+   "why": "No published model number on this exact set; paper's MPRA data not found in the bucket."
+  },
+  "G1": {
+   "score": 2,
+   "why": "Verified: GRCh38 coordinates with alleles, Ensembl gene IDs, consensus peak coordinates."
+  },
+  "G2": {
+   "score": 2,
+   "why": "gnomAD constraint by Ensembl gene, GTEx eQTLs and Open Targets by variant coordinates."
+  },
+  "G3": {
+   "score": 1,
+   "why": "Variant-to-peak-to-gene is one-to-many; needs a collapse rule (lead peak, best cell type)."
+  },
+  "G4": {
+   "score": 1,
+   "why": "Constraint-versus-transmission question is the paper's own finding, so joining adds less new."
+  },
+  "H1": {
+   "score": 2,
+   "why": "Verified: all 297,024 tested peaks reported, incl. 111,096 non-significant in PBMC; low-probability variants kept."
+  },
+  "H2": {
+   "score": 1,
+   "why": "One population (Finnish), one tissue (blood), one sequencing centre; 24 cell types."
+  },
+  "H3": {
+   "score": 2,
+   "why": "Claim is precise: sequence predicts caQTL sign in Finnish blood cell types for well-powered variants."
+  },
+  "H4": {
+   "score": 2,
+   "why": "README states power filters, empty cell types, and eQTL/caQTL non-comparability explicitly."
+  },
+  "I1": {
+   "score": 2,
+   "why": "Kanai, Daly, Xavier groups (FinnGen) and Open Targets, which is ingesting this release (gentropy pull request)."
+  },
+  "I2": {
+   "score": 1,
+   "why": "Would tell variant-interpretation pipelines which cell types sequence models fail in; marginal decision change."
+  },
+  "I3": {
+   "score": 1,
+   "why": "Sign accuracy and correlation roughly match how variant prioritisation uses these scores."
+  },
+  "I4": {
+   "score": 2,
+   "why": "Sequence-to-allelic-effect mapping is genuinely complex; no lookup reproduces it."
+  },
+  "J1": {
+   "score": 2,
+   "why": "Real modelling: frozen DNA embeddings, grouped splits, cross-cell-type transfer."
+  },
+  "J2": {
+   "score": 1,
+   "why": "Motif controls help sanity-check; immune regulatory genetics intuition needed for edge cases."
+  },
+  "J3": {
+   "score": 2,
+   "why": "Zero-shot benchmark table by cell type is shareable before any head is trained."
+  },
+  "J4": {
+   "score": 1,
+   "why": "No stated budget; roughly two to three weeks is plausible."
+  },
+  "J5": {
+   "score": 0,
+   "why": "No kill date written in NOTES.md."
+  }
+ },
+ "c2_audit": {
+  "existing_models": [
+   {
+    "name": "AlphaGenome, Google DeepMind's DNA sequence model predicting many genomic tracks from 1 Mb of sequence",
+    "open_weights": true,
+    "score_and_split": "Search snippet of its paper: caQTL predicted-versus-observed effect size Pearson r 0.74 on fine-mapped caQTLs from other ancestries; not re-read or reproduced.",
+    "authors_named_unsolved": "Not retrieved.",
+    "runnable_as_baseline": true
+   },
+   {
+    "name": "ChromBPNet, a base-resolution convolutional model of chromatin accessibility",
+    "open_weights": true,
+    "score_and_split": "Search snippet: variant scores correlated r=0.68 with allelic imbalance in African caQTL studies; used in a CD4+ T cell multi-QTL study (medRxiv 2026).",
+    "authors_named_unsolved": "Not retrieved.",
+    "runnable_as_baseline": false
+   }
+  ]
+ },
+ "backbone": {
+  "name": "Nucleotide Transformer (DNA language model) embeddings of reference and alternate 1 kb windows; AlphaGenome zero-shot scores as comparator",
+  "freeze_and_head_viable": true,
+  "hardware": "CPU laptop for Nucleotide Transformer embeddings; AlphaGenome on CPU is slow, subset to a few thousand variants",
+  "licence": "Nucleotide Transformer CC BY-NC-SA 4.0; AlphaGenome non-commercial"
+ },
+ "integration": {
+  "partner_dataset": "gnomAD gene constraint (LOEUF) and GTEx eQTL catalogue",
+  "join_key": "Ensembl gene ID; GRCh38 variant coordinates with alleles",
+  "bigger_question_one_sentence": "Do sequence models predict accessibility effects equally well at constrained and unconstrained genes, or does their accuracy track the buffering the paper reports?"
+ },
+ "controls": {
+  "positive_control": "Variants that break SPI1/PU.1 motifs should close chromatin in monocytes; CTCF-motif variants should show consistent sign across cell types.",
+  "negative_control": "Shuffle labels within chromosome; flip ref/alt to confirm the predicted sign flips.",
+  "external_validation": "Another public immune caQTL set (Cell Genomics 2025 immune caQTL study) or the paper's MPRA results if their location is found."
+ },
+ "honest_claim_h3": "Among variants fine-mapped with high probability in blood from 1,108 Finnish donors, a frozen DNA-model head predicts the direction of their effect on chromatin accessibility in each of up to 24 immune cell types, and we measure how that accuracy transfers between cell types.",
+ "plain_idea": {
+  "one_liner": "Use the DNA sequence around a common genetic variant to predict whether it opens or closes chromatin in each blood immune cell type.",
+  "train_on": "Reference and alternate DNA windows around each fine-mapped variant; 119,094 candidate variants verified, per-cell-type count with effect sizes unknown.",
+  "predict": "The sign and size of the variant's effect on chromatin openness, measured by regressing accessibility on genotype across 1,108 donors' single-nucleus ATAC-seq (open-chromatin sequencing).",
+  "why_worthwhile": "Variant-interpretation groups (Open Targets, FinnGen) learn which immune cell types sequence models handle badly; a failure map is useful in its own right."
+ },
+ "pitch": {
+  "headline": "Public, no-login caQTL effect sizes for 24 immune cell types from 1,108 donors, with 119,094 fine-mapped variants already tabulated.",
+  "what_makes_the_data_unusual": "One pipeline, one normalisation, 297,024 peaks tested in every cell type with negatives kept; README documents every column. Finnish founder population adds enriched variants absent elsewhere.",
+  "the_win": "A per-cell-type table showing where AlphaGenome's zero-shot sign accuracy drops, and whether a head trained on T-cell caQTLs transfers to monocytes.",
+  "even_if_it_fails": "A cell-type-resolved benchmark of zero-shot sequence models on a fresh, unseen caQTL set, which nobody has published for this release.",
+  "who_wants_it": "Kanai/Daly/Xavier FinnGen multiome team and Open Targets Genetics (ingesting this data) deciding how much to trust sequence-model scores per cell type."
+ },
+ "ml_idea": "Stream-filter the tabix-indexed SuSiE fine-mapping files to variants with posterior probability >0.9 inside a peak, take their caQTL beta per cell type, embed ref/alt 1 kb windows with a frozen DNA model, fit a per-cell-type head with chromosome holdout, and compare to AlphaGenome zero-shot and to cross-cell-type transfer.",
+ "effort": {
+  "hours_to_feature_table": 12,
+  "working_set_gb": 1.0,
+  "needs_gpu": false,
+  "peak_ram_gb": 4.0,
+  "embedding_hours": 6.0,
+  "cv_run_minutes": 5,
+  "compute_note": "Estimated, nothing timed: streaming 32 GB of PBMC fine-mapping files at ~10 MB/s is ~1 hour per cell-type set; about 50,000 variants x 2 alleles x ~0.2 s per window for Nucleotide Transformer on CPU gives ~6 hours.",
+  "cheapest_killing_check": "Stream one chromosome's fine-mapping file for two cell types (e.g. CD14_Mono, CD4_Naive) and count single-base variants with probability >0.9 inside a peak; under ~1,500 genome-wide per cell type kills the per-cell-type design."
+ },
+ "verdict": "verify_first",
+ "verdict_reason": "Public, well-documented summary statistics pass Part A, but labels sit in 32-180 GB of tabix files needing a streaming filter, the per-cell-type count of usable fine-mapped variants is unverified, and caQTL effect prediction is already benchmarked by open models (AlphaGenome, ChromBPNet), so the value is a new cell-type-resolved benchmark rather than a new task."
+}

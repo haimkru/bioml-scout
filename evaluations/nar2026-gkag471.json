@@ -1,0 +1,128 @@
+{
+  "paper_id": "nar2026-gkag471",
+  "title": "TridentSynth: a webtool for the retrosynthesis of molecules using chimeric type I polyketide synthases and chemoenzymatic pathways.",
+  "doi": "10.1093/nar/gkag471",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://tridentsynth.lbl.gov",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Read the paper's data availability statement (it names only the webtool URL, no deposited dataset). Pulled the supplementary package from Europe PMC: 13 files, all figures plus one 2-page PDF of supplementary figures with no data tables (extracted its text). Listed the full file tree of the predecessor code repository github.com/JBEI/BioPKS-Pipeline via the GitHub API, downloaded and opened the only outcome-bearing tables there with pandas: biomanufacturing_candidates_tested.xlsx (155 rows x 4 columns; columns #, Name, SMILES, Synthesis) and 155_biomanufacturing_candidates_validation.xlsx (196 rows x 14 columns, 155 marked 'Used for validation', 40 duplicated SMILES strings). Counted the outcome column: 61 'Not reached', 47 'Reached in both 1 post-PKS and 2 post-PKS steps', 44 'Reached in 2 post-PKS steps only', 3 'Reached simply with PKSs'. Fetched the TridentSynth homepage HTML and found only interactive pages (/run_TridentSynth/, /tutorial/, /about/), no bulk download or application programming interface endpoint.",
+    "what_came_from_paper_text_only": "That the enzyme-similarity search indexes 55,228 enzymatic reactions from EnzymeMap (of which 54,063 were fingerprinted), stored as a compressed NumPy archive on the server; that reaction feasibility scores come from DORA-XGB and range 0-1; that reaction rules come from previously published rule sets (JN1224MIN, JN3604IMT). None of these server-side assets were offered for download by the paper, and I did not retrieve them."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The paper deposits no dataset. Its data availability statement points only to an interactive webtool (free, no login), and the homepage I fetched has no download or API endpoint. The only tables I could open belong to the predecessor paper's code repository, not to this one."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "No prediction target column exists anywhere in this paper's materials. To get a label you would have to run the webtool on a molecule list yourself, i.e. construct the target."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Where tables exist (predecessor repository), the input is a SMILES string (a text encoding of a molecule's structure) given directly, not a compound name needing lookup."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The only outcome is a categorical reached/not-reached string, so units do not apply; the DORA-XGB feasibility score is documented as a 0-1 scale in the paper text."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 155,
+      "note": "Largest labelled table I opened has 155 molecules (196 rows before filtering, 40 duplicate SMILES). Far below the ~400-row floor for classification."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "<1 MB",
+      "note": "Two spreadsheets totalling 81 KB; the rule files are 6.6 MB of tab-separated text. Trivially laptop-sized."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The file named for 155 candidates contains 196 rows of which exactly 155 are flagged 'Used for validation', so the naming is consistent; the current paper states no counts for these files."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "The only outcome column ('Reached'/'Not reached', plus PKS, PKS-BIO1, PKS-BIO2 flags) is the output of the authors' own rule-based search, not a laboratory measurement. Training on it would distill their search algorithm, the textbook circularity case."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "TridentSynth / BioPKS Pipeline (RetroTide polyketide synthase designer + DORAnet rule-based reaction expansion), the paper's own system",
+        "open_weights": true,
+        "score_and_split": "No held-out predictive benchmark reported; the predecessor paper reports how many of 155 candidate biomanufacturing molecules its search could reach (93 of 155 reached by some route in the validation spreadsheet I opened).",
+        "authors_named_unsolved": "The paper states feasibility ranking is currently limited to single-function enzymatic steps, and that polyketide synthase designs and synthetic chemistry steps carry no feasibility score at all.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DORA-XGB, a gradient-boosted-tree classifier that scores whether a proposed enzymatic reaction is feasible",
+        "open_weights": true,
+        "score_and_split": "Authors report high recall on newly released MetaCyc and EcoCyc reactions and >95% reduction of infeasible predictions when used as a filter; exact split details not retrieved. Code at github.com/tyo-nu/DORA_XGB.",
+        "authors_named_unsolved": "Negative examples are synthetic (generated by moving the reaction centre), so real experimentally confirmed negatives remain missing.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ChemBERTa or MolFormer (molecule language models operating on SMILES strings)",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop would be ample for 155 molecules, which is exactly the problem",
+    "licence": "Permissive (Apache-2.0 family) for ChemBERTa; irrelevant here because there is no usable label set."
+  },
+  "integration": {
+    "partner_dataset": "EnzymeMap (55,228 atom-mapped enzymatic reactions from BRENDA, KEGG and MetaCyc, on Zenodo record 8254726) and UniProt",
+    "join_key": "Reaction SMILES / EC number / UniProt accession",
+    "bigger_question_one_sentence": "Could an enzyme sequence model predict which real enzyme actually catalyses a rule-proposed transformation, rather than only whether the transformation is chemically allowed? That question lives in EnzymeMap, not in this paper, which contributes no joinable table of its own."
+  },
+  "controls": {
+    "positive_control": "None available: with no measured outcome there is nothing a working model must recover.",
+    "negative_control": "Label shuffling would be runnable on the 155-row table, but the label is an algorithm's output, so the control would certify nothing biological.",
+    "external_validation": "None tied to this paper. EnzymeMap and MetaCyc releases exist but belong to other publications."
+  },
+  "honest_claim_h3": "The strongest claim available from this paper's own materials is 'a model can reproduce, for 155 molecules, whether the authors' rule-based search found a route' — a restatement of their software, not a statement about chemistry or biology.",
+  "plain_idea": {
+    "one_liner": "Use a target molecule's structure to predict whether an enzyme assembly-line route to it can be found.",
+    "train_on": "A molecule's SMILES string (a text encoding of its chemical structure) plus desired route type. The only labelled set I found has 155 molecules, verified by opening the spreadsheet.",
+    "predict": "Whether a chimeric polyketide synthase pathway reaches the molecule. The 'true answer' here is not a measurement at all: it is whether the authors' own rule-based search succeeded.",
+    "why_worthwhile": "A fast screen telling metabolic engineers which targets are worth submitting to a slow pathway search would save time; but with the label being the search's own verdict, the model learns the search, not the biology."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper adds no data at all. The 155-molecule table comes from the predecessor paper, and the 55,228 EnzymeMap reactions the tool uses are a third party's public dataset we would not be contributing to."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements of anything, because nothing was measured. DORA-XGB already emits a 0-1 feasibility score per reaction, which the webtool displays, so even that niche is occupied."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The relevant model, DORA-XGB (2025, gradient-boosted trees, open code at tyo-nu/DORA_XGB), is recent and was checked on reactions released after training. The polyketide synthase search is a deterministic enumeration with no accuracy number to beat."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: there is no feature/label table from this paper on which both the existing model and ours could be evaluated on the same split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict from a target molecule's SMILES string whether TridentSynth can find a polyketide-synthase-plus-enzyme route to it, as a cheap pre-screen before running the full search. Dead because the label is the search's own output (circular) and only 155 molecules carry it.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.05,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, not timed beyond the pandas reads I ran: the entire labelled material is two spreadsheets totalling 81 KB, and 155 SMILES strings embed with a molecule language model in under a minute on a CPU. Effort is trivial; the problem is that there is nothing worth computing.",
+    "cheapest_killing_check": "Open the paper's data availability statement and ask what file it points to. It points to a webtool URL, not a dataset. Then count rows in the only outcome table that exists: 155."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A webtool paper with no deposited dataset: the data availability statement names only an interactive website, which I fetched and confirmed has no download or programmatic endpoint, and the supplementary package is two pages of figures. The only outcome-bearing tables I could open belong to the predecessor publication's code repository, hold 155 molecules, and their label is whether the authors' own rule-based search found a route — a software output rather than a measurement. That fails A1 (nothing deposited to download), A2 (no target column), A5 (155 rows against a ~400 floor) and A8 (label is a model's output). The genuinely interesting assets behind the tool, the 55,228 EnzymeMap reactions and the DORA-XGB feasibility classifier, are other people's published resources and should be evaluated as their own candidates if at all."
+}

@@ -1,0 +1,210 @@
+{
+  "paper_id": "natgen2026-02752-2",
+  "title": "Germline homologous recombination deficiency influences TP53-mutant clonal hematopoiesis fitness during platinum and PARP inhibitor treatment.",
+  "doi": "10.1038/s41588-026-02752-2",
+  "journal": "Nature Genetics",
+  "data_url": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41588-026-02752-2/MediaObjects/41588_2026_2752_MOESM4_ESM.xlsx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the supplementary workbook (114,204 bytes, no login) from Springer's static-content endpoint and parsed all 8 sheets. Supplementary Table 5 is the usable table: 1,391 rows x 7 columns, 313 unique patients (DeID), 921 unique variants, 9 genes (DNMT3A 474, PPM1D 394, TET2 215, TP53 162, CHEK2 89, ASXL1 44, SF3B1 7, SRSF2 4, JAK2 2), three arms (Carboplatin 530 rows/107 patients, PARPi 509/77, Healthy 352/135), zero missing values. Columns: pre-treatment VAF (variant allele fraction, the share of sequencing reads carrying the mutation), post-treatment VAF, days between timepoints (median 189, range 35-9,161). Found 67 pre-VAF zeros, 16 post-VAF zeros, 938/1,391 baseline VAFs below 0.005; 27 duplicated patient-variant pairs, all from 6 patients measured over two successive treatment intervals. Computed median annualised log growth per gene and per arm: DNA-damage-response genes (PPM1D/TP53/CHEK2) 3.47 under carboplatin vs 0.03 untreated and 0.89 under PARP inhibitor; non-DDR genes 0.12 vs -0.03. Confirmed 141 of 158 patients in Supplementary Table 6 (prior-therapy categories) overlap Table 5 IDs. Inferred genome build hg38 from DNMT3A chr2:25234373 (R882H, 15 rows) and TP53 chr17:7673796.",
+    "what_came_from_paper_text_only": "Only the abstract. The full text, Methods and the Data availability statement are paywalled (no PubMed Central record; Europe PMC isOpenAccess = N, hasSuppl = N, no text-mined accessions; no preprint found). So I could not confirm the genome build (inferred), the sequencing depth or detection limit, how the ArCH pipeline decided which variants are 'putative drivers', whether per-patient age, sex and germline homologous-recombination-deficiency status are released anywhere, or whether raw sequencing sits in a controlled-access repository such as dbGaP (an NCBI link query returned none)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified: fetched the 114 kB supplementary .xlsx anonymously from static-content.springer.com and parsed it. No login, no application. Raw sequencing is presumably restricted but is not needed."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified: 'VAF at Post-Treatment' is a measured column sitting beside 'VAF at Pre-Treatment' and 'Days Between Timepoints'. Clone growth is one arithmetic step on columns already in the same row; nothing is joined or inferred across sources."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: gene symbol, exact variant (chr/position/ref>alt, hg38), baseline VAF, treatment arm and interval length are all in the row. Going beyond gene identity needs 921 coordinate-to-protein-change annotations via Ensembl VEP — one batch job, not thousands of manual lookups."},
+    "a4_units_stated": {"pass": true, "note": "Verified by range, not by an explicit units label: VAFs are fractions between 0 and 0.441, interval is in days. Column headers name the quantity but no data dictionary states units or the genome build."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1391, "note": "Verified 1,391 labelled clone-intervals. Below the ~1,500 regression bar but well above the ~400 classification bar, and the natural task (did the clone expand?) is classification. Real caveat: the independent unit is the patient and there are only 313."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.11 MB spreadsheet; ~1-2 GB transiently if ESM-2 embeddings are cached", "note": "Verified: the whole dataset is a 114 kB file that loads in under a second."},
+    "a7_counts_match_paper": {"pass": true, "note": "Internally consistent: Supplementary Table 3 reports a serial-sampling cohort of 426 (176 healthy / 150 carboplatin / 100 PARP inhibitor) and Table 5 contains the 313 of them with detected driver mutations (135/107/77). Could not cross-check against the paywalled main text."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a measured read fraction from error-corrected targeted sequencing, not another model's output. Two caveats: which variants are listed was decided by the authors' ArCH calling pipeline (a selection effect), and if growth is defined as a post/pre ratio it partly reuses a feature — fix by predicting post-VAF with pre-VAF as an input."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One sheet holds features and label; optional therapy-history sheet joins for 141/313 patients. Seen in the file."},
+    "B2": {"score": 2, "why": "xlsx parsed on first try with pandas (header row 2); no encoding, type or quoting problems; zero nulls."},
+    "B3": {"score": 1, "why": "All VAFs from one pipeline, but untreated controls carry different ID prefixes, so arm and batch may be confounded."},
+    "B4": {"score": 1, "why": "Verified 67 zero pre-VAFs, 16 zero post-VAFs, 938/1,391 baselines under 0.5%: needs a floor/pseudocount policy."},
+    "B5": {"score": 1, "why": "27 duplicated patient-variant rows, all legitimate second treatment intervals for 6 patients; easy to handle once understood."},
+    "B6": {"score": 1, "why": "Column names self-explanatory, but no data dictionary, no genome build, no detection limit; Methods are paywalled."},
+    "C1": {"score": 2, "why": "Asks how much growth is predictable from the mutation beyond gene and dose; a null answer is equally informative."},
+    "C2": {"score": 1, "why": "No model for treatment-specific clone growth found, but boostDM-CH, CHRS and MN-predict are open and adjacent."},
+    "C3": {"score": 1, "why": "Unique-application angle: these serial VAF measurements have not been modelled, but features are thin."},
+    "C4": {"score": 2, "why": "Alternative is two error-corrected sequencing panels months apart per patient; expensive and slow."},
+    "C5": {"score": 2, "why": "Obvious dummies exist and I computed one: per-gene-by-arm median growth already separates DDR clones under carboplatin."},
+    "D1": {"score": 2, "why": "ESM-2, a protein language model with open weights, fits the six protein-coding driver genes' missense variants."},
+    "D2": {"score": 2, "why": "Only 921 unique variants; embeddings can be cached once on CPU and reused for every experiment."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT licensed; supplementary table is journal supplementary material, freely downloadable."},
+    "E1": {"ok": true, "why": "DeID column verified present, so whole patients can be held out; 'key' allows holding out whole variants too."},
+    "E2": {"ok": true, "why": "313 patients, 921 variants, 9 genes, 3 arms — far more than 5 groups at every level. Counted in the file."},
+    "E3": {"ok": true, "why": "Dummies computable: 'post equals pre', per-gene mean, per-gene-by-arm mean, baseline-VAF-only. I ran the third."},
+    "E4": {"ok": true, "why": "352 untreated control intervals give an empirical null for growth (median annualised log growth -0.014); sets the ceiling."},
+    "E5": {"ok": true, "why": "Verified in file: DDR clones expand under carboplatin (3.47 vs 0.03 untreated); DNMT3A R882 present in 15 rows."},
+    "E6": {"ok": true, "why": "Label shuffling, gene-only and baseline-VAF-only ablations, and random-feature controls all trivially runnable on 1,391 rows."},
+    "E7": {"ok": true, "why": "Independent longitudinal CH fitness estimates exist (Nat Genet 2026 evolutionary-dynamics paper; MACS120 metric); found by search, not downloaded."},
+    "E8": {"ok": true, "why": "The paper's central gene-by-treatment claim is recomputable from Table 5; I reproduced its direction, exact values paywalled."},
+    "G1": {"score": 2, "why": "hg38 genomic coordinates plus HGNC gene symbols in every row — standard keys, verified in the file."},
+    "G2": {"score": 2, "why": "boostDM-CH gives a driver score for every possible mutation in these genes; joins on coordinate. Found by search."},
+    "G3": {"score": 2, "why": "One variant to one boostDM-CH score: clean one-to-one on coordinate, modulo transcript choice."},
+    "G4": {"score": 2, "why": "Asks whether mutations favoured in untreated ageing blood are the same ones chemotherapy selects — neither source answers alone."},
+    "H1": {"score": 2, "why": "Verified: 483 rows shrink, 16 go to zero, and 352 untreated control intervals are included as a null arm."},
+    "H2": {"score": 1, "why": "Three arms and two apparent institutions, but one sequencing pipeline, 9 genes, cancer-patient-skewed, demographics not per-row."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one sentence; the detection-limit and missing-covariate caveats are explicit and checkable."},
+    "H4": {"score": 1, "why": "A reader of the spreadsheet alone would not know age, sex, germline HRD status, dose or read depth are absent."},
+    "I1": {"score": 2, "why": "Bolton lab (Washington University) and oncologists deciding on PARP inhibitors for patients with pre-existing TP53/PPM1D clones."},
+    "I2": {"score": 1, "why": "Could redirect who gets serial blood monitoring, but at 313 patients the result stays hypothesis-generating."},
+    "I3": {"score": 1, "why": "Decision is 'will this clone grow enough to matter?'; precision-recall at a doubling threshold is roughly the decision."},
+    "I4": {"score": 1, "why": "A gene-by-arm lookup already reproduces the headline (I computed it); ML is only needed to generalise to unseen variants."},
+    "J1": {"score": 1, "why": "Grouped splits, calibration and frozen-backbone embeddings, but much of the work is careful statistics on a small table."},
+    "J2": {"score": 2, "why": "Strong priors exist (DDR clones under platinum, DNMT3A R882) and I confirmed both are recoverable from the data."},
+    "J3": {"score": 2, "why": "A cleaned, VEP-annotated serial-VAF table plus a measured noise floor is shareable even if the model is flat."},
+    "J4": {"score": 1, "why": "Scope is small enough for a 2-3 week budget, but no budget is written down yet."},
+    "J5": {"score": 1, "why": "Kill condition is easy to state (variant features add under 0.02 AUPRC) but not yet committed to in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "boostDM-CH (in-silico saturation mutagenesis models for clonal hematopoiesis driver mutations, Cancer Discovery 2024)",
+        "open_weights": true,
+        "score_and_split": "Gradient-boosting models for 12 recurrent CH driver genes; reported to outperform base-editing screens and expert rules, validated by reproducing age and blood-cancer associations across ~470,000 UK Biobank donors. Classifies driver vs neutral, not clone growth.",
+        "authors_named_unsolved": "Whether a mutation's driver status translates into a quantitative fitness or growth advantage, and how therapy exposure changes that, is not addressed by the models.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CHRS, the Clonal Hematopoiesis Risk Score (NEJM Evidence 2023)",
+        "open_weights": false,
+        "score_and_split": "Cox and recursive-partitioning model on 438,890 UK Biobank exomes predicting incident myeloid neoplasm; reported to separate a high-risk minority from a low-risk majority. Different endpoint (cancer diagnosis, not clone growth) and no treatment arm.",
+        "authors_named_unsolved": "Does not cover therapy-exposed patients or the effect of specific drugs on clone dynamics.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "MN-predict (Nature Genetics 2023, multiparameter prediction of myeloid neoplasia risk)",
+        "open_weights": false,
+        "score_and_split": "Cox models giving time-dependent risk per myeloid-neoplasm subtype from blood counts plus genetics, delivered as a web application. Endpoint is diagnosis, not clone-level growth.",
+        "authors_named_unsolved": "Treatment-specific clonal dynamics are outside its scope.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "CHIC (machine-learning inference of high-risk clonal hematopoiesis from complete blood counts, 431,531 UK Biobank participants)",
+        "open_weights": null,
+        "score_and_split": "Tree-based models using age plus five blood-count indices to infer presence of high-risk CH; reported stable performance in UK Biobank. Detects CH, does not predict growth under therapy.",
+        "authors_named_unsolved": "Inference of CH presence, not of clone trajectory or drug response.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Evolutionary-dynamics models of clonal hematopoiesis (Nature Genetics 2026, s41588-026-02504-2) and the MACS120 fitness metric (PMC11908133)",
+        "open_weights": null,
+        "score_and_split": "Population-genetics style fitness inference from longitudinal ageing cohorts; MACS120 reported to beat variant allele frequency alone at predicting clinical outcomes. Fitted in untreated ageing populations, not under chemotherapy.",
+        "authors_named_unsolved": "How clone fitness changes under specific cytotoxic treatments.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (esm2_t33_650M_UR50D), a protein language model",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; 921 unique mutant sequences embedded once and cached",
+    "licence": "MIT"
+  },
+  "integration": {
+    "partner_dataset": "boostDM-CH per-variant driver scores (saturation mutagenesis predictions covering every possible mutation in the clonal-hematopoiesis driver genes), plus gnomAD population frequencies and ClinVar/COSMIC annotations on the same coordinates",
+    "join_key": "hg38 genomic coordinate (chromosome, position, ref>alt), already present as the 'key' column; gene symbol as a secondary key",
+    "bigger_question_one_sentence": "Do the mutations that give blood-cell clones the biggest advantage during ordinary ageing also give the biggest advantage under platinum chemotherapy, or does treatment select a different set of mutations?"
+  },
+  "controls": {
+    "positive_control": "DNA-damage-response clones (PPM1D, TP53, CHEK2) must grow faster under carboplatin than in untreated controls — verified present in the file (median annualised log growth 3.47 vs 0.03). Second control: DNMT3A R882 (chr2:25234373, 15 rows) should rank among the fastest-growing DNMT3A variants.",
+    "negative_control": "Shuffle the growth labels within each treatment arm and confirm performance collapses to the dummy; train on baseline VAF alone, then gene alone, to see how much each block really contributes; replace the variant embedding with random vectors of the same shape.",
+    "external_validation": "The 352 untreated control intervals act as an internal null arm. Independently, longitudinal clonal-hematopoiesis fitness estimates published elsewhere (Nature Genetics 2026 evolutionary-dynamics paper; the MACS120 fitness metric) could be compared — found by literature search, not downloaded by me."
+  },
+  "honest_claim_h3": "Among blood-cell clones that this error-corrected sequencing pipeline detected in two samples from the same person, the model predicts how much a clone grew between those samples given its starting size, its mutated gene and which treatment the person received; it says nothing about clones below the detection limit, patients without a second sample, or the effect of inherited DNA-repair deficiency, which is not in the public tables.",
+  "plain_idea": {
+    "one_liner": "Use a blood-cell clone's mutation, its starting size and the cancer drug given to predict how much that clone grows.",
+    "train_on": "1,391 verified clone-intervals from 313 people: for each, the mutated gene, the exact DNA change (hg38 coordinate), the clone's size before treatment, the treatment arm (carboplatin, a PARP inhibitor, or none) and the number of days between the two blood draws.",
+    "predict": "The clone's size after treatment, or equivalently whether it at least doubled. The true answer is the variant allele fraction — the share of sequencing reads carrying the mutation — measured by error-corrected targeted sequencing of a second blood sample.",
+    "why_worthwhile": "Oncologists giving platinum chemotherapy or PARP inhibitors need to know which patients' pre-existing blood clones will expand toward a treatment-caused blood cancer; even a flat result would show that the effect is purely gene-and-drug level, with no mutation-specific resolution at this sample size."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "The treatment annotation is unique: 1,391 paired before/after clone measurements with an explicit drug arm and an untreated control arm, which the big models lack (boostDM-CH used ~470,000 UK Biobank donors cross-sectionally; CHRS used 438,890 exomes). But in absolute size ours is three orders of magnitude smaller."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The 352 untreated control intervals give an empirical null distribution for apparent growth, so a per-prediction uncertainty band is possible and none of the named models reports one for clone growth. But sequencing depth is absent from the table, so per-row binomial sampling error cannot be computed."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "None of the named models (boostDM-CH 2024, CHRS 2023, MN-predict 2023, CHIC) predicts treatment-specific clone growth, so there is nothing to beat head-to-head. That is the opportunity and also the problem: no published number on this task exists to target."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "boostDM-CH can supply features joined on hg38 coordinate but cannot be run as a baseline on this label, and it measures a different quantity (driver probability in untreated populations, not growth under platinum). The 'same quantity, same way' condition fails."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Longitudinal clonal-hematopoiesis fitness estimates from ageing cohorts, named in the papers my searches retrieved: 'Modeling the evolutionary dynamics of clonal hematopoiesis' (Nature Genetics 2026, s41588-026-02504-2) and 'Clinical progression of clonal hematopoiesis is determined by a combination of mutation timing, fitness, and clonal structure' (PMC11908133, the MACS120 metric). boostDM-CH gives a related but different per-variant label (driver vs neutral) for all possible mutations in these genes.",
+    "approx_items": null,
+    "join_key": "hg38 genomic coordinate (chromosome, position, ref>alt) and gene symbol; protein change after Ensembl VEP annotation",
+    "why": "Fitness estimates from untreated ageing cohorts give an external yardstick for whether a clone's growth under chemotherapy is just its ordinary fitness or something treatment-specific — but they are mostly per-gene, modest in number and measured without treatment, so they are a comparison set rather than extra training data."
+  },
+  "leakage_plan": {
+    "risks": [
+      "If growth is defined as post-VAF divided by pre-VAF while pre-VAF is also a feature, regression to the mean will manufacture an apparent 'small clones grow fastest' signal; 938 of 1,391 baselines sit below 0.5%, where measurement noise dominates.",
+      "Clones from the same person share treatment, marrow environment and sampling interval (median 3 clones per patient, up to 23), so a random row split leaks patient identity into the test set.",
+      "Treatment arm is confounded with batch: untreated controls carry PA-prefixed identifiers while treated patients carry numeric ones, suggesting a separate biobank and possibly a different panel or depth.",
+      "Six patients appear in both the carboplatin and PARP-inhibitor arms (27 duplicated patient-variant rows), so the identical clone can land on both sides of a treatment comparison.",
+      "Hotspot variants recur across many people (chr17:60663262 CA>C in 26 rows), so the same mutation can appear in both train and test unless variants are grouped."
+    ],
+    "split": "Primary: grouped k-fold by DeID (patient), which I verified is a column. Secondary and stricter: hold out whole 'key' values (unique variants) to test generalisation to mutations never seen in training. Report both. For the treatment question, additionally hold out the 6 dual-arm patients entirely.",
+    "checks": [
+      "Shuffle growth labels within each treatment arm and confirm the area under the precision-recall curve collapses to the positive-class prevalence.",
+      "Fit baseline-VAF-only and gene-only models first and report how much of the total performance each explains before adding any variant-level feature.",
+      "Run the model on the untreated control arm alone, where true growth should be near zero; any confident 'expansion' prediction there flags batch leakage.",
+      "Measure how often a test variant's exact coordinate also appears in the training fold, and re-report performance restricted to never-before-seen variants."
+    ],
+    "verdict": "Manageable, but two traps are real: the baseline-VAF/ratio coupling, and the untreated control arm apparently coming from a different biobank, which makes 'treatment effect' and 'batch effect' partly inseparable."
+  },
+  "success_criteria": {
+    "metric": "Area under the precision-recall curve for 'this clone at least doubled' (post-VAF at least twice pre-VAF), under patient-grouped cross-validation, because the clinical decision is which clones to put under serial monitoring. Secondary: Spearman correlation between predicted and measured annualised log growth.",
+    "baselines": "Four, all computable from the same file: (1) 'post equals pre', i.e. predict no growth; (2) per-gene mean growth; (3) per-gene-by-arm mean growth, which I computed and which already separates DNA-damage-response clones under carboplatin (median annualised log growth 3.47) from other genes (0.12) and from untreated controls (0.03); (4) a logistic model on baseline VAF alone. No published model exists for this exact task.",
+    "success": "Variant-level features (protein consequence, truncating versus missense, ESM-2 embedding, boostDM-CH score) add at least 0.05 area under the precision-recall curve over the gene-by-arm-by-baseline-VAF lookup, under patient-grouped cross-validation, with the gain surviving the stricter held-out-variant split.",
+    "noise_ceiling": "Estimable from the 352 untreated control intervals, whose annualised log growth has a median of -0.014 (I computed this); their spread is the floor below which no model can distinguish real growth from measurement noise. The exact interquartile range still needs computing per arm.",
+    "kill": "If after two weeks variant-level features add less than 0.02 area under the precision-recall curve over the gene-by-arm lookup, stop and publish the negative result plus the cleaned annotated table."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Blood Advances",
+      "why": "Publishes clinical and translational work on clonal hematopoiesis dynamics; would need a variant-level predictor of treatment-driven clone growth that replicates in an independent longitudinal cohort."
+    },
+    "realistic": {
+      "journal": "PLOS Computational Biology",
+      "why": "Publishes careful modelling of biological dynamics with honest evaluation; a quantitative decomposition of how much therapy-driven clone growth is explained by gene, drug, starting size and the specific mutation fits exactly, positive or negative."
+    },
+    "fallback": {
+      "journal": "bioRxiv preprint plus the cleaned, VEP-annotated serial-VAF table deposited on Zenodo",
+      "why": "Even a flat result plus a reusable annotated table and a measured noise floor is worth sharing, and costs nothing to release."
+    }
+  },
+  "pitch": {
+    "headline": "1,391 before-and-after measurements of blood-cell clones in 313 people, tracked through chemotherapy or no treatment, in one 114 kB downloadable spreadsheet.",
+    "what_makes_the_data_unusual": "Most clonal-hematopoiesis data is a single snapshot. This has paired before/after clone sizes with a drug label and a genuine untreated control arm (352 intervals, 135 people), zero missing values. All verified by opening the file.",
+    "the_win": "Show that mutation-level features add at least 0.05 to precision-recall area under the curve over a gene-by-drug lookup table, which already separates DNA-damage-response clones under carboplatin (median annualised log growth 3.47) from others (0.12).",
+    "even_if_it_fails": "We learn that therapy-driven clone growth has no mutation-level resolution at this sample size and is purely a gene-and-drug effect — a short, useful note that caps what any such predictor can honestly claim.",
+    "who_wants_it": "The Bolton lab at Washington University and oncologists deciding whether to give a PARP inhibitor to a patient already carrying a TP53 or PPM1D blood clone; it would change who gets serial blood monitoring."
+  },
+  "ml_idea": "Predict how much a clonal-hematopoiesis clone grows between two blood draws, from the mutated gene, the exact hg38 variant (annotated to a protein change and embedded with ESM-2), the clone's starting variant allele fraction, the treatment arm (carboplatin, PARP inhibitor, or none) and the interval length. Train with patient-grouped cross-validation and a second held-out-variant split, against a gene-by-arm lookup baseline. The real question is not raw accuracy but how much the specific mutation adds beyond gene identity and treatment, and whether boostDM-CH driver scores derived from untreated populations transfer to chemotherapy-driven selection.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 6,
+    "embedding_hours": 4,
+    "cv_run_minutes": 2,
+    "compute_note": "The spreadsheet is 114 kB and parsed in under a second (timed). The 6 hours is for annotating 921 hg38 coordinates to protein changes via the Ensembl VEP web interface and deciding the zero/detection-floor policy. The 4 embedding hours and 6 GB peak RAM are estimates for ESM-2 650M on CPU over 921 mutant sequences, the longest being TET2 at about 2,000 amino acids; nothing was timed.",
+    "cheapest_killing_check": "Already done, and it is the main caution: ten lines of pandas computing median annualised log growth by gene and treatment arm reproduces the paper's headline finding, so the project only survives if mutation-level features beat that lookup under a held-out-variant split."
+  },
+  "verdict": "park",
+  "verdict_reason": "The data is genuinely open, clean and verified — 1,391 paired clone measurements in 313 people, no missing values, strong built-in positive controls (DNA-damage-response clones grow 3.47 vs 0.03 annualised log units under carboplatin versus no treatment), and an unusually clean integration play joining hg38 coordinates to boostDM-CH driver scores. But three things hold it back from 'do it'. First, a per-gene-by-treatment lookup table, which I computed in seconds, already reproduces the paper's headline, so the entire ML value rests on mutation-level resolution across 921 mostly-singleton variants at variant allele fractions where 67% of baselines sit below 0.5% and noise dominates. Second, the feature set is thin: no per-patient age, sex, treatment dose or read depth, and the paper's actual novel variable — germline homologous-recombination-deficiency status — is absent from the public tables, so the headline claim cannot be reproduced or extended. Third, at 313 independent patients this is a small-n study dressed as 1,391 rows. Worth parking as a tight two-to-three week integration project; it would be promoted to 'do it' if the paywalled Data availability statement turns out to release per-patient germline HRD status, age and sequencing depth."
+}

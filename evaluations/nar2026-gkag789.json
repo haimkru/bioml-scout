@@ -1,0 +1,211 @@
+{
+  "paper_id": "nar2026-gkag789",
+  "title": "Rapid discovery of monoclonal antibodies via high-throughput single BCR affinity sequencing.",
+  "doi": "10.1093/nar/gkag789",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://zenodo.org/records/18293644",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 18293644 (CC-BY-4.0, 209 MB zip + readme). I parsed the zip's central directory by ranged GET, then range-extracted and inflated 4 members without downloading the whole archive: OVA-1430_compress.h5ad (34.4 MB), RBD-1743_compress.h5ad (42.3 MB), and both filtered_contig_annotations.csv (8.7 / 5.9 MB). In the h5ad files I listed every obs (per-cell metadata) column and confirmed 'AAB-score' is a float64 array with 6,464 (ovalbumin) and 4,043 (SARS-CoV-2 RBD) values and zero missing. I reproduced the label exactly: correlation(AAB-score, clr-antigen minus clr-light-chain) = 1.0000 in both files, so the score is a centred log-ratio of two measured barcode UMI counts. I joined obs to the V(D)J contig table on cell barcode (taking the highest-UMI productive heavy and light contig per cell): 4,396 of 6,464 ovalbumin cells and 3,498 of 4,043 RBD cells have a score plus a paired heavy+light sequence, giving 4,114 and 3,292 unique heavy|light CDR3 (third complementarity-determining region) pairs. I computed dummy baselines myself: per-cell-type mean gives R-squared 0.309 (ovalbumin) and 0.182 (RBD); correlation of the score with the light-chain UMI denominator is Spearman -0.78 / -0.74; correlation with IGHV germline identity (a somatic-hypermutation proxy) is -0.287 / -0.102; 42 and 30 clonotypes have 3+ cells, giving within-clone standard deviation 0.49 / 0.63 against total 1.00 / 1.20. I also confirmed full framework and CDR amino-acid AND nucleotide sequences are columns in the contig CSV (no accession lookups needed), and that only 54 of 3,753 heavy CDR3s are shared between the paper's own two runs.",
+    "what_came_from_paper_text_only": "The wet-lab protocol (Sulfo-SMCC barcode conjugation, dual-labelled antigens, the anti-light-chain normalisation rationale), the ELISA and neutralisation validation (17 ovalbumin mAbs of which 10 bound; 14 then 20 RBD mAbs), that ovalbumin pooled three immunised BALB/c mice and RBD-1743 pooled two, and that a third 're-RBD / 0521' experiment exists. I could NOT retrieve Supplementary Tables S1/S3, which hold the per-antibody ELISA source data — the Europe PMC supplementaryFiles endpoint timed out. The 0521 experiment's processed data is NOT in the Zenodo deposit (only OVA-1430 and RBD-1743 are); its raw reads are in SRA (PRJNA1132399, PRJNA1414909), which I did not download."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo 18293644, open access, CC-BY-4.0, no login. I range-extracted and inflated four members successfully; checksums and sizes matched the API listing."},
+    "a2_label_is_a_column": {"pass": true, "note": "'AAB-score' is literally a float64 column in the obs table of both h5ad files, 0 missing. Features live in a second file (the V(D)J contig CSV) and join on cell barcode, a clean verified key covering 68% / 86% of scored cells. A join, not a construction."},
+    "a3_inputs_present": {"pass": true, "note": "Verified in the files: fwr1-4 and cdr1-3 are present as both amino-acid and nucleotide columns, plus V/D/J gene calls, plus filtered_contig.fasta and IgBLAST AIRR tables. No identifier resolution needed."},
+    "a4_units_stated": {"pass": true, "note": "The AAB score is dimensionless by design — a centred-log-ratio difference of antigen and light-chain barcode UMI counts, which I reproduced exactly (r = 1.0000). Consistent within a run, but NOT comparable across the two runs (median antigen UMI 318 for ovalbumin vs 25 for RBD), so it needs a per-run offset. It is a relative score, never an affinity in molar units."},
+    "a5_enough_rows": {"pass": true, "n_rows": 7406, "note": "Counted by me, not read from the paper: 4,114 unique heavy|light CDR3 pairs (ovalbumin) + 3,292 (RBD) = 7,406 unique antibodies carrying a score. At the stricter clonotype level it is 4,066 + 3,288. Comfortably over the ~1,500 bar even per antigen."},
+    "a6_fits_laptop": {"pass": true, "working_set": "77 MB extracted (two h5ad + two contig CSVs); the final feature/label table is ~7,400 rows", "note": "Only the obs group of each h5ad is needed, read lazily with h5py; the 32,285-gene expression matrix can be skipped entirely. Peak RAM ~2 GB. No GPU for a frozen-embedding baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Initially looked like a mismatch — file names say 1430 and 1743 but the objects hold 6,464 and 4,043 cells. I resolved it in the text: 1430/1743/0521 are experiment batch labels ('the first (RBD-A, 1743) used two mice'), not cell counts. The paper gives no final cell count to check against, so 'matches' is unverifiable rather than contradicted; the files are internally consistent."},
+    "a8_label_provenance": {"pass": true, "note": "Traced to a physical measurement: the label equals clr(antigen barcode UMI) minus clr(anti-light-chain barcode UMI), both sequencing counts. Not any model's output. Crucially it is NOT computed from the sequence features we would use. BUT it correlates -0.78 / -0.74 with the light-chain UMI denominator, so a large share of its variance is droplet capture depth and B-cell receptor surface level, not binding. Passes, with that confound as the project's central risk."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two files per antigen (h5ad obs + contig CSV); barcode join verified working at 68%/86% coverage."},
+    "B2": {"score": 2, "why": "h5py opened both h5ad files first try; pandas parsed both 31-column CSVs clean, no fixes."},
+    "B3": {"score": 1, "why": "Author-normalised within a run, but antigen UMI medians 318 vs 25 across runs; needs per-run offset."},
+    "B4": {"score": 2, "why": "Zero missing AAB scores in 6,464 and 4,043 cells; no censored or qualitative values."},
+    "B5": {"score": 1, "why": "149 and 69 repeated CDR3 pairs (clonal cells), easy to collapse, but they disagree: within-clone sd 0.49-0.63."},
+    "B6": {"score": 1, "why": "Cell Ranger/AIRR columns standard; obs columns undocumented — I reverse-engineered the AAB formula myself. Notebooks included."},
+    "C1": {"score": 1, "why": "Variance-decomposition framing informative either way, but headline task must beat a cell-type dummy at R-squared 0.31."},
+    "C2": {"score": 1, "why": "Open honestly-evaluated models exist (LIBRA-seq mixture denoiser, antibody-LM specificity classifiers), but none applied to this data."},
+    "C3": {"score": 1, "why": "Diversity angle (BALB/c mouse, ovalbumin) plus unmodelled data, weakened by RBD being antibody ML's most crowded antigen."},
+    "C4": {"score": 2, "why": "Alternative is cloning and ELISA-testing each mAb; paper managed only ~37 across the whole study."},
+    "C5": {"score": 2, "why": "Published 77% vs 54% from the mixture-model paper, plus dummies I computed: per-cell-type R-squared 0.309/0.182."},
+    "D1": {"score": 2, "why": "AntiBERTy, AbLang-2, IgBert and ESM-2 all have open downloadable weights for exactly these paired chains."},
+    "D2": {"score": 2, "why": "7,406 sequences of ~250 amino acids; embeddings cache once on CPU in a few hours, then linear heads."},
+    "D3": {"score": 2, "why": "Data is CC-BY-4.0 (verified in Zenodo metadata); ESM-2 is MIT, AntiBERTy open. Nothing blocks reuse."},
+    "E1": {"ok": true, "why": "Clonotype and CDR3 columns verified present; hold out whole clonotypes / identity-clustered CDR3 pairs."},
+    "E2": {"ok": true, "why": "4,066 and 3,288 clonotype groups counted in the files — far more than the 5 needed."},
+    "E3": {"ok": true, "why": "I already computed global-mean, per-cell-type (R-squared 0.309/0.182) and per-V-gene dummies."},
+    "E4": {"ok": true, "why": "42 and 30 clonotypes with 3+ cells give within-clone sd 0.49/0.63 vs total 1.00/1.20; ceiling R-squared ~0.75."},
+    "E5": {"ok": true, "why": "Two verified: somatic hypermutation tracks score (rho -0.29), and top decile is memory/plasma B, bottom is pre-pro-B."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation both trivial on a 7,406-row table; shuffle-within-clonotype also available."},
+    "E7": {"ok": true, "why": "Weakly: public human LIBRA-seq data and CoV-AbDab exist, but different species and assay scale; the paper's own 0521 run is not deposited."},
+    "E8": {"ok": false, "why": "Mixture model's 77% needs Ramos negative-control cells absent here; the 37-mAb ELISA table (S1/S3) was not retrievable."},
+    "G1": {"score": 1, "why": "No UniProt/Ensembl IDs — only cell barcodes, IMGT V/J gene names and CDR3 sequences, which need sequence matching."},
+    "G2": {"score": 2, "why": "Observed Antibody Space (~2 billion repertoire sequences) and CoV-AbDab are specific, joinable on V/J plus CDR3."},
+    "G3": {"score": 1, "why": "Sequence joins are fuzzy and one-to-many; only 54 of 3,753 heavy CDR3s even match between this paper's own two runs."},
+    "G4": {"score": 1, "why": "Real transfer question (does repertoire pretraining carry binding signal to a mouse immunisation?) but not unanswerable otherwise."},
+    "H1": {"score": 2, "why": "Non-binders systematically present — pre-pro-B and immature B cells sequenced regardless of binding; verified in cell_type counts."},
+    "H2": {"score": 0, "why": "One lab, BALB/c mice only, two antigens, mice pooled so no per-animal label exists in the files."},
+    "H3": {"score": 2, "why": "Claim writable precisely because I measured the confounds (cell-state R-squared, UMI correlation, noise ceiling) myself."},
+    "H4": {"score": 1, "why": "Paper does discuss antigen-abundance vs score discordance, but the -0.78 light-chain-UMI confound is not flagged anywhere."},
+    "I1": {"score": 2, "why": "Named: the Georgiev lab at Vanderbilt (LIBRA-seq and its mixture-model denoiser) and the AAB-seq authors themselves."},
+    "I2": {"score": 1, "why": "Would reorder which cells get cloned, but ranking on the raw score already works well enough for them."},
+    "I3": {"score": 1, "why": "Real decision is 'which 20 to clone', so precision-at-20 fits; R-squared on a noisy score only roughly aligns."},
+    "I4": {"score": 1, "why": "A cell-type plus hypermutation rule already reaches R-squared 0.31; sequence must add value on top of that."},
+    "J1": {"score": 2, "why": "Frozen-backbone transfer, grouped splits, noise-ceiling and variance-decomposition work — the ML skills worth practising."},
+    "J2": {"score": 1, "why": "B-cell subsets and hypermutation are reasonable to judge, but an immunologist should sanity-check binder calls."},
+    "J3": {"score": 2, "why": "The 7,406-row sequence-plus-score table is shareable alone; the confound analysis stands even if the model fails."},
+    "J4": {"score": 1, "why": "Roughly 3-4 weeks implied by the effort estimates, but not yet committed to a stated number."},
+    "J5": {"score": 1, "why": "Kill condition is clear (sequence adds under 0.05 R-squared over cell-state baseline) but no date written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Negative binomial mixture model for LIBRA-seq denoising (Bioinformatics Advances 2024, Georgiev lab)",
+        "open_weights": true,
+        "score_and_split": "77% accuracy at predicting binding vs 54% for the standard LIBRA-seq score, judged against ELISA on 99 recombinantly expressed antibodies, across 10 human donors and 20 antigens. Code at github.com/IGlab-VUMC/mixture_model_denoising.",
+        "authors_named_unsolved": "They state the relationship between antigen barcode counts and real binding 'may not always be linear or correlative' — some antibodies that bound by ELISA gave very low counts, which count-inflation correction cannot fix.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Supervised fine-tuned antibody language models for antigen specificity (PLOS Computational Biology 2024)",
+        "open_weights": true,
+        "score_and_split": "Fine-tuning pretrained antibody language models beat classifiers built on frozen embeddings for binding to SARS-CoV-2 spike and influenza haemagglutinin; trained on CoV-AbDab-derived sets. Binary specificity, not a continuous score.",
+        "authors_named_unsolved": "Generalisation to antigens and repertoires outside the curated training antigens.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MAGE (Cell 2025) — paired-chain antigen-specific antibody generation with a large language model",
+        "open_weights": null,
+        "score_and_split": "Generates antigen-specific paired heavy/light antibodies; its training set includes LIBRA-seq-derived sequences. Reported as generation quality, not as a held-out continuous-score regression.",
+        "authors_named_unsolved": "Coverage beyond the antigens represented in existing paired specificity data.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "ESM-2 fine-tunes for antigen-specific BCR identification from repertoires (2025)",
+        "open_weights": true,
+        "score_and_split": "ESM2-t6-8M and ESM2-t33-650M compared for antigen-specificity prediction on heavy-chain repertoires against SARS-CoV-2, influenza and HIV; comparable performance between checkpoint sizes.",
+        "authors_named_unsolved": "Species and repertoire transfer; work is human-donor-centric.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AbRank (2025) benchmark and WALLE-Affinity",
+        "open_weights": true,
+        "score_and_split": "Experimentally validated antibody-antigen pairs with Kd in nanomolar; WALLE-Affinity reported state of the art across most settings. Absolute affinity, a different quantity from this paper's relative score.",
+        "authors_named_unsolved": "Ranking generalisation to unseen antigens.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "AntiBERTy or AbLang-2 (antibody-specific language models) for paired heavy/light chains, with ESM-2 (35M/150M checkpoints) as the general-protein control",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU only, 16 GB laptop: ~7,400 sequences of ~250 amino acids embedded once in roughly 2-4 hours, cached, then ridge or gradient boosting heads in minutes.",
+    "licence": "AntiBERTy and ESM-2 weights are openly downloadable (ESM-2 is MIT); the data itself is CC-BY-4.0 as recorded in the Zenodo metadata I fetched."
+  },
+  "integration": {
+    "partner_dataset": "Observed Antibody Space (OAS, ~2 billion repertoire sequences) for pretraining context, and CoV-AbDab for externally measured SARS-CoV-2 RBD antibody binding",
+    "join_key": "IMGT V and J gene calls plus CDR3 amino-acid sequence (present in the files); no standard accession exists, so the join is sequence-similarity based, not exact",
+    "bigger_question_one_sentence": "Does the binding signal that antibody language models learn from human repertoires transfer to a mouse immunisation against a non-pathogen antigen, or is their apparent skill confined to the curated viral antigens they were trained on?"
+  },
+  "controls": {
+    "positive_control": "Two, both verified present in the files before any modelling: (1) somatic hypermutation level — IGHV germline identity correlates with the score at Spearman -0.287 (ovalbumin), i.e. more-mutated, affinity-matured receptors score higher; (2) B-cell developmental stage — the top score decile is IgG1+ memory B and plasma cells while the bottom is pre-pro-B and immature B cells. A working pipeline must recover both. Also: predict CDR3 length from the sequence embedding, which should be near-perfect.",
+    "negative_control": "Shuffle AAB scores within antigen and confirm collapse to the per-cell-type mean (R-squared 0.309 / 0.182, which I computed). Shuffle within clonotype to confirm the grouped split groups. Ablate feature blocks: heavy only, light only, V-gene-identity only. Critically, train on the light-chain UMI count alone — it reaches Spearman -0.78 with the label, so it must never enter the feature set, and this control shows how much of the label is capture depth.",
+    "external_validation": "Weak and the project's soft spot. Within the data: train on ovalbumin, test on RBD (only 54 of 3,753 heavy CDR3s are shared, so the runs are near-independent). Outside: CoV-AbDab SARS-CoV-2 antibodies and public human LIBRA-seq data, both joinable only by CDR3 similarity. The strongest anchor — the ~37 ELISA-measured mAbs in Supplementary Tables S1/S3 — I could not retrieve, and the paper's third (0521) experiment is not in the deposit."
+  },
+  "honest_claim_h3": "Within two mouse immunisation experiments from one laboratory, paired heavy/light antibody sequence predicts the AAB score — a relative, unitless ratio of antigen barcode counts to anti-light-chain barcode counts — to within some stated accuracy, after accounting for the B-cell developmental state and sequencing capture depth that already explain 31% (ovalbumin) and 18% (SARS-CoV-2 RBD) of its variance and cap any model at roughly R-squared 0.75; this is not a claim about absolute binding affinity, and it is not tested outside BALB/c mice or these two antigens.",
+  "plain_idea": {
+    "one_liner": "Use an antibody's paired heavy and light chain sequence to predict how strongly it binds its target antigen.",
+    "train_on": "For each of 7,406 unique antibodies (4,114 against ovalbumin, 3,292 against the SARS-CoV-2 spike receptor-binding domain, counted by me in the files), the model sees the paired heavy and light chain amino-acid sequence — all four framework regions and all three complementarity-determining loops — plus the V and J gene the cell used.",
+    "predict": "A single number per antibody: the AAB score, which is how many DNA-barcoded antigen molecules stuck to that one B cell, divided by how much anti-light-chain antibody barcode stuck to it, both read out as sequencing counts from the same droplet. It is a relative binding strength, not an affinity in molar units.",
+    "why_worthwhile": "Antibody discovery groups currently clone and ELISA-test a few dozen candidates per campaign; a model that ranks thousands would redirect which cells they pick. Even if it fails, measuring how much of this increasingly popular barcoded-antigen readout is real binding versus cell state and capture depth tells the whole field how much to trust its own scores."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "7,406 unique paired-chain antibodies with a continuous score is a decent size, and it covers an area human-donor models cover badly: BALB/c mouse immunisation against ovalbumin, a non-pathogen model antigen absent from CoV-AbDab and from the LIBRA-seq denoising paper's 10 human donors. But it is only two antigens from one lab, against that paper's 20 antigens, and the RBD half sits in the most saturated antigen in antibody machine learning."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "72 clonotypes (42 ovalbumin, 30 RBD) have 3 or more cells, giving genuine replicate measurements of the same antibody: within-clone standard deviation 0.49-0.63 against a total of 1.00-1.20, which I measured and which fixes a noise ceiling near R-squared 0.75. But the 2024 mixture model already emits a per-cell signal-versus-noise probability, so calibrated uncertainty is not an untouched edge."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The 2024 negative binomial mixture model is a simple two-component count model with open code, beatable in principle — but it requires Ramos negative-control spike-in cells that this deposit does not contain, so it cannot be run here at all. The antibody language model classifiers are 2024-2025 and reasonably evaluated, though all on human donors and on binary specificity rather than a continuous score."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Two of the four conditions fail. The mixture model cannot be run as our baseline on this data (no negative-control cells), and the obvious new data, CoV-AbDab, measures a different quantity (curated binary binding and absolute affinities on human antibodies) by different assays, so it is not the same measurement made the same way. The join key is also only CDR3 sequence similarity, and I verified exact CDR3 overlap is near-zero even between this paper's own two runs (54 of 3,753)."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "The AAB score itself exists only here. The underlying quantity — antibody-antigen binding — is public in CoV-AbDab (SARS-CoV-2 antibodies with binding annotation), SAbDab and the AbRank benchmark (dissociation constants in nanomolar), and in public LIBRA-seq datasets covering 10 human donors against 20 antigens. All named from searches I ran and retrieved; I did not download them.",
+    "approx_items": null,
+    "join_key": "IMGT V/J gene call plus CDR3 amino-acid sequence (sequence-similarity match, not a standard accession)",
+    "why": "Those resources give a sanity check and a pretraining signal, but I verified that exact CDR3 matching is near-useless here (only 54 of 3,753 heavy CDR3s are shared even between this paper's own two runs), so they cannot supply extra training rows for this exact label — only a loose external check."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Clonally related cells: 149 ovalbumin and 69 RBD heavy|light CDR3 pairs appear in more than one cell (up to 47 cells for one clone), so a random split would put near-identical sequences in both train and test.",
+      "Somatically related lineages share V/J genes and most of their framework sequence even when CDR3s differ, so identical-sequence deduplication alone is not enough.",
+      "The label is strongly determined by its own denominator — Spearman -0.78 / -0.74 with the light-chain barcode UMI count — so any feature correlated with droplet capture depth or B-cell receptor expression level leaks.",
+      "B-cell developmental state alone explains R-squared 0.309 (ovalbumin) and 0.182 (RBD); V-gene usage differs systematically by subset, so a sequence model can score well by silently predicting cell type rather than binding.",
+      "The two antigen runs differ ten-fold in antigen UMI depth (median 318 vs 25), so pooling them without a per-run offset lets the model learn the batch instead of the biology."
+    ],
+    "split": "Hold out whole clonotypes, built from raw_clonotype_id and from CDR3 amino-acid pairs clustered at high identity (both columns verified present in filtered_contig_annotations.csv, with 4,066 and 3,288 distinct clonotypes). Report the stricter variant too: cluster on the concatenated heavy+light sequence with CD-HIT or MMseqs2 at 80% identity and hold out clusters. Keep the two antigen runs as separate folds as well, to get a train-ovalbumin/test-RBD transfer number.",
+    "checks": [
+      "Shuffle the AAB score within antigen and confirm performance collapses to the per-cell-type mean (0.309 / 0.182), not to zero.",
+      "Shuffle within clonotype rather than globally, to verify the grouped cross-validation is actually grouping.",
+      "Train on the light-chain UMI count alone and on cell type alone, and report both numbers alongside the sequence model, so the sequence-specific increment is explicit rather than implied.",
+      "Measure nearest-neighbour sequence identity between every test antibody and the training set, and plot accuracy against it; the decay curve is itself a publishable result.",
+      "Positive control: predict CDR3 length from the embedding and confirm it is near-perfect, proving the plumbing works before trusting the real number."
+    ],
+    "verdict": "Manageable but demanding: the clonal-duplicate and sequence-similarity leakage is standard and fully preventable with the columns present, but the cell-state and capture-depth confound is not leakage you can split away — it must be reported as a baseline the sequence model has to beat, and that is the honest difficulty of this project."
+  },
+  "success_criteria": {
+    "metric": "Primary: Spearman correlation between predicted and observed AAB score on held-out clonotypes, reported separately per antigen. Secondary and the one that matches the real decision: precision among the top 20 predicted antibodies, because a discovery group clones roughly 20 candidates (this paper cloned 17 and then 20), so what matters is whether the top of the ranking is enriched for true binders, not overall fit.",
+    "baselines": "Three, all of which I computed from the files rather than taking on trust: global mean (R-squared 0 by construction); per-cell-type mean, R-squared 0.309 for ovalbumin and 0.182 for RBD; per-light-chain-V-gene mean, 0.178 and 0.191. Published comparator: the 2024 negative binomial mixture model's 77% binding-prediction accuracy versus 54% for the raw LIBRA-seq score — but on human data with negative-control cells, so it is a reference point, not a runnable baseline here.",
+    "success": "Spearman >= 0.45 on held-out clonotypes within each antigen, AND at least +0.10 R-squared over the per-cell-type baseline (so beating 0.41 for ovalbumin and 0.28 for RBD), AND a positive train-ovalbumin/test-RBD transfer correlation showing the model learned something antigen-general rather than batch-specific.",
+    "noise_ceiling": 0.75,
+    "kill": "If frozen antibody-language-model embeddings add less than 0.05 R-squared over the cell-type-plus-hypermutation baseline under a clonotype-grouped split, stop. That is one week's work, and the answer is still worth a short note."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Cell Systems",
+      "why": "Publishes biology-first machine learning on new measurement platforms; it would take a clear positive — sequence embeddings beating the cell-state baseline and transferring from ovalbumin to RBD, ideally with a handful of top-ranked antibodies confirmed against the paper's own ELISA data."
+    },
+    "realistic": {
+      "journal": "mAbs",
+      "why": "The antibody-engineering journal of record, which publishes exactly this kind of sequence-to-binding benchmark on real discovery data; the likely result — a modest but honest sequence signal plus a quantification of how much of the barcoded-antigen score is cell state and capture depth — is squarely what its readers need."
+    },
+    "fallback": {
+      "journal": "Bioinformatics Advances",
+      "why": "It already published the LIBRA-seq noise-denoising paper, so it is the natural home for a negative or partial result showing that this score is dominated by its own normalising denominator (Spearman -0.78) and that sequence adds little beyond B-cell state."
+    }
+  },
+  "pitch": {
+    "headline": "A brand-new, never-modelled table of 7,406 paired antibody sequences each carrying a measured relative binding score, openly licensed and laptop-sized.",
+    "what_makes_the_data_unusual": "I counted 4,114 ovalbumin and 3,292 RBD unique heavy|light CDR3 pairs with a score and zero missing values, CC-BY-4.0, 77 MB. Ovalbumin, a non-pathogen antigen, is absent from the human-donor datasets every existing antibody specificity model was trained on.",
+    "the_win": "Spearman >= 0.45 on held-out clonotypes and at least +0.10 R-squared over the per-cell-type baseline I measured (0.309 ovalbumin, 0.182 RBD), with positive ovalbumin-to-RBD transfer.",
+    "even_if_it_fails": "You learn, with numbers, that this fast-spreading barcoded-antigen readout is mostly capture depth and B-cell state: the score correlates -0.78 with its own light-chain denominator and 31% of its variance is developmental stage. Every lab using these scores needs that.",
+    "who_wants_it": "The Georgiev lab at Vanderbilt, who built LIBRA-seq and its denoiser and explicitly flagged that barcode counts are not reliably correlated with binding, plus any group deciding which twenty B cells to clone next."
+  },
+  "ml_idea": "Join the per-cell AAB score (verified as a column in both h5ad files) to paired heavy/light antibody sequences (verified as columns in the V(D)J contig tables) on cell barcode, giving 7,406 unique antibodies. Embed each paired sequence once on CPU with a frozen antibody language model (AntiBERTy or AbLang-2), with ESM-2 as a general-protein control, and fit a ridge or gradient-boosting head to regress the score, under a clonotype-grouped split. The experiment that matters is not the headline correlation but the decomposition: report the sequence model's increment over a cell-state-plus-somatic-hypermutation baseline (R-squared 0.309 / 0.182, which I computed), against the replicate-derived noise ceiling of roughly 0.75, and add a train-on-ovalbumin / test-on-RBD transfer number. That answers 'how much of a barcoded-antigen binding score is actually encoded in the antibody sequence?' — informative whichever way it comes out.",
+  "effort": {
+    "hours_to_feature_table": 5,
+    "working_set_gb": 0.08,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 3,
+    "cv_run_minutes": 5,
+    "compute_note": "Not estimated from the paper — measured. I actually built the joined table during this evaluation (range-extract from the zip, read the h5ad obs group with h5py, pick the top-UMI productive heavy and light contig per barcode, merge) and it ran in seconds on 77 MB; the 5 hours allows for reconciling the full-length IgBLAST AIRR sequences rather than just the CDR columns. Embedding time is estimated, not timed: ~7,400 sequences of ~250 amino acids at 1-3 per second on CPU. Cross-validation time is estimated for a linear head on roughly 1,300-dimensional cached embeddings.",
+    "cheapest_killing_check": "Fit cell type + IGHV germline identity + V-gene usage as a baseline (R-squared 0.309 ovalbumin / 0.182 RBD, already computed), then add frozen AntiBERTy embeddings of the paired CDR3s under a clonotype-grouped split. If the sequence adds under 0.05 R-squared, the premise is dead in one week. Do this before anything else — before chasing the supplementary ELISA tables."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "All eight Part A killers pass and I verified every one in the actual files, not the paper: the AAB score is a real float column with zero missing values, paired heavy/light sequences are present as text (no lookups), and my own join yields 7,406 unique antibodies — comfortably past the row threshold even per antigen. The data is CC-BY, 77 MB, laptop-trivial, with an ideal frozen-backbone fit, two verified positive controls (somatic hypermutation and B-cell subset), and a replicate-derived noise ceiling near R-squared 0.75. Nobody has modelled it; it was deposited in 2026. What holds it back from 'do it' is what I found underneath: the score correlates -0.78 with its own light-chain normalising denominator, and B-cell developmental stage alone already explains 31% / 18% of its variance, so a large share of the label is capture depth and cell state rather than binding. Coverage is also thin — one lab, BALB/c mice, two antigens, animals pooled so no per-donor split exists — and the only true affinity anchor, the ~37 ELISA-measured antibodies in Supplementary Tables S1/S3, could not be retrieved (the Europe PMC supplement endpoint timed out) while the paper's third experiment is absent from the deposit. Verify two things before committing: retrieve Supplementary Tables S1/S3 to tie AAB scores to measured ELISA binding, and run the one-week increment test showing that sequence embeddings beat the cell-state baseline by more than 0.05 R-squared under a clonotype-grouped split."
+}

@@ -1,0 +1,52 @@
+{
+  "paper_id": "cellgen2026-101339",
+  "title": "Cooperativity enables widespread role of low-affinity motifs in chromatin accessibility and increases regulatory potential.",
+  "doi": "10.1016/j.xgen.2026.101339",
+  "journal": "Cell Genomics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE306105 ; https://doi.org/10.5281/zenodo.17187407",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE306105 file list: 23 samples, all bigWig tracks (signal files along the genome), 15.97 GB tar; only 3 native ATAC-seq (chromatin accessibility assay) replicates, the rest are edited-enhancer mutants at 2 loci (Btbd11, Akr1cl). Zenodo 17187408 (CC-BY-4.0) listing: motif-instance and motif-pair TSVs (59-631 MB), models, SHAP and prediction tarballs (up to 12.3 GB). Opened the header and ~640 rows of all_instances_curated_0based_w_perturb.tsv.gz via a ranged download: columns are motif coordinates, match scores, model contribution scores and BPNet in-silico perturbation predictions.",
+    "what_came_from_paper_text_only": "Methods from bioRxiv preprint 10.1101/2025.11.18.685822 (CC-BY): ChromBPNet/BPNet trained on 154,827 regions in mouse embryonic stem cells. The NCBI PMC link (PMC13596691) points to an unrelated AlphaGenome Atlas paper and was ignored. Total row count of the instance table not verified (file is 168.6 MB, over cap)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO and Zenodo both public, no login; checked file listings and a ranged download."},
+    "a2_label_is_a_column": {"pass": false, "note": "The only measured label is accessibility in genome-wide bigWig tracks; a per-region or per-motif label would have to be constructed by extracting counts over peaks. The tabular Zenodo files carry model outputs, not measurements."},
+    "a3_inputs_present": {"pass": true, "note": "Motif sequences are in the instance table; region sequences would come from mm10 genome coordinates."},
+    "a4_units_stated": {"pass": true, "note": "Tracks are cut-site / read-per-million coverage per paper; contribution scores are unitless model attributions."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Real experimental perturbations cover only 2 edited loci with a handful of mutants each (seen in GEO sample names); genome-wide rows exist only as model-derived values."},
+    "a6_fits_laptop": {"pass": false, "working_set": "~16 GB of bigWigs (ATAC replicates 0.5-1 GB each); predictions/SHAP tarballs 8.8-12.3 GB", "note": "Training a ChromBPNet-style model on raw tracks needs a GPU; the small tables are laptop-sized but model-derived."},
+    "a7_counts_match_paper": {"pass": true, "note": "23 GEO samples consistent with described ATAC and Sox2 ChIP-nexus experiments; 154,827-region count not checked."},
+    "a8_label_provenance": {"pass": false, "note": "In the instance tables, every candidate label (acc_contrib, *_contrib, bpnet_osknz/.../pred_sum perturbation effects) is a ChromBPNet/BPNet prediction, so modelling them would distil the authors' network."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ChromBPNet and BPNet (sequence-to-profile convolutional networks, trained by the authors via BPReveal v4.0.4)", "open_weights": true, "score_and_split": "Trained models on Zenodo; held-out chromosome evaluation per preprint, exact numbers not retrieved.", "authors_named_unsolved": "Not retrieved from discussion; abstract frames low-affinity motif mapping as previously hard.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ChromBPNet weights released by the authors (or AlphaGenome)", "freeze_and_head_viable": null, "hardware": "GPU for training from tracks", "licence": "CC-BY-4.0 (Zenodo data)"},
+  "integration": {"partner_dataset": "", "join_key": "mm10 genomic coordinates", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "Any model on the released tables would only reproduce what the authors' ChromBPNet predicts about motif contributions in one mouse embryonic stem cell line.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around transcription-factor motifs to predict how much each motif opens chromatin in mouse embryonic stem cells.",
+    "train_on": "Motif instances with sequence context from the Zenodo tables; total count unknown (168.6 MB gzipped file not fully downloaded).",
+    "predict": "Motif contribution to accessibility, but the available values come from the authors' ChromBPNet model, not a direct measurement; measured effects exist only for 2 edited enhancers.",
+    "why_worthwhile": "Would help interpret weak binding sites in non-coding DNA, but with model-derived labels we would only learn to imitate the authors' network."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Same 3 ATAC replicates the authors' ChromBPNet was trained on; no extra measured data."},
+    "confidence_score": {"answer": "no", "why": "Only 2-3 replicates per condition and 2 edited loci; too few to calibrate per-motif uncertainty."},
+    "models_beatable": {"answer": "no", "why": "ChromBPNet/BPNet (2024-2025, open, chromosome-held-out evaluation) is the current standard for this task."},
+    "guaranteed_improvement": {"answer": "no", "why": "No joinable new measurement of the same quantity identified; labels in the tables are the baseline model's own outputs."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: learn motif-level accessibility effects from the tables, or re-train a sequence-to-accessibility model on the ATAC tracks. The first is distillation of ChromBPNet; the second is the authors' own GPU task on 16 GB of tracks.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 16, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from file sizes only; nothing timed.", "cheapest_killing_check": "Inspect the instance-table header for any measured column (done: all values are model predictions)."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2, A5, A6 and A8: the tabular labels are ChromBPNet predictions, measured accessibility is only in 16 GB of genome-wide tracks (the authors' own GPU modelling task), and direct experiments cover only 2 edited enhancers."
+}

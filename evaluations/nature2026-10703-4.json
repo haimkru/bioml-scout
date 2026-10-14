@@ -1,0 +1,104 @@
+{
+  "paper_id": "nature2026-10703-4",
+  "title": "Chromatin landscape and epigenetic heterogeneity of acute myeloid leukaemia.",
+  "doi": "10.1038/s41586-026-10703-4",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.17470436 (processed data, RESTRICTED); EGA accession EGAS00001008315 and G-CARD accession G-CARDS000002 (raw, controlled access); open supplementary tables via Europe PMC PMC13489951",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the Europe PMC supplementary bundle for PMC13489951 (29 MB) and opened 41586_2026_10703_MOESM3_ESM.xlsx (5.3 MB, Supplementary Tables 1-11) with openpyxl. Counted Supplementary Table 3 myself: exactly 1,563 data rows, 20 columns, 1,563 unique patient IDs, no duplicates; the 16 chromatin subgroup labels run from 269 patients (subgroup P) down to 24 (subgroup N); the free-text DriverGenes column is empty for 7 patients and contains 101 distinct mutation/karyotype tokens. Also hit the Zenodo application programming interface for both deposits: metadata says access_right = 'restricted', the file list is empty, and the file endpoint returns HTTP 403 'Permission denied'; the newest version (10.5281/zenodo.22122444, created 2026-10-02) is restricted too.",
+    "what_came_from_paper_text_only": "That the chromatin subgroups came from Leiden clustering of the top 3,000 most variable chromatin peaks; that the authors' own classifiers (a 240-gene nearest-centroid model called ClaNC, and one-versus-rest decision trees on mutations) exist and how they were evaluated; the drug-sensitivity and survival analyses. I never saw the chromatin accessibility matrix, the gene expression matrix, the drug scores, or any survival/outcome column, because all of those live behind the restricted Zenodo deposit or the European Genome-phenome Archive application."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, checked directly. The processed data deposit (Zenodo 10.5281/zenodo.17470436) returns HTTP 403 and its own page says new access requests are paused while the depositors consult collaborators. Raw data needs a formal application to the European Genome-phenome Archive or the Japanese G-CARD database. Even the analysis code deposit is restricted. Only the article's supplementary spreadsheet is openly downloadable."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "In the one openly downloadable table (Supplementary Table 3) the chromatin subgroup is literally column 2, one letter A-P per patient. No construction needed. This is the only Part A item that passes cleanly."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL. The inputs the paper is actually about, chromatin accessibility per genomic region and gene expression per patient, are not in any file I could open. The open table gives only a comma-separated free-text string of driver mutations and karyotype events per patient, which is a thin proxy, not the real input."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Not applicable in the open file: every column of Supplementary Table 3 is categorical or a 0/1 flag, with no measured numbers, so there are no units to get wrong. The numeric matrices (log counts per million, quantile normalised) are described in the paper but sit behind the restricted deposit."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 1563,
+      "note": "PASS, counted by me: 1,563 unique patients, 16 classes, smallest class 24 patients. Above the ~400-row bar for a classification task, though four classes have under 55 patients."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~5.3 MB spreadsheet; under 10 MB as a parsed table",
+      "note": "PASS for the open table, trivially. Would NOT pass for the real resource: a 1,563-patient chromatin accessibility peak matrix plus matched RNA, ChIP and whole-genome sequencing is tens of gigabytes before you touch the raw sequencing."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "PASS, verified. My own row count of Supplementary Table 3 is 1,563, exactly the cohort size claimed in the abstract and methods. Cohort split 1,040 Sweden / 523 Kyoto."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL, and this is the deeper problem. The 16 chromatin subgroups are not a measurement; they are the output of the authors' own unsupervised Leiden clustering of the top 3,000 variable chromatin peaks at one chosen resolution (0.2), with small clusters manually reassigned. Learning to predict them is distilling that clustering. The other candidate labels in the open table (European LeukemiaNet risk, World Health Organization 2022 class, International Consensus Classification) are guideline rules computed deterministically from the same driver-mutation column that would be the features, so they are leakage by construction."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ClaNC nearest-centroid classifier from this same paper (240 genes, 15 per subgroup) predicting the 16 chromatin subgroups from bulk gene expression",
+        "open_weights": false,
+        "score_and_split": "Paper reports fivefold cross-validation accuracy on an 80/20 random patient split and application to 1,079 patients from four external adult AML cohorts; I read this in the methods and did not see the accuracy number itself. The split is random across patients, not held-out-cohort.",
+        "authors_named_unsolved": "The authors state the subgroups are not reducible to genomic alterations and carry prognostic information independent of genetic classification, implying that predicting chromatin state from genetics alone is the open part.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "One-versus-rest CART decision trees from this same paper, predicting each chromatin subgroup from binary mutation, copy-number and structural-variant features",
+        "open_weights": false,
+        "score_and_split": "Random 80/20 patient split, max tree depth 3, reported as sensitivity, positive predictive value, F1 and balanced accuracy; the authors ran this specifically to show that simple genomic rules do NOT explain the chromatin subgroups.",
+        "authors_named_unsolved": "Same point: chromatin subgroups add information beyond genomics, so the genotype-to-chromatin-subgroup mapping is explicitly presented as incomplete.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None usable. The obvious candidates for this data type are DNA language models (DNABERT-2, HyenaDNA, Nucleotide Transformer) or single-cell models (scGPT, Geneformer), but all of them need the sequence-level or expression-level matrices that are behind the access wall.",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "Article is CC BY-NC-ND; the restricted Zenodo processed data is labelled CC BY 4.0 but is not actually obtainable; the restricted code deposit is CC BY-NC 4.0."
+  },
+  "integration": {
+    "partner_dataset": "BeatAML or TCGA-LAML (public adult acute myeloid leukaemia cohorts with gene expression and survival), joinable in principle via gene symbols and the published 240-gene signature",
+    "join_key": "HUGO gene symbols for the signature genes; there is no patient-level key, because this paper's patients are not individually released",
+    "bigger_question_one_sentence": "Do chromatin-defined subgroups carry prognostic information beyond gene-expression-based risk scores in independent public cohorts? -- a real question, but it cannot be asked here because the subgroup definitions and the per-patient chromatin data are not released, so you would only be re-applying a 240-gene list you cannot see the weights for."
+  },
+  "controls": {
+    "positive_control": "Would have been: the model must recover the textbook association of the PML::RARA fusion with subgroup A and NPM1 mutation with the subgroups the paper names. This is checkable in the open table, but it is also nearly the whole signal.",
+    "negative_control": "Shuffle the subgroup labels and confirm 16-class accuracy collapses to the majority-class rate of 269/1563 = 17%. Runnable on the open table.",
+    "external_validation": "A held-out-cohort split exists in the open table (Sweden n=1,040 versus Kyoto n=523, every subgroup represented in both), which would have been a genuinely good split. There is no publication-year column and no second independent source of chromatin subgroup labels."
+  },
+  "honest_claim_h3": "Using only the openly released table, a model could claim at most: 'among 1,563 adults with newly diagnosed acute myeloid leukaemia from two hospitals in Sweden and Japan, a list of driver mutations and karyotype events predicts the chromatin-accessibility cluster that these authors assigned at one clustering resolution with accuracy X' -- which is a statement about their clustering, not about leukaemia biology, and the authors have already shown the answer is 'incompletely'.",
+  "plain_idea": {
+    "one_liner": "Use a leukaemia patient's DNA mutation profile to predict which of sixteen chromatin-accessibility groups their cancer belongs to.",
+    "train_on": "One row per patient: a list of driver gene mutations and chromosome abnormalities (101 distinct events across the cohort), plus which hospital network the sample came from. I verified there are exactly 1,563 such rows in the open supplementary table.",
+    "predict": "Which of sixteen chromatin groups (labelled A to P) the patient falls into. The true answer is not a lab measurement -- it is the group the paper's authors assigned by running an unsupervised clustering algorithm on chromatin-accessibility sequencing data that is not publicly released.",
+    "why_worthwhile": "Haematologists and leukaemia labs would like to know whether cheap genetic testing can stand in for expensive chromatin profiling. But the paper already answered this with its own decision trees and the answer was 'not fully', so repeating it adds little."
+  },
+  "ml_idea": "Sixteen-class classification of chromatin-accessibility subgroup from a binary mutation/karyotype feature matrix, evaluated with a held-out-cohort split (train Sweden, test Kyoto) rather than the authors' random split. Rejected because the label is an unsupervised clustering of data nobody outside the consortium can see, and the real chromatin and expression inputs are behind an access wall.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.006,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated from the file I actually opened: a 1,563-row by 20-column spreadsheet that one-hot expands to roughly 1,563 by 101. Gradient boosting or logistic regression on that is seconds, not minutes; no backbone embeddings are possible because no sequences or expression values are released. Nothing timed beyond the spreadsheet parse.",
+    "cheapest_killing_check": "Request the Zenodo processed-data files. I did the equivalent in one command: the file endpoint returns HTTP 403 and the deposit page states new access requests are currently paused. That single check kills the project in under a minute."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Three Part A killers fail. A1: every file that matters is behind an access wall -- the processed-data Zenodo deposit returns HTTP 403 with new requests explicitly paused, and the raw data needs a European Genome-phenome Archive or G-CARD application; even the analysis code is restricted. A3: the chromatin accessibility and gene expression matrices that are the entire point of the paper are absent, leaving only a free-text mutation string as a proxy input. A8: the prediction target is the authors' own unsupervised clustering output at one chosen resolution, not a physical measurement, and the alternative labels in the open table (European LeukemiaNet risk, World Health Organization class) are rule-based functions of the very mutation features you would use as inputs. The one openly downloadable artefact -- a clean, verified 1,563-row patient summary table with a good built-in Sweden-versus-Japan held-out-cohort split -- is genuinely tidy, but it is a metadata table, not a modelling dataset, and the paper's own decision-tree analysis already ran this exact experiment to make the point that genetics does not explain the chromatin groups. Worth revisiting only if the Zenodo deposit is opened; set a reminder rather than applying."
+}

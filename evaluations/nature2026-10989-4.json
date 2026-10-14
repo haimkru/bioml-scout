@@ -1,0 +1,135 @@
+{
+  "paper_id": "nature2026-10989-4",
+  "title": "Learning millisecond protein dynamics from what is missing in NMR spectra.",
+  "doi": "10.1038/s41586-026-10989-4",
+  "journal": "Nature",
+  "data_url": "https://huggingface.co/datasets/gelnesr/RelaxDB",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded mBMRB/mBMRB.csv (2.5 MB), relaxdb/relaxdb_data.csv (1.0 MB) and relaxdb-cpmg_data.csv (5 KB) from the Hugging Face dataset (MIT licence, not gated); whole repo is 68 MB. mBMRB.csv has 9,786 rows: 231 malformed rows (empty id and label), and after removing those plus RelaxDB-style rows exactly 9,381 BMRB (Biological Magnetic Resonance Data Bank) entries remain, matching the paper. Per-residue label string has length equal to the sequence in every clean row; 1,072,373 residues, 12.2% marked missing. 1,011 sequences appear more than once; across 3,980 pairs of repeat depositions of the identical sequence, per-residue agreement is 0.923 and mean Cohen's kappa (chance-corrected agreement) 0.645. RelaxDB: 133 proteins, 126 UniProt IDs, 16,255 residues (646 Rex '^', 749 missing, 140 mixed). CPMG set: 10 proteins, 1,916 residues. GitHub split files: train_30pc 6,572 ids, val 500, test 100, all present in the CSV; 80/50/30% sequence-identity cluster files exist. BMRB entry IDs in the data go up to 51871.",
+    "what_came_from_paper_text_only": "Abstract only (paywalled, no PMCID in Europe PMC; PMC and bioRxiv full text blocked by captcha/HTTP 429). Dyna-1's AUROC/AUPRC numbers, the BMRB curation freeze date and the filter rules were not retrieved. That Dyna-1 is the best of several models, and that it predicts relaxation-measured exchange, comes from the abstract and README."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public Hugging Face dataset, MIT licence, no login; CSVs downloaded directly (checked)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Per-residue label string ('.' missing, 'A' assigned) is a column aligned to the sequence column (checked). RelaxDB exchange labels are also a column with a documented vocabulary."},
+    "a3_inputs_present": {"pass": true, "note": "Amino-acid sequences are in the CSV, plus 811+ AlphaFold2 PDB files in mBMRB/pdbs (file listing seen, not opened)."},
+    "a4_units_stated": {"pass": true, "note": "Labels are categorical per residue with a documented vocabulary; RelaxDB has field_strength (MHz) and temp_K columns (checked)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 9381, "note": "9,381 proteins / about 1.07 million labelled residues in mBMRB (counted). True dynamics labels (RelaxDB) are only 133 proteins, used for evaluation."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~4 MB of CSV; ESM-2 embeddings for ~1.07M residues at 1,280 dims would be ~5 GB float32, fine if stored per protein or with the 640-dim model", "note": "Frozen ESM-2 (a protein language model) embedding of 9,381 proteins of median 105 residues is CPU-feasible."},
+    "a7_counts_match_paper": {"pass": true, "note": "After dropping 231 malformed rows and RelaxDB-vocabulary rows, exactly 9,381 entries, matching the paper's 9,381 (checked). RelaxDB 133 and CPMG 10 also match the README."},
+    "a8_label_provenance": {"pass": true, "note": "The label is whether the depositors assigned each backbone amide signal in BMRB: an experimental record, not a model output or computed from sequence. It is a noisy proxy for exchange (missing peaks also come from overlap, low signal-to-noise or incomplete work); the authors state this assumption."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "mBMRB is one 4-column CSV holding id, sequence, per-residue label and structure path (checked)."},
+    "B2": {"score": 1, "why": "Parses with pandas, but 231 rows have empty id/label and RelaxDB rows are mixed into mBMRB.csv (checked)."},
+    "B3": {"score": 1, "why": "One observable (assigned or not), but from thousands of labs, magnetic fields and conditions; RelaxDB mixes BMRB, digitised plots, tables."},
+    "B4": {"score": 1, "why": "No censoring in mBMRB; RelaxDB has 'no data' classes (t, x) that must be masked, documented as -1 (checked)."},
+    "B5": {"score": 1, "why": "1,011 sequences deposited more than once, 762 with differing labels (checked); cluster files make grouping easy."},
+    "B6": {"score": 2, "why": "Hugging Face README documents every column and each label character's meaning (read)."},
+    "C1": {"score": 2, "why": "Testing Dyna-1 on later BMRB depositions, and the label noise ceiling, are informative whichever way they come out."},
+    "C2": {"score": 1, "why": "One model for this task, Dyna-1 (open weights, cluster split); DynaProt-style models cover fast motions, not millisecond exchange."},
+    "C3": {"score": 1, "why": "Re-evaluation angle: noise ceiling from repeat depositions plus temporal test; a modest 'Better' case, not novel data."},
+    "C4": {"score": 2, "why": "Measuring exchange needs NMR relaxation dispersion experiments: isotope-labelled protein and days of spectrometer time."},
+    "C5": {"score": 2, "why": "Amino-acid and secondary-structure frequency dummy baselines shipped (data/probs); Dyna-1 runnable via eval.py."},
+    "D1": {"score": 2, "why": "ESM-2 open weights; Dyna-1 itself ships an ESM-2 variant (README)."},
+    "D2": {"score": 2, "why": "Per-residue embeddings cached once on CPU, then a small classifier head."},
+    "D3": {"score": 2, "why": "ESM-2 MIT, data and code MIT; ESM-3 (Dyna-1's best backbone) is non-commercial but optional."},
+    "E1": {"ok": true, "why": "30%-identity cluster train/val/test split files provided on GitHub (checked); held-out RelaxDB proteins too."},
+    "E2": {"ok": true, "why": "Thousands of sequence clusters; test 100 proteins, val 500 (counted)."},
+    "E3": {"ok": true, "why": "Per-amino-acid and per-secondary-structure missing rates computable; authors ship these as probs_aa/probs_dssp."},
+    "E4": {"ok": true, "why": "3,980 repeat-deposition pairs of identical sequences: kappa 0.645, agreement 0.923 (computed)."},
+    "E5": {"ok": true, "why": "N-terminal residue nearly always missing (seen in rows); authors report enzyme active sites well predicted."},
+    "E6": {"ok": true, "why": "Label shuffling within protein and amino-acid-only ablation are straightforward on per-residue labels."},
+    "E7": {"ok": true, "why": "RelaxDB (133) and CPMG (10) relaxation-measured labels; BMRB IDs allow a deposition-order split."},
+    "E8": {"ok": true, "why": "Weights and eval.py public, so their RelaxDB numbers are reproducible; I did not retrieve the numbers."},
+    "G1": {"score": 1, "why": "mBMRB has BMRB entry IDs and sequences, no UniProt; RelaxDB has UniProt (checked)."},
+    "G2": {"score": 2, "why": "BMRB itself: entries deposited after the freeze (IDs above 51871), joinable on BMRB ID."},
+    "G3": {"score": 2, "why": "One row per BMRB entity ('_0', '_1' suffix), one label per residue."},
+    "G4": {"score": 1, "why": "New depositions test generalisation forward in time; marginally bigger question than the original data."},
+    "H1": {"score": 2, "why": "Both assigned and missing residues recorded for every protein (12.2% missing, counted)."},
+    "H2": {"score": 1, "why": "Thousands of labs, but BMRB favours small soluble proteins: median 105 residues, max 695 (counted)."},
+    "H3": {"score": 2, "why": "Claim stated below, limited to backbone-amide assignment gaps in small proteins someone chose to assign."},
+    "H4": {"score": 2, "why": "Authors explicitly call missing-equals-exchange an assumption (abstract)."},
+    "I1": {"score": 2, "why": "Kern and Wayment-Steele labs; NMR groups choosing which residues to probe with relaxation dispersion."},
+    "I2": {"score": 1, "why": "Calibrated per-residue confidence could change which proteins get costly dispersion experiments; marginal otherwise."},
+    "I3": {"score": 1, "why": "PR-AUC (precision-recall area) roughly matches 'which residues to inspect'; true decision is top-k residues."},
+    "I4": {"score": 1, "why": "Amino-acid/terminus rules capture part of the signal; how much remains is unverified."},
+    "J1": {"score": 2, "why": "Real per-residue modelling, grouped splits, calibration, transfer to relaxation labels."},
+    "J2": {"score": 1, "why": "NMR intuition needed to judge exchange plausibility; some checks (termini, prolines, loops) are intuitive."},
+    "J3": {"score": 2, "why": "Noise-ceiling analysis alone is shareable before any model is trained."},
+    "J4": {"score": 1, "why": "Not set; 2-3 weeks plausible."},
+    "J5": {"score": 1, "why": "Kill condition below; date not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Dyna-1 (this paper; ESM-3 intermediate layer plus head, also ESM-2 and AF2 variants)", "open_weights": true, "score_and_split": "Trained on mBMRB with 30%-identity cluster splits (train 6,572 / val 500 / test 100, files checked), evaluated on held-out RelaxDB and CPMG proteins; AUROC/AUPRC values not retrieved (paper paywalled, preprint blocked).", "authors_named_unsolved": "Assumes missing assignments mean exchange; extending to side chains, larger proteins and raw spectra was named as future work (secondary newsletter summary, not the paper).", "runnable_as_baseline": true},
+      {"name": "DynaProt (Bafna, Jing, Berger, ICLR 2026)", "open_weights": null, "score_and_split": "Predicts fast-timescale flexibility (RMSF, covariances) from molecular dynamics; not the millisecond exchange task.", "authors_named_unsolved": "Not read in detail.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (650M or 150M checkpoint), frozen per-residue embeddings", "freeze_and_head_viable": true, "hardware": "Laptop CPU, ~1 h embedding for 9,381 proteins with 650M (estimate)", "licence": "MIT"},
+  "integration": {"partner_dataset": "BMRB entries deposited after the mBMRB curation freeze (entry IDs above 51871 and later 30000-series), labelled with the same missing-assignment rule", "join_key": "BMRB entry ID / sequence", "bigger_question_one_sentence": "Does a model trained on past NMR depositions predict which residues will go missing in proteins deposited later, beyond what repeat-deposition noise allows?"},
+  "controls": {"positive_control": "N-terminal residue almost always missing (seen in rows); per-amino-acid baseline must be recovered; Dyna-1's own RelaxDB number reproduced with eval.py.", "negative_control": "Shuffle labels within each protein and confirm PR-AUC collapses to the per-protein missing fraction; amino-acid-identity-only model.", "external_validation": "RelaxDB (133 proteins, relaxation-measured exchange) and RelaxDB-CPMG (10); post-freeze BMRB depositions as a temporal set."},
+  "honest_claim_h3": "Predicts which backbone amide signals depositors failed to assign in small soluble proteins in BMRB, a noisy proxy for millisecond exchange whose repeat-deposition agreement (kappa 0.645) caps achievable accuracy.",
+  "plain_idea": {
+    "one_liner": "Use a protein's amino-acid sequence to predict which residues will be invisible in NMR spectra, a sign of slow motion.",
+    "train_on": "Per-residue embeddings of 9,381 NMR-studied proteins (about 1.07 million residues), each residue tagged assigned or missing.",
+    "predict": "The probability that each residue's backbone signal is missing from the deposited NMR assignment, checked against relaxation experiments that directly measure slow exchange in 133 proteins.",
+    "why_worthwhile": "NMR labs could pick which proteins and residues deserve week-long relaxation experiments; and the repeat-deposition analysis tells everyone how good any such model can possibly be."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Dyna-1 used all 9,381 curated entries up to its freeze (max BMRB ID 51871); only post-freeze BMRB depositions, number unverified, would add data."},
+    "confidence_score": {"answer": "yes", "why": "3,980 repeat-deposition pairs give a measured label-noise level (kappa 0.645); Dyna-1 outputs probabilities but, as far as I saw, no calibration against this noise."},
+    "models_beatable": {"answer": "partly", "why": "Dyna-1 is 2026, pretrained ESM-3 backbone, cluster-split evaluation: hard to beat on its own test; its test set is only 100 proteins, so re-evaluation is feasible."},
+    "guaranteed_improvement": {"answer": "no", "why": "Post-freeze BMRB entries measure the same quantity but must be labelled with the authors' curation filters, which I didn't verify reproduce, so 'same measurement, same way' is not guaranteed."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "BMRB (known resource) holds assignment completeness for further entries beyond the 9,381; RelaxDB's relaxation Rex labels exist only for 133 proteins (counted).", "approx_items": null, "join_key": "BMRB entry ID; UniProt for RelaxDB", "why": "New BMRB depositions give a forward-in-time test set, but each needs re-deriving the missing-assignment label."},
+  "leakage_plan": {
+    "risks": [
+      "The same protein deposited several times (1,011 repeated sequences) could land in train and test, letting the model memorise its missing residues.",
+      "Homologous proteins and mutant series share missing patterns; a random split would leak through sequence similarity.",
+      "RelaxDB proteins are also in mBMRB (all 133 sequences found), so training on their mBMRB labels then testing on RelaxDB leaks.",
+      "Lab-specific habits (e.g. not assigning termini or tags) correlate with label and could be learned as shortcuts."
+    ],
+    "split": "Use the authors' 30%-identity cluster split (train_30pc/val/test files, checked) and drop all RelaxDB sequences from training; add a temporal split by BMRB entry ID (id column, checked).",
+    "checks": [
+      "Shuffle labels within each protein; PR-AUC must fall to the per-protein missing fraction.",
+      "Nearest-neighbour sequence identity of each test protein to training; report performance by identity bin.",
+      "Model using only amino-acid identity and position-from-terminus; the learned model must clearly beat it."
+    ],
+    "verdict": "Manageable: cluster files and the RelaxDB overlap are known and easy to exclude."
+  },
+  "success_criteria": {
+    "metric": "Per-residue PR-AUC (precision-recall area under the curve) on RelaxDB exchange labels, because the user wants the residues most likely to show exchange.",
+    "baselines": "Per-amino-acid missing frequency from mBMRB train (authors' probs_aa); Dyna-1 ESM-2 and ESM-3 versions run via eval.py. Their published numbers were not retrieved.",
+    "success": "Frozen ESM-2 head within 0.02 PR-AUC of Dyna-1 on RelaxDB and on post-freeze BMRB entries, with calibrated probabilities (expected calibration error below the amino-acid baseline's). Exact thresholds await reproducing Dyna-1's numbers.",
+    "noise_ceiling": "Repeat depositions of identical sequences agree with Cohen's kappa 0.645 (mean, 3,980 pairs) and 92.3% per-residue agreement (computed).",
+    "kill": "If fewer than 300 post-freeze BMRB proteins pass the filters, or the ESM-2 head is no better than the amino-acid baseline by 0.05 PR-AUC after one week, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Nature Communications", "why": "Would need a clear temporal-generalisation result plus a noise ceiling showing Dyna-1 sits near or far from it."},
+    "realistic": {"journal": "Bioinformatics", "why": "Publishes re-evaluations and benchmarks; a noise ceiling plus temporal test of Dyna-1 fits."},
+    "fallback": {"journal": "bioRxiv preprint plus MLSB (Machine Learning in Structural Biology) workshop", "why": "Even a 'labels are too noisy' result is a useful short note."}
+  },
+  "pitch": {
+    "headline": "9,381 NMR-studied proteins with per-residue labels, MIT-licensed, plus 3,980 repeat depositions that measure label noise directly.",
+    "what_makes_the_data_unusual": "Repeat depositions of identical sequences give a measured ceiling (kappa 0.645) that few per-residue biology labels have; 1.07 million labelled residues; relaxation-measured test set of 133 proteins.",
+    "the_win": "Show Dyna-1's accuracy on post-freeze BMRB depositions relative to the 0.645-kappa noise ceiling, with calibrated per-residue confidence from a CPU-only ESM-2 head.",
+    "even_if_it_fails": "The noise ceiling alone tells the field how much better any missing-assignment model can get.",
+    "who_wants_it": "Kern and Wayment-Steele labs and NMR groups choosing which proteins get relaxation dispersion experiments."
+  },
+  "ml_idea": "Freeze ESM-2, train a per-residue head on mBMRB with the authors' 30% cluster split, calibrate it, and compare against Dyna-1 and amino-acid baselines on RelaxDB and on newer BMRB depositions, framed against the noise ceiling from repeat depositions.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 6,
+    "embedding_hours": 1.5,
+    "cv_run_minutes": 15,
+    "compute_note": "Estimated, not timed: 9,381 proteins of median 105 residues with ESM-2 650M at ~0.5 s each on CPU; head is a small classifier on cached embeddings. Building the post-freeze BMRB set adds an estimated 1-2 days.",
+    "cheapest_killing_check": "Count BMRB protein entries deposited after the freeze (IDs above 51871 plus later 30000-series) that have 15N backbone assignments and under 30% identity to mBMRB train; need at least 300."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "Clean, MIT-licensed, counts match exactly (9,381), and repeat depositions give a measured noise ceiling; but the only model, Dyna-1, is open and recent, so the project rests on a temporal test whose size (post-freeze BMRB entries) is unverified."
+}

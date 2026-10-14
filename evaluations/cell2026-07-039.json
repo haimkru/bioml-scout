@@ -1,0 +1,44 @@
+{
+  "paper_id": "cell2026-07-039",
+  "title": "Integrative spatial profiling of 3D genome organization and gene expression in tissue.",
+  "doi": "10.1016/j.cell.2026.07.039",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311199",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "GEO GSE311199 metadata and filelist.txt: 15 samples, one 687 GB RAW tar. Per-section Hi-C contact files (.nodups.pairs.gz) are 6.6-159 GB each (seven of the eight are 87-159 GB); combined HIC_RNA .h5ad.gz files are 340-515 MB (three sections only); RNA tar.gz files are 21-73 MB. Downloaded the Zenodo code archive (10.5281/zenodo.21475571, 45 MB): the notebooks show the Hi-C features used per spot are Higashi embeddings (a learned model's output) loaded from local .npy files that are not deposited, and one melanoma AnnData output of shape 6,268 spots x 2,000 genes.",
+    "what_came_from_paper_text_only": "Near-single-cell resolution, the tissues (mouse brain, E11.5/E13.5 embryos, human melanoma), and the compartment/TAD/loop findings come from the abstract only; full text returned HTTP 500 and the supplement was not retrievable. I did not open any h5ad, so whether the deposited h5ad holds binned Hi-C features is unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public on GEO with no login; checked the file listing. Individual files can be downloaded, but the Hi-C files are very large."},
+    "a2_label_is_a_column": {"pass": true, "note": "For predicting expression from chromatin contacts, the label (RNA counts per spot) is a column in the processed RNA matrices. The input side is what has to be built (see A6). Seen only in the file names, not opened."},
+    "a3_inputs_present": {"pass": false, "note": "Chromatin-contact inputs exist only as raw contact-pair lists (6.6-159 GB per section). The per-spot Hi-C features the authors used (Higashi embeddings, a model's output) are not deposited; this was checked in the code archive."},
+    "a4_units_stated": {"pass": true, "note": "RNA is raw counts from STARsolo, a standard alignment-and-counting tool (seen in the code archive); not otherwise checked."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "One notebook output shows 6,268 spots x 2,000 genes for melanoma, but there are only 8 tissue sections, so the independent unit is small. Total spot count not verified."},
+    "a6_fits_laptop": {"pass": false, "working_set": "Roughly 0.8 TB of Hi-C contact files to build per-spot contact features (one section alone is 87-159 GB compressed)", "note": "Building contact features per spot requires streaming 100+ GB files per section with pairtools/cooler (tools for processing Hi-C contact files) on a cluster. This is well over the 5 GB limit, and there is no deposited processed contact matrix to use instead."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checked; the full text was unavailable."},
+    "a8_label_provenance": {"pass": true, "note": "RNA counts are a physical measurement. But the only ready-made Hi-C feature, Higashi embeddings, is a model output and is not deposited."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scHiGex (graph transformer predicting single-cell gene expression from single-cell Hi-C, NAR Genomics and Bioinformatics 2025)", "open_weights": null, "score_and_split": "Not retrieved in detail; trained on single-cell Hi-C plus RNA data (HiRES), not on spatial data.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "scGrapHiC (predicts pseudo-bulk single-cell Hi-C from single-cell RNA, Bioinformatics 2024)", "open_weights": null, "score_and_split": "Not retrieved in detail.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Hi-Compass (predicts cell-type 3D genome from chromatin accessibility, including at spatial resolution, Nature Communications 2026)", "open_weights": null, "score_and_split": "Not retrieved in detail.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "None suitable; no open pretrained backbone takes spatial Hi-C input. scGPT (a single-cell model) would cover the RNA side only.", "freeze_and_head_viable": false, "hardware": "Cluster needed for Hi-C processing", "licence": "GEO public data; code licence not checked"},
+  "integration": {"partner_dataset": "HiRES single-cell Hi-C+RNA (mouse embryo); 4DN/ENCODE bulk Hi-C", "join_key": "genomic bins (mm10/hg38 coordinates)", "bigger_question_one_sentence": "Does the link between contacts and expression learned in dissociated single cells hold in intact tissue? This would need the raw Hi-C processed first."},
+  "controls": {"positive_control": "Recover A/B compartment-expression correlation (A compartments, the open and active part of the genome, are more highly expressed)", "negative_control": "Shuffle spot labels", "external_validation": "HiRES single-cell data"},
+  "honest_claim_h3": "With only 8 sections from 3 tissue types, a model could at best claim that per-spot contact features predict expression within these sections; spots from the same section are not independent.",
+  "plain_idea": {"one_liner": "Use chromatin folding measured at each tissue spot to predict which genes that spot expresses.", "train_on": "Per-spot genome contact maps from 8 tissue sections (thousands of spots each, exact total unknown), which first have to be built from 100+ GB raw contact files.", "predict": "Per-spot RNA counts measured by sequencing on the same tissue section.", "why_worthwhile": "It would show how much of the expression differences across a tissue the 3D genome explains."},
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict spot RNA from spot Hi-C features (or the reverse). This is blocked because the Hi-C input needs terabyte-scale processing.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 800, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from GEO file sizes only; nothing was timed. Higashi embeddings (the authors' Hi-C features) need a GPU.", "cheapest_killing_check": "Open one HIC_RNA.h5ad (340 MB) to see whether it holds binned Hi-C features. It probably does not, given that the code loads the Hi-C embeddings from separate local files."},
+  "verdict": "reject",
+  "verdict_reason": "A6/A3 fail: the chromatin-contact inputs exist only as 87-159 GB raw pair files per section (about 0.8 TB in total), and the processed per-spot Hi-C features are not deposited. There are also only 8 tissue sections."
+}

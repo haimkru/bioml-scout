@@ -1,0 +1,144 @@
+{
+  "paper_id": "nar2026-gkag717",
+  "title": "The extra-terminal domain drives the role of BET proteins in transcription.",
+  "doi": "10.1093/nar/gkag717",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE313013",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 10 processed per-gene tables from GEO (Gene Expression Omnibus) series GSE313013: each is a SLAM-DUNK 'tcount' TSV with exactly 6,465 gene rows, 0 duplicate gene names, columns Chromosome/Start/End/Name/Length/Strand/ReadCount/TcReadCount/ReadsCPM. Merged 6 replicates of strain RDY73 (3 solvent control, 3 auxin-treated) on gene name with 0 missing values and measured: newly-made-RNA read totals 96k-338k per sample, 4,160 genes with a nonzero labelled-read count in all 6 samples, 705 with at least 20, median log2 fold change -1.57, and per-gene log2 fold change replicate-to-replicate correlation 0.50-0.57 (0.72-0.80 for the 705 well-expressed genes). Same calculation on variant strain RDY234 gave a fold-change replicate correlation of only 0.06. Also checked the GEO metadata (297 samples, 204 SLAM-seq and 93 ChEC-seq, 40 strains, all Saccharomyces cerevisiae, 264 TSV files plus 93 bigWig files, one bigWig measured at 27.8 MB) and Zenodo records (mass-spectrometry raw data is a single 66 GB zip; the two analysis workflows are Apache-2.0; the gene annotation BED files are small and open).",
+    "what_came_from_paper_text_only": "That Supplementary Table S3 holds the authors' own per-gene fold-change results and Supplementary Table S2 maps each strain code (e.g. RDY234) to the BDF1 protein variant it carries. I could not retrieve any supplementary file: the Europe PMC supplementary-files endpoint timed out twice and the PubMed Central open-access package request returned nothing. The GEO metadata lists only 'cell line: RDY###' with no genotype, so which strain tests which protein domain is unverified. Also taken from the text only: the DESeq2 normalisation scheme (total read counts at 25 min, Schizosaccharomyces pombe spike-in at 3 h), the counts 5,888 annotated genes, 3,388 Bdf1-bound promoters, 3,103 Taf1-bound promoters and 455 rescued genes, and the claim that replicate variation in RNA level is under 30-40% for most genes."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open GEO downloads, no login: I fetched 10 processed per-gene tables directly. Licence on the paper is Creative Commons CC-BY 4.0. The supplementary tables were not retrievable here (two timeouts), and the 66 GB mass-spectrometry zip is over the size limit, but neither is needed for the core data."},
+    "a2_label_is_a_column": {"pass": true, "note": "Not literally a column: the per-gene labelled-read count (TcReadCount) is a column, and the prediction target (log2 fold change on depletion) must be computed from it with a standard differential-expression step. That is one source, one clean key (yeast systematic gene name), and the authors' own workflow is public, so this is effort (~a day), not construction across sources. Caveat: assigning each fold change to a protein domain needs the 40-row strain-to-variant key from Supplementary Table S2, which I could not open."},
+    "a3_inputs_present": {"pass": true, "note": "Model inputs are promoter DNA sequences. The count tables already carry chromosome, start, end and strand for every gene (seen in the files), so promoters come from one 12 Mb reference genome file (R64-3-1) and a coordinate slice, not thousands of identifier lookups."},
+    "a4_units_stated": {"pass": true, "note": "Columns are explicit and consistent across all 10 files I opened: ReadCount and TcReadCount are read counts, ReadsCPM is counts per million, Length is base pairs, ConversionRate is a fraction. Units are documented by the SLAM-DUNK tool whose version is written in the file header."},
+    "a5_enough_rows": {"pass": true, "n_rows": 6465, "note": "6,465 gene rows per sample (counted). Usable labelled rows for the strain with a real effect: 4,160 genes with nonzero labelled reads in all 6 replicates, of which 705 have at least 20 reads in every replicate. Above the 1,500-row bar, but label precision falls off sharply for weakly expressed genes."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.07 GB for all 264 count tables; ~0.6 GB if about 18 chromatin-occupancy bigWig files are added", "note": "Each count table is ~250 KB compressed; I held 10 of them plus merged frames in well under 1 GB. Skipping or subsetting the 93 bigWig files (27.8 MB each, 2.6 GB total) keeps everything on a 16 GB laptop with no GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Every file I opened has the same 6,465 rows, and GEO sample counts match the paper's design. The paper's 5,888 genes refers to a filtered gene list used for promoter assignment, which explains the difference. I could not cross-check my computed fold changes against the authors' Supplementary Table S3 because the supplement would not download."},
+    "a8_label_provenance": {"pass": true, "note": "The label traces to a physical measurement: cells were fed 4-thiouracil for 4 minutes, newly made RNA was chemically converted, and sequencing reads with 2 or more T-to-C changes were counted. It is not any model's output. One real trap: if baseline expression from the same solvent-control files is used as a feature while the label is the auxin/solvent ratio, the feature and label share noise; use an independent baseline estimate."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "264 count files plus 93 bigWigs, but gene-name key merged 6 files with 0 missing values (verified)."},
+    "B2": {"score": 2, "why": "Clean tab-separated files; only fix was skipping two comment header lines (verified on 10 files)."},
+    "B3": {"score": 1, "why": "One lab, one assay, but labelled-read depth varies 96k-338k across replicates; normalisation needed (verified)."},
+    "B4": {"score": 1, "why": "2,305 of 6,465 genes have a zero labelled count in at least one replicate; easy to drop, policy needed (verified)."},
+    "B5": {"score": 2, "why": "Zero duplicate gene names in every file I opened; replicates are by design, not duplicates."},
+    "B6": {"score": 1, "why": "Columns documented by SLAM-DUNK, design in GEO titles, but strain-to-protein-variant key only in unretrievable supplement."},
+    "C1": {"score": 2, "why": "Asks how much BET dependence is written in promoter sequence; a low number is a real finding given my measured noise ceiling."},
+    "C2": {"score": 1, "why": "Searched: open yeast sequence-to-expression models exist (Shorkie, SpeciesLM, Vaishnav); none predicts depletion sensitivity."},
+    "C3": {"score": 2, "why": "Unique application: per-gene domain-resolved transcription dependence has never been modelled; searches returned nothing."},
+    "C4": {"score": 1, "why": "Each dependence measurement needs a degron strain plus SLAM-seq, costly; but prediction would prioritise, not replace, it."},
+    "C5": {"score": 2, "why": "Dummy baselines computable (global mean, per-expression-bin mean) and published yeast expression numbers reproducible."},
+    "D1": {"score": 2, "why": "SpeciesLM fungal DNA language model, MIT licence, on HuggingFace; Shorkie yeast model code public (searched)."},
+    "D2": {"score": 2, "why": "About 6,465 short promoters embedded once on CPU, then a ridge or gradient-boosting head; no GPU needed."},
+    "D3": {"score": 2, "why": "SpeciesLM is MIT, workflows Apache-2.0, paper and Zenodo data CC-BY 4.0 (checked Zenodo licence fields)."},
+    "E1": {"ok": true, "why": "Chromosome coordinates present in every file, so holding out whole chromosomes or promoter-similarity clusters is possible."},
+    "E2": {"ok": true, "why": "16 chromosomes and 40 strains give plenty of hold-out groups (strain list counted in GEO metadata)."},
+    "E3": {"ok": true, "why": "I already computed the global mean fold change (-1.57 median) as a dummy; per-expression-bin means are trivial."},
+    "E4": {"ok": true, "why": "Measured it: single-replicate fold-change correlation 0.50-0.57 overall, 0.72-0.80 for well-expressed genes."},
+    "E5": {"ok": true, "why": "Two controls: predict baseline expression from promoter sequence (published models do this well), and recover known strong BET dependence of highly acetylated housekeeping promoters."},
+    "E6": {"ok": true, "why": "Label shuffling, within-chromosome shuffling and feature-block ablation all cheap on a 6,465-row table."},
+    "E7": {"ok": true, "why": "Independent coactivator-depletion nascent-RNA datasets from this and other labs exist (cited in the paper); I did not verify their accessions."},
+    "E8": {"ok": true, "why": "Published yeast expression accuracies of SpeciesLM/Shorkie are reproducible; the paper's own 455-gene rescue count needs the supplement."},
+    "G1": {"score": 2, "why": "Standard yeast systematic gene names (e.g. YAL068C) plus genome coordinates and build, seen in the files."},
+    "G2": {"score": 2, "why": "Named partners joinable on gene name: SGD annotation, the Rossi/Pugh yeast transcription-factor binding atlas, nucleosome and acetylation maps."},
+    "G3": {"score": 2, "why": "One gene maps to one promoter; only divergent promoter pairs need a collapse rule (coordinates in file make this checkable)."},
+    "G4": {"score": 2, "why": "Combination asks which bound factors and cis features set a gene's reliance on a chromatin reader; neither source answers alone."},
+    "H1": {"score": 2, "why": "Non-responding genes, solvent controls and no-effect variant strains are all recorded (verified strain and treatment lists)."},
+    "H2": {"score": 0, "why": "One lab, one species, one growth medium, mostly one time point; all 297 samples are Saccharomyces cerevisiae (verified)."},
+    "H3": {"score": 2, "why": "Honest claim writable in one sentence; see honest_claim_h3 field."},
+    "H4": {"score": 2, "why": "Paper states exclusion criteria, replicate variability and that some changes may be indirect effects."},
+    "I1": {"score": 2, "why": "Named users: the Donczew lab (OMRF), Hahn lab (Fred Hutchinson) and other coactivator-biology groups."},
+    "I2": {"score": 1, "why": "Would nominate promoter features and partner factors to test; unlikely to redirect a whole experimental program."},
+    "I3": {"score": 1, "why": "Ranking metric (Spearman, precision in top 100 dependent genes) matches 'which genes to test', but the real deliverable is interpretation."},
+    "I4": {"score": 1, "why": "Simple features (baseline expression, promoter acetylation, TATA presence) may explain most of it; that comparison is part of the result."},
+    "J1": {"score": 2, "why": "Real transfer learning, grouped splits, measured noise ceiling, negative controls."},
+    "J2": {"score": 1, "why": "Yeast transcription is well documented and positive controls exist, but domain intuition for coactivators is thin."},
+    "J3": {"score": 2, "why": "A harmonised gene-by-strain response table with per-gene reliability is useful even if the model fails."},
+    "J4": {"score": 2, "why": "Three weeks: one week to the feature/label table, one to modelling, one to controls and writing."},
+    "J5": {"score": 1, "why": "Kill condition stated here (see success_criteria.kill) but not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Shorkie (Calico, 2025 preprint) - a DNA sequence-to-expression neural network for budding yeast, pretrained on 165 fungal genomes and fine-tuned on yeast RNA sequencing including transcription-regulator induction time courses", "open_weights": true, "score_and_split": "Reports 'substantial improvement over baselines' for expression prediction and better cis-eQTL (expression-linked variant) classification; exact numbers and split not stated in the abstract I read", "authors_named_unsolved": "Abstract names no explicit open problem; it does not address sensitivity to depletion of a specific protein or protein domain", "runnable_as_baseline": true},
+      {"name": "SpeciesLM (Karollus et al., Genome Biology 2024) - a species-aware DNA language model trained on 1,500 fungal genomes", "open_weights": true, "score_and_split": "Evaluated on held-out Saccharomyces cerevisiae for RNA half-life, RNA-sequencing expression and three reporter assays; it distinguishes regulatory motifs from background sequence", "authors_named_unsolved": "Generalisation of learned regulatory elements across large evolutionary distances", "runnable_as_baseline": true},
+      {"name": "Vaishnav et al. 2022 transformer and CRMnet / Camformer - neural networks predicting expression of millions of random 80-base-pair yeast promoters", "open_weights": true, "score_and_split": "Pearson correlation about 0.96-0.97 on held-out random synthetic promoters from the same massively parallel assay", "authors_named_unsolved": "Transfer from random synthetic promoters to native genomic promoters and to other species", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "SpeciesLM (gagneurlab/SpeciesLM on HuggingFace), with Shorkie as an alternative feature extractor", "freeze_and_head_viable": true, "hardware": "16 GB laptop CPU; embed about 6,465 promoters once and cache, then fit a ridge or gradient-boosting head", "licence": "MIT for SpeciesLM code and weights (stated in its repository); data CC-BY 4.0"},
+  "integration": {"partner_dataset": "SGD gene annotation plus the Rossi/Pugh genome-wide atlas of yeast transcription-factor binding locations, and published promoter histone-acetylation maps", "join_key": "yeast systematic gene name (e.g. YAL068C) and genome coordinates on build R64-3-1", "bigger_question_one_sentence": "Which promoter sequence features and which bound transcription factors decide how much a gene's transcription depends on a chromatin-reader coactivator, rather than on the coactivator being present at all?"},
+  "controls": {"positive_control": "Predict baseline newly-made-RNA level from promoter sequence, which published yeast sequence models already do well, and confirm the model recovers the known strong BET dependence of highly acetylated housekeeping promoters.", "negative_control": "Shuffle the per-gene labels and confirm performance collapses to the global-mean dummy; also shuffle within chromosome to test that grouped cross-validation is really grouping.", "external_validation": "Independently published nascent-RNA datasets from rapid depletion of other yeast coactivators (TFIID and SAGA) referenced by this paper; accessions not verified by me."},
+  "honest_claim_h3": "From promoter sequence alone, we can predict about X of the reproducible variation in how much a Saccharomyces cerevisiae gene's newly-made RNA drops when BET proteins (or just their extra-terminal domain) are removed for 25 minutes in rich medium in one lab - measured against a replicate-based ceiling of roughly 0.8 correlation among well-expressed genes.",
+  "plain_idea": {
+    "one_liner": "Use a gene's promoter DNA sequence to predict how much its transcription collapses when a chromatin-reader protein is removed.",
+    "train_on": "One row per yeast gene: the DNA sequence upstream of its start site, taken from the reference genome using coordinates already in the data files. 6,465 genes are in each table; 4,160 have usable labels in all replicates and 705 are measured precisely (counts I verified).",
+    "predict": "A number per gene: the log2 change in newly made RNA after 25 minutes of removing BET proteins or mutating one of their domains. The true answer comes from SLAM-seq, where cells are fed a modified RNA base for 4 minutes and sequencing counts only the freshly made transcripts.",
+    "why_worthwhile": "Chromatin and transcription labs would learn whether a gene's reliance on this coactivator is written into its promoter sequence or set by something else entirely; the answer is informative either way, and the replicate-based noise ceiling I measured makes a modest correlation interpretable rather than ambiguous."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Our data is far smaller than theirs (about 4,000 usable genes versus millions of random promoters for Vaishnav/CRMnet and 165 genomes of pretraining for Shorkie), but it covers something none of them touch: the per-gene response to removing a single coactivator domain, across 40 strains and 297 samples."},
+    "confidence_score": {"answer": "partly", "why": "With 3-6 replicates per condition I measured per-gene label reliability directly (single-replicate fold-change correlation 0.50-0.57 overall, 0.72-0.80 for well-expressed genes), so predictions can be weighted and reported with per-gene uncertainty. I did not verify whether Shorkie or SpeciesLM report per-gene uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "Shorkie (2025) and SpeciesLM (2024) are recent, honestly evaluated on held-out yeast genes and species, and would be hard to beat on expression prediction; but neither addresses the depletion-response label, so they serve as our feature extractor and baseline rather than our competition."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model predicts this label, so there is no baseline we automatically dominate; the condition 'our model sees everything the existing model sees plus new data on the same quantity and split' does not hold."}
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Published nascent-RNA datasets for rapid depletion of other yeast coactivators (TFIID, SAGA) cited by this paper; transcription-regulator induction time-course compendia used to fine-tune Shorkie; human BET-inhibitor (JQ1) transcriptome datasets found in my searches. All known from the literature, not opened by me.",
+    "approx_items": null,
+    "join_key": "yeast systematic gene name, or orthologue mapping for the human datasets",
+    "why": "Comparable depletion-response labels for other coactivators let us test whether a model trained on BET dependence transfers to a different coactivator, which is the strongest external check available here."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Using baseline expression from the same control files as a feature while the label is the treated/control ratio makes feature and label share counting noise, which creates a spurious correlation.",
+      "Many yeast genes sit head-to-head and share one intergenic promoter region, so the same input sequence can appear in both training and test sets.",
+      "Paralogues and duplicated gene families (for example ribosomal protein pairs) give near-identical promoters with near-identical labels.",
+      "Sequencing depth differs between samples (labelled-read totals 96k to 338k, verified), so depth can track the condition and bleed into the label.",
+      "Gene length and 3-prime annotation affect how reads are counted, so a length feature can act as a proxy for label precision rather than biology."
+    ],
+    "split": "Hold out whole chromosomes (the Chromosome column is present in every count file I opened), and additionally cluster promoter sequences by similarity so that shared divergent promoters and paralogues fall in the same fold. Treat the gene, not the sample, as the unit.",
+    "checks": [
+      "Shuffle labels across genes and confirm performance drops to the global-mean dummy.",
+      "Train on the suspected shortcut alone (baseline expression level, gene length) to see how far it gets by itself.",
+      "Measure sequence similarity between each test promoter and its nearest training promoter and check that accuracy is flat across that distance.",
+      "Estimate baseline expression from replicates that are not used in the label to break shared noise."
+    ],
+    "verdict": "Manageable: the splits are easy because coordinates are in the files, but the shared-noise trap between baseline expression and the ratio label needs deliberate handling."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured per-gene log2 drop in newly made RNA, on held-out chromosomes, reported separately for well-expressed genes; plus precision among the top 100 predicted most-dependent genes, because that is the set a lab would actually test.",
+    "baselines": "Global mean log2 fold change (median -1.57, which I computed) and per-expression-bin mean; promoter histone-acetylation level as a single-feature baseline (the paper shows acetylation tracks occupancy change); published yeast sequence models re-used for baseline expression prediction.",
+    "success": "Spearman at least 0.45 on held-out chromosomes among genes with at least 20 labelled reads per replicate, against roughly 0 for the global-mean dummy and with a replicate ceiling near 0.78.",
+    "noise_ceiling": 0.8,
+    "kill": "If the split-half replicate correlation of the per-gene fold change for the extra-terminal-domain strain is under 0.3 (it was only 0.06 for variant strain RDY234, versus 0.50-0.57 for full BET depletion), or if held-out Spearman stays under 0.15 after a week, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes sequence-to-function modelling that yields regulatory insight; it would take a clear result that promoter sequence predicts coactivator dependence and transfers across perturbations, with interpretable motifs."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes careful, well-controlled genomic modelling studies with honest ceilings; a measured answer to 'how much of BET dependence is cis-encoded', positive or modest, fits."},
+    "fallback": {"journal": "Scientific Data (for the harmonised gene-by-strain response table) plus a bioRxiv preprint of the modelling", "why": "Even if the model explains little, a tidy 6,465-gene by 40-strain response table with replicate-based reliability per gene is a reusable resource."}
+  },
+  "pitch": {
+    "headline": "297 samples, 40 yeast strains, and a per-gene transcription-collapse measurement for individual protein domains that nobody has tried to predict.",
+    "what_makes_the_data_unusual": "I verified 6,465-gene tables for 40 strains in which single domains of a chromatin reader are mutated, measured by 4-minute metabolic RNA labelling - domain-resolved, not just gene-knockout, transcription data, all CC-BY 4.0.",
+    "the_win": "Spearman 0.45 or better on held-out chromosomes against a replicate ceiling of about 0.78 that I measured, with a dummy baseline near 0.",
+    "even_if_it_fails": "A failure means coactivator dependence is not written in promoter sequence, which is a direct answer to a question the TFIID/SAGA literature has only argued about with motif counts; plus a reusable reliability-annotated response table.",
+    "who_wants_it": "The Donczew lab (Oklahoma Medical Research Foundation) and Hahn lab (Fred Hutchinson), who choose which promoters to dissect next; it would redirect which gene classes they assay."
+  },
+  "ml_idea": "Embed each yeast promoter with the open fungal DNA language model SpeciesLM, freeze it, and fit a small head to predict the per-gene log2 drop in newly made RNA after BET protein depletion, computed from the GEO SLAM-seq count tables. Main experiment: train on the full BET-depletion response and test transfer to the extra-terminal-domain deletion response (and the reverse), with chromosome-held-out splits and a replicate-derived noise ceiling.",
+  "effort": {
+    "hours_to_feature_table": 14,
+    "working_set_gb": 0.6,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 3,
+    "cv_run_minutes": 10,
+    "compute_note": "Measured from the 10 files I actually downloaded and merged (each ~250 KB compressed, merge of 6 took seconds on this laptop); the 14 hours covers fetching 264 files from a slow NCBI endpoint (two of my fetches timed out and needed retry), running differential expression, extracting promoters from the 12 Mb reference genome, and recovering the strain-to-variant key. Embedding time is an estimate of 6,465 short sequences through a small language model on CPU, not timed.",
+    "cheapest_killing_check": "Get Supplementary Table S2 to learn which strain code is the extra-terminal-domain deletion, then compute the split-half replicate correlation of its per-gene log2 fold change: I measured 0.50-0.57 for full BET depletion but only 0.06 for variant strain RDY234, so if the target strain looks like the latter there is no learnable label."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "Part A passes on files I opened: 6,465-gene tables with clean keys, measured units, a physically measured label, and a laptop-sized working set. The question is genuinely unmodelled (searches found open yeast sequence-to-expression models such as Shorkie and SpeciesLM, but none predicting sensitivity to removing a coactivator domain), and an open MIT-licensed fungal DNA language model makes a freeze-and-head project cheap. Two things must be verified before committing: (1) the strain-to-domain-variant key lives only in a supplementary table I could not download, so right now the labels are anonymous conditions; (2) per-gene fold-change reproducibility is strongly strain-dependent - 0.50-0.57 for full BET depletion but 0.06 for one variant strain - so the target strain's label may be pure noise. Both checks take an afternoon."
+}

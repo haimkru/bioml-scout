@@ -1,0 +1,112 @@
+{
+  "paper_id": "cell2026-09-009",
+  "title": "Microbiome signatures linked to cancer and treatment adverse events in a real-world cohort.",
+  "doi": "10.1016/j.cell.2026.09.009",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1235197",
+  "status": "found_and_verified",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Paper exists: Crossref HTTP 200 for the DOI; Europe PMC search returned exactly 1 hit, PMID 42810338, Cell 2026, isOpenAccess=N, inPMC=N, hasSuppl=N, full text behind subscription. Found the matching data deposit by NCBI BioProject search: PRJNA1235197, whose project_title is the paper title verbatim, submitter 'Mayo Clinic', project_data_type 'Raw sequence reads'. elink BioProject->SRA returned 1,651 runs; elink BioProject->BioSample returned 1,651 sample IDs. I downloaded all 1,651 BioSample XML records via NCBI efetch (12 batches) and parsed them into a 1,651-row x 30-column table (biosample_meta.tsv). Verified in that table: 1,651 unique accessions, 1,651 unique titles; the group column reads Cancer=1,364 and Control=287; 77 distinct host_disease values; 18 attributes present for all 1,651 rows (collection_date, host_age, host_sex, host_body_mass_index, ethnicity, host_disease, cancer.diagnosis.icd.10.code, icd10_first_3_name, bristol_score, abx_last_month, abx_day_365, geo_loc_name, collection_method, and others). Verified the only actual sequence data is raw shotgun metagenomics: ENA filereport for all 1,651 runs gives library_strategy=WGS, Illumina NovaSeq 6000, total 2,624.1 GB of FASTQ and 5.34 Tbp of bases (summed by me from the fastq_bytes and base_count columns). Confirmed the raw files are open (no login): HTTP HEAD on ftp.sra.ebi.ac.uk/vol1/fastq/SRR327/040/SRR32758640/SRR32758640_1.fastq.gz returned HTTP 200, Content-Length 642,357,916 (that is one of two files for one of 1,651 samples). I searched for a processed species-abundance table and found none: MGnify application programming interface returned 0 studies for PRJNA1235197 and 0 for the cohort name; ENA 'result=analysis' returned an empty table; Zenodo returned 0 records for PRJNA1235197; GitHub repository search returned 0 repositories; Metabolomics Workbench returned an empty list; elink from PMID 42810338 to GEO, SRA and BioProject all returned no links; Europe PMC has no preprint version. Also verified a confound by cross-tabulating my downloaded table: all 287 controls were collected in 2016 and all 1,364 cancer samples in 2019-2022 (zero overlap); control median age 43 vs cancer median age 65; all 287 controls come from one site (USA: RST) while cancer samples span three (RST 731, ARZ 420, FLA 213). Only 4 cancer types have >=50 samples, 15 have >=30.",
+    "what_came_from_paper_text_only": "Everything about the analysis and the findings, since the full text is paywalled and I did not scrape the publisher site. From the abstract only: the framework used to adjust for non-specific associations, the 341 cancer-associated species across five cancer classes, the lower fecal bile acids and C. scindens in early-onset breast cancer, the elevated lactate and Veillonella parvula in early-onset colorectal cancer, and the finding that Anaerostipes hadrus carrying dihydropyrimidine dehydrogenase protected against 5-fluorouracil-induced diarrhoea. I never saw the five cancer-class definitions, the adverse-event labels, the treatment records, the metabolite measurements, or any species-abundance matrix; none of these are in the public deposit."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified open, no login and no access application: BioProject PRJNA1235197 is public and a HEAD request on one FASTQ file at the European Nucleotide Archive returned HTTP 200. The clinical metadata table is also fully public. Passes, but see A3 for what is actually in there."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Partially, and only for the less interesting target. Verified in my downloaded table that cancer-versus-control (group) and cancer diagnosis (host_disease, ICD-10 code, 77 values) are real columns for all 1,651 samples. But the paper's headline labels - treatment adverse events such as 5-fluorouracil-induced diarrhoea, treatment type, and the five cancer-class groupings - are in none of the public fields, so that project's label would have to come from a paywalled supplement."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAILS, and this is the killer. The model inputs would be microbial species abundances, and no abundance table exists anywhere public. The deposit holds only raw paired-end shotgun reads: 2,624.1 GB of FASTQ and 5.34 Tbp, summed by me from the European Nucleotide Archive run report. Building features means downloading terabytes and running a taxonomic profiler (for example MetaPhlAn, a tool that maps reads to marker genes) over all 1,651 samples. I checked four places a processed table could have been and found nothing: MGnify (0 studies), ENA analysis files (empty), Zenodo (0 records), GitHub (0 repositories). The metabolite measurements the abstract highlights are likewise absent."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Moot but technically fine. The public metadata has clear units (host_age in years, body mass index, Bristol stool score 1-7, ISO collection dates), verified in my table. There is no feature matrix for units to be wrong about, which is the actual problem."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 1651,
+      "note": "Verified by counting rows in the table I downloaded: 1,651 samples, 1,651 unique accessions, split 1,364 cancer and 287 control. Comfortably over the ~400 needed for classification. Note the real unit is one stool sample per person, and only 4 cancer types reach 50 samples."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "FAILS. Working set is 2,624 GB of raw reads, roughly 500 times the ~5 GB limit, which I summed from the European Nucleotide Archive file report rather than estimating. Taxonomic profiling of 5.34 Tbp is cluster work, and the profiler's reference index alone wants more memory than this 16 GB laptop has. There is no subsetting route, because subsetting samples does not make the missing feature table appear.",
+      "working_set": "2,624 GB of raw FASTQ (verified sum over 1,651 runs); the public metadata table by contrast is well under 10 MB"
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Exact match, and this is the one genuinely reassuring finding. The abstract says 1,364 cancer patients and 287 healthy controls; my downloaded BioSample table gives group=Cancer 1,364 and group=Control 287, totalling the 1,651 runs the SRA search reported. Paper, application programming interface and download all agree."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Clean provenance. The diagnosis labels are ICD-10 codes from clinical records and the controls are enrolled healthy volunteers, so nothing is another model's output and nothing is computable from sequencing reads. No circularity and no leakage by construction."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "MetAML (a published open-source framework that trains standard classifiers, such as random forests and support vector machines, on metagenomic species abundances to predict disease)",
+        "open_weights": true,
+        "score_and_split": "Reported strong case-control discrimination across several diseases including colorectal cancer; I read this from search result summaries, not from the primary paper's tables, so I am not quoting a number.",
+        "authors_named_unsolved": "Not retrieved; I did not open the primary paper, so I will not attribute a claim to its authors.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "curatedMetagenomicData (an open Bioconductor resource of uniformly processed species-abundance tables plus harmonised clinical metadata for thousands of public human metagenomes)",
+        "open_weights": true,
+        "score_and_split": "Not a model, but the standard substrate others train on; it is the reason microbiome-to-disease classification is a crowded, reproducible field.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Colorectal-cancer metagenome classification benchmark (a recent large study that evaluated thousands of analysis pipelines on ~4,217 faecal samples)",
+        "open_weights": null,
+        "score_and_split": "Search summaries report it used both cross-validation and leave-one-dataset-out validation, and that shotgun data beat 16S ribosomal RNA gene data. I did not open the paper, so I quote no number.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate",
+    "freeze_and_head_viable": false,
+    "hardware": "Not applicable. There is no established open-weight foundation model that takes a vector of microbial species abundances as input; the checklist's backbones are for protein, DNA, RNA, molecule or single-cell data. The natural baseline here is gradient-boosted trees on an abundance table, which is not transfer learning and would teach little of the machine learning the project is meant to teach.",
+    "licence": "Not applicable"
+  },
+  "integration": {
+    "partner_dataset": "curatedMetagenomicData, an open collection of uniformly processed human gut metagenome abundance tables with harmonised clinical labels",
+    "join_key": "NCBI taxonomy identifier or species name, at the feature level rather than the sample level",
+    "bigger_question_one_sentence": "Does a cancer signal learned in one mixed-cancer cohort survive transfer to independently collected cohorts, or does it mostly encode the collecting site and year? The question is good, but it cannot be asked here because this cohort's side of the join - the abundance table - does not exist publicly."
+  },
+  "controls": {
+    "positive_control": "Recover the textbook enrichment of Fusobacterium nucleatum in colorectal cancer stool; a pipeline that misses it is broken. Would be a strong control if the abundances existed.",
+    "negative_control": "Shuffle the cancer/control label and confirm performance collapses to the majority-class rate; separately, train using only collection year and site as features, which given the confound I verified would probably score well on its own and expose the problem.",
+    "external_validation": "curatedMetagenomicData cohorts for the shared cancer types. A temporal split is impossible for case-control, because I verified every control was collected in 2016 and every case in 2019-2022, so year and label are the same variable."
+  },
+  "honest_claim_h3": "At best, a model here could claim: 'among stool samples processed by one genomics centre, this distinguishes Mayo Clinic cancer patients sampled in 2019-2022 from Rochester healthy volunteers sampled in 2016' - which is not a claim about cancer biology, because collection year, site, and a 22-year median age gap separate the two groups exactly as the diagnosis does.",
+  "plain_idea": {
+    "one_liner": "Use gut bacterial composition from a stool sample to predict whether someone has cancer and which cancer it is.",
+    "train_on": "One stool sample per person for 1,651 people (1,364 cancer patients, 287 healthy volunteers - counts I verified by downloading the public sample records), each with age, sex, body mass index, recent antibiotic use and stool consistency alongside the bacterial profile.",
+    "predict": "Cancer versus healthy, and cancer type among 77 diagnosis categories. The true answer comes from the clinic: diagnosis codes in the patient's medical record. The bacterial profile would have to be computed from raw DNA sequencing of the stool, because nobody has published it.",
+    "why_worthwhile": "Oncologists want to know whether a cheap stool test carries signal about cancer type or about who will suffer badly from chemotherapy. Even a negative result would be useful, because it would show how much of an apparent microbiome-cancer signal is really an artefact of when and where the samples were collected."
+  },
+  "ml_idea": "Intended project: train gradient-boosted trees on species abundances to predict cancer class, then test transfer to independent public cohorts. Dead on arrival because the abundance table that is the entire input does not exist outside the paywalled supplement, and reconstructing it means 2.6 TB of raw reads plus cluster-scale profiling. A legitimate but much smaller salvage exists: the 1,651-row clinical metadata table is genuinely clean, complete and public, and could support a short note on cohort composition or a confound audit, but it contains no microbiome data at all, so it is not a microbiome machine learning project.",
+  "effort": {
+    "hours_to_feature_table": 200,
+    "working_set_gb": 2624.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 24,
+    "embedding_hours": null,
+    "cv_run_minutes": 5,
+    "compute_note": "working_set_gb is a verified sum of the fastq_bytes column over all 1,651 European Nucleotide Archive runs, not an estimate. hours_to_feature_table is my rough estimate: roughly 60 hours just to transfer 2.6 TB at 100 megabits per second, plus taxonomic profiling of 1,651 samples at well under an hour of processor time each, which is cluster work rather than laptop work. peak_ram_gb is an estimate of a taxonomic profiler's reference index requirement and exceeds this laptop's 16 GB. cv_run_minutes assumes the feature table already existed: 1,651 rows is trivially fast. Nothing was timed.",
+    "cheapest_killing_check": "Ask whether a species-abundance matrix exists outside the paywalled supplement. I ran that check - MGnify, ENA analysis files, Zenodo, GitHub, Metabolomics Workbench, and PubMed links to GEO/SRA/BioProject - and all came back empty, which killed the project in about twenty minutes. The free bonus check, cross-tabulating group against collection year, would have killed it a second time."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The paper and its data deposit are both real and the counts match the abstract exactly (1,364 cancer, 287 control = 1,651), which is rare and worth noting. It fails anyway on A3 and A6: the public deposit contains only raw shotgun sequencing reads - 2,624 GB and 5.34 Tbp, a figure I summed rather than estimated - and no processed species-abundance table exists in MGnify, ENA analysis files, Zenodo, GitHub or Metabolomics Workbench. The model inputs would have to be manufactured from terabytes of reads on a cluster, which also violates the no-raw-sequencing rule. Two further problems make the obvious task unsound even with unlimited compute: the paper's most interesting labels (treatment adverse events, metabolites, five cancer classes) are paywalled and absent from the public metadata, and cancer-versus-control is perfectly confounded with collection year, since I verified all 287 controls were collected in 2016 and all 1,364 cases in 2019-2022, with a 22-year median age gap and all controls from a single site. The one real asset is a clean, complete, fully public 1,651-row clinical metadata table with zero missingness on 18 fields - useful as a confound-audit example, but it has no microbiome measurements in it."
+}

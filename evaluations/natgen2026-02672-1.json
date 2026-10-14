@@ -1,0 +1,130 @@
+{
+  "paper_id": "natgen2026-02672-1",
+  "title": "Diversity and evolution of chromatin regulatory states across eukaryotes.",
+  "doi": "10.1038/s41588-026-02672-1",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE329959",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the GEO supplementary folders. GSE329959 (ChIP-seq, chromatin immunoprecipitation sequencing) holds 123 bigWig signal tracks (log2 ChIP/input ratio): 12 species with 9-12 histone marks each, 6.5-68 MB per file. Six marks are present in all 12 species (H3K27ac, H3K36me3, H3K4me2, H3K4me3, H3K9ac, H4K16ac). With ranged reads I parsed the bigWig headers for yeast (16 chromosomes, chrI..., 12.07 Mb) and Bigelowiella (302 scaffold_N, 94.7 Mb); both are valid files with public-assembly chromosome names. Downloaded all 12 per-gene RNA count files from GSE329952 (GeneID, Counts): 225,309 genes in total, 6,710 (yeast) to 33,075 (moss) per species, 0 duplicate IDs, 0 missing values, 1.9-30.8% zero counts, library sizes 3.5M-45M. Also read the MARS-seq readme xlsx and unpacked the Zenodo code archive (GPL-3.0).",
+    "what_came_from_paper_text_only": "No full text is open (no PMCID), so the methods, the ChromHMM chromatin-state calls and the replicate structure come only from the abstract and the code scripts. Gene and transposable-element annotation files (species.gene.PCG.gtf, EDTA TE gff3) are named in the code but not deposited. I did not check that public annotations match the count gene IDs for every species. I did not download any bigWig over 50 MB (Arabidopsis, Bigelowiella)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: GEO FTP serves all bigWigs and count files with no login. Code is on Zenodo record 20049133. Total bigWig volume is roughly 4 GB (estimated from the listed sizes)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked: per-gene expression is already a column (GeneID, Counts) in 12 count files. Only the input features (histone signal per gene) need computing from the bigWigs plus gene coordinates. The label itself is not constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Partly checked. The histone signal is present, but gene coordinates are not deposited. You need 12 public annotation files (TAIR, SGD, dictyBase, JGI, RefSeq...) whose IDs match the count prefixes (AT3G22970, YJL069C, DDB_G..., GUITHDRAFT_..., XM_...). That is 12 lookups, not thousands, but Bigelowiella's JGI models may need a JGI login and Tetrahymena's 'g23845' IDs look custom."},
+    "a4_units_stated": {"pass": true, "note": "Checked: bigWig file names state log2 ratio over input. Counts are raw UMI (unique molecular identifier) counts per gene and need library-size normalisation (library totals verified)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 225309, "note": "Checked: 225,309 genes across 12 species, each with a measured expression value. The meaningful unit for transfer is the species (12 groups)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~4 GB of bigWigs, streamed one file at a time, reduce to a ~225k x ~40 feature table (<100 MB)", "note": "Estimated, not timed. Per-gene aggregation streams each bigWig, and modelling is CPU gradient boosting. Two species have files over the 50 MB cap, which must be fetched deliberately."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO lists 12 RNA samples (one per species) and 12 species for ChIP. The file listing matches the GEO metadata. No paper-stated gene counts were available to compare."},
+    "a8_label_provenance": {"pass": true, "note": "The label is measured bulk RNA (MARS-seq, a barcoded 3' RNA sequencing method) and the features are measured ChIP signal. They are independent assays on the same cultures. No model output is involved, so there is no circularity."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Checked: 12 count files plus 123 bigWigs, joined through external gene coordinate files that are not deposited."},
+    "B2": {"score": 1, "why": "Checked: count TSVs parse cleanly and bigWigs are valid. Getting per-gene features needs bigWig aggregation code."},
+    "B3": {"score": 1, "why": "Same assay and lab for all species, but raw counts need per-species normalisation. ChIP is input-normalised log2 ratios (file names)."},
+    "B4": {"score": 2, "why": "Checked: no censored or missing values in the count files. Zero counts are real measurements."},
+    "B5": {"score": 2, "why": "Checked: 0 duplicate gene IDs in all 12 count files."},
+    "B6": {"score": 1, "why": "File names self-describe mark and species. Annotation provenance is only in scripts, and the paper text is unavailable."},
+    "C1": {"score": 2, "why": "Leave-one-species-out transfer is informative either way: it tells us how universal the histone-expression code is."},
+    "C2": {"score": 1, "why": "Open histone-to-expression models exist (DeepChrome, AttentiveChrome) but only within mammals or fungi. This data has never been modelled."},
+    "C3": {"score": 2, "why": "Diversity angle: amoebozoans, rhizarians, discobans and cryptomonads are absent from all existing histone-expression models."},
+    "C4": {"score": 1, "why": "Profiling chromatin in new protists needs culture plus ChIP. The model would not replace RNA-seq, which is cheap."},
+    "C5": {"score": 2, "why": "Obvious dummies: a per-species mean, and a single-mark (H3K4me3) rank correlation within the held-out species."},
+    "D1": {"score": 1, "why": "No histone-signal backbone exists. DNA language models (Nucleotide Transformer) exist but saw little protist sequence."},
+    "D2": {"score": 1, "why": "Promoter-sequence embeddings could be cached on CPU, but the main model is tabular and needs no backbone."},
+    "D3": {"score": 1, "why": "Nucleotide Transformer weights are CC BY-NC-SA (non-commercial). The data is on GEO (public), the code GPL-3.0."},
+    "E1": {"ok": true, "why": "Leave-one-species-out split, built from the species prefix on every GeneID (seen in files)."},
+    "E2": {"ok": true, "why": "12 species with 6,710-33,075 genes each (verified)."},
+    "E3": {"ok": true, "why": "Per-species mean and single-mark baselines are computable from the verified files."},
+    "E4": {"ok": false, "why": "Only one count file per species is deposited. The readme suggests pooled wells, so replicate noise cannot be estimated."},
+    "E5": {"ok": true, "why": "Known effect: H3K4me3 at promoters and H3K36me3 in gene bodies track expression. The paper reports conserved euchromatin states."},
+    "E6": {"ok": true, "why": "Label shuffling within species and ablation of individual mark blocks are straightforward."},
+    "E7": {"ok": true, "why": "Public paired ChIP and RNA data for yeast and Arabidopsis (e.g. ENCODE-like plant compendia) can serve as an independent lab check."},
+    "E8": {"ok": false, "why": "The paper publishes ChromHMM states, not a predictive number. There is nothing to reproduce as a score."},
+    "G1": {"score": 2, "why": "Checked: standard gene IDs (TAIR AT codes, SGD ORFs, dictyBase DDB_G, RefSeq XM) behind species prefixes."},
+    "G2": {"score": 1, "why": "EukProt or OrthoFinder orthogroups could link genes across species. That is plausible but not verified."},
+    "G3": {"score": 1, "why": "Ortholog joins are one-to-many across 12 distant species, so a collapse rule is needed."},
+    "G4": {"score": 1, "why": "With orthologs: is a conserved gene's chromatin-expression relationship more transferable than a lineage-specific gene's? Only marginally beyond the paper."},
+    "H1": {"score": 2, "why": "Checked: silent genes (1.9-30.8% zero counts) and repressive marks are present alongside active ones."},
+    "H2": {"score": 2, "why": "12 species spanning major eukaryotic supergroups, though all from one lab and one growth condition each."},
+    "H3": {"score": 2, "why": "Claim is precise: transfer across 12 species, each profiled in one lab-culture condition."},
+    "H4": {"score": 1, "why": "Missing marks per species are visible in the file list. The single condition per species is implicit."},
+    "I1": {"score": 1, "why": "Sebé-Pedrós lab (CRG) and evolutionary epigenomics groups profiling new non-model eukaryotes."},
+    "I2": {"score": 1, "why": "It would show which marks to profile first in a new species, a marginal change to experimental design."},
+    "I3": {"score": 1, "why": "Within-species Spearman correlation roughly matches 'which marks predict activity', but no real decision hinges on it."},
+    "I4": {"score": 1, "why": "Single marks already correlate strongly with expression. ML helps mainly with heterochromatin combinations and transfer."},
+    "J1": {"score": 2, "why": "Grouped splits, transfer evaluation, missing-feature handling and feature ablation are all genuine modelling work."},
+    "J2": {"score": 1, "why": "Histone-mark biology is textbook for yeast and Arabidopsis. Protist annotation quality is harder to judge."},
+    "J3": {"score": 2, "why": "A per-gene chromatin and expression table for 12 eukaryotes is shareable even if the model is trivial."},
+    "J4": {"score": 1, "why": "About 2-3 weeks is plausible but not yet fixed."},
+    "J5": {"score": 1, "why": "Kill condition is proposed below but not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepChrome (2016, convolutional network)", "open_weights": true, "score_and_split": "Binary high/low expression on Roadmap Epigenomics human cell types, within-cell gene splits. Exact AUC (area under the curve) not retrieved here.", "authors_named_unsolved": "Cross-cell-type prediction is weaker (per follow-up TransferChrome paper). Human only.", "runnable_as_baseline": true},
+      {"name": "AttentiveChrome (NeurIPS 2017, attention LSTM, a recurrent network)", "open_weights": true, "score_and_split": "Same Roadmap 56-cell-type benchmark with five core marks. Numbers not retrieved here.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "TransferChrome (Frontiers in Genetics 2022)", "open_weights": null, "score_and_split": "Roadmap benchmark, with transfer learning across cell lines.", "authors_named_unsolved": "Accuracy still has room to improve, especially in cross-cell-line prediction.", "runnable_as_baseline": null},
+      {"name": "Hybrid model across fungal species (bioRxiv 2024)", "open_weights": null, "score_and_split": "Predicts expression from histone marks across fungal species. Scores not retrieved.", "authors_named_unsolved": "How far these mechanisms are conserved in non-model organisms remains limited.", "runnable_as_baseline": null},
+      {"name": "DeepGEP (attention LSTM, human/pig/cattle)", "open_weights": null, "score_and_split": "Pearson 0.70-0.82 for cross-species expression prediction across three mammals (from the search summary).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "None needed for the main task (tabular gradient boosting). Optional: Nucleotide Transformer, a DNA language model, for promoter-sequence embeddings.", "freeze_and_head_viable": false, "hardware": "Laptop CPU", "licence": "Data on GEO (public); code GPL-3.0; Nucleotide Transformer CC BY-NC-SA"},
+  "integration": {"partner_dataset": "EukProt / OrthoFinder orthogroups across the 12 proteomes", "join_key": "Gene ID (species prefix stripped) to protein ID to orthogroup", "bigger_question_one_sentence": "Is the chromatin-to-expression rule more conserved for deeply conserved genes than for lineage-specific ones?"},
+  "controls": {"positive_control": "Within yeast and Arabidopsis, promoter H3K4me3 alone should rank expression with a high Spearman correlation. Predicting gene length from body-signal coverage is a plumbing check.", "negative_control": "Shuffle expression within each species, which must collapse to the per-species mean. Replace the marks with noise of the same shape.", "external_validation": "Independent public paired ChIP-seq and RNA-seq for S. cerevisiae and A. thaliana from other labs."},
+  "honest_claim_h3": "Predicts the relative expression of genes in a held-out species from six shared histone marks, across 12 eukaryotes each profiled in one lab-culture condition, with no replicate noise ceiling.",
+  "plain_idea": {
+    "one_liner": "Use histone-mark levels around each gene to predict how strongly it is expressed, testing whether a rule learned in 11 species works in the 12th.",
+    "train_on": "For each gene, the average signal of 6-12 histone modifications over its promoter and gene body. That is 225,309 genes from 12 species (verified count).",
+    "predict": "The gene's expression level, from bulk RNA counts measured by MARS-seq in the same cultures, normalised within species.",
+    "why_worthwhile": "Evolutionary epigenomics groups would learn whether the link between histone marks and gene activity is universal across eukaryotes or lineage-specific. Even a failure to transfer quantifies how much the 'histone code' has diverged."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "yes", "why": "Existing models use human cell types (Roadmap), three mammals (DeepGEP) or fungi. This data covers 12 species across amoebozoans, rhizarians, discobans and cryptomonads, which none of them include."},
+    "confidence_score": {"answer": "no", "why": "Only one count file per species is deposited, so there are no replicates to calibrate noise."},
+    "models_beatable": {"answer": "partly", "why": "DeepChrome (2016) and AttentiveChrome (2017) are older, human-only and evaluated within cell types. But the real comparison is cross-species, where no baseline exists, so 'beating' is not the point."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model was trained on these species, and the marks differ, so the conditions of a same-input-plus-new-data comparison on the same split do not hold."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Paired histone ChIP-seq plus RNA-seq exist for yeast, Arabidopsis and human (Roadmap Epigenomics, ENCODE). Known resources; not searched for these exact species.", "approx_items": null, "join_key": "Species-native gene ID (SGD ORF, TAIR AGI)", "why": "Yeast and Arabidopsis data from other labs give an independent check that a model is not learning this lab's batch effects."},
+  "leakage_plan": {
+    "risks": [
+      "Genes within a species share culture, library and ChIP batch, so a random gene split mostly measures within-species fit, not transfer.",
+      "Gene-body signal partly reflects transcription itself (H3K36me3 and H3K79me are deposited by elongating polymerase), so 'prediction' is partly co-measurement.",
+      "Annotation quality differs by species, and poorly annotated genes may look silent for both features and label.",
+      "Paralogous gene families within a species can sit on both sides of a random split."
+    ],
+    "split": "Leave-one-species-out, using the species prefix on GeneID (seen in all 12 count files). Report within-species Spearman for each held-out species.",
+    "checks": [
+      "Shuffle expression within species and confirm Spearman falls to about 0.",
+      "Train on promoter marks only versus gene-body marks only, to show how much comes from elongation-coupled marks.",
+      "Compare against a single-mark H3K4me3 rank baseline in each held-out species.",
+      "Check performance by phylogenetic distance from the training species."
+    ],
+    "verdict": "Manageable: the species is an explicit group column, and the main risk (elongation marks) is a matter of interpretation, handled by ablation."
+  },
+  "success_criteria": {
+    "metric": "Median within-species Spearman correlation between predicted and measured expression across the 12 held-out species. It matches the question 'does the rule rank genes correctly in a new species'.",
+    "baselines": "Single best mark (promoter H3K4me3) rank correlation in each held-out species, computed from the data. A model trained on the held-out species itself (within-species cross-validation) as an upper reference. No published number exists.",
+    "success": "The leave-one-species-out model is within 0.05 Spearman of within-species cross-validation for at least 8 of 12 species, AND beats the single-mark baseline by at least 0.05 median.",
+    "noise_ceiling": null,
+    "kill": "If, after one week, the multi-mark model beats single-mark H3K4me3 by under 0.03 median Spearman, stop. The result is a one-page note: one mark explains it."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes cross-species regulatory analyses. It would need a clear, phylogeny-structured pattern of which marks transfer, plus orthology-based insight."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Fits a careful transfer benchmark of histone-to-expression models across 12 eukaryotes, with ablations."},
+    "fallback": {"journal": "bioRxiv preprint plus the MLCB (Machine Learning in Computational Biology) workshop", "why": "Even 'one mark explains it everywhere' is a shareable negative result with the per-gene table released."}
+  },
+  "pitch": {
+    "headline": "225,309 genes from 12 eukaryotes spanning the tree of life, each with measured expression and the same 6 histone marks, from one lab and one method.",
+    "what_makes_the_data_unusual": "Rhizarian, discoban, cryptomonad and amoebozoan chromatin tracks (123 bigWigs, verified), absent from Roadmap and every histone-expression model we found. Same assay throughout, so cross-species differences are not lab artefacts.",
+    "the_win": "Leave-one-species-out Spearman within 0.05 of within-species models for most of the 12 species, showing a transferable active-chromatin code. Or a measured, phylogeny-linked drop for repressive marks.",
+    "even_if_it_fails": "We would quantify which marks fail to transfer and how far: a direct numeric test of the paper's claim that heterochromatin readout diversified. Plus a released per-gene table.",
+    "who_wants_it": "The Sebé-Pedrós lab (CRG Barcelona) and evolutionary epigenomics groups choosing which marks to profile in newly cultured protists."
+  },
+  "ml_idea": "Aggregate each histone mark's log2 ChIP/input signal over the promoter (±1 kb from the transcription start) and the gene body for every gene in 12 species. Normalise RNA counts to log CPM (counts per million) within species. Train gradient boosting with leave-one-species-out on the 6 shared marks (missing marks masked), and compare against single-mark and within-species baselines. Analyse the drop in transfer against phylogenetic distance, and split the analysis into active versus repressive marks.",
+  "effort": {"hours_to_feature_table": 14, "working_set_gb": 4.3, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": null, "cv_run_minutes": 5, "compute_note": "Estimated, not timed. Streaming 123 bigWigs with pyBigWig over about 225k genes takes about 1 h. Gradient boosting on a 225k x ~40 table, 12 folds, takes about 5 min on CPU.", "cheapest_killing_check": "For each of the 12 species, download the public gene annotation and count what fraction of count-file GeneIDs (prefix stripped) map to coordinates on the bigWig chromosome names. Bigelowiella (JGI, may need login), Tetrahymena ('g' IDs) and Creolimax are the likely failures. Under 90% mapping in more than 2 species kills the cross-species design."},
+  "verdict": "verify_first",
+  "verdict_reason": "Data is open, measured and checked: 225,309 genes with expression and 123 histone tracks across 12 eukaryotes. But the gene coordinates needed to build features are not deposited, so annotation matching for all 12 species must be confirmed first. There is no backbone fit, and single-mark baselines may explain most of the signal."
+}

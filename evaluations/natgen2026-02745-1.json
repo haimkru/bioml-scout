@@ -1,0 +1,141 @@
+{
+  "paper_id": "natgen2026-02745-1",
+  "title": "Divergent medulloblastoma chromatin states disclose KDM2B as a selective dependency.",
+  "doi": "10.1038/s41588-026-02745-1",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE270126",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the GEO (Gene Expression Omnibus) file lists for the two deposited series: GSE270125 has 169 files, every one a .bw (bigWig genome coverage track), 39.5 GB total, zero peak or segmentation files; GSE269909 has 32 per-sample RSEM gene tables plus three series-level matrices. I downloaded one bigWig (41 MB, Rcmb20 IgG control) and read its binary header by hand: valid bigWig v4, genome build hg38 (chr1 = 248,956,422 bp), 24 chromosomes, 305.8 Mb of covered bases, mean value 2.65. I downloaded the 23 MB RNA-seq archive and opened a counts file: columns geneID, geneSymbol, bioType, annotationLevel, count, TPM, FPKM over 60,754 genes. I opened the series-level TPM matrix: 60,754 gene rows x 18 sample columns (D283 cells, KDM2B degradation plus four rescue constructs, 3 replicates each).",
+    "what_came_from_paper_text_only": "The paper is paywalled with no PubMed Central copy, so I never saw its full text, methods or data availability statement; the abstract plus a press release are all I had. The central resource described in the abstract - six histone modifications profiled across 52 primary medulloblastoma tumours, turned into ChromHMM chromatin states such as EnhBiv (bivalent/poised enhancer) - is not in either deposited GEO series and has no accession linked from the PubMed record. The press release points to a browser portal (proteinpaint.stjude.org/MBEpi/), which returns an HTTP 403 Cloudflare challenge and offers no bulk download."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The two GEO series download freely with no login; I pulled a 41 MB bigWig and the 23 MB RNA-seq archive. Caveat: the paper's headline 52-primary-tumour chromatin resource is not in them and is reachable only through a Cloudflare-blocked visualisation portal."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The prediction target of any chromatin-state project - the ChromHMM state label per genomic bin (EnhBiv and friends) - appears in no deposited file. All 169 CUT&RUN files are .bw coverage tracks; I grepped the file list and found zero .bed, peak, or segmentation files. The label would have to be rebuilt from scratch by re-running ChromHMM, which needs aligned reads (BAM) that were not deposited either, only raw reads in SRA."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs exist as real files, not accession references: 169 genome-wide hg38 bigWig signal tracks. But there is no binned or promoter-level feature matrix, so every feature must be extracted from the tracks with a tool (pyBigWig) that is not installed here."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "The RNA-seq tables label their units clearly (count, TPM, FPKM). The bigWig values do not: the GEO series record I retrieved does not state the normalisation, and the IgG track's mean of 2.65 implies some per-million or per-genome-coverage scaling that is never named, so tracks are not safely comparable across samples."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 50,
+      "note": "FAIL at the level of independent biological units. The deposit holds 50 RNA-seq samples and 169 CUT&RUN tracks, but these come from only 8 patient-derived xenograft models and 2 cell lines (D283, DMB006) in one lab. A per-gene framing gives ~20,000 rows but still only 2 perturbation contexts, far below the ~5 held-out groups honest evaluation needs."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "7.2 GB (65 PDX-model bigWigs) minimum; 39.5 GB for everything",
+      "note": "FAIL. The smallest sensible subset - the 65 bigWigs covering the 8 xenograft models - is 7.18 GB, above the ~5 GB bar, and any sequence-to-signal model over the 3.1 Gb hg38 genome needs a GPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Within the deposit the counts are internally consistent: GSE270125 lists 169 samples and the file list has 169 bigWigs; GSE269909 lists 50 samples and I accounted for all 50 (32 per-sample tables plus 18 matrix columns). The paper's 52 primary tumours simply are not there, which is an absence rather than a disagreement."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL, and this is the decisive one. The chromatin-state label is the output of ChromHMM, a hidden Markov model run on exactly the histone-mark tracks that would be the model's features. Predicting EnhBiv from H3K4me1 and H3K27me3 signal is learning a deterministic function of the inputs, not biology - circularity and leakage-by-construction at once."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "BivFinder (machine and deep learning for sequence determinants of bivalent histone modifications, Communications Biology 2026)",
+        "open_weights": true,
+        "score_and_split": "Reported to separate bivalent from monovalent genomic regions from k-mer sequence features in mouse embryonic stem cells; exact metric and split not retrieved, only the abstract-level summary.",
+        "authors_named_unsolved": "Which sequence features distinguish bivalent chromatin regions remained unclear before their work; positional specificity at bivalent-peak boundaries is flagged as newly observed rather than settled.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Enformer (DNA sequence to histone ChIP, DNase/ATAC and CAGE tracks, Nature Methods 2021)",
+        "open_weights": true,
+        "score_and_split": "Published genome-wide track prediction on held-out human and mouse chromosomes; I did not retrieve per-track numbers for histone marks.",
+        "authors_named_unsolved": "Long-range regulatory effects and cell-type-specific variant effects remain only partly captured.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "DeepHistone (histone modification site prediction from sequence plus chromatin accessibility)",
+        "open_weights": true,
+        "score_and_split": "Reported accurate per-mark site prediction; split details not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Medulloblastoma subgroup classifiers from DNA methylation (support vector machine, seven-subgroup framework) and from gene expression (random forest, support vector machine, neural networks)",
+        "open_weights": null,
+        "score_and_split": "Mean balanced accuracy ~98% and macro-averaged area under the curve 0.99 on independent validation for the methylation support vector machine, per the retrieved summary.",
+        "authors_named_unsolved": "Risk stratification within Group 3 and Group 4 rather than subgroup assignment itself.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "AlphaGenome or Enformer (DNA sequence to functional genomic track models); scGPT/Geneformer would not apply here",
+    "freeze_and_head_viable": false,
+    "hardware": "A sequence-to-track head over hg38 needs a GPU; the 7.2 GB minimum bigWig working set alone exceeds the laptop budget before any modelling.",
+    "licence": "AlphaGenome weights are non-commercial; Enformer is open. Both moot because the label does not exist in the deposit."
+  },
+  "integration": {
+    "partner_dataset": "DepMap (gene dependency across ~1,100 cancer cell lines), joinable on gene symbol plus cell line, and GTEx/Human Protein Atlas on Ensembl gene ID; both are plausible partners for the RNA-seq side only.",
+    "join_key": "Ensembl gene ID (present, versioned, e.g. ENSG00000000003.14) and HGNC gene symbol, both verified as columns in the RSEM tables.",
+    "bigger_question_one_sentence": "Does the set of genes that respond to KDM2B loss in two medulloblastoma lines predict which other cell lines depend on KDM2B in DepMap? - a real question, but two perturbed cell lines is far too thin a training set to answer it."
+  },
+  "controls": {
+    "positive_control": "Available in principle: KDM2B's own transcript must drop after knockout or degradation, and the four rescue constructs (wild type, CXXC deletion, JmjC deletion, JmjC mutation) give a built-in dose ladder any working pipeline must recover.",
+    "negative_control": "Label shuffling across genes is runnable on the RNA-seq matrix; the IgG CUT&RUN tracks (16 of the 169 files) are genuine assay-level negative controls.",
+    "external_validation": "None available that I could reach. The 52 primary tumours that would have been the external set are not deposited, and the portal holding them is blocked."
+  },
+  "honest_claim_h3": "At best this data supports: 'within two medulloblastoma cell lines from one laboratory, promoter chromatin signal measured by CUT&RUN ranks which genes change expression after KDM2B is removed' - a description of one experiment, not a model that transfers to any other tumour, cell line or laboratory.",
+  "plain_idea": {
+    "one_liner": "Use promoter chromatin marks to predict which genes change expression when the KDM2B enzyme is removed.",
+    "train_on": "For each human gene, the signal of six histone marks plus Polycomb protein occupancy at its promoter, read out of genome-wide coverage tracks; about 20,000 protein-coding genes, but drawn from only 2 cell lines and 8 xenograft models (counts verified in the deposited file lists).",
+    "predict": "The log fold change in that gene's expression after KDM2B is knocked out or chemically degraded, computed from the deposited RSEM RNA-seq tables (60,754 gene rows, counts/TPM/FPKM, 50 samples).",
+    "why_worthwhile": "Paediatric neuro-oncology groups looking for KDM2B-responsive marker genes would get a shortlist; even a failure would quantify how poorly promoter chromatin alone predicts response to losing a chromatin reader."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Enformer and DeepHistone were trained on hundreds of ENCODE and Roadmap cell types; this deposit adds 8 xenograft models and 2 cell lines from one laboratory. The one genuinely distinctive piece - 52 primary medulloblastoma tumours with six marks - is not downloadable."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The RNA-seq has 3 replicates per condition, enough to estimate per-gene measurement noise, but the CUT&RUN tracks are largely one per model per mark, so there is no replicate basis for confidence on the chromatin features."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Enformer (2021) and the 2026 bivalent-chromatin models are recent, open and evaluated on held-out chromosomes or independent regions; with 2 cell lines there is no route to a fair win against them."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The baseline models cannot be run on the same split because no shared evaluation target exists - our chromatin-state label does not exist at all, and the RNA-seq fold-change label is not what those models predict."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: predict each gene's transcriptional response to KDM2B removal from its baseline promoter chromatin state, with a stretch goal of predicting ChromHMM chromatin states (including the paper's EnhBiv state) from DNA sequence across medulloblastoma subgroups. Both die on the deposited data: the chromatin-state label is a hidden Markov model's output computed from the same histone tracks that would be the features (circular), and the fold-change version has only 2 independent cell lines behind ~20,000 gene rows.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 7.2,
+    "needs_gpu": true,
+    "peak_ram_gb": 4.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: 7.18 GB is the measured total of the 65 xenograft-model bigWigs from the GEO file list; 4 GB peak RAM assumes streaming bigWig bins rather than loading tracks; the 40 hours covers installing a bigWig reader, downloading, binning ~20,000 promoters across ~48 tracks, and reconciling unnamed track normalisation."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A on three counts, two of them fatal by themselves. A2: the chromatin-state label the paper is built on (EnhBiv and the other ChromHMM states) exists in no deposited file - I checked all 169 CUT&RUN files and every one is a bigWig coverage track, with zero peak or segmentation files, so the target would have to be rebuilt from alignments that were never shared. A8: even if rebuilt, that label is the output of ChromHMM run on exactly the histone tracks that would serve as features, which is circular by construction. A5/A6: the deposit covers only 8 xenograft models and 2 cell lines from one laboratory, and the minimum useful working set is 7.2 GB of genome-wide tracks. The 52 primary tumours that would have made this a real resource are not in GEO and sit behind a Cloudflare-blocked browser portal with no bulk download."
+}

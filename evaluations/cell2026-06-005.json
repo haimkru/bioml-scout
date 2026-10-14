@@ -1,0 +1,49 @@
+{
+  "paper_id": "cell2026-06-005",
+  "title": "UniPert-G2CP bridges genetic and chemical screens from molecular representation to phenotype modeling.",
+  "doi": "10.1016/j.cell.2026.06.005",
+  "journal": "Cell",
+  "data_url": "https://github.com/TencentAILabHealthcare/UniPert ; phenotype data from https://s3.amazonaws.com/macchiato.clue.io/builds/LINCS2020/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the UniPert GitHub repo (GPL-3.0): it holds only the trained encoder (unipert_model.pt, 3.7 MB), reference target tables (ref_targets.csv opened: gene symbol + UniProt accession), ESM-2 embeddings (50.6 MB) and demo files; no perturbation-response data. HEAD on LINCS2020 (the CMap gene-expression perturbation release the paper used): compound level-5 matrix 35.5 GB, CRISPR level-5 matrix 6.5 GB, signature metadata 465 MB, all public without login. The independent reproduction repo README returned 404.",
+    "what_came_from_paper_text_only": "From the bioRxiv preprint (Cell paper not open access): datasets are all reused public ones (LINCS 5 cell lines with ~5,000 genetic and 7,821 chemical perturbations, sci-Plex3, CPJUMP1, Norman, Dixit); 81,397 compound-target pairs; metrics PCC/MSE (Pearson correlation / mean squared error) on held-out drugs and pathway-based splits. Processed per-cell-line datasets are not released. No row counts verified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: LINCS2020 files and the UniPert repo download without login. The paper's processed training sets are not deposited."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked headers only by size: LINCS level-5 signatures are measured expression changes per perturbation, a matrix not constructed by joining; the paper's genetic-to-chemical pairing is a training scheme, not a label."},
+    "a3_inputs_present": {"pass": true, "note": "From paper: compounds have SMILES via LINCS metadata, genes map to UniProt via ref_targets.csv (opened)."},
+    "a4_units_stated": {"pass": true, "note": "From documentation: level-5 values are robust z-scores; not opened."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Paper text says ~5,000 genetic and 7,821 compound perturbations per top cell lines; not counted in files (metadata file is 465 MB, over cap)."},
+    "a6_fits_laptop": {"pass": false, "working_set": "Final subset small (~13k signatures x 978 landmark genes) but reaching it needs 42 GB of HDF5 (hierarchical data format) downloads", "note": "Checked by HEAD: compound matrix 35.5 GB + CRISPR matrix 6.5 GB; the paper's processed subsets aren't released, so the batch correction and consensus steps must be redone from the full release, far over the 50 MB / 5 GB limits."},
+    "a7_counts_match_paper": {"pass": false, "note": "Not checkable: the paper's per-cell-line subsets are not released and the 465 MB metadata exceeds the download cap."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are measured L1000 (1,000-gene expression assay) responses, consensus across replicates; not model output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "UniPert-G2CP (this paper)", "open_weights": true, "score_and_split": "PCC/MSE (Pearson correlation / mean squared error) gains over no-genetic-pretraining baselines on held-out drugs, pathway-based out-of-distribution splits, leave-one-drug-out for 17 HDAC inhibitors (from preprint).", "authors_named_unsolved": "Cannot encode non-coding genetic perturbations; weak on morphological (CPJUMP1) profiles; gains shrink with fewer than ~5,000 compounds.", "runnable_as_baseline": true},
+      {"name": "chemCPA", "open_weights": true, "score_and_split": "Unseen-drug prediction on sci-Plex3 (from search snippet; numbers not retrieved).", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": true},
+      {"name": "PRnet (Nature Communications 2024)", "open_weights": null, "score_and_split": "Novel-compound transcriptional response prediction, bulk and single-cell (numbers not retrieved).", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": null},
+      {"name": "PerturbNet (Molecular Systems Biology 2025)", "open_weights": null, "score_and_split": "Unseen chemical and genetic perturbations, compared to chemCPA and Biolord (numbers not retrieved).", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": null},
+      {"name": "GEARS", "open_weights": true, "score_and_split": "Genetic perturbation effects on Norman/Dixit Perturb-seq (numbers not retrieved).", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "UniPert encoder (built on ESM-2 protein embeddings and ECFP compound fingerprints)", "freeze_and_head_viable": true, "hardware": "CPU", "licence": "GPL-3.0"},
+  "integration": {"partner_dataset": "DepMap gene dependency", "join_key": "gene symbol / UniProt + cell line", "bigger_question_one_sentence": "Do CRISPR knockout expression signatures predict compound responses better in cell lines where the drug target is essential?"},
+  "controls": {"positive_control": "Compounds whose known target was knocked out by CRISPR should have the most similar signatures (e.g. HDAC inhibitors vs HDAC knockouts).", "negative_control": "Shuffle compound-to-signature labels; performance should drop to the per-cell-line mean.", "external_validation": "sci-Plex3 single-cell drug screen (different assay)."},
+  "honest_claim_h3": "Predicts the 978-gene L1000 response of five cancer cell lines to compounds at 10 µM / 24 h, among compounds and genes LINCS chose to profile.",
+  "plain_idea": {"one_liner": "Use gene-knockout expression responses plus compound structure to predict how a new drug changes a cell line's gene expression.", "train_on": "Per cell line, expression change profiles for CRISPR knockouts and compounds (paper says ~5,000 and 7,821; unverified), with compound structure and target protein sequence.", "predict": "The change in 978 measured genes after compound treatment, measured by the L1000 bead assay in LINCS.", "why_worthwhile": "Cheap in-silico drug screening would let screening groups skip measuring many compounds; but this is already the paper's own contribution."},
+  "crowded_field_case": {"more_or_better_data": {"answer": "no", "why": "We would reuse the same LINCS data UniPert-G2CP, chemCPA and PRnet already trained on."},
+                         "confidence_score": {"answer": "partly", "why": "LINCS has replicate signatures that could estimate noise, but not checked whether existing models report uncertainty."},
+                         "models_beatable": {"answer": "no", "why": "UniPert-G2CP is a 2026 Cell model with open code evaluated on out-of-distribution and leave-one-drug-out splits."},
+                         "guaranteed_improvement": {"answer": "no", "why": "No new joinable data measuring the same quantity the same way was identified."}},
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Genetic-to-chemical transfer for drug response prediction on LINCS; already done by this paper, and data prep requires the 42 GB LINCS2020 release.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 42, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from HEAD file sizes only; nothing timed.", "cheapest_killing_check": "Whether LINCS2020 level-5 matrices can be sliced remotely by row/gene without the 42 GB download."},
+  "verdict": "reject",
+  "verdict_reason": "Methods paper with no new data: phenotype data must be rebuilt from 42 GB of LINCS2020 files (A6), the processed subsets aren't released (A7 uncheckable), and the task is crowded with open models including this paper's own."
+}

@@ -1,0 +1,217 @@
+{
+  "paper_id": "nar2026-gkag779",
+  "title": "DNAreader: accurate prediction of DNA-binding residues in structured and disordered proteins using transformers and contrastive learning.",
+  "doi": "10.1093/nar/gkag779",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21261184 (benchmark_datasets.zip, 459 kB) and https://github.com/jianzhang-xynu/DNAreader",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded benchmark_datasets.zip from Zenodo (459 kB, CC-BY-4.0) and parsed all 7 files myself: 430 test1 / 231 test2 / 153 train1A / 309 train1B / 150 val1 / 134 train2 / 133 val2 proteins; counted residues and labels (test1 = 199,085 residues, 2,741 DNA-binding, 19,657 other-ligand, 807 unannotated; train1A+1B = 188,040 residues, 1,956 DNA-binding); confirmed sequence and label strings are the same length in every one of 1,540 records; found 1 protein (DP01785) with identical sequence and labels in both TrainingDataset1A and TestingDataset1, and 224 proteins shared between the two test sets; checked 3 UniProt accessions (P02263, O95718, P06401) against the UniProt REST API and the sequences match the canonical entry exactly; computed an amino-acid-identity dummy baseline myself (AUROC 0.601 on test1, 0.660 on test2); listed the GitHub tree (44.6 MB total, includes the 8M-parameter ESM-2 checkpoint and final model weights) and read the install README.",
+    "what_came_from_paper_text_only": "DNAreader's reported scores (AUROC 0.86 on test set 1, 0.88 on test set 2, 0.90 structured / 0.85 disordered) and competitors' scores (iDRNA-ITF 0.75, CLAPE 0.73, HybridDBRpred ~0.79); the BLASTclust 25% sequence-identity clustering used to build the splits; the provenance of annotations (BioLiP2 structures, DisProt and MobiDB curation); the claim that the full pipeline needs HHblits, ASAquick and IUPred3. The Europe PMC supplementary-file listing timed out, so the supplementary tables with per-method scores were not retrieved."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 21261184, CC-BY-4.0, no login. I downloaded and unzipped benchmark_datasets.zip (459 kB) successfully."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the files: every protein is 3 lines and the third line is the per-residue label string (0 non-binding, 1 DNA-binding, 2 other-ligand, X unannotated). Nothing has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Full amino-acid sequences are in line 2 of each record, not accessions. No lookups needed; 3 of 3 spot-checked sequences equal the UniProt canonical sequence."},
+    "a4_units_stated": {"pass": true, "note": "Labels are categorical, and README.txt states exactly what each of 0/1/2/X means and which database the evidence comes from. No numeric units involved."},
+    "a5_enough_rows": {"pass": true, "n_rows": 188040, "note": "188,040 labelled residues in the two training files (1,956 DNA-binding) and 198,278 in test set 1 (2,741 DNA-binding). Counted by me. Caveat: the generalisation unit is the protein, and only 77 of 462 training proteins carry any DNA-binding residue (36 of 430 in test set 1)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "1.4 MB of text; ~1.5 GB of cached ESM-2 650M per-residue embeddings", "note": "Text files are tiny. Frozen embeddings for ~1,540 proteins (~580k residues x 1,280 dims, float16) are about 1.5 GB on disk; longest sequence is 3,418 residues and needs chunking, but no GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says test set 1 has 430 proteins and test set 2 has 231; the files contain exactly 430 and 231. One stale number appears in the methods ('437 proteins'), but the dataset section and the files agree."},
+    "a8_label_provenance": {"pass": true, "note": "Labels trace to physical measurement: residue contacts in deposited protein-DNA structures (BioLiP2, from the Protein Data Bank) for structured proteins, and curated experimental annotations (DisProt, MobiDB) for disordered ones. No model output is used as a label. The honest caveat is that '0' means 'not observed to bind', so some negatives are unmeasured rather than true negatives."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "Seven files, identical 3-line format, no joining needed: the files are the predefined splits. Seen in files."},
+    "B2": {"score": 1, "why": "Non-standard 3-line FASTA-like text, not csv; needed a 10-line custom parser, which worked first try."},
+    "B3": {"score": 1, "why": "Structured labels from BioLiP2 structures, disordered from DisProt/MobiDB; test1 disordered labels are region-level, test2 residue-level."},
+    "B4": {"score": 1, "why": "1,292 residues labelled X (unannotated) across all files, 0.4% of total; trivially masked. Counted in files."},
+    "B5": {"score": 1, "why": "DP01785 is identical in TrainingDataset1A and TestingDataset1; 224 proteins shared between test1 and test2. Found in files."},
+    "B6": {"score": 2, "why": "README.txt documents every label class and the identifier namespace used to trace evidence. Read in files."},
+    "C1": {"score": 1, "why": "Best framing (do alignment-derived features still help over a big language model?) is partly answered elsewhere; otherwise it is beat-the-number."},
+    "C2": {"score": 0, "why": "Saturated: this paper alone benchmarks 15 predictors; CLAPE is pip-installable, DNAreader's own code and weights are open and honestly evaluated."},
+    "C3": {"score": 1, "why": "Only angle is swapping the deliberately tiny 8M language model for a 650M one, which ESM2-BiMamba already did elsewhere."},
+    "C4": {"score": 1, "why": "Ground truth needs crystallography, but free prediction web servers already exist, so the day-to-day cost is low."},
+    "C5": {"score": 2, "why": "Published AUROC for 15 methods on exactly the test files I downloaded, plus my own measured dummy baseline of 0.601."},
+    "D1": {"score": 2, "why": "ESM-2 (protein language model) open weights; the 8M checkpoint even ships in the repo, 650M downloads freely."},
+    "D2": {"score": 2, "why": "Per-residue embeddings for ~1,540 sequences can be cached once on CPU, then any head trains in minutes."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT-licensed; the Zenodo dataset record states CC-BY-4.0. Both checked, not assumed."},
+    "E1": {"ok": true, "why": "Authors built splits by clustering at 25% sequence identity with BLASTclust; splits are shipped as separate files."},
+    "E2": {"ok": true, "why": "462 training proteins across many identity clusters; easy to recluster with MMseqs2 for internal cross-validation."},
+    "E3": {"ok": true, "why": "I computed one: amino-acid-identity propensity gives AUROC 0.601 on test1, 0.660 on test2. Majority class is 98.6% non-binding."},
+    "E4": {"ok": false, "why": "No replicate annotations; the 224 proteins shared between the two test sets carry byte-identical labels, so no disagreement to measure."},
+    "E5": {"ok": true, "why": "Arginine, lysine and histidine enrichment is measurable in the training files (3.5%, 2.5%, 1.6% binding versus ~1% overall) and must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffling within each protein and amino-acid-one-hot-only ablation are both trivial here; expected collapse targets are known."},
+    "E7": {"ok": true, "why": "Protein-DNA complexes added to BioLiP2 after the authors' cutoff give a genuinely independent held-out set; test set 2 does not (224/231 overlap)."},
+    "E8": {"ok": true, "why": "CLAPE installs via pip with open weights, so its published 0.73 on this test set can be reproduced; DNAreader itself needs a ~50 GB alignment database."},
+    "G1": {"score": 2, "why": "UniProt accessions for 285 of 430 test1 proteins, DisProt IDs for 145; 3 of 3 sequences matched UniProt canonical exactly."},
+    "G2": {"score": 2, "why": "AlphaFold DB joins on UniProt accession; BioLiP2 joins on UniProt/PDB. Both named and keyed by identifiers present in the files."},
+    "G3": {"score": 2, "why": "UniProt to AlphaFold DB is one-to-one and sequences are canonical, verified on 3 accessions; DisProt IDs map one-to-one to UniProt."},
+    "G4": {"score": 2, "why": "Combination asks whether predicted-structure context closes the structured-versus-disordered gap every sequence-only predictor still shows."},
+    "H1": {"score": 2, "why": "Negatives are systematic, and a third class marks residues binding non-DNA ligands: 19,657 such residues in test1. Counted in files."},
+    "H2": {"score": 1, "why": "Sources are crystallisable DNA-binding domains plus human-skewed curated disorder annotations; few labs but narrow biology."},
+    "H3": {"score": 2, "why": "Claim writable precisely because the split, the annotation rule and the baselines are all explicit in files and paper."},
+    "H4": {"score": 1, "why": "Paper is explicit about the structured/disordered dichotomy and identity threshold, but not about unmeasured negatives."},
+    "I1": {"score": 2, "why": "Kurgan lab at Virginia Commonwealth University and the Zhang group run the biomine servers; DisProt/MobiDB curators also named."},
+    "I2": {"score": 1, "why": "An alignment-free match would simplify their server from hours to seconds per protein, but changes no wet experiment."},
+    "I3": {"score": 1, "why": "Headline comparison is AUROC over 198k pooled residues; the real decision is which few residues to mutate, so top-k precision is needed."},
+    "I4": {"score": 2, "why": "Amino-acid identity alone gets only 0.601 AUROC (my measurement) versus 0.86 published, so the mapping is genuinely complex."},
+    "J1": {"score": 2, "why": "Frozen language-model embeddings, identity-clustered splits, heavy class imbalance, calibration: real modelling, little cleaning."},
+    "J2": {"score": 2, "why": "Sanity checks are obvious to any biologist: basic residues, zinc fingers and helix-turn-helix motifs should rank top."},
+    "J3": {"score": 2, "why": "Even the parsed, cluster-annotated benchmark plus a reproducible alignment-free baseline is shareable on its own."},
+    "J4": {"score": 2, "why": "Three weeks: one day to the feature table, three hours to embed, then evaluation. Estimated from the file sizes I measured."},
+    "J5": {"score": 1, "why": "Kill condition stated here (AUROC under 0.80 on test1 after 10 days) but not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DNAreader (this paper, Nucleic Acids Research 2026)",
+        "open_weights": true,
+        "score_and_split": "AUROC 0.86 and AULCratio 5.7 on test set 1 (430 proteins), 0.90 on structured and 0.85 on disordered subsets, 0.88 on test set 2 (231 proteins); blind sets built at under 25% sequence identity to training.",
+        "authors_named_unsolved": "Disordered proteins still lag structured ones (0.85 versus 0.90), and they frame the structure-trained versus disorder-trained dichotomy plus high cross-prediction rates as the open problem.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "HybridDBRpred (Nucleic Acids Research 2024, same group)",
+        "open_weights": true,
+        "score_and_split": "AUROC ~0.79 and AULCratio ~4.3 on DNAreader's test set 1; code at github.com/jianzhang-xynu/hybridDBRpred (I saw the URL in search results, did not install it).",
+        "authors_named_unsolved": "Its own successor paper reports that rebuilding it with newer component tools (HybridDBRpred2) gave no further gain, which is what motivated DNAreader.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "CLAPE-DB (Briefings in Bioinformatics 2024), a ProtBert protein language model plus contrastive learning",
+        "open_weights": true,
+        "score_and_split": "Authors report AUROC 0.871 and 0.881 on their own two benchmarks; DNAreader measures it at 0.73 on test set 1 and ~0.68 on the disordered subset. Installable with 'pip install clape' with weights on GitHub.",
+        "authors_named_unsolved": "Reported that a structure-based graph model fed predicted structures did worse (AUC 0.816) than their sequence-only model, leaving structure use unresolved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "iDRNA-ITF (Briefings in Bioinformatics 2022)",
+        "open_weights": null,
+        "score_and_split": "Best single competitor in this paper: AUROC 0.75 overall, 0.83 on structured proteins, under 0.70 on disordered, on test set 1. I did not verify code availability.",
+        "authors_named_unsolved": "Not retrieved; I only have this paper's summary of its performance.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "ESM2-BiMamba (Journal of Chemical Information and Modeling 2026)",
+        "open_weights": null,
+        "score_and_split": "Abstract only (found by search, not retrieved in full): keeps 29 layers of the 650M-parameter ESM-2 and swaps the top layers for bidirectional state-space modules, predicting both DNA-binding proteins and residues. Scores and split not verified.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "GraphBind (structure-based graph neural network)",
+        "open_weights": true,
+        "score_and_split": "Trained on 573 and tested on 129 protein-DNA complexes from BioLiP; AUC 0.816 with predicted structures on CLAPE's benchmark (from search results, original paper not retrieved). Needs structures, so it was excluded from this paper's comparison.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 650M (esm2_t33_650M_UR50D), a protein language model; the paper itself deliberately uses only the 8M-parameter esm2_t6_8M_UR50D",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: embed ~1,540 sequences once (~3 h, chunking the single 3,418-residue protein), cache ~1.5 GB of per-residue vectors, then train any head in minutes.",
+    "licence": "ESM-2 is MIT; the benchmark data is CC-BY-4.0 per the Zenodo record. Both permissive."
+  },
+  "integration": {
+    "partner_dataset": "AlphaFold DB (predicted structures for essentially every UniProt entry) and BioLiP2 (binding-residue annotations across the Protein Data Bank)",
+    "join_key": "UniProt accession (present for 285 of 430 test1 proteins; 3 of 3 checked sequences match the UniProt canonical sequence exactly, so residue numbering lines up)",
+    "bigger_question_one_sentence": "Does adding predicted-structure context, such as predicted solvent exposure and contact density from AlphaFold models, close the structured-versus-disordered performance gap that every sequence-only DNA-binding-residue predictor still shows?"
+  },
+  "controls": {
+    "positive_control": "The model must recover the basic-residue enrichment I measured in the training files (arginine 3.5%, lysine 2.5%, histidine 1.6% DNA-binding versus ~1% overall), and must rank residues in textbook zinc-finger and helix-turn-helix test proteins among its highest scores.",
+    "negative_control": "Shuffle the per-residue labels within each protein and confirm AUROC collapses to 0.5; replace language-model embeddings with amino-acid one-hot and confirm it falls to the 0.601 dummy I computed.",
+    "external_validation": "Protein-DNA complexes deposited in BioLiP2 after the authors' cutoff, held out by Protein Data Bank release date. Test set 2 is NOT independent: 224 of its 231 proteins also appear in test set 1 with byte-identical labels."
+  },
+  "honest_claim_h3": "On proteins sharing under 25% sequence identity with the training set, a frozen large protein language model plus a small head ranks DNA-contacting residues - as defined by atomic contacts in deposited protein-DNA structures and by curated disorder-database annotations - at AUROC X, against 0.86 for DNAreader and 0.601 for an amino-acid-identity baseline; it says nothing about residues in proteins nobody has yet crystallised with DNA, and 'non-binding' in this data means 'not observed to bind'.",
+  "plain_idea": {
+    "one_liner": "Use a protein's amino-acid sequence alone to predict which of its residues touch DNA, without building evolutionary alignments.",
+    "train_on": "462 proteins with 188,040 labelled residues (counted by me), each residue tagged as DNA-binding, binding some other molecule, or non-binding; the input is the sequence, turned into one vector per residue by a pretrained protein language model.",
+    "predict": "A score per residue for 'this residue contacts DNA'. True answers come from atomic contacts in experimentally solved protein-DNA structures (via the BioLiP2 database) and from curated experimental annotations of disordered proteins (DisProt and MobiDB).",
+    "why_worthwhile": "Groups studying transcription factors use these predictions to pick residues to mutate; the current best tool needs hours of alignment searching per protein, so an alignment-free model that matches it would be usable at genome scale, and if it fails we learn that evolutionary conservation still carries information a language model misses."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Our data would be exactly their data: the same 462 training and 430 test proteins from the same Zenodo archive. No extra species, assay or tissue coverage."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The three-way label (DNA-binding, other-ligand, non-binding; 19,657 other-ligand residues in test1) supports a per-residue 'could be another ligand' flag that existing tools report only as an aggregate cross-prediction rate. But there are no replicate annotations, so no measurement-noise estimate."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "DNAreader is 2026 and honestly evaluated on a 25%-identity blind set, which is hard to beat. Its one soft spot is deliberate: it uses the smallest ESM-2 (8M parameters, 320 dimensions) to limit overfitting, so a 650M model has headroom - but ESM2-BiMamba already took that route."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: DNAreader cannot be run as our baseline, since its pipeline needs HHblits with the ~50 GB uniclust20 database plus ASAquick and IUPred3 (read in the install README). We could only compare to its printed numbers."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "BioLiP2 (binding-residue annotations for ligand-protein complexes across the whole Protein Data Bank; named in the paper as the source and a known resource), DisProt and MobiDB (curated disordered-region and interaction annotations; named in the paper), and the Protein Data Bank itself for new protein-DNA complexes. I did not query these APIs, so I have no verified counts.",
+    "approx_items": null,
+    "join_key": "UniProt accession plus residue position (and PDB ID for BioLiP2)",
+    "why": "The same label definition is applied to every protein-DNA complex in the Protein Data Bank, so both extra training data and a date-based external test set can be pulled without inventing a new annotation rule."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Homologous proteins split across train and test: the authors used 25% identity clustering, but I found DP01785 with identical sequence and labels in both TrainingDataset1A and TestingDataset1, proving the clustering was not airtight.",
+      "Treating test set 2 as independent validation would be leakage: 224 of its 231 proteins are already in test set 1 with byte-identical labels.",
+      "Residue-level examples from the same protein are highly correlated, so any split that mixes residues from one protein across folds will look far better than it is.",
+      "Pooling 198,278 residues for one AUROC lets a handful of large, easy proteins dominate the number; only 36 of 430 test1 proteins carry any DNA-binding residue at all.",
+      "A protein language model pretrained on UniProt has already seen these exact sequences, so 'held out' means held out of the head's training, not of the backbone's."
+    ],
+    "split": "Keep the authors' file-level split as the headline comparison (it is what their published 0.86 refers to), but recluster all 1,540 sequences with MMseqs2 at 25% identity and build grouped cross-validation on the cluster ID for any internal model selection; drop DP01785 from training. The cluster column does not exist in the files - I checked - so it must be built.",
+    "checks": [
+      "Shuffle per-residue labels within each protein and confirm AUROC falls to 0.5.",
+      "Train on amino-acid one-hot only and confirm it reproduces the 0.601 dummy AUROC I measured, so the language model's contribution is visible.",
+      "Compute, for each test protein, the maximum sequence identity to any training protein and check performance does not rise sharply with it.",
+      "Report per-protein AUROC distribution alongside the pooled number, so a few large proteins cannot carry the result."
+    ],
+    "verdict": "Manageable: the splits are prebuilt and honest, the one duplicate is a single protein, but per-protein reporting and a rebuilt identity clustering are mandatory, not optional."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 10 scored residues per protein, averaged over the 36 test1 proteins that have DNA-binding residues, reported next to AUROC - because the user's actual decision is which handful of residues to mutate in a binding assay, not how a pooled 198k-residue ranking looks.",
+    "baselines": "Amino-acid-identity propensity, which I computed myself from the training files: AUROC 0.601 on test set 1 and 0.660 on test set 2. Published numbers on the identical test files: DNAreader 0.86, HybridDBRpred ~0.79, iDRNA-ITF 0.75, CLAPE 0.73 (CLAPE re-runnable locally via pip).",
+    "success": "AUROC at or above 0.86 on test set 1 using sequence alone with no alignment step, with top-10-per-protein precision no worse than DNAreader's, which would show the alignment-derived conservation and coupling features are dispensable.",
+    "noise_ceiling": null,
+    "kill": "If a frozen ESM-2 650M plus head does not clear AUROC 0.80 on test set 1 within 10 days of work, stop: the remaining gap is in the hand-built alignment features and closing it means rebuilding their whole pipeline."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Briefings in Bioinformatics",
+      "why": "It publishes critical assessments of predictor families, and would take a result showing that an alignment-free language model matches the newest alignment-dependent tool on its own blind benchmark while being orders of magnitude faster."
+    },
+    "realistic": {
+      "journal": "Bioinformatics (Applications Note or short communication)",
+      "why": "The likely result - a clean, reproducible alignment-free baseline that lands somewhere near but probably below 0.86, with honest per-protein reporting - is a useful methods note rather than a new biological finding."
+    },
+    "fallback": {
+      "journal": "bioRxiv preprint plus the parsed, cluster-annotated benchmark released on Zenodo",
+      "why": "Even the negative outcome (alignment features still carry real signal) plus the duplicate-protein and test-set-overlap findings is worth a preprint and a reusable benchmark, though not a journal slot on its own."
+    }
+  },
+  "pitch": {
+    "headline": "A 459 kB download gives 1,540 proteins with every residue labelled DNA-binding, other-ligand-binding, or non-binding, plus a published number to beat.",
+    "what_makes_the_data_unusual": "The three-way label: 19,657 residues in test set 1 are marked as binding a non-DNA ligand, so false positives can be separated into 'wrong residue' and 'right residue, wrong ligand'. Verified by counting the files.",
+    "the_win": "Reach AUROC 0.86 on their 430-protein blind test set from sequence alone, with no alignment search, versus DNAreader's 0.86 built on hours of HHblits per protein and my 0.601 amino-acid baseline.",
+    "even_if_it_fails": "We learn how much of a 2026 predictor's accuracy comes from evolutionary alignment features rather than its language model - and we already found a duplicated protein and a 224/231 overlap between the two 'independent' test sets.",
+    "who_wants_it": "The Kurgan lab at Virginia Commonwealth University, which runs the biomine prediction servers, and anyone deciding whether to pay the alignment cost when scanning a proteome for DNA-binding residues."
+  },
+  "ml_idea": "Train a small head (logistic regression, then a 1D convolutional or shallow transformer head) on frozen ESM-2 650M per-residue embeddings to predict the DNA-binding label on exactly DNAreader's splits, using the 'binds other ligand' class as hard negatives in the loss. Compare against DNAreader's published 0.86 AUROC, against CLAPE run locally, and against my measured 0.601 amino-acid dummy, reporting per-protein top-10 precision as well as pooled AUROC. The informative question is how much of DNAreader's accuracy survives when the alignment-derived conservation and coupling features are removed entirely.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 8,
+    "embedding_hours": 3,
+    "cv_run_minutes": 20,
+    "compute_note": "Estimated, not timed: embedding hours from ~1,540 sequences of median 350 residues at a few seconds each for ESM-2 650M on an Apple Silicon CPU; working set from 580k residues x 1,280 dimensions in float16; peak RAM dominated by the single 3,418-residue protein, which needs chunked inference. I did time the parsing and the dummy baseline, which took seconds.",
+    "cheapest_killing_check": "Count proteins, not residues: only 77 of 462 training proteins and 36 of 430 test1 proteins contain any DNA-binding residue. I already ran this, and it is the main reason to be cautious - the effective sample size for generalisation is tens of proteins, not 188,040 rows."
+  },
+  "verdict": "park",
+  "verdict_reason": "Every Part A killer passes and I verified them in the files: a 459 kB CC-BY-4.0 download, labels already a per-residue column, sequences present and matching UniProt canonical, counts matching the paper exactly (430 and 231 proteins), and labels traceable to experimental structures rather than to another model. Model-readiness is good (8/12) and a pretrained backbone fits perfectly (6/6). What stops it is Part C at 5/10: this single paper benchmarks 15 existing predictors, CLAPE installs with one pip command and DNAreader's own code, weights and 25%-identity blind evaluation are open and honest, so the field is saturated by the checklist's own definition. Our only edge would be replacing the deliberately tiny 8M-parameter language model with a 650M one, which ESM2-BiMamba has already done elsewhere, and we would have no extra data - it is literally their data. DNAreader also cannot be run as our baseline without a ~50 GB alignment database, so we would be comparing against printed numbers. Park it: a clean, cheap, excellent learning project with a low novelty ceiling, worth revisiting if the alignment-free-versus-alignment question stays unanswered on this benchmark."
+}

@@ -1,0 +1,140 @@
+{
+  "paper_id": "natgen2026-02775-9",
+  "title": "Euchromatin forms condensed domains with short active regions on the surface.",
+  "doi": "10.1038/s41588-026-02775-9",
+  "journal": "Nature Genetics",
+  "data_url": "https://zenodo.org/records/21456159",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the paper's two deposits: Zenodo 10.5281/zenodo.21456159 (simulation trajectories, CC-BY-4.0) and 10.5281/zenodo.21722814 (code). Read the Zenodo file manifest: 9 .tar.gz archives, 2.90-13.61 GB each, 84.32 GB total; a HEAD request on the smallest (nanog.tar.gz) returned HTTP 200, 2,903,480,320 bytes, no login. Downloaded and opened the example files in the maxentnuc GitHub repo: demo/processed_contact_map.npy (a 100x100 float64 dense contact matrix, 0 missing values, first off-diagonal exactly 0.5 by the balancing convention), figures/data/domains.psf (360 beads, all named NUC) and figures/data/domains.dcd (29.7 MB binary trajectory, CORD magic, 6,831 frames of 360 beads). Listed both GitHub repositories file-by-file and read their READMEs and the simulation methodology README.",
+    "what_came_from_paper_text_only": "From the bioRxiv preprint (10.1101/2025.08.05.668703, CC-BY) full text: five ~1 Mb mouse embryonic stem cell regions (Fbn2, Klf1, Nanog, Ppm1g, Sox2) were simulated from Region-Capture Micro-C of Goel et al. 2023, plus HCT116 human regions and a cohesin-depleted condition in the published version; ~5% (Fbn2, Sox2, Ppm1g) to ~15% (Klf1, Nanog) of nucleosomes form 'protrusions'; clutches average ~50 nucleosomes. I did not download any multi-GB archive, so I never saw the real per-region bead counts, frame counts, or any per-nucleosome table. The published Nature Genetics data availability statement is paywalled and I could not read it; the preprint's statement says trajectories would be released on publication, which the Zenodo deposit fulfils."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo record 21456159 is open CC-BY-4.0 with no login; HEAD on nanog.tar.gz returned 200 and 2.9 GB. Code is on GitHub (MIT licence) and mirrored on Zenodo."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "No label column exists anywhere. The deposit holds raw 3D bead trajectories (.dcd) plus topology, config, fitted energies and contact maps. Every quantity the paper discusses (protrusion probability, local nucleosome concentration, clutch membership, domain size) must be built by running DBSCAN clustering and density calculations over ~10^5 frames per region."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "The natural model inputs - DNA sequence and epigenomic tracks (ATAC-seq, histone marks, RNA-seq) - are not in the deposit. The paper points to 'Supplementary Table 2' for their sources, so they would have to be fetched per region from ENCODE/GEO and re-binned to nucleosome positions."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are clear and consistent: bead coordinates in nanometres (bond length 21 nm, nucleosome diameter 11 nm in the config I read), contact maps as balanced probabilities in [0,1] (verified in the demo .npy)."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": null,
+      "note": "A 1 Mb region at ~200 bp per nucleosome is roughly 5,000 beads, so ~45,000 bead rows across 9 archives - but I did not open a real archive, so this is an estimate, not a count. The number of independent units is only 9 regions in 2 cell types."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "84.32 GB of gzipped trajectories, smallest single region 2.90 GB compressed and larger uncompressed; .tar.gz cannot be partially extracted, so there is no cheap subsetting route. Any held-out-region evaluation needs most of the archives. Re-running the authors' simulations is worse: their README states ~2 days on four L40S GPUs per 1 Mb region."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Nothing contradicts the paper: the 9 archives match the 5 mouse regions, 3 HCT116 regions and 1 cohesin-depleted condition described. Not independently verified, because I did not download an archive."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "The labels would be read off coordinates produced by a maximum-entropy polymer simulation - another model's output, with hand-set priors (bond length, bead diameter, attraction strength). Worse, the simulation's only data input is the neighbour-balanced Micro-C contact density, and the paper already shows that density tracks ATAC-seq and active histone marks, so predicting 'protrusion' from epigenomics partly re-derives the simulation's own input."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ChromoGen (diffusion model that generates single-cell 3D chromatin conformations from DNA sequence plus DNase-seq accessibility; Science Advances 2025, from the same Bin Zhang lab)",
+        "open_weights": true,
+        "score_and_split": "Reported to reproduce experimental conformations at single-cell and population level and to transfer to cell types held out of training; I read the abstract-level description only, not the numeric table, so I cannot quote a metric.",
+        "authors_named_unsolved": "Resolution: it works at kilobase scale on Dip-C style data, not at single-nucleosome resolution - which is exactly the gap this paper's simulation fills by brute force.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Orca (sequence-to-3D-genome deep model, Nature Genetics 2022)",
+        "open_weights": true,
+        "score_and_split": "Predicts contact maps from 1 Mb to whole-chromosome scale at 4 kb-1024 kb resolution on held-out chromosomes; this paper itself contains an analysis module named analysis_orca.py, i.e. it compares against Orca-scale data.",
+        "authors_named_unsolved": "Sub-kilobase / nucleosome-scale structure is beyond its output resolution.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "C.Origami (sequence plus CTCF and ATAC-seq to cell-type-specific Hi-C)",
+        "open_weights": true,
+        "score_and_split": "Published as a cell-type-specific contact map predictor at kilobase resolution; I retrieved only review-level descriptions, no number.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "A DNA language model such as Nucleotide Transformer, DNABERT-2 or HyenaDNA could in principle embed the ~200 bp around each nucleosome; AlphaGenome would cover the epigenomic-track side.",
+    "freeze_and_head_viable": true,
+    "hardware": "Embedding ~45,000 short windows on a laptop CPU is feasible (hours), but it is irrelevant here because the labels cannot be produced on a laptop.",
+    "licence": "Nucleotide Transformer and HyenaDNA are openly downloadable; AlphaGenome weights are non-commercial. The paper's own data is CC-BY-4.0 and its code MIT, so licensing was never the obstacle."
+  },
+  "integration": {
+    "partner_dataset": "ENCODE and the mouse ES cell epigenome (ATAC-seq, H3K27ac, H3K4me3), plus the GSE252941 nucleosome 'condensability' sequencing data the authors already use in their figure code.",
+    "join_key": "Genomic coordinates (mm39 for the mouse regions, hg38 for HCT116) at nucleosome-centre resolution.",
+    "bigger_question_one_sentence": "Could one predict, from sequence and epigenomic marks alone, which nucleosomes sit on the surface of a condensed domain - replacing a two-GPU-day simulation per megabase with an inference pass? The question is good; the released data cannot support it on a laptop, and the answer would be a distillation of the simulation rather than of biology."
+  },
+  "controls": {
+    "positive_control": "Would exist: the model must recover the paper's own reported finding that promoters and enhancers are enriched in protrusions, and that Fbn2 (B compartment) is more condensed than Klf1.",
+    "negative_control": "Label shuffling within region, and ablating the ATAC-seq feature block - both easy to run if the labels existed.",
+    "external_validation": "Partial: the HCT116 human regions could be held out from the mouse regions, and ORCA chromatin-tracing data exists for Nanog and Sox2. Only 2 cell types and 9 regions, so this is thin."
+  },
+  "honest_claim_h3": "A model trained on this release could only claim: 'given epigenomic tracks, I reproduce the per-nucleosome protrusion scores that one maximum-entropy polymer simulation assigned to nine megabase-scale regions in two cell lines' - a statement about the simulation, not about chromatin.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and epigenetic marks to predict which nucleosomes stick out of a condensed chromatin domain.",
+    "train_on": "One row per nucleosome (~5,000 per megabase-scale region, ~45,000 rows across the nine deposited regions), with features taken from the surrounding DNA sequence and from accessibility and histone-mark tracks fetched separately from public repositories.",
+    "predict": "A per-nucleosome score for how exposed it is - how often it sits outside a dense cluster across the simulated conformations. The true answer comes from 3D bead coordinates produced by a physics simulation that was fitted to Region-Capture Micro-C contact maps, not from a direct measurement.",
+    "why_worthwhile": "If it worked, labs studying enhancer-promoter contact could get a surface-exposure track genome-wide instead of spending two days on four GPUs per megabase. Even a failure would say how much of chromatin surface structure is written in the local epigenome."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Nine simulated regions in two cell lines is far less than what ChromoGen (whole Dip-C datasets) or Orca (genome-wide Hi-C/Micro-C across many cell types) were trained on. The only edge is resolution (single nucleosome), and that comes with a 84 GB price tag."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The trajectories do give an ensemble per nucleosome, so a spread could be reported - but the spread measures simulation sampling noise, not measurement noise, so a 'calibrated confidence' would be calibrated to the simulator."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The nearest models (ChromoGen, Science Advances 2025; Orca, Nature Genetics 2022; C.Origami) operate at a coarser resolution, so they are not competitors on this exact target - meaning there is no published number to beat, only the simulation to imitate."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "No existing model outputs nucleosome-level protrusion, so it cannot be run as our baseline on the same split; the condition 'the existing model can be run as our baseline' fails outright."
+    }
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "None found. Nucleosome-resolution protrusion/surface-exposure scores exist only in this paper's simulations; related but different measurements (nucleosome condensability in GSE252941, ATAC-seq accessibility) measure other quantities.",
+    "approx_items": null,
+    "join_key": "Genomic coordinates (mm39 / hg38)",
+    "why": "There is no external labelled set to train on or validate against, so the model could never be checked outside the nine simulated regions."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict a per-nucleosome surface-exposure (protrusion) score from local DNA sequence and epigenomic tracks, trained on the simulated conformational ensembles of nine megabase-scale regions, with held-out-region and cross-cell-type (mouse ES to human HCT116) splits. Rejected: the labels are simulator output and the data is 84 GB.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 84.3,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes are read directly from the Zenodo manifest (9 files, 84.32 GB) and a HEAD on nanog.tar.gz (2.90 GB). The 40-hour feature-table estimate assumes downloading and decompressing every archive, then streaming ~10^5 frames per region through the authors' DBSCAN/density analysis code to build a per-nucleosome label table; I timed nothing beyond opening a 29.7 MB, 6,831-frame, 360-bead example trajectory from their repository.",
+    "cheapest_killing_check": "Read the Zenodo file manifest - nine archives totalling 84.32 GB, smallest 2.90 GB, and no per-nucleosome table among them. That one listing kills it in under a minute."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails three Part A killers. A6: the only data this paper releases is 84.32 GB of gzipped molecular-dynamics trajectories (smallest single region 2.90 GB, not partially extractable), and regenerating any of it needs ~2 days on four GPUs per megabase. A2/A3: there is no label column and no feature table - every quantity of interest (protrusion probability, local nucleosome density, domain membership) has to be computed from raw 3D bead coordinates, and the epigenomic inputs live in other repositories. A8 is the deepest problem: the labels are the output of a maximum-entropy polymer simulation whose single data input is the neighbour-balanced contact density, which the paper itself shows tracks accessibility and active marks - so a model predicting exposure from epigenomics would be distilling the simulator and partly re-deriving its input. The science is excellent and the code and data are genuinely open (MIT and CC-BY-4.0); it is simply not a laptop ML dataset."
+}

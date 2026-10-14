@@ -1,0 +1,54 @@
+{
+  "paper_id": "cell2026-08-014",
+  "title": "The organization of visual pathways in the Drosophila brain.",
+  "doi": "10.1016/j.cell.2026.08.014",
+  "journal": "Cell",
+  "data_url": "https://male-cns.janelia.org/download/ (public Google Cloud bucket gs://flyem-male-cns/v1.0/connectome-data/flat-connectome/)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the public MaleCNS v1.0 flat-connectome bucket (no login): annotations 14.5 MB, neurotransmitter predictions 43 MB, connection weights 0.50-1.05 GB, synapse partners 3-6.8 GB, synapse points 13 GB. Downloaded and opened the annotations feather: 211,577 bodies x 36 columns; 164,506 have a cell type (11,751 types, 3,619 types with >=5 neurons); 105,265 bodies are optic-lobe or visual-projection classes (736 types). Lineage columns: itoleeHl 37,754 rows/203 values, trumanHl 19,753/76; birthtime 7,904 rows but only 13 'late'.",
+    "what_came_from_paper_text_only": "Paper is paywalled with no Europe PMC full text; I read only the abstract and search snippets of the bioRxiv preprint (10.64898/2025.12.22.696097). The paper's pathway classes, predicted receptive fields and feature biases, and the physiological comparison set, were not seen in any file; I do not know if they are deposited as tables."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Flat connectome files are in a public Google Cloud bucket, checked by listing. neuPrint's API needs a free account token, but the bulk files do not."},
+    "a2_label_is_a_column": {"pass": false, "note": "The paper's outputs (pathway class, predicted receptive field, input mixture per neuron type) are not columns in the released files I opened; they would have to be rebuilt from the paper's network analysis. Cell type is a column (164,506 typed bodies, checked)."},
+    "a3_inputs_present": {"pass": true, "note": "Connectivity weights keyed by bodyId are present (file sizes checked, contents not opened)."},
+    "a4_units_stated": {"pass": true, "note": "Weights are synapse counts; soma locations are in 8 nm voxels per the download page."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "The only measured (non-connectome) label for visual function is physiology for a few dozen cell types, per the abstract and prior literature; count not verified, but far below 400."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.5 GB (significant-only weights) + 14 MB annotations", "note": "An optic-lobe subgraph fits in 16 GB; synapse-level files (3-13 GB) are not needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checked against the paper's neuron counts (no full text); the annotation file parsed cleanly."},
+    "a8_label_provenance": {"pass": false, "note": "Circular in every version of the task: the paper's receptive-field and pathway labels are computed from the connectome itself; cell types were assigned largely from connectivity and morphology; neurotransmitter identity is a neural-network prediction from EM images."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Connectome-constrained deep mechanistic networks (Lappalainen et al., Nature 2024)", "open_weights": true, "score_and_split": "Predicted direction selectivity and ON/OFF polarity for optic-lobe cell types, checked against published physiology for tens of types; scores not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Predicting visual function by interpreting a neuronal wiring diagram (Seung lab, Nature 2024)", "open_weights": null, "score_and_split": "Receptive-field and orientation predictions from FlyWire connectivity; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "This paper's network signal-propagation analysis (male CNS connectome)", "open_weights": null, "score_and_split": "Predicted receptive fields and feature biases said to agree with physiological data; numbers not retrieved.", "authors_named_unsolved": "Not retrieved (no full text).", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "None standard; no open pretrained connectome foundation model of the ESM-2 kind", "freeze_and_head_viable": false, "hardware": "CPU is enough for graph features or node2vec-style embeddings", "licence": "Janelia FlyEM data is released openly (exact licence not checked)"},
+  "integration": {"partner_dataset": "FlyWire whole-brain female connectome annotations", "join_key": "flywireType column (143,156 bodies carry one, checked)", "bigger_question_one_sentence": "Does a wiring-to-function mapping learned in one fly brain transfer to another fly of the other sex?"},
+  "controls": {"positive_control": "Recover ON/OFF split and T4/T5 direction selectivity from connectivity", "negative_control": "Shuffle cell-type labels on the graph", "external_validation": "FlyWire connectome; published calcium-imaging physiology for tens of cell types"},
+  "honest_claim_h3": "Any model would reproduce connectivity-derived annotations from connectivity, or predict physiology for only a few dozen measured cell types, not learn visual function from independent measurements.",
+  "plain_idea": {
+    "one_liner": "Use a neuron's wiring in the fly brain to predict what visual feature it responds to.",
+    "train_on": "Synapse-count connections for 105,265 optic-lobe and visual-projection neurons in 736 types (checked), summarised per neuron type.",
+    "predict": "Visual response properties such as light-on versus light-off preference or motion direction, whose true values come from calcium-imaging recordings for only a few dozen types (count unknown).",
+    "why_worthwhile": "Visual neuroscientists could prioritise which of thousands of unrecorded cell types to image; but the labels are too few, and the paper's own predictions come from the same wiring."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "The male CNS connectome adds a second complete brain to FlyWire, but the measured physiology labels are the same few dozen cell types that the 2024 Nature models already used."},
+    "confidence_score": {"answer": "no", "why": "There is one animal per connectome and no repeated physiology at scale, so per-prediction noise cannot be estimated."},
+    "models_beatable": {"answer": "no", "why": "The 2024 connectome-constrained networks are recent, open and mechanistic; beating them on tens of labelled types would not be statistically meaningful."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new independent physiology measurements join to this data; adding a second connectome supplies more features, not more labels."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict physiological feature selectivity of visual neuron types from connectivity; rejected because labels are either connectome-derived (circular) or physiology for only tens of types. Side note for a separate MaleCNS resource evaluation: the itoleeHl developmental-lineage column (37,754 neurons, 203 values, checked) is assigned from neurite tracts, not wiring, and could be a less circular target for a wiring-predicts-lineage project.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 0.5, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from file sizes in the bucket listing; nothing was timed beyond opening the 14 MB annotation file.", "cheapest_killing_check": "Count cell types with published physiological feature labels that match MaleCNS types; under ~400 kills it (expected tens)."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A8 and A5: the paper's pathway and receptive-field labels are computed from the connectome itself, cell types are defined mostly from connectivity, and the independent physiological ground truth covers only a few dozen cell types. The data itself is public and model-ready, so it is better judged under a MaleCNS resource paper."
+}

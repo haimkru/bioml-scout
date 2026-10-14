@@ -1,0 +1,93 @@
+{
+  "paper_id": "gb2026-04262-0",
+  "title": "Large-scale benchmarking of prokaryotic annotation tools across thousands of species.",
+  "doi": "10.1186/s13059-026-04262-0",
+  "journal": "Genome Biology",
+  "data_url": "https://doi.org/10.5281/zenodo.21838357",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 4 of 5 Zenodo CSV files (escherichia_coli.csv 24,393 rows x 158 cols; bacteria_non_mag.csv 26,970 x 164; Archaea.csv 2,791 x 164; mags.csv 3,137 x 164; 64 MB total). Confirmed 0 missing values, 0 duplicate NCBI assembly accessions, clean first-try pandas parse. Listed every column: the only non-tool columns are 'NCBI Accession' and 7 Genome Taxonomy Database (GTDB) rank names. Reproduced the paper's published numbers exactly from the files: best-tool counts for bacterial total coding space (PGAP 9,870 / Bakta 9,852 / EggNOG-mapper 7,169 / Prokka 79) and E. coli mean total coding space (PGAP 4,709,183 bp, Bakta 4,497,294 bp, EggNOG-mapper 4,498,886 bp). Checked the header of frameshifted_genomes.csv by ranged request.",
+    "what_came_from_paper_text_only": "The 98,742-row count for frameshifted_genomes.csv (144.8 MB, over the 50 MB download cap, so only its header was read). Genome quality metrics (completeness, contamination, contig count, genome size) quoted in the Methods are not in the CSVs and were not independently checked. The Zenodo description says 180,504 genomes while the paper says 156,033; I did not resolve that discrepancy beyond arithmetic."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo 10.5281/zenodo.21838357, CC-BY-4.0, no login. 4 of 5 files downloaded and opened; code at 10.5281/zenodo.20632848 under GPL-3.0."},
+    "a2_label_is_a_column": {"pass": false, "note": "No outcome column exists. Every candidate label ('which tool is best', 'how much is left unannotated') must be constructed by taking the maximum across four tool-output columns that sit in the same table, so those columns cannot then serve as features. Only taxonomy would remain as input."},
+    "a3_inputs_present": {"pass": false, "note": "Inputs are absent. The files hold only an assembly accession plus 7 taxonomy ranks; genome sequence and assembly quality metrics are not included. Real features need either a bulk join to GTDB release 207 metadata or ~285 GB of genome FASTA files for 57,291 assemblies."},
+    "a4_units_stated": {"pass": false, "note": "No data dictionary accompanies the 164 columns. Units are only implied by names, and several are ambiguous: 'Bakta described feature lenght' versus 'Bakta described coding space' give opposite tool rankings, and I could not tell from the files which is a mean per feature and which a genome total."},
+    "a5_enough_rows": {"pass": true, "n_rows": 57291, "note": "57,291 genome rows verified across the four opened files (24,393 + 26,970 + 2,791 + 3,137), plus a claimed 98,742 frameshift-simulation rows I did not open."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.21 GB", "note": "All five CSV files total about 209 MB; the four opened ones load into roughly 1 GB of RAM. Comfortable on a 16 GB laptop with no GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Counts reconcile exactly: 24,393 + 26,970 + 2,791 + 3,137 + 98,742 = 156,033, the paper's headline number. The Zenodo blurb's 180,504 is the larger set of genomes attempted, not the analysed set."},
+    "a8_label_provenance": {"pass": false, "note": "Fatal. Every one of the 157 numeric columns is the output of an annotation program (Prokka, Bakta, EggNOG-mapper or PGAP) counting features it itself predicted. There is no physical measurement anywhere. The paper states outright the 'absence of a gold standard for structural and functional annotation', so any model here would be imitating four software pipelines, with 'more coding space' standing in for 'more correct' without evidence."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Balrog (Bacterial Annotation by Learned Representation Of Genes), a machine-learning prokaryotic gene finder",
+        "open_weights": true,
+        "score_and_split": "Not retrieved. The PLOS Computational Biology abstract I saw in search results states it matches the sensitivity of state-of-the-art gene finders while producing fewer hypothetical-protein calls; I did not retrieve the actual metrics or the evaluation split.",
+        "authors_named_unsolved": "Integration into standard pipelines (NCBI PGAP, MGnify, Prokka) is named as future work in the abstract I saw; I did not read their discussion section.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "'No one tool to rule them all: prokaryotic gene prediction' (Bioinformatics 2022), a benchmark rather than a model",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; found only as a search hit with title and venue.",
+        "authors_named_unsolved": "Title implies no single tool dominates, matching this paper's conclusion. Not read.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "GTDB release 207 metadata (assembly quality metrics) would join, and proteogenomic peptide evidence would be the ideal ground truth",
+    "join_key": "NCBI assembly accession (GCA_*) for GTDB metadata",
+    "bigger_question_one_sentence": "Cannot be written: the table holds only whole-genome summary counts with no gene coordinates, so it cannot be joined to peptide or any other per-gene evidence that would say which annotations are actually right."
+  },
+  "controls": {
+    "positive_control": "Available and I ran one: recomputing the per-tool best-coding-space tallies from the files reproduces the paper's figures exactly (PGAP 9,870 / Bakta 9,852 / EggNOG-mapper 7,169 / Prokka 79).",
+    "negative_control": "Label shuffling would be runnable, but meaningless because the label is a deterministic function of columns in the same table.",
+    "external_validation": "None inside this resource. Proteogenomic peptide catalogues exist elsewhere as real ground truth, but they are per-gene and this table is per-genome, so they cannot be joined."
+  },
+  "honest_claim_h3": "A model built on this table could only claim 'given a genome's taxonomic placement, this is which of four annotation programs will report the most coding sequence' — a statement about software behaviour, not about whether the annotation is correct, and one the paper's own per-family lookup tables already answer.",
+  "plain_idea": {
+    "one_liner": "Use a bacterial genome's taxonomy and assembly quality to predict which annotation program will label it best.",
+    "train_on": "One row per genome: 57,291 verified rows covering 24,393 Escherichia coli strains, 26,970 non-metagenomic bacteria, 2,791 archaea and 3,137 metagenome-assembled genomes, each with 7 taxonomy ranks and 157 counts of features found by four annotation programs.",
+    "predict": "Which of the four programs reports the most protein-coding sequence for that genome. The 'true answer' is not a measurement: it is whichever program's own output happened to be largest, and the paper says plainly that no gold-standard annotation exists to check any of them against.",
+    "why_worthwhile": "It would spare microbiologists a four-way tool bake-off on each new genome. But the paper already publishes the per-family recommendation table that answers this, so the ceiling is a convenience wrapper, not a finding."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Balrog, the one machine-learning model named, is trained on individual gene sequences from whole genomes. This table has no sequences and no genes, only 57,291 rows of genome-level summary counts, so it is not comparable data at all, let alone more of it."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements and no measurement at all, so there is no noise to estimate. The four tool outputs are four different programs, not four replicates of one quantity."},
+    "models_beatable": {"answer": "no", "why": "There is nothing to beat, because no model does the task this table supports. Balrog does a different task (calling genes from sequence) that this data cannot be used for."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: no existing model can be run as a baseline on genome-level summary counts, and the new data that would help (per-gene peptide evidence) cannot be joined to a table with no gene coordinates."}
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "None joinable. Proteogenomic peptide catalogues (e.g. the 'Toward a standard in structural genome annotation for prokaryotes' study, found by search) hold real evidence of which prokaryotic gene calls are genuine, but at the level of individual genes.",
+    "approx_items": null,
+    "join_key": "Would need gene-level coordinates, which this table does not contain; only genome accession is present.",
+    "why": "The quantity here (how much coding sequence each program reported for a whole genome) is a property of running those four programs in 2023-2026 and is measured nowhere else, so there is neither extra training data nor an external check."
+  },
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: a four-class classifier taking taxonomy plus GTDB assembly quality metrics and predicting which annotation program yields the most described coding sequence, trained on 57,291 genomes with a held-out-phylum split. It dies because the target is the programs' own output rather than any measurement, because building the target consumes the only informative columns, and because the paper's own per-family recommendation tables are the lookup table that a classifier would be approximating.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.21,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.5,
+    "embedding_hours": null,
+    "cv_run_minutes": 5,
+    "compute_note": "Measured, not guessed: the four CSV files downloaded in under five minutes and parsed in seconds with pandas on this laptop. Gradient boosting on 57,291 rows by about 10 usable features would cross-validate in minutes. The cost is trivial; the problem is that the target is not worth predicting.",
+    "cheapest_killing_check": "List the column names and ask which one is a measurement. I did this: all 157 numeric columns are counts emitted by Prokka, Bakta, EggNOG-mapper or PGAP, and the paper's own Results section concedes 'the absence of a gold standard'. That takes two minutes and ends the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A8 fails outright, and A2, A3 and A4 fail with it. The data is beautifully clean — 57,291 genomes, zero missing values, zero duplicate accessions, and I reproduced the paper's headline numbers exactly from the files — but every numeric column is an annotation program's own output rather than a measurement, and the paper states there is no gold standard to check them against. So any label would be constructed by taking a maximum across the very columns that would have been the features, leaving only taxonomy as input, and the resulting model would imitate four software pipelines under the untested assumption that 'more coding sequence reported' means 'more correct'. The inputs that matter (genome sequence) are absent, and because the table is whole-genome summary counts with no gene coordinates, it cannot be joined to the peptide-level evidence that would supply real ground truth. The resource is a genuinely useful benchmark for choosing an annotation tool; it is not a basis for a model."
+}

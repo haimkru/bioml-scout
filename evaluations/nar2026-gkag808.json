@@ -1,0 +1,143 @@
+{
+  "paper_id": "nar2026-gkag808",
+  "title": "Nuclear receptor Nur77 resolves the inflammatory response of macrophages primarily by regulating expression of AP-1 transcription factors and their target genes.",
+  "doi": "10.1093/nar/gkag808",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE274016",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both RNA-seq count tables from GEO (Gene Expression Omnibus, a public repository): GSE274016 (RAW264.7 macrophage line, control vs Nur77 induction) is 42,361 rows x 24 samples and GSE325918 (primary bone-marrow macrophages, wild-type vs Nur77 knockout) is 42,361 rows x 32 samples, both with 0 duplicate RefSeq transcript IDs and 0 missing values; 22,525 and 22,736 transcripts pass a CPM>1-in-4-samples filter. Computed within-group replicate agreement (Spearman 0.993-0.994) and split-half reproducibility of the Nur77-vs-control fold change (Spearman 0.701). Opened peak files: Nur77-HA ChIP-seq peaks (19,900 in untreated, 22,690 after LPS, per replicate 1) and H3K27ac peaks (45,580) in HOMER format with a documented column header, and an ATAC-seq accessibility file (80,746 peaks, standard narrowPeak columns). Listed every file and size in the six GEO series.",
+    "what_came_from_paper_text_only": "Genome build mm10, HISAT2 alignment, HOMER findPeaks and DESeq2 analysis; the merged reproducible Nur77 site counts (13,596 untreated, 17,370 after LPS); the 164 LPS-induced/Nur77-repressed genes of which 98 carry a Nur77 peak and 50% an AP-1 motif. I did not re-run peak merging or DESeq2 myself. The RIME proteomics (PXD054271) was not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All six GEO series are public, no login; I downloaded count tables and peak files directly from the NCBI FTP site. Caveat found in the files: the paper's data availability statement cites GSE273992 for RAW264.7 ChIP-seq, but that accession is an unrelated study (lavender essential oil and myokines); the real series is GSE273993 (26 samples: Nur77-HA, RNA polymerase II, H3K27ac, inputs)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Measured read counts per condition are columns of one table; the modelling label (per-gene Nur77 effect) is a contrast computed inside that single table, not inferred across sources. The binding label needs peak files merged across replicates - extra work, not construction by inference."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are not in the deposited files: DNA sequence features need the mm10 mouse genome plus a RefSeq annotation to place each transcript's start site. That is two standard one-off downloads covering all rows, not per-row lookups; peak files already carry mm10 coordinates."},
+    "a4_units_stated": {"pass": true, "note": "HOMER peak files have a documented header (Normalized Tag Count, focus ratio, findPeaks Score, fold change vs local, p-value); RNA tables are raw read counts per methods (HOMER analyzeRepeats --noadj). Minor gap: counts contain half-integer values (multi-mapping read splitting) that no file documents."},
+    "a5_enough_rows": {"pass": true, "n_rows": 22525, "note": "22,525 expressed transcripts with a continuous label in the RAW264.7 series and 22,736 in the macrophage series (I computed both); 17,370 merged Nur77 binding sites per the paper. The strongly-changed subset is small: 827 transcripts with |log2 fold change|>1 at 1 h, and only 164 genes in the paper's headline repressed set."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.5 GB (two count tables at 1.4 and 1.7 MB gzipped, ~40 peak files of 0.4-1.7 MB each, plus the ~0.8 GB mm10 genome)", "note": "Avoid the bigWig signal tracks: the ChIP archive is 11.3 GB and single tracks reach 390 MB, over the 50 MB per-file rule. Everything needed for a feature table is small."},
+    "a7_counts_match_paper": {"pass": true, "note": "Both count tables have exactly 42,361 rows and the GEO sample counts (24, 32, 12, 26, 42, 17) match the experimental design in the paper. The only discrepancy is the mis-cited accession above, and the per-replicate peak numbers I saw (19,900/22,690) are consistent with the paper's lower merged-across-replicate figures."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are physical measurements: sequenced RNA read counts, and peak calls made by HOMER from measured ChIP reads - no other model's predictions anywhere. Real risk to design around: chromatin features (ATAC, H3K27ac, polymerase II) come from the same cells and partly from the same reads as the label, so using them as inputs would leak."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two clean count matrices keyed on RefSeq ID plus ~40 separate peak files needing coordinate merging; I opened both kinds."},
+    "B2": {"score": 2, "why": "Both gzipped tab files parsed first try in pandas; peak files are standard HOMER/narrowPeak text."},
+    "B3": {"score": 1, "why": "Raw counts, not normalized; comparable within a series after size-factor normalization, as methods state."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; 0 missing cells across both matrices (checked)."},
+    "B5": {"score": 1, "why": "0 duplicate RefSeq IDs (checked), but many transcripts per gene must be collapsed to gene level."},
+    "B6": {"score": 1, "why": "Peak files carry a column header; count tables have condition-labelled columns but no README and undocumented half-counts."},
+    "C1": {"score": 1, "why": "Transfer framing (cell line to primary cells) is informative either way, but the headline result still needs to work."},
+    "C2": {"score": 1, "why": "Open sequence models exist for binding/accessibility (ChromBPNet, BPNet) but none for Nur77 or for Nur77-dependent repression."},
+    "C3": {"score": 1, "why": "Angle is diversity/unique-application: nobody has modelled this factor, but the generic task is well served."},
+    "C4": {"score": 2, "why": "The alternative is ChIP-seq plus knockout mice: months of lab work per factor, as this paper shows."},
+    "C5": {"score": 2, "why": "Dummy baselines are obvious (baseline expression, AP-1 motif count via HOMER) and the paper publishes reproducible numbers."},
+    "D1": {"score": 2, "why": "Open DNA sequence backbones fit directly: DNABERT-2 and HyenaDNA have downloadable weights for mouse-compatible sequence."},
+    "D2": {"score": 1, "why": "~22,500 promoter windows embedded once on CPU is an overnight job, not an afternoon; estimated, not timed."},
+    "D3": {"score": 2, "why": "DNABERT-2/HyenaDNA are permissively licensed; GEO data is unrestricted. Nucleotide Transformer would add non-commercial terms."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes; the chromosome column is present in every peak file I opened."},
+    "E2": {"ok": true, "why": "19 mouse autosomes plus X give far more than five held-out groups of reasonable size."},
+    "E3": {"ok": true, "why": "Dummy baselines computable from the tables: predict zero change, or per-expression-decile mean."},
+    "E4": {"ok": true, "why": "I measured the noise floor: split-half Spearman 0.701 for the per-gene Nur77 fold change."},
+    "E5": {"ok": true, "why": "Positive control: model must recover AP-1 motif dependence and predict LPS induction, both published here."},
+    "E6": {"ok": true, "why": "Label shuffling and motif-only/sequence-only ablations are one-line changes on a cached feature table."},
+    "E7": {"ok": true, "why": "Independent systems exist: this paper's knockout macrophage series plus older Nur77 series GSE102394 and GSE68167 (found in GEO search)."},
+    "E8": {"ok": true, "why": "The paper's 164 repressed genes and 98/164 peak overlap can be re-derived from the deposited counts and peaks."},
+    "G1": {"score": 2, "why": "Standard identifiers throughout: RefSeq transcript IDs in the tables, mm10 coordinates in every peak file."},
+    "G2": {"score": 2, "why": "ReMap 2022 and ENCODE mouse macrophage ChIP-seq join on mm10 coordinates; no new ID mapping needed."},
+    "G3": {"score": 1, "why": "Coordinate overlap joins are one-to-many (several peaks per gene, as the paper notes) but manageable with a collapse rule."},
+    "G4": {"score": 1, "why": "Combined question - is Nur77 repression generic occupancy of AP-1 elements shared with other macrophage factors - is interesting but incremental."},
+    "H1": {"score": 2, "why": "Both directions measured (gain in the cell line, loss in knockout macrophages) and ~22,000 non-responding genes are negatives."},
+    "H2": {"score": 0, "why": "One lab, one mouse strain, one cell line, one stimulus (LPS); no human data and no other TLR ligands."},
+    "H3": {"score": 2, "why": "Honest claim writable in one sentence (see honest_claim_h3), bounded to LPS-stimulated mouse macrophages."},
+    "H4": {"score": 2, "why": "The paper states its systems and limits plainly; the only hidden issue is the mis-cited accession, which I found."},
+    "I1": {"score": 1, "why": "Macrophage nuclear-receptor labs (de Vries group, Amsterdam UMC; Glass lab AP-1 work) would read it; no single decision-maker."},
+    "I2": {"score": 1, "why": "Would reprioritize which Nur77 target genes get validated, but they would still do the ChIP experiment."},
+    "I3": {"score": 1, "why": "Ranking metric roughly matches the use (pick genes to test), but the decision threshold is undefined."},
+    "I4": {"score": 1, "why": "An AP-1 motif count plus baseline expression may do nearly as well; the paper's own analysis suggests that."},
+    "J1": {"score": 2, "why": "Real modelling: DNA backbone embeddings, chromosome-held-out splits, cross-system transfer, calibration against a measured noise floor."},
+    "J2": {"score": 1, "why": "Immunology/gene-regulation intuition needed to judge outputs; the published AP-1 result gives a sanity check."},
+    "J3": {"score": 2, "why": "A harmonized gene-level Nur77 effect table with replicate noise estimates is useful even if the model is mediocre."},
+    "J4": {"score": 1, "why": "Scoped at roughly three to four weeks given a 10-hour feature table and overnight embeddings; not yet fixed."},
+    "J5": {"score": 1, "why": "Kill condition statable (no gain over motif-plus-expression baseline within two weeks) but not yet written down."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ChromBPNet (deep learning model of chromatin accessibility and transcription factor footprints, Kundaje lab, Nature Genetics 2025)", "open_weights": true, "score_and_split": "Reported as competitive with much larger models at predicting variant effects on accessibility and pioneer-factor binding, evaluated on held-out chromosomes and external variant/reporter benchmarks; applied to human macrophages stimulated with interferon-gamma and Salmonella.", "authors_named_unsolved": "Indirect effects: variants change binding of cell-type-specific factors such as PU.1, which then indirectly alter binding of stimulus-specific factors such as NF-kB or STAT2 - exactly the indirect, tethered mode Nur77 appears to use.", "runnable_as_baseline": false},
+      {"name": "BPNet (base-resolution transcription factor binding profile model)", "open_weights": true, "score_and_split": "Base-resolution binding profile prediction from DNA sequence; evaluated on held-out chromosomes in the original work. No Nur77 or mouse macrophage model released.", "authors_named_unsolved": "Not retrieved in full; the architecture is the foundation ChromBPNet builds on.", "runnable_as_baseline": false},
+      {"name": "Fonseca et al. 2019 motif-ensemble machine learning for AP-1 family binding in mouse macrophages (Nature Communications)", "open_weights": null, "score_and_split": "A machine learning approach jointly weighting hundreds of DNA recognition elements to predict factor-specific binding of ATF3, JunD, cFos and cJun in primary and immortalized mouse macrophages; abstract reports confirmation by mutations in genetically diverse mice and loss-of-function experiments, but gives no held-out metric I could verify.", "authors_named_unsolved": "Why AP-1 members have non-redundant roles despite the same motif; they attribute it to locus-specific collaborating factor ensembles, leaving which collaborators act where open.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "HyenaDNA or DNABERT-2 on mm10 promoter/peak windows, frozen, with a ridge or gradient-boosting head", "freeze_and_head_viable": true, "hardware": "Laptop CPU; embeddings cached once overnight for ~22,500 windows", "licence": "Permissive (Apache-style) for DNABERT-2/HyenaDNA; GEO data unrestricted"},
+  "integration": {"partner_dataset": "ReMap 2022 mouse transcription factor ChIP-seq atlas and ENCODE mouse macrophage ChIP/DNase tracks", "join_key": "mm10 genomic coordinates (overlap join), plus RefSeq/gene symbol for the expression side", "bigger_question_one_sentence": "Does Nur77 repress inflammation by occupying the same AP-1 elements that other macrophage factors use, so that repression is predictable from the general regulatory grammar of a locus rather than from any Nur77-specific motif?"},
+  "controls": {"positive_control": "The model must (a) recover AP-1 motif dependence of Nur77-repressed genes, the paper's published finding, and (b) predict baseline LPS inducibility from promoter sequence, which is strongly sequence-encoded.", "negative_control": "Shuffle the per-gene Nur77 fold-change labels and confirm collapse to the per-expression-decile mean; also train on a sequence-free feature (baseline expression alone) to see how much of the signal is trivially explained.", "external_validation": "Train on the RAW264.7 overexpression series (GSE274016) and test on the primary macrophage knockout series (GSE325918); further test on the group's earlier Nur77 series GSE102394 (RNA-seq) and GSE68167 (microarray)."},
+  "honest_claim_h3": "Among the ~22,500 transcripts expressed in LPS-stimulated mouse macrophages from one laboratory, DNA sequence around a gene predicts how strongly that gene's expression changes when Nur77 is added to a macrophage cell line, and that prediction transfers (or does not) to Nur77 loss in primary macrophages - it says nothing about human macrophages, other stimuli, or other nuclear receptors.",
+  "plain_idea": {
+    "one_liner": "Use the DNA around each mouse gene to predict how strongly an inflammation-dampening protein switches that gene off.",
+    "train_on": "One row per expressed mouse transcript (22,525 verified in the cell-line series, 22,736 in the primary-cell series), with the DNA sequence of a window around the gene's start site and its binding-motif content as input.",
+    "predict": "A continuous number: the change in that gene's expression when Nur77 is present versus absent in LPS-stimulated macrophages, computed from deposited RNA sequencing read counts (four biological replicates per condition, three to four LPS time points).",
+    "why_worthwhile": "Macrophage gene-regulation labs would learn whether a factor's repressive effect is written in the DNA of its targets or depends on cell-specific context; a negative result is itself the answer to that question, and the measured noise floor (split-half Spearman 0.701) tells us how good any model could ever get."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Unusual in design - 22,525 transcripts labelled under gain of Nur77 and 22,736 under loss of Nur77, four replicates each - but tiny next to the thousands of genome-wide tracks ChromBPNet-class models train on, and confined to one cell line and one primary mouse system."},
+    "confidence_score": {"answer": "yes", "why": "Four biological replicates per condition let me measure per-gene label reliability directly (split-half Spearman 0.701 for the fold change), so predictions can be weighted by how trustworthy each label is; ChromBPNet and HOMER motif enrichment report no such per-item confidence."},
+    "models_beatable": {"answer": "partly", "why": "Fonseca et al. 2019 is a pre-deep-learning motif-weighting model with no published held-out metric I could verify, so it is beatable; ChromBPNet (2025) is modern and honestly evaluated on held-out chromosomes, but neither predicts Nur77's repressive effect, so neither is a direct competitor on this task."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model can be run as our baseline (no Nur77 or mouse-macrophage ChromBPNet release), and the obvious added data (ReMap mouse ChIP atlas) measures different factors in different cells rather than the same quantity the same way, so two of the four conditions fail."}
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "The specific label - per-gene response to Nur77 gain or loss in macrophages - exists in a handful of other GEO series I found by searching GEO: GSE102394 and GSE102393 (2017, same group), GSE68167 (Nur77-deficient macrophage microarray), GSE253423 (Nur77 and macrophage mechanics). The broader label (gene-level response to a genetic perturbation) is in LINCS L1000 and ARCHS4, but those are mostly human cell lines.",
+    "approx_items": null,
+    "join_key": "Gene symbol / RefSeq transcript ID (mouse), or Ensembl gene for cross-resource joins",
+    "why": "Four independent Nur77 perturbation series give a genuine external test set for the same factor, so the model can be checked outside this paper before anyone trusts it - but they are small and on mixed platforms, so they cannot enlarge the training set much."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Chromatin features (ATAC accessibility, H3K27ac, RNA polymerase II) come from the same cells and overlapping sequencing reads as the expression label, so using them as inputs would partly be predicting the label from itself.",
+      "Neighbouring genes and duplicated gene families share promoter sequence and local chromatin, so a random gene split would put near-duplicates on both sides.",
+      "Multiple RefSeq transcripts of one gene are separate rows with nearly identical labels and identical promoter sequence - a direct duplicate across train and test if not collapsed.",
+      "Baseline expression level alone explains a lot of fold-change variance, so a model given it may look good without learning any sequence biology."
+    ],
+    "split": "Hold out whole chromosomes (the chromosome is in every peak file I opened and is derivable for each transcript from the RefSeq annotation), after collapsing transcripts to one row per gene; report performance per held-out chromosome group.",
+    "checks": [
+      "Shuffle the per-gene fold-change labels and confirm performance falls to the per-expression-decile mean.",
+      "Train on baseline expression alone, and on AP-1 motif count alone, to see how much of the score needs no sequence model at all.",
+      "Check nearest-neighbour promoter sequence similarity between each test gene and the training set, and drop near-identical pairs."
+    ],
+    "verdict": "Manageable: the leaky features are easy to identify and exclude, and a chromosome-held-out split on gene-collapsed rows handles the duplicate problem, but the baseline-expression shortcut must be reported honestly."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured per-gene Nur77 fold change on held-out chromosomes, plus precision among the top 100 predicted repressed genes - because the practical use is picking a short list of genes to validate at the bench.",
+    "baselines": "Trivial: predict zero change, and predict the per-expression-decile mean (both computable from the tables I downloaded). Informative: AP-1 motif count from HOMER plus baseline expression, which mirrors the analysis the paper itself published (98 of 164 repressed genes carry a Nur77 peak, half of those with an AP-1 motif). No published machine-learning number exists for this task.",
+    "success": "Spearman >= 0.35 on held-out chromosomes against a motif-plus-baseline-expression baseline, and the model's ranking recovers at least 30 of the paper's 164 LPS-induced/Nur77-repressed genes in its top 200 without having seen them.",
+    "noise_ceiling": 0.7,
+    "kill": "If after two weeks the sequence model adds less than 0.05 Spearman over baseline expression plus AP-1 motif count, stop - the answer is that Nur77's effect is not written in the target's DNA."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes sequence-to-regulation methods with biological payoff; would need the model to predict Nur77-dependent repression from DNA and transfer from the cell line to primary knockout macrophages."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes focused regulatory-genomics analyses with honest held-out evaluation; the likely result - partial sequence predictability with a measured noise ceiling and a clear transfer test - fits there."},
+    "fallback": {"journal": "bioRxiv preprint plus a machine-learning-in-computational-biology workshop", "why": "Even a clean negative result ('Nur77 repression is not predictable from target DNA sequence, up to a split-half ceiling of 0.70') is a publishable short report with the harmonized table as a resource."}
+  },
+  "pitch": {
+    "headline": "Paired gain and loss of one inflammation-resolving factor, 22,525 and 22,736 labelled transcripts, four replicates each, both tables already downloaded and clean.",
+    "what_makes_the_data_unusual": "Most perturbation datasets give one direction; here the same factor is added to a macrophage line and deleted from primary macrophages, across matched LPS time points, with 0 duplicate IDs and 0 missing values in both count matrices.",
+    "the_win": "Predict the per-gene Nur77 effect at Spearman >= 0.35 on held-out chromosomes against a motif-plus-expression baseline, with a measured ceiling of 0.70 from split-half replicates.",
+    "even_if_it_fails": "We learn that this factor's repressive effect is not encoded in target DNA but in cell context, and we publish the first measured noise ceiling (0.701) for this kind of perturbation label.",
+    "who_wants_it": "The macrophage nuclear-receptor community (de Vries group, Amsterdam UMC) and AP-1 regulation labs (Glass lab); it would change which Nur77 targets they pick for bench validation."
+  },
+  "ml_idea": "Collapse the two deposited count matrices to one row per gene, compute the per-gene Nur77 effect (log fold change, Nur77 vs control under LPS) in the RAW264.7 overexpression series, and predict it from frozen DNA-language-model embeddings (HyenaDNA or DNABERT-2) of mm10 sequence windows around the gene's start site and around annotated Nur77 peaks, plus motif counts (AP-1, NBRE, NurRE). Evaluate on held-out chromosomes against a baseline-expression-plus-motif-count model, then test transfer to the opposite perturbation in primary macrophages (wild-type vs Nur77 knockout) and to the group's earlier Nur77 series. Secondary task as a sanity check: classify Nur77 peak versus matched background sequence, where recovering the AP-1 motif is the positive control.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 10,
+    "cv_run_minutes": 10,
+    "compute_note": "Count-table loading and all statistics above ran in seconds on this laptop (timed). The 10-hour embedding figure is an estimate for ~22,500 windows of 2 kb through a small DNA language model on CPU; nothing was timed on the backbone. The 10-hour feature-table figure covers mm10 download, RefSeq start-site mapping, transcript-to-gene collapse and peak merging.",
+    "cheapest_killing_check": "Count how many genes carry both a strong Nur77 effect and an annotated Nur77 peak: I already see only 827 transcripts with |log2 fold change|>1 at 1 h LPS, and the paper's headline repressed set is 164 genes with 98 peak-supported - if the clearly-affected class is only a few hundred genes, the interesting label is too small and only the continuous task survives."
+  },
+  "verdict": "park",
+  "verdict_reason": "The data is real, open and verified in the files - two clean 42,361-row count matrices, documented peak files, a measured noise ceiling of 0.701, and both directions of perturbation - so nothing in Part A kills it. But the question is narrow: the paper already attributes Nur77's effect to AP-1 motifs, so a sequence model would largely re-derive a published finding, a motif count plus baseline expression may do nearly as well (I4 = 1), everything comes from one lab, one strain and one stimulus (H2 = 0), and the strongly-affected gene set is only a few hundred genes. Worth keeping as a well-scoped transfer-learning exercise with a genuine external test set, not as a priority project."
+}

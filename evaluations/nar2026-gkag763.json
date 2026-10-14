@@ -1,0 +1,78 @@
+{
+  "paper_id": "nar2026-gkag763",
+  "title": "Discovery and biosynthesis of a novel diaminopropane-modified thymine in phage DNA.",
+  "doi": "10.1093/nar/gkag763",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE322nnn/GSE322957/suppl/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all three GEO (Gene Expression Omnibus) GSE322957 supplementary files: raw_counts_All_Samples.txt.gz = 3,930 rows x 27 columns (6 annotation + 21 read-count columns), of which 177 rows are phage genes (contig MH517022.1) and 3,753 are host genes (contig Ap15599HOST), zero missing values; zscore_normalized_counts_for_phage.txt.gz = 177 phage genes x 18 z-score columns (5-40 min, 3 replicates, no 0 min); AB15599.fasta.gz = one 3,981,285 bp host contig. I checked that the count-table coordinates match that FASTA by extracting 300 host coding sequences: 299/300 begin with ATG/GTG/TTG and 300/300 end in a stop codon. I also computed per-sample read totals (3.25-20.9 million) and phage read fraction (0.3-3.9% at 0 min, rising to 30-62% from 5 min on). Confirmed via NCBI esummary that the series has exactly 21 samples (7 time points x 3 replicates).",
+    "what_came_from_paper_text_only": "That the modification is alpha-1,3-diaminopropanylthymine sitting preferentially at TG dinucleotides (inferred in the paper from digestion by ~20 restriction enzymes, not from any sequencing map); the crystal structure at 2.2 Angstrom (Protein Data Bank entry 25QC); the 4,445 jackHMMER homologs reduced to 2,751 representatives for the sequence-similarity network, which came from an 'in-house sequence database' and is not deposited. The Europe PMC supplementary-file listing timed out twice, so Supplementary Tables S1-S4 were not retrievable; their contents are known only from in-text citations."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO GSE322957 files downloaded without login (232 KB total) and the host genome FASTA opened; the 2,751-sequence homolog set behind the paper's network analysis is NOT deposited ('available from the corresponding author upon reasonable request')."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL for the paper's actual discovery. There is no per-position or per-site table of which thymines carry the diaminopropane modification anywhere in the deposited files; the TG-dinucleotide preference was read off restriction-enzyme digestion gels, so the prediction target would have to be constructed from scratch. The only label-like columns that exist are read counts and z-scores for gene expression, which belong to a different question."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: host genome sequence is deposited as one contig and the count table's Start/End/Strand columns map onto it correctly (299/300 extracted coding sequences have a valid start codon), and the phage genome is public as GenBank MH517022."},
+    "a4_units_stated": {"pass": true, "note": "Verified in the files: columns are raw sequencing read counts per gene and standard z-scores (unitless, centred per gene); gene Length in base pairs is given so counts can be length-normalised."},
+    "a5_enough_rows": {"pass": false, "n_rows": 177, "note": "FAIL on every labelled set I verified. Phage gene temporal-expression labels exist for 177 genes (file opened, counted) - below the ~400 floor for classification. The modification-context evidence is ~20 restriction-enzyme results. Enzyme substrate specificity is known for roughly 5-6 family members. The 3,753 host genes look like enough rows, but, as with the scCT-DB precedent, the real independent unit is one phage infecting one bacterial strain in one lab at 7 time points, so the row count is an illusion."},
+    "a6_fits_laptop": {"pass": true, "working_set": "232 KB of gzipped tables plus a 4 Mb genome", "note": "Verified by downloading: trivially fits in memory."},
+    "a7_counts_match_paper": {"pass": true, "note": "Verified: 21 samples in the files match the 21 samples in the NCBI record and the 7-time-point design described in the methods; phage gene count (177) is consistent between the raw-count and z-score files."},
+    "a8_label_provenance": {"pass": true, "note": "Read counts are real measurements, not another model's output. Noted but not fatal: baseline expression and fold change are computed from the same count matrix, so using one to predict the other would be leakage by construction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepMod (deep recurrent neural network for DNA base modification calling from Oxford Nanopore sequencing, Nature Communications 2019)",
+        "open_weights": true,
+        "score_and_split": "Reported high accuracy for 5-methylcytosine and N6-methyladenine calling in bacterial and human nanopore data; not evaluated on phage hypermodifications and not comparable to anything in this paper.",
+        "authors_named_unsolved": "Calling modifications the model was never trained on, and bulky non-methyl modifications generally, remain out of scope.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models) would be the natural fit for a sequence-context task",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop would suffice for the tiny sequence sets involved",
+    "licence": "Open weights, but irrelevant here because there is no label to fit a head to"
+  },
+  "integration": {
+    "partner_dataset": "DNAmod (database of DNA modifications) and UniProt / InterPro for the alpha-glucosyltransferase-Pplase2 enzyme family",
+    "join_key": "UniProt accession for the enzymes; no identifier exists for modification sites because no site table exists",
+    "bigger_question_one_sentence": "Which host polyamine a phage's Pplase2 enzyme will attach to thymine, predicted from the enzyme's sequence - a real question, but only about 5-6 family members have an experimentally determined substrate, so there is nothing to train on."
+  },
+  "controls": {
+    "positive_control": "Would have been: recover the TG-dinucleotide preference the paper reports from a site-level model - impossible, as no site-level data exists.",
+    "negative_control": "Label shuffling is runnable on the expression tables, but there is no worthwhile label to shuffle.",
+    "external_validation": "Phage nACB2 is named in the paper as carrying a 49%-identical enzyme, but no measurements for it are deposited."
+  },
+  "honest_claim_h3": "Any model built from these files could only claim 'predicts how genes in one Acinetobacter baumannii strain change expression during 40 minutes of infection by one phage in one laboratory', which nobody needs; the interesting claim - where on a phage genome a modified thymine sits - cannot be made because the positions were never measured.",
+  "plain_idea": {
+    "one_liner": "Use local DNA sequence to predict which thymines in a phage genome carry a diaminopropane chemical tag.",
+    "train_on": "Would need a list of genome positions each marked modified or not; no such list exists in the deposited data. What is actually deposited is 3,930 gene-level read-count rows across 21 RNA samples (verified by opening the files).",
+    "predict": "Would output a per-position probability of carrying the alpha-1,3-diaminopropanylthymine modification. The paper's evidence for the TG-dinucleotide preference comes from whether ~20 restriction enzymes could cut the phage DNA, which gives a sequence-motif hint but not per-position truth.",
+    "why_worthwhile": "Phage biologists and people engineering phage therapy against drug-resistant Acinetobacter baumannii would like to know which phage genomes carry which chemical disguise against bacterial defence enzymes; as posed, nothing can be learned here because the measurement that would define the answer was never made."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected three framings. (1) Predict which thymine positions in the phage genome carry the modification from flanking sequence - dead, because no position-level measurement exists, only restriction-digest inference. (2) Classify phage genes as early/middle/late from promoter sequence using the deposited z-scores - dead at 177 genes. (3) Predict host gene response to infection from upstream sequence across 3,753 genes - technically buildable in an afternoon from the files I opened, but it is a single phage, single strain, single lab experiment with no external validation set and the strongest predictor would be baseline expression taken from the same counts.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Measured, not estimated: the three GEO files total 232 KB gzipped and parsed into pandas in under a second; the 3 hours covers joining coordinates to the genome FASTA and extracting promoter sequences, which I partly did.",
+    "cheapest_killing_check": "Count the labelled rows for the modification itself. I did: zero positions, ~20 restriction-enzyme observations, 177 phage genes. That number kills it in ten minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A2 and A5 both fail in the files. The scientifically valuable target - which thymines carry the diaminopropane tag - was never measured per position; the TG-dinucleotide preference comes from restriction-enzyme digests, so the label would have to be invented. The only deposited tables are a 21-sample RNA-seq time course of one phage infecting one bacterial strain: 177 phage genes (too few to classify) and 3,753 host genes whose real experimental unit is a single infection, exactly the scCT-DB failure mode. The paper's 2,751-sequence enzyme homolog set, which could in principle have supported a specificity model, is not deposited and in any case has experimentally determined substrates for only about five family members. Excellent chemistry, no modellable dataset."
+}

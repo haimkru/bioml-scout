@@ -1,0 +1,124 @@
+{
+  "paper_id": "cell2026-06-025",
+  "title": "Map of spiking activity underlying change detection in the mouse visual system.",
+  "doi": "10.1016/j.cell.2026.06.025",
+  "journal": "Cell 189(15):4775-4791.e13, Jul 2026 (PMID 42419303). Europe PMC lists it as 'Subscription required' (inPMC=N). The full text I read is the bioRxiv preprint 10.1101/2025.10.17.683190 (PMC12632887, CC BY-NC-ND).",
+  "data_url": "https://doi.org/10.48324/dandi.000713/0.240702.1725 ; s3://visual-behavior-neuropixels-data/visual-behavior-neuropixels/ (public, anonymous HTTP) ; tables at .../project_metadata/{units,channels,probes,ecephys_sessions,behavior_sessions}.csv",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I listed the S3 bucket anonymously. Spike+behaviour data is 153 ecephys_session NWB files (419.9 GB, median 2.69 GB each); with LFP the session folders total 4.22 TB, and the 3,271 behaviour-only NWBs add 544 GB. DANDI 000713 API: 4.76 TB, 4,293 files, 81 subjects, CC-BY-4.0, OpenAccess. I downloaded ecephys_sessions.csv (153 rows, 81 mice), behavior_sessions.csv (3,424 rows) and probes.csv (905 probes, unit_count sum 319,013). For units.csv (133.9 MB) and channels.csv (27.9 MB) I range-fetched only the headers. units.csv has 36 columns including structure_acronym, CCF coordinates, waveform and quality metrics, and quality=good/noise; the first 93 rows parsed cleanly in pandas. I also checked the Visual Coding Neuropixels units.csv header: 51.4 MB, same metric columns, renamed slightly.",
+    "what_came_from_paper_text_only": "The figure of 76,091 high-quality units (presence_ratio>0.9, isi_violations<0.5, amplitude_cutoff<0.1) comes from the paper; the full units.csv was not downloaded because it exceeds the 50 MB cap. So were the 434 SST+ and 27 VIP+ optotagged units (no such column in units.csv), the GLM clusters and the novelty/engagement indices. None of these per-unit analysis outputs appear as a released table. Column units come from the AllenSDK quality-metrics docs, not from the file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). The S3 bucket is public with anonymous listing and GET. DANDI 000713 is OpenAccess under CC-BY-4.0. No login needed."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass only for brain region: structure_acronym is a column in units.csv (checked). The paper's real targets (hit/miss/false alarm, GLM cluster, novelty modulation, optotag SST/VIP identity) are not columns. They would have to be built from 2.7 GB NWB files per session."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass for scalar per-unit features: amplitude, waveform_duration, halfwidth, PT_ratio, repolarization/recovery slope, spread, velocity_above/below and firing_rate are columns (checked). Mean waveforms, ACGs and spike times exist only inside the NWBs."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Weak pass. The CSV has no units, but the AllenSDK docs define them (amplitude µV, durations ms, firing_rate Hz, velocity s/m-type inverse speed, CCF µm). One ecephys_spike_sorting pipeline covers every session, so values should be consistent."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 319013,
+      "note": "319,013 is the sum of unit_count over probes.csv and ecephys_sessions.csv (checked); a bytes-per-row estimate of the header gives about 315k. The 103 clean sessions hold 216,006 units, and the paper says 76,091 pass QC (not verified). The independent unit is the mouse (81) or insertion (905), not the unit."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "About 134 MB units.csv + 28 MB channels.csv + small session tables, plus 51+7 MB for the Visual Coding partner. Any spike-time or waveform variant needs 420 GB of NWB.",
+      "note": "Passes for the metrics-table task on CPU. Fails for anything using spike trains (ISI, population decoding, behaviour)."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass for sessions and mice (checked). The paper says 153 released sessions, and the CSV has 153. Dropping rows with abnormal_histology or abnormal_activity flags leaves exactly 103 sessions and 54 mice, as the paper states. DANDI agrees on 81 subjects. The 76,091 QC unit count could not be checked without the full units.csv."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass with a hard condition. structure_acronym comes from histology: optical projection tomography, manual probe-track marking and CCFv3 registration. That is independent of the waveform metrics. But anterior_posterior/dorsal_ventral/left_right_ccf_coordinate, probe_vertical_position, local_index and ecephys_channel_id encode the label and must be dropped. 'quality' is a pipeline noise classifier, not a label. 'root', 'MB', 'TH' and 'HPF' rows are unresolved assignments."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 8,
+    "c_worth_asking": 6,
+    "d_backbone_fit": 2,
+    "g_integration": 6,
+    "h_missing_data": 6,
+    "i_does_anyone_care": 4,
+    "j_fit_finishability": 4
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Tolossa, Schneider, Dyer & Hengen, 'Neurons throughout the brain embed robust signatures of their anatomical location into spike trains' (eLife 2025, PMC12204685)",
+        "open_weights": false,
+        "score_and_split": "Region from ISI distributions/PSTHs, leave-animals-out: 89.5% for 4 broad regions. Within-structure accuracy is 51% hippocampal, 53% thalamic and 38.5% visual cortical. Trained on Allen Visual Coding Brain Observatory plus Functional Connectivity (58 mice) and validated on Steinmetz 2019. It did not use VBN or waveforms.",
+        "authors_named_unsolved": "The structure-level model lacks accuracy for practical use, and visual cortical areas stay hard. They call for datasets with multimodal features from other groups. No code URL was found in the PMC text.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "NEMO (Yu et al., ICLR 2025, PMC11580900; ibl-nemo.github.io)",
+        "open_weights": null,
+        "score_and_split": "Contrastive embedding of waveform and ACG. IBL brain-wide map, 10 broad regions, split by insertion 70/10/20: single-neuron balanced accuracy 0.42 (linear), 0.45 (frozen MLP), 0.47 (fine-tuned), and 0.51 multi-neuron. Code is public; I did not confirm checkpoints.",
+        "authors_named_unsolved": "Each neuron is treated independently, ignoring correlations. They want multi-animal pretraining to generalize to unseen sessions and animals.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None fits the scalar metrics table; the honest model is gradient boosting. NEMO (waveform+ACG encoder) is the nearest neuron-level backbone, but it needs mean waveforms and ACGs pulled from the 2.7 GB NWBs, and its weight release is unverified. POYO+, NDT and NEDS need spike times and a GPU.",
+    "freeze_and_head_viable": false,
+    "hardware": "Laptop CPU for the tabular task. GPU plus about 420 GB of streaming for any spike-level backbone.",
+    "licence": "Data CC-BY-4.0 (DANDI). Preprint CC BY-NC-ND. Cell version listed as cc by in Europe PMC. NEMO code licence not checked."
+  },
+  "integration": {
+    "partner_dataset": "Allen Visual Coding Neuropixels units.csv plus channels.csv: passive viewing, 58 mice, same pipeline, header checked. IBL brain-wide map (Allen CCF acronyms) as a cross-lab test.",
+    "join_key": "Allen CCF structure_acronym / structure_id, collapsed to broad regions (cortex areas, LGd, LP, CA1/DG, SCm/MRN). The join is at label level, not row level.",
+    "bigger_question_one_sentence": "Do pipeline-level waveform and firing metrics carry a brain-region signature that survives the switch from passive viewing (Visual Coding) to task-engaged mice (VBN) and across rigs?"
+  },
+  "controls": {
+    "positive_control": "Plumbing check: predict broad region from probe_vertical_position + dorsal_ventral_ccf_coordinate, which should be near-perfect, then drop those columns. Literature check: recover Tolossa's ordering, where broad regions are easy and the 6 visual cortical areas are near chance.",
+    "negative_control": "Shuffle region labels within session. Ablate quality-only metrics (isolation_distance, drift, snr) to make sure the model is not reading probe/session artefacts. Use random-noise features of the same shape.",
+    "external_validation": "Visual Coding Neuropixels units table (different mice and paradigm, same pipeline). A temporal split on date_of_acquisition (2020-08 to 2022-01, checked) and a rig split on equipment_name NP.0/NP.1 (79/74 sessions, checked)."
+  },
+  "honest_claim_h3": "Among QC-passing Kilosort2 units from 81 C57BL/6J-background mice recorded by one Allen pipeline with visual-system-targeted probes, scalar waveform and firing metrics predict the CCF-registered broad region at X% balanced accuracy in held-out mice. Nothing is claimed about cell type, layer or other labs.",
+  "pitch": {
+    "headline": "319,013 Neuropixels units from 81 mice, openly licensed CC-BY-4.0, with the brain-region label already a column in a 134 MB table.",
+    "what_makes_the_data_unusual": "Verified counts match the paper exactly (153 sessions / 81 mice, dropping flagged rows leaves 103 sessions / 54 mice), the labels come from independent histology (optical projection tomography plus CCFv3 registration, not from the waveform features), and a sister dataset processed by the same Allen pipeline — Visual Coding Neuropixels, 58 mice, header checked — lets you change the behavioural paradigm while holding spike sorting fixed, with free rig (NP.0/NP.1, 79/74 sessions) and date (2020-08 to 2022-01) splits on top. Only the session, probe and header-level facts were checked: the 76,091 QC-passing unit figure comes from the paper's text, and units.csv was never fully downloaded, so the per-unit values rest on the header and the first 93 rows alone.",
+    "the_win": "A balanced-accuracy number for ~8 broad regions from scalar waveform and firing metrics in held-out mice, paired with the accuracy drop when that same model is applied to passively-viewing Visual Coding mice. That cross-paradigm, cross-rig transfer figure is one neither Tolossa 2025 (89.5% on 4 broad regions, leave-animals-out, from ISI distributions and PSTHs) nor NEMO (0.42–0.51 balanced accuracy on 10 regions, insertion split, from waveforms and ACGs) reports.",
+    "even_if_it_fails": "The transfer gap is the result, so either outcome is informative: a failure says pipeline-level scalar metrics carry no paradigm-invariant region signature, which is a real if small negative. But if the model also fails to beat a two-feature firing_rate + waveform_duration tree, the only thing learned is that the task was a lookup, not a model.",
+    "who_wants_it": "Tolossa, Schneider, Dyer and Hengen, who named the absence of multimodal features from other groups as their open problem and whose structure-level accuracy they called too low to use, and the NEMO authors, who want models that generalize to unseen sessions and animals. It would change whether either group adds scalar pipeline metrics to their region predictors, or keeps treating spike trains and waveform/ACG encoders as the only viable input."
+  },
+  "plain_idea": {
+    "one_liner": "Use each neuron's spike shape and firing rate to predict which brain region it was recorded from in mice.",
+    "train_on": "One row per recorded neuron: a few summary numbers describing its electrical signal. These are spike size, spike duration and width, the ratio of the spike's peak to its trough, how fast the voltage recovers, how far the spike spreads along the recording probe, and average firing rate. The probe position and brain coordinate columns are removed because they give the answer away. The tables list 319,013 recorded units, which was verified. Of these, 216,006 are in the 103 clean sessions from 54 mice. The paper says 76,091 pass quality control, but this was not verified. The true number of independent samples is the mice (81 in total), not the neurons.",
+    "predict": "Which of about 8 broad brain regions the neuron sits in: the individual visual cortex areas, visual parts of the thalamus, the hippocampus, or the midbrain. The true region comes from anatomy done after recording. Each brain was imaged in 3D, the probe track was marked by hand, and the track was aligned to the Allen Institute's standard mouse brain atlas. Models are tested on mice they never saw in training, and also on a separate Allen dataset recorded while mice passively watched visual stimuli.",
+    "why_worthwhile": "The main thing we would learn is whether a region's electrical signature holds up when the experiment changes (passive viewing versus a trained task) and when the recording rig changes. That answer is informative whichever way it comes out. The payoff is modest, because earlier studies already predict brain region from electrical recordings in held-out animals."
+  },
+  "ml_idea": "Classify brain region from per-unit waveform and firing metrics only (position columns dropped). Use leave-mouse-out CV on VBN, then transfer to Visual Coding Neuropixels in both directions. The transfer gap is the result. Optotag SST/VIP classification is not viable: 461 units, and labels are not in the table.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "cheapest_killing_check": "Download units.csv (134 MB). Filter to QC thresholds and drop 'root'/coarse labels. Train leave-mouse-out LightGBM on waveform metrics only, for about 8 broad regions. If balanced accuracy is not clearly above a firing_rate+waveform_duration two-feature tree, kill it. That would make it a lookup, not a model.",
+    "working_set_gb": 0.22,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Numbers come from stated download sizes (134 MB units.csv, 28 MB channels.csv, plus 51+7 MB Visual Coding partner tables) and a 3-hour estimate to a feature table; nothing was timed or benchmarked."
+  },
+  "roi": 9.0,
+  "verdict": "park",
+  "verdict_reason": "Data is open, clean and matches the paper (153/103 sessions, 81/54 mice), but the only model-ready label is brain region in a 134 MB metrics table. That task has no freeze-and-head backbone (D=2/6), and Tolossa 2025 and NEMO already cover region-from-electrophysiology with held-out-animal evaluation. The paper's substantive targets (behaviour, novelty, cell type) live in 420 GB of NWB and would have to be constructed.",
+  "c2_backfill": {
+    "score": 1,
+    "why": "Tolossa 2025 has no code and never used VBN or waveforms; NEMO's checkpoints are unconfirmed and trained only on IBL."
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "paper_id": "nature2026-11048-8",
+  "title": "MMEJ repair of breaks at TA repeats maintains ecDNA and cancer fitness.",
+  "doi": "10.1038/s41586-026-11048-8",
+  "journal": "Nature",
+  "data_url": "https://zenodo.org/records/21725678 (processed, CC-BY-4.0); https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1505691 (raw reads)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and extracted the full 13.9 MB Zenodo archive (mmej-ecdna.tar.gz, CC-BY-4.0) and opened all four data files plus the 591-line figure script. Counted: 193,899 structural-variant (SV) calls from the caller 'destruct' (118,444 deletions, 53,516 translocations, 19,391 inversions, 2,548 duplications), median 2 total reads per call and 83% of calls with <=2 reads; 1,420,303 read-to-cell rows (710,151 after de-duplicating on the read-name column) covering 3,558 single cells in 4 libraries; 188 ten-kilobase amplicon bins (all in_amplicon=True, 4 amplicon regions on chromosomes 6, 8, 13); 104,778 TA/AT repeat intervals in hg19 BED format. I reproduced the paper's own analysis unit from its script: SVs with both ends in the same amplicon and detected in exactly one library = 1,123 rows, median 1 unique supporting read, only 32 rows with >=4 unique reads. I confirmed by cross-tabulation that the 'type' column is essentially a re-encoding of same-chromosome status plus the two strand characters.",
+    "what_came_from_paper_text_only": "Everything about the END-seq break mapping, the micronucleus and fitness assays, the human tumour re-analysis showing ecDNA rearrangements enriched at TA repeats, and the ERCC1-ERCC4 cleavage mechanism comes from the abstract and press coverage only. The paper is paywalled (not in PubMed Central, Europe PMC reports no open full text and no supplementary files), so I never read the Data Availability section or any supplementary table; I found the Zenodo deposit and BioProject by searching instead."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo record 21725678 is open CC-BY-4.0 and downloaded first try (13,856,886 bytes); raw single-cell reads are open in BioProject PRJNA1505691. No login or application needed."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. No file contains a break-propensity or fragility label. The quantity the paper is about (how likely a site is to break) would have to be built by me: bin 193,899 caller coordinates into windows, pick negative windows, derive the treatment condition by joining reads to libraries, and subtract the T=0 baseline to define 'newly arising'. The only ready-made label column, 'type', is a geometric re-encoding of the strand and chromosome columns sitting beside it."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL for a sequence model. No DNA sequence and no junction microhomology column anywhere in the deposit; only hg19 coordinates, so the hg19 reference genome (~900 MB) must be fetched separately. The END-seq break map, the paper's direct measurement of where breaks happen, is not deposited at all: the script hard-codes just four chromosome-8 intervals as its 'fragile regions'."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are clear and documented in the README: base-pair coordinates on hg19, read counts, bin counts-per-million. No ambiguity found in the files."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 1123,
+      "note": "FAIL at the honest unit. The paper's own analysis set, which I reproduced from its script, is 1,123 newly arising amplicon SVs, below the ~1,500 threshold, and the per-condition cells are 23-225 rows. The amplicon bin table is only 188 rows. The 193,899 genome-wide calls are one cell line's caller output, not independent labelled examples."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~24 MB uncompressed tables; ~900 MB more if the hg19 reference is added",
+      "note": "Verified: everything loaded into pandas in seconds, well under 1 GB of RAM. Size is the one thing that is not a problem here."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot check. The paper is paywalled, so I could not compare my counts (193,899 calls, 1,123 core SVs, 3,558 cells) against any figure or table in the article. The deposit is also internally incomplete: the README advertises END-seq fragile-site annotations that are not included as a file."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL on both of the ways A8 bites. Circularity: every label is an output of 'destruct', a probabilistic structural-variant caller, and 83% of calls rest on <=2 reads while the core set has a median of 1 unique read, so most labels are caller noise. Leakage by construction: the paper's TA-repeat annotation is computed from the same coordinates a model would use as features, and the 'type' label is a deterministic function of the neighbouring strand and chromosome columns."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Sequence-only residual convolutional neural network for structural-variant breakpoints (Machine learning-based prediction of human structural variation and characterization of associated sequence determinants, bioRxiv 2025 / PMC12710826)",
+        "open_weights": null,
+        "score_and_split": "Authors report over 90% AUROC (area under the receiver operating characteristic curve, a 0.5-to-1 measure of ranking accuracy) for both the sequence-only network and a random forest using genomic annotations; I read the abstract and summary only, not the split details or the weight availability.",
+        "authors_named_unsolved": "They report that the network recovers microhomology at breakpoint flanks and non-standard DNA shapes (G-quadruplex, Z-DNA) as the drivers of local fragility, i.e. exactly the signal this paper's data would offer.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Genomic sequence code of DNA fragility (Nucleic Acids Research 2024, 52:12798)",
+        "open_weights": null,
+        "score_and_split": "Benchmarks sequence-based machine learning on experimental DNA breakage maps; I retrieved the title and abstract via search, not the reported numbers.",
+        "authors_named_unsolved": "Framed explicitly as a step 'towards' a sequence code of fragility, so generalisation across break-mapping assays and cell types remains open.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Fragile-site prediction with genomic language models (Briefings in Bioinformatics 2025, 26:Suppl 1, i37)",
+        "open_weights": null,
+        "score_and_split": "Applies pretrained DNA language models to predict fragile sites in the human reference genome; abstract retrieved, numbers not read.",
+        "authors_named_unsolved": "Reports that models capturing long-range sequence interactions do best, implying short-window models miss context.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "FusionAI (iScience 2021)",
+        "open_weights": null,
+        "score_and_split": "Deep model predicting gene-fusion breakpoints from DNA sequence; retrieved title and abstract only.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "AmpliconArchitect / AmpliconClassifier and HyenaCircle, for the adjacent task of calling or predicting circular DNA",
+        "open_weights": true,
+        "score_and_split": "AmpliconClassifier is on GitHub under AmpliconSuite and is the standard tool for labelling focal amplifications as extrachromosomal; HyenaCircle (Frontiers in Genetics 2025) fine-tunes the HyenaDNA sequence model to predict long circular extrachromosomal DNA. Scores not read.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 / HyenaDNA / Nucleotide Transformer would be the natural fit for a DNA-window model",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU is enough for embedding a few thousand short windows, so the backbone was never the obstacle here",
+    "licence": "Mostly permissive open weights, but irrelevant given the Part A failures"
+  },
+  "integration": {
+    "partner_dataset": "hg19 reference genome plus published break-mapping data (END-seq, Break-seq) and pan-cancer structural-variant catalogues such as PCAWG",
+    "join_key": "genomic coordinates on hg19 (genome build must be tracked; most modern resources are hg38)",
+    "bigger_question_one_sentence": "Does a sequence model of break propensity trained on chromosomal DNA transfer to circular extrachromosomal DNA, or is circular DNA fragile for reasons sequence alone cannot see? — a good question, but this deposit supplies 1,123 mostly single-read variants from one cell line, far too thin to answer it."
+  },
+  "controls": {
+    "positive_control": "Available in principle: a working model must recover the paper's headline TA-repeat enrichment at breakpoints, and must recover trivial sequence properties such as GC content from the window.",
+    "negative_control": "Label shuffling is runnable, and is essential here because sequencing depth per library differs about two-fold (241,315 de-duplicated reads at T=0 versus 113,416 for the polymerase-theta inhibitor), which would confound any condition label.",
+    "external_validation": "None inside the deposit: one cell line, one lab, one caller, no replicates. Published break-mapping datasets exist but are a different assay and genome build."
+  },
+  "honest_claim_h3": "Any model built from this deposit could only claim 'ranks hg19 windows by how often the destruct caller placed a low-confidence breakpoint there in one colorectal cancer cell line, COLO320DM', which is a statement about a caller's behaviour on one sample rather than about DNA fragility.",
+  "plain_idea": {
+    "one_liner": "Use local DNA sequence to predict where circular cancer DNA breaks, and whether blocking a repair enzyme shifts those break sites.",
+    "train_on": "Short hg19 sequence windows around breakpoint coordinates. Verified counts: 193,899 caller-reported variants genome-wide, but only 1,123 in the paper's own 'newly arising on extrachromosomal DNA' set, and only 188 ten-kilobase amplicon bins. No sequence is in the files; hg19 would have to be fetched separately.",
+    "predict": "Whether a window contains a breakpoint, or how many breakpoints it carries. The true answer comes from 'destruct', a structural-variant caller run on single-cell whole-genome sequencing of 3,558 COLO320DM cells; the median call rests on 2 reads, and the core set on 1 unique read.",
+    "why_worthwhile": "Groups developing polymerase-theta inhibitors would want to know which extrachromosomal DNA sites break and whether sequence predicts it, since that would nominate which tumours are vulnerable. As deposited, the data cannot support that claim."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The published sequence-only breakpoint network (bioRxiv 2025) trains on human population-scale structural variation; this deposit offers 193,899 calls from a single cell line, of which only 1,123 are the biologically meaningful newly arising extrachromosomal set. The genuinely novel slice, circular DNA, is the smallest part."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicates: each of the four conditions is one library, and the four libraries differ about two-fold in de-duplicated read depth (241,315 down to 113,416), so apparent per-condition differences cannot be separated from sampling depth. Read support could stand in for confidence, but a median of 1 unique read leaves nothing to calibrate against."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The competing work is recent, not old: a 2025 residual convolutional network reporting over 90% AUROC that already identifies microhomology and non-standard DNA structures, a 2024 Nucleic Acids Research fragility benchmark, and a 2025 genomic language model study. Beating them would need better data, which this is not."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails almost every condition: I could not confirm the existing models' weights are downloadable, so no baseline is guaranteed; the labels here come from a different assay (single-cell whole-genome sequencing plus the destruct caller) than the population catalogues those models used; and no shared evaluation split exists."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was a DNA-window model of break propensity on extrachromosomal DNA: embed hg19 windows with a DNA language model such as DNABERT-2, predict breakpoint presence or density, and test whether a model trained on chromosomal breakpoints transfers to the circular amplicon, and whether polymerase-theta inhibition shifts the predicted break landscape. The transfer framing is genuinely informative either way and the data is tiny enough for a laptop, but the deposit cannot support it: no break-propensity label exists as a column, the END-seq break map that would supply a real label is not deposited (only four hard-coded chromosome-8 intervals live inside the figure script), and the available labels are a caller's low-confidence calls from one cell line.",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 2.0,
+    "embedding_hours": 2.0,
+    "cv_run_minutes": 10,
+    "compute_note": "Measured, not guessed, for the data side: the whole deposit is 24 MB uncompressed and all four tables loaded and cross-tabulated in pandas in seconds at well under 2 GB of RAM. The 20 hours is my estimate for constructing a label and negative set and adding hg19 sequence; the embedding figure assumes a few thousand short windows through a small DNA model on CPU.",
+    "cheapest_killing_check": "Count the paper's own analysis unit and its read support. Reproducing the script's filter gives 1,123 newly arising amplicon variants with a median of 1 unique supporting read and only 32 with >=4; that single count, which takes ten minutes, kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Excellent biology, but the deposited data fails four Part A killers. A2: no break-propensity or fragility label exists as a column; it would have to be constructed by binning coordinates, inventing negatives, joining reads to libraries and subtracting the baseline. The one ready-made label column, 'type', is a deterministic re-encoding of the strand and chromosome columns next to it, so it leaks by construction. A8: every label is output from 'destruct', a structural-variant caller, with 83% of 193,899 calls resting on two reads or fewer, and the paper's TA-repeat annotation is computed from the same coordinates that would serve as features. A5: the honest unit of analysis is 1,123 variants, with per-condition cells of 23 to 225 and a median of one unique supporting read. A3: no sequence and no junction microhomology is deposited, and the END-seq break map, which is the one measurement that would have made a real fragility label, is absent, reduced to four hard-coded chromosome-8 intervals inside the plotting script. Add one cell line with no replicates, a two-fold read-depth difference between conditions that confounds any treatment label, and a field already holding recent sequence models of breakpoint fragility reporting over 90% AUROC. The raw reads in BioProject PRJNA1505691 are open but are raw sequencing, excluded by policy. If the authors later release the END-seq break maps genome-wide, the transfer question (does chromosomal fragility predict circular-DNA fragility?) becomes worth revisiting."
+}

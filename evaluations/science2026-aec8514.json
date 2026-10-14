@@ -1,0 +1,105 @@
+{
+  "paper_id": "science2026-aec8514",
+  "title": "TranscriptFormer: A generative cell atlas across 1.5 billion years of evolution.",
+  "doi": "10.1126/science.aec8514",
+  "journal": "Science",
+  "data_url": "https://cellxgene.cziscience.com/census-models",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Paper has no open full text or supplement in Europe PMC (no PMCID). I fetched the GitHub README (czi-ai/transcriptformer): weights are downloadable from AWS S3 with no login; the README recommends a GPU (A100 40GB) for running the model. I fetched the CELLxGENE Census release notes, which list precomputed cell embeddings 'tf-sapiens', 'tf-exemplar-human' and 'tf-exemplar-mouse', plus the number of distinct cell-type labels: 898 human, 473 mouse, 40 marmoset, 54 macaque, 25 chimpanzee.",
+    "what_came_from_paper_text_only": "112 million training cells across 12 species, the state-of-the-art cross-species cell-type claims, and the zero-shot disease results come from the abstract and README only. I did not open any Census cell table or embedding array: cellxgene_census and tiledbsoma (the libraries that read Census) are not installed, and I followed the no-install rule. A blog/tweet says the embeddings cover 106M human and 42M mouse cells; I did not verify that."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Census is a public S3-hosted store with no login, and model weights are public on S3. Checked from documentation; no file actually downloaded."},
+    "a2_label_is_a_column": {"pass": true, "note": "Cell type, disease, tissue and species are standard Census metadata columns (the release notes count distinct values per column). Seen in the docs, not in a downloaded table."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are count matrices and precomputed TranscriptFormer embeddings stored in Census itself; no identifier lookups needed. Documentation only."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI (unique molecular identifier) counts, and embeddings are unitless vectors; labels are categorical ontology terms. Not checked in files."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Millions of cells per species according to Census, but I counted no rows myself. The real independent unit is the dataset/donor, likely hundreds per species for human and mouse."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1-3 GB for a subsample of a few hundred thousand cells with 2,048-dim embeddings (estimate)", "note": "Running TranscriptFormer itself needs a GPU, but Census precomputed embeddings for human and mouse remove that need. Cross-species work beyond human and mouse would need GPU inference."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checked: no row counts opened. The Census release notes carry their own cell-type counts; I could not compare them with the paper."},
+    "a8_label_provenance": {"pass": true, "note": "Cell-type labels are annotations submitted by each dataset's authors and mapped to the Cell Ontology. Some were themselves made with automated reference-mapping tools, which adds mild circularity and varies between datasets."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Census obs table plus a separate embedding array, joined on soma_joinid; documented API, not opened by me."},
+    "B2": {"score": 1, "why": "Needs the cellxgene_census/TileDB-SOMA libraries rather than plain csv; not tested here."},
+    "B3": {"score": 1, "why": "Labels are mapped to a shared Cell Ontology, but granularity differs between datasets and annotating labs."},
+    "B4": {"score": 2, "why": "Categorical labels, nothing censored; 'unknown' cell types are easy to drop."},
+    "B5": {"score": 1, "why": "Census flags duplicate cells (is_primary_data column, per docs); easy to filter."},
+    "B6": {"score": 2, "why": "Census schema documents every obs column publicly."},
+    "C1": {"score": 1, "why": "A study of how human-to-mouse transfer degrades by tissue is informative either way, but VCBench already covers much of this."},
+    "C2": {"score": 0, "why": "TranscriptFormer, UCE and SATURN are all open, and VCBench and a zero-shot benchmark (2026) have already evaluated them honestly."},
+    "C3": {"score": 1, "why": "Weak angle: per-tissue calibration of cross-species transfer; benchmarks already exist."},
+    "C4": {"score": 1, "why": "Manual cell-type annotation is slow, but automated reference mapping is already routine."},
+    "C5": {"score": 2, "why": "Published baselines exist: scVI embeddings in Census, PCA plus logistic regression, VCBench linear baselines."},
+    "D1": {"score": 2, "why": "TranscriptFormer weights are open, and its embeddings are precomputed in Census."},
+    "D2": {"score": 2, "why": "Precomputed human/mouse embeddings allow fitting a head on CPU; new species would need a GPU."},
+    "D3": {"score": 1, "why": "Licence of the weights not checked; Census data is mostly CC-BY. Treat it as unclear or non-commercial."},
+    "E1": {"ok": true, "why": "Hold out whole datasets, donors, tissues or species; dataset_id is a Census column."},
+    "E2": {"ok": true, "why": "Hundreds of datasets in human and mouse Census (per docs, not counted)."},
+    "E3": {"ok": true, "why": "Majority class per tissue, and scVI or PCA embeddings with the same classifier."},
+    "E4": {"ok": false, "why": "No replicate annotations; disagreement between labs over labels could be estimated only roughly."},
+    "E5": {"ok": true, "why": "Positive control: major lineages (T cell vs hepatocyte) must separate near-perfectly across species."},
+    "E6": {"ok": true, "why": "Shuffle labels; swap in random or scVI embeddings."},
+    "E7": {"ok": true, "why": "Primate datasets (macaque, marmoset, chimpanzee) in Census, never seen in training, serve as external validation."},
+    "E8": {"ok": true, "why": "The repo notebook reproduces macaque-to-marmoset cell-type transfer; this would need GPU inference."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs and Cell Ontology IDs in Census (per schema docs)."},
+    "G2": {"score": 1, "why": "Plausible partners include the Bgee orthology/expression database and the Cell Ontology hierarchy."},
+    "G3": {"score": 1, "why": "Orthology mapping between species is many-to-many for gene families."},
+    "G4": {"score": 1, "why": "Linking transfer errors to evolutionary distance is a modest extension of what the paper already shows."},
+    "H1": {"score": 1, "why": "Healthy vs disease cells exist in human; for cell types 'negatives' are not a meaningful concept."},
+    "H2": {"score": 1, "why": "Human and mouse dominate; other species are thin (25-54 cell types each, per release notes)."},
+    "H3": {"score": 2, "why": "The claim can be stated precisely in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 1, "why": "Species and tissue imbalance is visible in Census summaries; annotation provenance is less obvious."},
+    "I1": {"score": 1, "why": "Single-cell atlas and comparative biology community; no specific decision-maker."},
+    "I2": {"score": 1, "why": "Could guide which reference to use for annotation in a new species; marginal."},
+    "I3": {"score": 1, "why": "Macro-F1 for cell types roughly matches the annotation task."},
+    "I4": {"score": 1, "why": "VCBench reports that linear baselines match foundation models on cross-species transfer."},
+    "J1": {"score": 2, "why": "Real modelling: grouped splits, frozen embeddings, transfer evaluation."},
+    "J2": {"score": 1, "why": "Cell-type plausibility needs some single-cell domain knowledge."},
+    "J3": {"score": 1, "why": "A benchmark table by tissue is shareable even if no gain is found."},
+    "J4": {"score": 0, "why": "No time budget defined."},
+    "J5": {"score": 0, "why": "No kill date written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "TranscriptFormer (TF-Metazoa/Exemplar/Sapiens), this paper", "open_weights": true, "score_and_split": "Abstract claims state-of-the-art cross-species cell-type classification, including species 685 million years apart; exact numbers and splits not seen (no full text).", "authors_named_unsolved": "Not retrieved (paywalled full text).", "runnable_as_baseline": true},
+      {"name": "UCE (Universal Cell Embeddings), Nature 2026", "open_weights": true, "score_and_split": "Outperforms SATURN and SAMap on cell-type transfer from human to novel species for 3 of 4 datasets (per search summary).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "SATURN, Nature Methods 2024", "open_weights": true, "score_and_split": "Supervised cross-species integration; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "VCBench benchmark, bioRxiv 2026", "open_weights": null, "score_and_split": "Linear baselines match or beat Geneformer, scGPT, UCE, TranscriptFormer and State on 4 of 5 dimensions, including cross-species transfer; TranscriptFormer wins RNA-to-protein prediction (+53% Pearson).", "authors_named_unsolved": "Only the abstract was retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "TranscriptFormer tf-exemplar (precomputed Census embeddings for human and mouse)", "freeze_and_head_viable": true, "hardware": "Laptop CPU for heads on precomputed embeddings; GPU needed for any species not in Census", "licence": "Not verified; Census data mostly CC-BY 4.0"},
+  "integration": {"partner_dataset": "Cell Ontology hierarchy plus Bgee/Ensembl Compara orthology", "join_key": "Cell Ontology ID; Ensembl gene ID", "bigger_question_one_sentence": "Do errors in human-to-mouse cell-type transfer concentrate in cell types whose marker genes lack one-to-one orthologs?"},
+  "controls": {"positive_control": "Major lineages (immune vs epithelial vs neuronal) separate near-perfectly across species; marker genes rediscovered.", "negative_control": "Shuffled labels; random or PCA embeddings of matched dimension.", "external_validation": "Census primate datasets (macaque, marmoset, chimpanzee) not used to train TranscriptFormer."},
+  "honest_claim_h3": "Among cells in public CELLxGENE human and mouse datasets, annotated by their submitting labs, a classifier on frozen TranscriptFormer embeddings transfers cell-type labels across species with tissue-dependent accuracy relative to simple baselines.",
+  "plain_idea": {
+    "one_liner": "Use a pretrained cell model's summary of each mouse cell to predict its cell type from human training cells, and map where it fails.",
+    "train_on": "Precomputed TranscriptFormer embeddings for human single cells from CELLxGENE Census, with author-assigned cell-type labels; number of cells unknown (not counted).",
+    "predict": "The cell type of mouse (or primate) cells, checked against the labels the original study authors assigned, mapped onto the Cell Ontology.",
+    "why_worthwhile": "Tells atlas builders which tissues and cell types can trust cross-species label transfer; but recent benchmarks already largely answer this."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same CELLxGENE corpus TranscriptFormer and UCE were trained and evaluated on; there is no new data."},
+    "confidence_score": {"answer": "partly", "why": "Many datasets per cell type allow per-tissue calibration, but whether existing models already report it was not checked."},
+    "models_beatable": {"answer": "no", "why": "TranscriptFormer (2025/2026, ~1B-parameter transformer) and UCE (Nature 2026) are recent and open; VCBench (2026) has already done the honest baseline comparison."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new joinable data that measures the same labels; the evaluation data is the training corpus."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "CELLxGENE Census itself, Human Cell Atlas, Tabula Sapiens and Tabula Muris (known resources)", "approx_items": null, "join_key": "Cell Ontology ID", "why": "Cell-type labels exist across many independent atlases, so held-out-atlas external validation is easy."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes single-cell benchmarks; would need a clear, new failure pattern in cross-species transfer tied to orthology."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Accepts focused benchmark and re-evaluation studies of existing tools."},
+    "fallback": {"journal": "bioRxiv preprint plus an ML-for-biology workshop", "why": "A negative result (linear baselines match TranscriptFormer per tissue) fits a workshop note."}
+  },
+  "pitch": {
+    "headline": "Precomputed TranscriptFormer embeddings for human and mouse Census cells make a cross-species cell-model benchmark possible on a laptop, with no GPU.",
+    "what_makes_the_data_unusual": "Census release notes list 898 human and 473 mouse cell types, plus primate data, all under one ontology; embeddings are precomputed (docs only, files not opened).",
+    "the_win": "A per-tissue map showing where TranscriptFormer embeddings beat scVI or PCA for human-to-mouse label transfer, and by how much macro-F1 changes.",
+    "even_if_it_fails": "Confirms VCBench's finding that linear baselines match foundation models, broken down by tissue; this adds little that is new.",
+    "who_wants_it": "CZI Virtual Cells Platform and single-cell atlas annotators choosing a reference model for new species."
+  },
+  "ml_idea": "Fit logistic-regression or MLP heads on precomputed TranscriptFormer and scVI embeddings for human cells, test on mouse and held-out primate datasets with leave-dataset-out splits, and break transfer accuracy down by tissue and ortholog coverage.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 2, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 0, "cv_run_minutes": 20, "compute_note": "Estimated, nothing timed: a subsample of ~300k cells × 2,048 float32 values is ~2.5 GB; logistic regression on CPU takes minutes.", "cheapest_killing_check": "Install cellxgene_census via uv, then confirm the tf-exemplar-mouse embedding loads for a 10k-cell subset and the per-dataset cell-type counts."},
+  "verdict": "park",
+  "verdict_reason": "This is a foundation-model paper, not a dataset: the data is the public CELLxGENE Census, and the cross-species cell-typing task is crowded. TranscriptFormer, UCE and SATURN are all open, and 2026 benchmarks (VCBench) already compared them honestly with linear baselines. Precomputed embeddings make a laptop project feasible, but its novelty is low. I did not open the data files."
+}

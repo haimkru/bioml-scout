@@ -1,0 +1,54 @@
+{
+  "paper_id": "natgen2026-02753-1",
+  "title": "Genetic factor analysis for characterizing phenome-wide patterns of genetic pleiotropy.",
+  "doi": "10.1038/s41588-026-02753-1",
+  "journal": "Nature Genetics",
+  "data_url": "https://zenodo.org/records/13250706",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 13250706 (CC-BY-4.0, no login): confirmed four live archives and their exact sizes by HEAD (autoimmune.tar.gz 2.63 GB, t2d_cad.tar.gz 4.25 GB, bloodcell.tar.gz 32.9 GB, ld_reference_data.tar.gz 0.28 GB; 40 GB total). Range-fetched the first 4 MB of autoimmune.tar.gz, un-tarred it and decompressed the first file inside it (ieu-a-276.vcf.gz, a coeliac-disease GWAS): it is a GWAS-VCF of per-variant summary statistics with fields ES (effect size), SE (standard error), LP (-log10 p-value), SS (sample size), rsID, GRCh37 coordinates, 522,980 variants declared in its header; printed 63,030 real data rows. Also downloaded and unpacked the full code deposit (Zenodo 20314033, jean997/gfa_manuscript, 21 MB) and read its README, download_data.sh, pipeline config and the three trait manifests (metab_traits.csv = 24 traits, astle_bloodcell_ldsc97.csv = 31 traits, autoimmune.csv = 8 traits).",
+    "what_came_from_paper_text_only": "Only the abstract was retrievable (Nature Genetics is paywalled; Europe PMC has no full text or supplement, and nature.com redirects to a login). The claim of '15 pleiotropic components' from 22 risk factors, and the blood-cell Mendelian randomisation result, come from the abstract alone. I never saw the fitted factor matrices: the code deposit ships only expected plots, a 0.6 MB simulation-results RDS file and a 113-row Mendelian-randomisation CSV, not the factor loadings."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Passes, verified. Zenodo, CC-BY-4.0, open, no login; I read bytes out of one archive. But the archives total 40 GB and the authors' own README says the applied analysis needs a compute cluster."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAILS, verified in the files. Nothing in the deposit is a prediction target. The quantity the paper is about — per-variant loadings on 15 pleiotropic factors — exists in no file; it only appears after running the authors' own pipeline, which first joins 63 genome-wide VCFs on rsID with allele harmonisation and LD pruning against a 1000 Genomes reference."},
+    "a3_inputs_present": {"pass": true, "note": "Not scored (stopped at A2). For the record the inputs are present: real per-variant effect sizes and standard errors, seen in the file, not accession pointers."},
+    "a4_units_stated": {"pass": false, "note": "Not scored (stopped at A2). For the record: the VCF documents ES as 'effect size estimate relative to the alternative allele' with no unit, and the manifests carry an effect_is_or flag, so effects mix log-odds (disease traits) with trait-specific standard-deviation units across the 63 studies."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Not scored (stopped at A2). Variant rows are plentiful (one file alone declares 522,980 variants), but the unit that matters for a factor model is the trait, and there are only 24, 31 and 8 traits in the three analyses."},
+    "a6_fits_laptop": {"pass": false, "working_set": "40 GB download before any subsetting", "note": "Not scored (stopped at A2). The authors' README states the applied analysis downloads 42 GB, produces 12 GB more, needs a SLURM cluster, and the simulations generate ~3.5 TB. Far over the project's 50 MB per-file cap."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not scored (stopped at A2). What I could check matched: 24 traits in metab_traits.csv against the abstract's '22 common risk factors' plus coronary artery disease and type 2 diabetes."},
+    "a8_label_provenance": {"pass": false, "note": "FAILS. The only label this paper offers — factor loadings / pleiotropic components — is the output of the authors' variational algorithm, so a model trained on it would distil GFA rather than learn biology. The underlying effect sizes are genuine measurements, but they are the paper's input, not a label."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "FactorGo, a variational Bayesian factor analysis model for GWAS (genome-wide association study) summary statistics", "open_weights": true, "score_and_split": "Published in the American Journal of Human Genetics (2023); applied to 2,483 phenotypes from Pan-UK Biobank (about 420,531 people) and reported to beat truncated singular value decomposition at recovering latent pleiotropic factors in simulation. Exact numbers not retrieved (search results only).", "authors_named_unsolved": "Handling sample overlap between studies and choosing the number of factors — the gaps the present GFA paper claims to close.", "runnable_as_baseline": true},
+      {"name": "GLEANR (GWAS latent embeddings accounting for noise and regularization), a sparse matrix factorisation method", "open_weights": true, "score_and_split": "bioRxiv 2024, published version in the American Journal of Human Genetics (2025); evaluated on replication of factors across two independent biobanks. Numbers not retrieved.", "authors_named_unsolved": "Confounding from shared samples across studies and replication of factors between biobanks.", "runnable_as_baseline": true},
+      {"name": "Truncated singular value decomposition of the Z-score matrix (tSVD / DeGAs-style), the model-free baseline", "open_weights": true, "score_and_split": "Standard linear algebra, used as the comparison baseline in both the FactorGo paper and, under the filename sims_nfactor_SVD.png, in this paper's own simulations.", "authors_named_unsolved": "Factors are forced orthogonal and are distorted by sample overlap.", "runnable_as_baseline": true},
+      {"name": "Genomic SEM (structural equation modelling of GWAS summary statistics)", "open_weights": true, "score_and_split": "Widely used open R package; fits user-specified factor structures rather than discovering them. No single benchmark number retrieved.", "authors_named_unsolved": "Requires the user to specify the factor structure in advance.", "runnable_as_baseline": true},
+      {"name": "This paper's own method, GFA (genetic factor analysis), R package jean997/GFA", "open_weights": true, "score_and_split": "Code and a Snakemake pipeline are public on GitHub and archived on Zenodo (record 20314264, CC licence). Its simulation study already compares against FactorGo, SVD, SVD with hard thresholding, SPC, MLFA and GUIDE — I saw those six comparison plots by filename in the code deposit.", "authors_named_unsolved": "Not readable: the paper is paywalled and no full text is in PubMed Central.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "Not written: the project dies at Part A, so there is no claim to state.",
+  "plain_idea": {
+    "one_liner": "Use the DNA around a genetic variant to predict how many different human traits that variant affects.",
+    "train_on": "The project I considered would train on a table of genetic variants, each described by its surrounding DNA sequence and genomic annotations. Building it would mean merging 63 separate genome-wide association studies (24 metabolic traits, 31 blood-cell traits, 8 autoimmune traits) into one variant-by-trait matrix; the number of usable variants after LD pruning (removing variants that are statistically redundant because they are inherited together) is unknown — I never built the matrix.",
+    "predict": "How pleiotropic a variant is, meaning the number of traits it influences or its loading on a shared genetic factor. The true answer would come either from thresholding measured association statistics or, worse, from the loadings output by the paper's own algorithm.",
+    "why_worthwhile": "Human geneticists would like to know in advance which variants are hubs affecting many traits, because those are the risky drug targets. Even a failure would say whether sequence context carries any signal about breadth of effect."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict a variant's degree of pleiotropy (how many traits it affects) from DNA sequence context using a DNA language model such as Nucleotide Transformer, with the label built from a 63-trait association matrix. The label does not exist in any deposited file; it would have to be manufactured either by thresholding a matrix that takes a compute cluster to assemble, or by running the paper's own factor model, which makes the label a model's output.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 40.0, "needs_gpu": null, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "No modelling estimates made because Part A failed. The 40 GB figure is the measured sum of the four Zenodo archives (HEAD requests), and the authors' README independently states 42 GB of input plus 12 GB of output and a SLURM cluster requirement.", "cheapest_killing_check": "Open the deposit and ask which file contains the prediction target. Done in under ten minutes: none does — the deposit is re-hosted public GWAS summary statistics plus code, and the factor loadings only exist after you run the authors' pipeline."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A8. This is a statistical-methods paper: the deposited 40 GB is a convenience copy of already-public GWAS summary statistics (IEU OpenGWAS and GWAS Catalog identifiers), and the only quantity worth predicting — per-variant loadings on pleiotropic factors — is the output of the authors' own algorithm, so training on it would distil their model rather than learn biology. Building any honest label first requires harmonising 63 genome-wide VCF files on a cluster, which the authors' own README says is needed, blowing past A6 as well. The method field is also already served by several open, benchmarked competitors (FactorGo, GLEANR, Genomic SEM, truncated SVD), which this paper itself compares against."
+}

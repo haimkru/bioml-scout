@@ -1,0 +1,105 @@
+{
+  "paper_id": "gb2026-04204-w",
+  "title": "Uncovering the isoform-resolution kinetic landscape of nonsense-mediated mRNA decay with EZbakR.",
+  "doi": "10.1186/s13059-026-04204-w",
+  "journal": "Genome Biology",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE289489",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "GEO GSE289489 metadata: 10 samples (GSM8792646-55), HEK-293 cells, DMSO vs 1 µM SMG1i (an NMD inhibitor), 2 h 4-thiouridine labelling; only supplementary file is GSE289489_RAW.tar at 19.8 GB (HEAD request). Code repo isaacvock/EZbakR_Isoforms_and_NMD_scripts holds only 7 R figure scripts, no data. Preprint full text (PMC11952489) read via Europe PMC: lists Tables S1-S6 (S2 = isoform-level EZbakR outputs, S6 = LASSO feature table).",
+    "what_came_from_paper_text_only": "That Table S2 contains per-isoform degradation rate constants (kdeg) with uncertainties for DMSO and SMG1i; isoform counts (unknown, not stated in the parts I read); 378 genes with significant decrease in isoform decay range. Europe PMC supplementaryFiles timed out (supplement not retrievable) and bioRxiv returned HTTP 429, so no row of any processed table was seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Not verified. GEO holds only a 19.8 GB raw tar (bedgraphs, long-read BAMs); the processed per-isoform table is a journal/preprint supplement (xlsx) that I could not retrieve. Open access, so likely downloadable."},
+    "a2_label_is_a_column": {"pass": true, "note": "Per paper text, Table S2 gives per-isoform kdeg (decay rate constant) under DMSO and SMG1i; NMD sensitivity = log-fold change between them is one subtraction. Not seen in files."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs would be isoform sequences; isoforms come from a custom StringTie assembly (AnnotationCleaner 'Mix'), so novel isoform sequences need the GTF from the authors, not just Ensembl IDs. Risk, unverified."},
+    "a4_units_stated": {"pass": true, "note": "kdeg in log scale, per hour per the paper (half-lives reported in hours); not checked in the file."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Row count unknown; thousands of isoforms in HEK293 is plausible from the 378+108 multi-isoform genes with IDR changes, but not verified."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<50 MB if the supplementary xlsx is used; 19.8 GB if rebuilding from GEO", "note": "Supplement route fits easily; raw route would fail A6."},
+    "a7_counts_match_paper": {"pass": true, "note": "Could not compare: no processed file opened."},
+    "a8_label_provenance": {"pass": true, "note": "kdeg is estimated by EZbakR from measured T-to-C mutation fractions in 4sU-labelled RNA-seq (a statistical fit to a physical measurement, not another ML model). Isoform-level assignment adds model uncertainty from read-to-isoform attribution."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Per paper, isoform kdeg (S2) and feature table (S6) are separate xlsx sheets; sequences need custom GTF. Not opened."},
+    "B2": {"score": 1, "why": "Excel supplements, not csv; parsing unverified."},
+    "B3": {"score": 2, "why": "One lab, one assay, one pipeline (EZbakR) for all isoforms; comparable by construction (paper text)."},
+    "B4": {"score": 1, "why": "Low-expression isoforms likely have huge uncertainty or are filtered; policy on uncertainty weighting needed."},
+    "B5": {"score": 2, "why": "One estimate per isoform per condition expected; no cross-source duplicates."},
+    "B6": {"score": 1, "why": "Captions describe tables only briefly; column documentation unseen."},
+    "C1": {"score": 1, "why": "Transfer question (do half-life models trained on gene-level data predict isoform NMD sensitivity?) is informative either way, but small single-cell-line set."},
+    "C2": {"score": 1, "why": "Saluki (half-life), NMDetective-AI, NMDEP, predNMD (NMD efficiency) exist; none trained on isoform-level kinetic NMD sensitivity."},
+    "C3": {"score": 2, "why": "Unique application: direct isoform kdeg with/without NMD inhibition, including non-PTC NMD targets rule-based models miss."},
+    "C4": {"score": 2, "why": "Measuring isoform decay needs metabolic labelling RNA-seq, long reads and custom assembly; expensive and slow."},
+    "C5": {"score": 2, "why": "Authors' own LASSO on Table S6 features is a direct baseline; 50-nt (exon junction) rule is a dummy."},
+    "D1": {"score": 2, "why": "Saluki weights are open (Zenodo); RNA-FM and Nucleotide Transformer are open RNA/DNA backbones."},
+    "D2": {"score": 1, "why": "Full-length transcripts (up to ~12 kb) make CPU embedding slow; feasible with truncation or Saluki features."},
+    "D3": {"score": 2, "why": "Saluki and RNA-FM code under permissive/open licences (Saluki Apache-style via basenji; check)."},
+    "E1": {"ok": true, "why": "Hold out by gene (all isoforms of a gene together) or by chromosome."},
+    "E2": {"ok": true, "why": "Thousands of genes per paper's multi-isoform analysis; plenty of groups."},
+    "E3": {"ok": true, "why": "Per-gene mean kdeg, or PTC yes/no rule, as dummy."},
+    "E4": {"ok": true, "why": "Replicates plus EZbakR uncertainty per isoform give a noise floor (paper text)."},
+    "E5": {"ok": true, "why": "Downstream exon junction (50-nt rule) must emerge as top predictor; authors' LASSO found it."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation straightforward."},
+    "E7": {"ok": true, "why": "GSE207924/GSE245750 NR-seq sets and published SMG1i/UPF1-knockdown datasets offer other cell lines, gene-level mostly."},
+    "E8": {"ok": true, "why": "Authors' LASSO classification on Table S6 can be re-fit; exact metric not seen."},
+    "G1": {"score": 1, "why": "Ensembl/RefSeq-matched isoforms plus novel StringTie IDs needing the custom GTF."},
+    "G2": {"score": 2, "why": "Saluki/Agarwal half-life compendium (gene-level, 39 human datasets) joinable on Ensembl gene."},
+    "G3": {"score": 1, "why": "Isoform-to-gene is one-to-many; collapse rule needed for gene-level partner."},
+    "G4": {"score": 1, "why": "Combination asks whether isoform-level NMD explains residual error of gene-level half-life models; marginal-to-moderate."},
+    "H1": {"score": 2, "why": "Both NMD-sensitive and insensitive isoforms, PTC and non-PTC, measured."},
+    "H2": {"score": 0, "why": "One cell line (HEK293), one lab, one inhibitor."},
+    "H3": {"score": 2, "why": "Claim stated below in one sentence."},
+    "H4": {"score": 1, "why": "Single cell line obvious; isoform-quantification uncertainty partly discussed."},
+    "I1": {"score": 2, "why": "Hogg and Simon labs; NMD variant interpretation groups (predNMD, NMDetective)."},
+    "I2": {"score": 1, "why": "Could flag non-PTC NMD targets or poison exons for follow-up; marginal for clinical calls."},
+    "I3": {"score": 1, "why": "Regression on log-fold kdeg vs a sensitive/insensitive call; roughly aligned."},
+    "I4": {"score": 1, "why": "PTC/EJC rule explains much; ML helps for non-PTC decay."},
+    "J1": {"score": 2, "why": "Sequence backbones, grouped splits, transfer evaluation."},
+    "J2": {"score": 1, "why": "NMD rules give some intuition; isoform quantification artefacts are subtle."},
+    "J3": {"score": 2, "why": "Re-evaluating Saluki on isoform kdeg is shareable on its own."},
+    "J4": {"score": 1, "why": "No budget set yet; ~2-3 weeks plausible."},
+    "J5": {"score": 0, "why": "No kill date written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Saluki (Agarwal & Kelley 2022, Genome Biology)", "open_weights": true, "score_and_split": "r²≈0.59 predicting gene-level human mRNA half-life from sequence; held-out gene folds.", "authors_named_unsolved": "Not retrieved in detail; trained on gene-level half-lives, not isoform-specific decay.", "runnable_as_baseline": true},
+      {"name": "NMDEP / NMDap (arXiv 2502.14547)", "open_weights": null, "score_and_split": "NMD efficiency from allelic imbalance of nonsense variants; numbers not retrieved.", "authors_named_unsolved": "Rule-based heuristics and limited features constrain accuracy and generalisability (abstract).", "runnable_as_baseline": null},
+      {"name": "NMDetective-AI (bioRxiv 2026.03.24.714003)", "open_weights": null, "score_and_split": "RNA language model on pan-tissue genomic/transcriptomic data plus mutational scanning; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "predNMD (bioRxiv 2026.06.20.733449)", "open_weights": null, "score_and_split": "Random forest on 5,304 nonsense variants (GTEx, TCGA, GEUVADIS, GREGoR); numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Saluki (mRNA half-life CNN-GRU) as feature extractor, or RNA-FM (RNA language model)", "freeze_and_head_viable": true, "hardware": "Laptop CPU; Saluki fast, RNA-FM slow on long transcripts", "licence": "Open (check Saluki/basenji licence)"},
+  "integration": {"partner_dataset": "Agarwal & Kelley human mRNA half-life compendium (Saluki training data)", "join_key": "Ensembl gene ID (isoforms collapsed to gene)", "bigger_question_one_sentence": "How much of the error of gene-level half-life models comes from isoform-specific NMD that they average away?"},
+  "controls": {"positive_control": "Presence of an exon junction >50 nt downstream of the stop codon must be the top predictor of SMG1i stabilisation.", "negative_control": "Shuffle labels within gene-held-out CV; performance must fall to per-gene mean.", "external_validation": "Other NR-seq or UPF1-knockdown datasets in other cell lines (e.g. GSE207924, GSE245750), mostly gene-level."},
+  "honest_claim_h3": "Predicts how much each transcript isoform's decay rate in HEK293 cells depends on the NMD pathway, among isoforms expressed well enough for EZbakR to estimate, in one cell line under one inhibitor.",
+  "plain_idea": {
+    "one_liner": "Use a transcript isoform's sequence to predict how much faster it decays when the nonsense-mediated decay pathway is active.",
+    "train_on": "Sequence and structure features of each transcript isoform expressed in HEK293 cells; number of isoforms unknown (table not opened).",
+    "predict": "The change in decay rate when NMD is blocked by the SMG1 inhibitor, measured by 4-thiouridine metabolic labelling RNA-seq and estimated per isoform by EZbakR.",
+    "why_worthwhile": "NMD researchers and variant interpreters would learn which isoforms, including ones without premature stop codons, are NMD targets; even failure shows gene-level decay models miss isoform effects."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Isoform-resolved kinetic NMD measurements are rare; existing NMD models use allelic imbalance of variants (predNMD 5,304 variants) and Saluki uses gene-level half-lives. But ours is one cell line, size unverified."},
+    "confidence_score": {"answer": "partly", "why": "EZbakR gives per-isoform uncertainty and replicates exist, enabling uncertainty-weighted training; whether existing NMD models report calibrated confidence not checked."},
+    "models_beatable": {"answer": "partly", "why": "Saluki (2022, CNN-GRU, gene-level) was never trained for isoform NMD sensitivity, so it is beatable on this task; newer 2026 NMD models are recent and unassessed."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model was trained on this quantity; new data comes from one lab and cell line, so same-quantity-same-split condition fails."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Gene-level mRNA half-lives (Saluki compendium, known resource); NMD efficiency from allelic imbalance in GTEx/TCGA (used by predNMD, found by search). Isoform-level NMD kinetics appear unique to this paper.", "approx_items": null, "join_key": "Ensembl gene/transcript ID", "why": "Related labels allow pretraining or external sanity checks, but not the same isoform-level NMD quantity."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes RNA decay ML (Saluki); would need a model that predicts isoform NMD sensitivity and validates in a second cell line."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Suits a benchmark showing how well sequence models transfer to isoform-level NMD kinetics."},
+    "fallback": {"journal": "bioRxiv preprint plus MLCB workshop", "why": "A negative transfer result on one cell line is still a shareable note."}
+  },
+  "pitch": {
+    "headline": "Per-isoform decay rates in human cells with and without NMD inhibition, a label existing NMD and half-life models never trained on (paper description).",
+    "what_makes_the_data_unusual": "Per paper: isoform-level decay constants from 10 GEO samples (DMSO vs SMG1i), long-read-refined annotation; 378 genes lose isoform stability differences when NMD is blocked. Tables themselves not opened.",
+    "the_win": "A sequence model that beats the authors' LASSO and the 50-nt rule at calling NMD-sensitive isoforms on held-out genes, including non-PTC targets.",
+    "even_if_it_fails": "Measures how much of isoform-level decay a gene-level half-life model (Saluki) explains, which tells decay modellers whether isoform resolution matters.",
+    "who_wants_it": "Hogg (NHLBI) and Simon (Yale) labs, and NMD variant-effect groups behind predNMD/NMDetective deciding which features matter."
+  },
+  "ml_idea": "Embed each isoform with Saluki or RNA-FM plus EJC/PTC features, regress SMG1i-vs-DMSO log kdeg change with gene-grouped CV, weight by EZbakR uncertainty; compare with authors' LASSO and the 50-nt rule; test Saluki zero-shot on isoform DMSO kdeg.",
+  "effort": {"hours_to_feature_table": 12, "working_set_gb": 0.1, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 3, "cv_run_minutes": 10, "compute_note": "Estimated, not timed: assumes ~10-20k isoforms, Saluki CPU inference fast, RNA-FM slower on truncated sequences.", "cheapest_killing_check": "Download Genome Biology Additional file Table S2 and count isoforms with finite DMSO and SMG1i kdeg, and check that novel isoform sequences/GTF are available."},
+  "verdict": "verify_first",
+  "verdict_reason": "Unique isoform-level NMD kinetic label, but the processed table was not retrievable (GEO has only a 19.8 GB raw tar), row count and sequence availability for custom isoforms are unverified, and it is one cell line."
+}

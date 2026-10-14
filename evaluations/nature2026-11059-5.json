@@ -1,0 +1,48 @@
+{
+  "paper_id": "nature2026-11059-5",
+  "title": "Targeting ZMYND8 unleashes IL-2 signalling to override T cell exhaustion.",
+  "doi": "10.1038/s41586-026-11059-5",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE342764",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO SuperSeries GSE342764 (mouse) lists 7 SubSeries: scRNA-seq (4 samples), bulk ATAC-seq (16, one summary xlsx), single-cell multiome (8), scCRISPR GSE339143 (10), and three CUT&RUN sets. Downloaded all five scCRISPR 10x h5 matrices (23-38 MB each) plus the guide reference CSV: 48,316 cells total, 32,285 genes plus 330 guide features (99 target genes x 3 guides + 30 non-targeting guides; target Ensembl IDs given). Guide capture is shallow (median 1-2 guide UMIs per cell); a crude rule (top guide >=5 UMIs and >=80% of guide UMIs) assigns only 11,550 cells, roughly 110 per target gene. No per-cell guide calls, cluster labels or cell-state annotations are deposited in the scCRISPR SubSeries.",
+    "what_came_from_paper_text_only": "Abstract only (paywalled, no PMC full text): in vivo scCRISPR screen of epigenetic factors and IL-2 regulators in P14 cells during chronic LCMV (lymphocytic choriomeningitis virus) infection, day 28 per GEO design text. Paper's own cell counts, guide-assignment thresholds and state definitions were not seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked in files: GEO processed h5 matrices and guide reference download openly, no login."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in files: guide UMI counts are in the matrix, but no guide calls or cell-state labels are deposited; the outcome (exhaustion state per cell, or a per-perturbation effect) must be built by guide assignment plus clustering, i.e. constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Checked in files: expression counts and guide sequences/target Ensembl IDs are present."},
+    "a4_units_stated": {"pass": true, "note": "Checked in files: raw UMI counts from Cell Ranger, standard units."},
+    "a5_enough_rows": {"pass": false, "n_rows": 99, "note": "Checked in files: the independent unit for perturbation-effect prediction is the target gene, 99 genes (+ non-targeting control), far under 400; 48,316 cells but only ~11,550 confidently guide-assigned by my crude rule."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~165 MB of h5 matrices", "note": "Checked in files: loads in seconds on a laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checkable: paper full text unavailable; GEO sample counts are internally consistent (5 h5 matrices for 5 gene-expression libraries)."},
+    "a8_label_provenance": {"pass": true, "note": "Measured: expression is direct sequencing readout; perturbation is the delivered guide. Not a model output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models) would be the natural fit", "freeze_and_head_viable": null, "hardware": "CPU feasible for ~50k cells", "licence": "not checked"},
+  "integration": {"partner_dataset": "GSE216797, the same St Jude lab's 2023 in vivo tumour scCRISPR screen (Zhou et al., Nature 2023), found by search but not opened", "join_key": "mouse gene symbol / Ensembl gene of the perturbed target", "bigger_question_one_sentence": "Do knockout effects measured in T cells during chronic viral infection predict the same knockouts' effects in tumour-infiltrating T cells?"},
+  "controls": {"positive_control": "Zmynd8, Tcf7, Tox and Prdm1 knockouts should shift cell states in the directions the paper and literature report.", "negative_control": "30 non-targeting guides in the library.", "external_validation": "GSE216797 tumour scCRISPR screen (not opened)."},
+  "honest_claim_h3": "At best: predicts how knocking out one of ~99 chromatin and transcription regulators shifts mouse virus-specific CD8+ T cell states in one infection model, from one lab.",
+  "plain_idea": {
+    "one_liner": "Use the identity of a knocked-out gene to predict how mouse killer T cells' gene expression changes during chronic viral infection.",
+    "train_on": "Single-cell expression profiles of 48,316 mouse T cells, each carrying a guide RNA that knocks out one of 99 genes; ~11,550 cells could be confidently assigned a guide by a crude rule.",
+    "predict": "The shift in expression or cell-state proportions caused by each knockout, measured by single-cell RNA sequencing and compared with non-targeting control cells.",
+    "why_worthwhile": "Immunotherapy labs choosing which genes to delete in engineered T cells could prioritise knockouts without running mouse screens; but with 99 perturbations there is too little to learn from."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Perturbation-response prediction (unseen knockout -> expression shift) or cross-context transfer (infection screen -> tumour screen). Dead at A5: only 99 perturbed genes, and no deposited guide calls or state labels.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.17, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Matrices loaded with h5py/scipy in seconds; guide assignment and clustering would need ~a day to reproduce the paper's states.", "cheapest_killing_check": "Count perturbed genes with >=50 confidently assigned cells and a significant shift from non-targeting controls; already shows only 99 targets total."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A2: the unit for learning is the perturbed gene (99 targets), and the outcome (cell state per cell or per knockout) must be constructed from shallow guide counts (median 1-2 UMIs) and clustering, since no guide calls or annotations are deposited."
+}

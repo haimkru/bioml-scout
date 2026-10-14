@@ -1,0 +1,149 @@
+{
+  "paper_id": "nar2026-gkag379",
+  "title": "Atomic Charge Calculator III: a modern platform for calculating partial atomic charges.",
+  "doi": "10.1093/nar/gkag379",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/sb-ncbr/ChargeFW2 (code, MIT); archived at https://doi.org/10.6084/m9.figshare.31424393 and https://doi.org/10.6084/m9.figshare.31424435",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the full ChargeFW2 GitHub file tree via the GitHub API (178 files, 24.1 MB total): only C++/Python source, fitted parameter files in JSON (a text data format), a periodic-table CSV, a 23.5 MB residue bond-template text file, and one 147 KB demo structure file. Downloaded that demo file (doc/molecules.sdf) and counted 47 molecules, with coordinates and element symbols but no charge values. Queried both Figshare deposits through the Figshare API: both are typed 'software', the only file being ChargeFW2.zip (6.42 MB, MIT licence). Fetched the ACC III homepage (a JavaScript app with no data-download links) and methods.pdf (124 KB), which is an equations-and-references document, not a benchmark table. The web API path I guessed returned HTTP 404.",
+    "what_came_from_paper_text_only": "That the live service at acc.biodata.ceitec.cz implements 20 empirical charge methods, needs no login, and offers a web API; that SQE+qp parameters were refitted; that benchmark numbers are posted on the website. I did not submit a structure to the live service."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL. The paper deposits software, not data. The data availability statement lists two GitHub repositories and two Figshare records, and the Figshare API types both as 'software' (ChargeFW2.zip, 6.42 MB). I listed the whole repository tree: no table of molecules with measured or reference charges exists anywhere in the release. Everything downloads fine, but there is no dataset to download."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. There is no label column anywhere. To get a prediction target (reference quantum-mechanical partial atomic charges) you would have to run quantum-chemistry calculations yourself, or import a training set from a different paper. The only structure file shipped (doc/molecules.sdf, 47 molecules) carries atom types and 3D coordinates and no charge field, which I confirmed by reading the file."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs would be fine if labels existed: the demo file holds explicit 3D coordinates and element symbols, and the tool accepts SDF, PDB, mmCIF and Mol2 structure formats directly. No accession lookups needed. This is the one Part A item this release passes cleanly."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Partial atomic charge is conventionally in elementary-charge units (e) and the mmCIF extension dictionary at sb-ncbr.github.io/charges-schema formally defines the fields. Units are not ambiguous here; there is simply nothing measured to attach them to."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 47,
+      "note": "FAIL. The only molecule file in the entire release is doc/molecules.sdf with 47 molecules (counted by me from the downloaded file), and it is a tutorial demo with no labels. The 23.5 MB data/other_residues.txt is a bond-template lookup for residues, not labelled examples."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "24 MB repository, 6.4 MB zip",
+      "note": "Trivially laptop-sized. Irrelevant, since there is nothing to model."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No count is claimed in the paper to contradict: it reports 20 implemented charge-calculation methods and no dataset size. The repository contents are consistent with a software release."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL by circularity if you take the obvious shortcut. The only way to generate charges in bulk from this paper is to run ACC III itself, but its outputs are the predictions of empirical models (EEM, SQE, SQE+qp). Training on them would distil those models rather than learn chemistry, with their accuracy as a hard ceiling. Genuine reference charges (for example B3LYP/6-31G* natural-population-analysis values) come from a different paper, Schindler et al. 2021, and are not in this release."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "EspalomaCharge (graph neural network charge model from the Chodera lab)",
+        "open_weights": true,
+        "score_and_split": "Reproduces AM1-BCC ELF10 reference charges on the SPICE molecular dataset about 2000x faster than AmberTools; exact split not retrieved beyond the abstract.",
+        "authors_named_unsolved": "Not retrieved (abstract only).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepAtomicCharge (graph convolutional network for atomic charges)",
+        "open_weights": null,
+        "score_and_split": "Reported average root-mean-square error of 0.0121 e (elementary charge units); split not retrieved.",
+        "authors_named_unsolved": "Not retrieved (abstract only).",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "ChargeNet (E(3)-equivariant graph attention network, 2025)",
+        "open_weights": null,
+        "score_and_split": "Claims over 40% average accuracy improvement across several charge-definition schemes versus leading baselines; split not retrieved.",
+        "authors_named_unsolved": "Not retrieved (abstract only).",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "MEPO-ML (graph attention network for metal-organic framework charges)",
+        "open_weights": null,
+        "score_and_split": "Mean absolute error 0.025 e, trained on the ARC-MOF database of 279,632 frameworks and over 40 million charges.",
+        "authors_named_unsolved": "Not retrieved (abstract only).",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "ACC III itself (SQE+qp and 19 other empirical, non-learned charge methods)",
+        "open_weights": true,
+        "score_and_split": "Benchmarks are posted on the service website as methods.pdf, which I downloaded and found to be an equations-and-references document rather than a benchmark table; no held-out split described in the paper.",
+        "authors_named_unsolved": "Protonation: the authors state that automatic protonation of arbitrary molecules is not feasible, so users must supply correctly protonated structures.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "EspalomaCharge or a small equivariant graph network; ChemBERTa/MolFormer are poor fits because partial charge is a per-atom 3D property, not a whole-molecule string property",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU would suffice for inference on small molecules, but there is no data here to fit a head on.",
+    "licence": "ChargeFW2 and the ACC III web server are MIT, which is permissive; EspalomaCharge is MIT."
+  },
+  "integration": {
+    "partner_dataset": "QMugs or SPICE (large collections of molecules with quantum-chemistry-derived per-atom properties), joinable in principle on InChIKey or SMILES",
+    "join_key": "InChIKey / SMILES — but note this release contains no molecule identifier table to join from, only 47 demo structures",
+    "bigger_question_one_sentence": "Could not be written against this paper's own contents: the paper supplies a calculator, not measurements, so any join would be between two external datasets with ACC III merely acting as a feature generator."
+  },
+  "controls": {
+    "positive_control": "Would exist in principle (charges must sum to the formal molecular charge; carbonyl oxygens must come out negative), but there is no dataset here to run it on.",
+    "negative_control": "Label shuffling is runnable on any dataset you bring; not applicable to this release.",
+    "external_validation": "None shipped. External reference-charge sets exist (QMugs, SPICE, the Schindler 2021 CCD_gen / DTP_small / PUB_pept sets) but belong to other papers."
+  },
+  "honest_claim_h3": "No honest claim can be made from this paper's deposits alone, because they contain software and fitted parameters but zero labelled examples; any claim would really be about a reference-charge dataset borrowed from another publication.",
+  "plain_idea": {
+    "one_liner": "Use a molecule's 3D atomic structure to predict each atom's share of the molecule's electric charge.",
+    "train_on": "Would need molecules with per-atom reference charges from quantum-chemistry calculations. This paper supplies none: the only structure file in the release holds 47 demo molecules with no charge values, which I verified by opening it.",
+    "predict": "A number per atom, the partial atomic charge in elementary-charge units. The true answer normally comes from a quantum-chemistry calculation (for example density functional theory with natural population analysis), not from a laboratory measurement.",
+    "why_worthwhile": "Fast accurate charges would help anyone running molecular docking or molecular dynamics simulations, since charges set the electrostatic forces. But several open machine-learning charge models already do this, and this paper contributes no data toward it."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This release contains 47 demo molecules and no charges, against EspalomaCharge trained on the SPICE dataset and MEPO-ML trained on 279,632 frameworks with over 40 million charges. We would bring nothing."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Confidence estimates need replicate or multi-source measurements of the same quantity. There are no measurements here at all, replicated or otherwise."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The learned competitors are recent and open: EspalomaCharge (2024, graph neural network, MIT licence, pip-installable) and ChargeNet (2025, E(3)-equivariant attention network claiming over 40% improvement on baselines). This is an active, well-served field."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: we have no training data from this paper that the existing baseline does not already have, so there is no join key and no added signal."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only project this paper suggests is learning to predict quantum-mechanical partial atomic charges from 3D molecular structure, with ACC III's empirical SQE+qp method as the baseline to beat. The data for it would have to come entirely from elsewhere (QMugs, SPICE, or the Schindler 2021 reference sets), and the field already has open, recent models — EspalomaCharge and ChargeNet — doing exactly this. A second, weaker idea is to use ACC III as a free feature generator: compute charges for some other labelled dataset and test whether they add predictive power. That is a reasonable supporting tactic inside another project, not a project in itself.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.024,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Only the repository size (24.1 MB across 178 files, from the GitHub tree API) is real. Every other number is undefined because there is no dataset and therefore no feature table to build.",
+    "cheapest_killing_check": "List the files in the data deposit and ask 'where is the column of reference charges?'. I did this in two API calls: both Figshare records are typed 'software', and the repository's only structure file is a 47-molecule tutorial demo with no charge values."
+  },
+  "verdict": "reject",
+  "verdict_reason": "No dataset exists. The data availability statement releases source code under the MIT licence, and I confirmed via the GitHub and Figshare APIs that both deposits are software: fitted parameter files, a periodic table, a residue bond-template lookup, and one 47-molecule demo structure file with no charge values. A1, A2, A5 and A8 all fail — there is nothing to predict, nothing to predict it from, and the only way to manufacture labels is to run the paper's own empirical model, which would be circular. The field is also well served by open recent models (EspalomaCharge, ChargeNet). ACC III is a useful free tool for generating charge features inside some other project; it is not a project."
+}

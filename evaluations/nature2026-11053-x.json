@@ -1,0 +1,44 @@
+{
+  "paper_id": "nature2026-11053-x",
+  "title": "The gene-regulatory evolution of the human skeleton.",
+  "doi": "10.1038/s41586-026-11053-x",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE316891",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found two GEO series (gene expression archive entries) by title search, as PubMed elink returned none: GSE316891 (MPRA, massively parallel reporter assay, 70 samples) and GSE316892 (hybrid-cell RNA-seq, 10 samples). Read the GSE316891 filelist: only ten FASTA oligo libraries (~8 MB each) and ten oligo-to-barcode maps (117-379 MB each, over the cap and not downloaded); the 60 DNA/RNA count samples have supplementary_file = NONE. Downloaded GSM9462019_L1a1.fasta.gz: 79,812 sequences of 270 bp, headers like seq_41884_chr1:1211358-1211627_SCREEN_ancestral_a1_L1 (GRCh37 coordinates, human/ancestral allele tag). Downloaded GSE316892 read-count TSV: 40,344 genes x 10 hybrid samples, allele-specific counts (human, chimp/gorilla, no-ASE (allele-specific expression), ambiguous).",
+    "what_came_from_paper_text_only": "561,410 substitutions assayed and 15,077 loci with human-specific activity (abstract; the GEO summary says 574,290). The GEO processing note promises an activity_and_differential_activity.txt file with per-oligo activity and allele logFC (log fold change) plus FDR (false discovery rate); I could not find it anywhere in GEO. Full text and supplementary tables are paywalled (no PMCID), so I could not check whether Nature's supplement contains that table."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO is open; I downloaded files from both series. The per-oligo results table described in GEO was not deposited (checked filelist.txt)."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in files: no deposited table gives per-oligo MPRA activity or human-versus-ancestral difference. The label would have to be rebuilt from raw SRA (sequence read archive) barcode reads plus 2.3 GB of barcode maps."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: the oligo FASTA files hold the 270 bp human and ancestral sequences themselves, roughly 80k per sub-library."},
+    "a4_units_stated": {"pass": false, "note": "There is no label column, so no units. The undeposited file would hold log fold change and FDR (from the GEO text only)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 79812, "note": "79,812 sequences counted in 1 of 10 sub-libraries. The other nine are similar in file size, implying ~800k oligos, but I counted only one."},
+    "a6_fits_laptop": {"pass": false, "working_set": "~2.5 GB of barcode maps plus raw SRA reads for 60 DNA/RNA libraries", "note": "Rebuilding the label means processing raw sequencing reads, which the project rules forbid and which is far beyond the working set."},
+    "a7_counts_match_paper": {"pass": false, "note": "The abstract says 561,410 substitutions; the GEO summary says 574,290. The deposited files can't settle it because no results table exists."},
+    "a8_label_provenance": {"pass": true, "note": "In principle the label is a physical measurement: RNA/DNA barcode ratios in fetal chondrocytes (cartilage cells). It is not a model output, but it isn't deposited."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Whalen et al. 2023 (Neuron), machine learning on HAR (human accelerated region) MPRAs in neural progenitors, using Sei and other models", "open_weights": null, "score_and_split": "Not retrieved in detail; search snippet only.", "authors_named_unsolved": "Snippet notes compensatory variants with opposite effects inside the same HAR.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Enformer-style DNA sequence model (variant effect from 270 bp oligos)", "freeze_and_head_viable": null, "hardware": "CPU feasible for embedding 270 bp oligos, but moot without labels", "licence": "AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "Hybrid-cell allele-specific expression (GSE316892) on gene symbol; GTEx (tissue expression atlas)", "join_key": "GRCh37 coordinates to nearest gene symbol", "bigger_question_one_sentence": "Do sequence-predicted MPRA effects of human-derived substitutions explain human-versus-ape allele-specific expression in skeletal progenitor cells?"},
+  "controls": {"positive_control": "Would be: known strong promoters among oligos should show high activity; GC content as a trivially learnable target.", "negative_control": "Shuffle the labels within each sub-library.", "external_validation": "The GBE 2026 human-versus-chimp postcranial skeleton MPRA (70k regions) could serve as an external set; not downloaded."},
+  "honest_claim_h3": "If the labels existed: the model predicts how a human-derived substitution changes reporter activity in cultured fetal chondrocytes, outside its native chromatin, for ~270 bp windows.",
+  "plain_idea": {
+    "one_liner": "Use the human and ancestral versions of short regulatory DNA pieces to predict whether each human mutation changes gene activity in cartilage cells.",
+    "train_on": "270-letter DNA sequences in human and ancestral-ape versions; roughly 800k oligos estimated, 79,812 counted in one of ten libraries.",
+    "predict": "How much each sequence turns on a reporter gene in fetal chondrocytes, and the human-versus-ancestral difference, measured by RNA-to-DNA barcode counts. Those values are not deposited.",
+    "why_worthwhile": "Evolutionary and skeletal-disease geneticists could rank human-specific mutations without running new assays, and could test whether sequence models trained on other cells carry over to cartilage."
+  },
+  "pitch": null,
+  "ml_idea": "Fit a frozen DNA-model embedding plus a head to predict allele effects on MPRA activity in chondrocytes, and test how well it transfers from neuronal HAR MPRAs. This is blocked until the per-oligo activity table is found.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 2.5, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only. Rebuilding labels needs raw SRA barcode reads plus 2.3 GB of barcode maps, which is out of scope.", "cheapest_killing_check": "Open Nature's Supplementary Tables (manual download by the user) and check for a per-oligo table with sequence ID, activity, allele logFC and FDR. If it's absent, the project is dead."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2: GEO holds oligo sequences and barcode maps but no per-oligo activity or allele-effect table, even though GEO's own processing note describes one. Rebuilding the label needs raw sequencing reads. It could revive if Nature's supplement, which I couldn't check, contains that table."
+}

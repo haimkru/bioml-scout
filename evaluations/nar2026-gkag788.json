@@ -1,0 +1,175 @@
+{
+  "paper_id": "nar2026-gkag788",
+  "title": "Neuronal activity-driven 3D chromatin dynamics in cortical pyramidal neurons depend on SATB2.",
+  "doi": "10.1093/nar/gkag788",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE307096",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all 9 deposited processed BED files from GEO (Gene Expression Omnibus) FTP. Counted rows: open chromatin regions (OCRs) in control (floxed) neurons 13,573 gained / 550 lost / 109,573 invariant; in Satb2 knockout 1,569 gained / 11,825 lost / 104,755 invariant; SATB2 protein-binding peaks 4,552 gained / 2,042 lost / 11,068 invariant. Checked widths (gained median 360 bp, invariant 537 bp), zero duplicate coordinates, zero overlap between gained and invariant sets, 24 chromosomes. Computed the key join myself: 5,923 of 13,573 gained OCRs overlap a knockout-lost region. Also opened the RNA-seq count table (56,422 genes x 16 samples) and the Zenodo code archive (1.7 MB, scripts only). Checked Hi-C file sizes by HEAD request (20-21 GB each).",
+    "what_came_from_paper_text_only": "Genome build mm10 and the peak-calling recipe (MACS3 on replicate-merged BAM files, Bic-treated as treatment vs NBQX-treated as control, p<1e-12) are in the Methods, not in the files. Motif enrichment for MEF2/FOS/JUNB/FOSL2/NPAS4 at gained OCRs is from the paper's Supplementary Table S1, which I did not retrieve (Europe PMC supplementary endpoint timed out). The 1,165 activity-dependent (AD) chromatin compartment bins are reported in the text only; their coordinates are not deposited anywhere I could find."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All processed files download anonymously from GEO FTP, no login or application; I fetched and parsed every one. Code is on Zenodo under CC BY 4.0. The 20-21 GB Hi-C contact maps are too large for a laptop but are not needed for the proposed task."},
+    "a2_label_is_a_column": {"pass": true, "note": "The three-way class (gained / lost / invariant accessibility on stimulation) IS the file identity: concatenating the 6 ATAC BED files with a class column gives the label directly. The sharper label, SATB2-dependence, needs one interval overlap between two deposited files (I ran it: 5,923 of 13,573) - effort, not construction by inference."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are mm10 genomic coordinates, not sequences. Resolving them needs ONE reference genome download (mm10.2bit, ~0.8 GB), not thousands of per-item lookups; chromosome and coordinates are present in every row."},
+    "a4_units_stated": {"pass": true, "note": "Coordinates are base pairs on mm10 (build stated in Methods, not inside the files); labels are categorical so no unit ambiguity. Weakness, not a failure: the ATAC BEDs carry no signal, fold-change or FDR column, so there is no quantitative target."},
+    "a5_enough_rows": {"pass": true, "n_rows": 123146, "note": "Counted in the files: 13,573 gained + 109,573 invariant OCRs for the stimulus-response task; 5,923 SATB2-dependent vs ~6,106 SATB2-independent for the knockout-dependence task. Both far above the 1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1 GB (4 MB of BED files + 0.8 GB mm10 2bit genome + cached embeddings)", "note": "Verified file sizes. Hi-C maps (20-21 GB) are excluded from the plan. Baseline runs on CPU with small DNA language model checkpoints; no GPU needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Exact matches: 13,573 gained vs 550 lost (floxed) and 11,825 lost vs 1,569 gained (knockout) in text and files; SATB2 peaks 4,552 gained and 11,068 invariant match. My recomputed overlap (5,960/11,825 = 50.4%) matches the paper's 'approximately half'. Two small discrepancies: SATB2 lost peaks are 2,042 in the file vs 2,010 in the text, and the data-availability statement swaps GSE307097 (actually CUT&Tag) with GSE307197 (actually the Hi-C files)."},
+    "a8_label_provenance": {"pass": true, "note": "Labels come from MACS3 peak calls on ATAC-seq reads - a physical measurement of how open DNA is to the Tn5 enzyme - not from any model's prediction, and they are independent of the DNA-sequence features a model would use. Caveat: replicates were merged before calling, so labels are thresholded calls with no per-region statistics, and they share read-depth and peak-strength confounders."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Nine small BED files; concatenation plus one interval overlap join, which I ran successfully in the files."},
+    "B2": {"score": 2, "why": "Gzipped tab-separated BED; parsed on first try with pandas, no malformed rows in 123k+ lines."},
+    "B3": {"score": 1, "why": "One lab, one pipeline, but cross-genotype labels rest on separate peak calls, not a joint quantitative model."},
+    "B4": {"score": 2, "why": "No censored or qualitative values anywhere: just intervals and class membership, verified in files."},
+    "B5": {"score": 2, "why": "Zero duplicate coordinates in all nine files; gained and invariant sets have zero overlap (I checked)."},
+    "B6": {"score": 1, "why": "Standard BED columns but no README; class definitions only in Methods, and GEO sample titles are mislabelled."},
+    "C1": {"score": 2, "why": "Whether SATB2-dependence is locally sequence-encoded is informative either way: sequence code or 3D-context effect."},
+    "C2": {"score": 1, "why": "WTKO-CNN (2026, open code) does wild-type-vs-knockout peak classification; ChromBPNet is strong but a different task."},
+    "C3": {"score": 2, "why": "Nobody has modelled SATB2-dependence or activity-responsiveness in cortical neurons; clear novel plus diversity angle."},
+    "C4": {"score": 2, "why": "The alternative is a mouse conditional knockout plus ATAC-seq and Hi-C: months of animal and lab work."},
+    "C5": {"score": 2, "why": "Obvious dummies (majority class 49%, width, GC, SATB2-peak overlap 22.7% vs 7.1%) plus WTKO-CNN's 68-84% accuracy."},
+    "D1": {"score": 2, "why": "HyenaDNA and DNABERT-2 are open-weight DNA backbones; ChromBPNet and AlphaGenome cover mouse tracks."},
+    "D2": {"score": 2, "why": "Median region width 360 bp (verified), so 600-1,000 bp windows embed once on CPU and feed a simple head."},
+    "D3": {"score": 2, "why": "HyenaDNA is Apache 2.0, paper is CC BY, GEO data public; nothing blocks reuse."},
+    "E1": {"ok": true, "why": "Chromosome column present in every file; leave-one-chromosome-out prevents positional leakage."},
+    "E2": {"ok": true, "why": "24 chromosomes carrying 300-1,066 gained regions each, counted in the files."},
+    "E3": {"ok": true, "why": "Majority class, region width alone, GC alone, promoter/distal annotation alone are all computable."},
+    "E4": {"ok": false, "why": "Replicates merged before peak calling; no replicate-level calls or signal values deposited, so no noise floor."},
+    "E5": {"ok": true, "why": "Must recover MEF2/AP-1 motif enrichment (paper Table S1) and the 3.2x SATB2-peak enrichment I recomputed."},
+    "E6": {"ok": true, "why": "Label shuffling, width/GC-only models and SATB2-feature ablation are all trivially runnable on this table."},
+    "E7": {"ok": true, "why": "GSE222609 (in vivo Satb2 knockout cortex), GSE175965 and GSE163113 (stimulated neurons) give independent held-out data."},
+    "E8": {"ok": false, "why": "No published machine-learning number exists on this dataset; WTKO-CNN's numbers are on other knockouts."},
+    "G1": {"score": 2, "why": "mm10 genomic coordinates with UCSC chromosome names in every row, a standard join key."},
+    "G2": {"score": 2, "why": "ENCODE mouse cortex cCREs and histone ChIP (the paper already used ENCFF160SCR) join on mm10 coordinates."},
+    "G3": {"score": 1, "why": "Coordinate overlap is inherently one-to-many; manageable with a summit +/-250 bp max-overlap collapse rule."},
+    "G4": {"score": 2, "why": "Combination asks whether SATB2-dependent elements differ in chromatin state and transfer to in vivo cortex."},
+    "H1": {"score": 2, "why": "109,573 invariant and 11,825 knockout-lost regions give systematic negatives, counted in the files."},
+    "H2": {"score": 0, "why": "One lab, one species, one culture preparation, one stimulus (bicuculline), one ATAC time point."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one sentence; see honest_claim_h3."},
+    "H4": {"score": 1, "why": "Culture model and stimulus explicit in the paper, but replicate merging before peak calling is never flagged."},
+    "I1": {"score": 2, "why": "Apostolova/Dechant lab (Innsbruck), SATB2-associated syndrome researchers, activity-dependent transcription labs."},
+    "I2": {"score": 2, "why": "Would pick which elements to test in their already-deposited AAV-SATB2 rescue ATAC experiment (raw only)."},
+    "I3": {"score": 2, "why": "Precision in the top 100 ranked elements matches the decision: which few to test in the lab."},
+    "I4": {"score": 1, "why": "A motif-count logistic regression plus SATB2-peak overlap may do nearly as well as a deep model."},
+    "J1": {"score": 2, "why": "Grouped splits, frozen-backbone transfer learning, calibration, interpretation - all real modelling work."},
+    "J2": {"score": 1, "why": "Motif outputs are checkable against the paper's HOMER table, but chromatin intuition would benefit from a reviewer."},
+    "J3": {"score": 2, "why": "A documented mm10 table of 123k labelled OCRs with SATB2-dependence annotation is shareable even if the model is weak."},
+    "J4": {"score": 1, "why": "Roughly four weeks is realistic given the small data, but no budget is written down yet."},
+    "J5": {"score": 1, "why": "Kill condition stated here in success_criteria, but not yet recorded in NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "WTKO-CNN (2026 arXiv preprint; 1D convolutional network with attention that classifies ATAC-seq peaks as wild-type-specific or knockout-specific)",
+        "open_weights": true,
+        "score_and_split": "68% accuracy (RelA, 9,886 peaks), 84% (LSD1, 1,048 peaks), 79% (EBF1, 58,955 peaks) in mouse, with chromosomes 6 and 7 held out as the test set. Accuracy only, no AUC reported.",
+        "authors_named_unsolved": "They attribute cross-dataset performance differences to ATAC-seq protocol variation, sample heterogeneity and the small magnitude of accessibility changes between wild-type and knockout - i.e. they have no handle on when the task is learnable.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ChromBPNet (bias-factorised convolutional model predicting base-resolution chromatin accessibility from DNA sequence; Kundaje lab)",
+        "open_weights": true,
+        "score_and_split": "Reported as competitive with or better than much larger foundation models at predicting accessibility variant effects across assays, cell contexts and ancestries; evaluated on held-out genomic regions. It predicts accessibility level, not stimulus-responsiveness or knockout-dependence.",
+        "authors_named_unsolved": "Transfer of accessibility models to perturbed or stimulated contexts; they note most stimulus-specific expression QTLs already alter chromatin in naive cells, so stimulus-specific regulatory logic remains unresolved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepSTARR (convolutional model predicting enhancer activity from sequence, Drosophila S2 cells)",
+        "open_weights": true,
+        "score_and_split": "Quantitative prediction of developmental and housekeeping enhancer strength from sequence in Drosophila; held-out chromosome evaluation. Different species and no stimulus or knockout axis.",
+        "authors_named_unsolved": "Generalisation of learned motif syntax to other cell types and organisms.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "HyenaDNA-tiny-1k (open-weight DNA sequence model) with DNABERT-2 as the alternative; ChromBPNet mouse models or AlphaGenome mouse tracks as an extra feature source",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: embed ~40,000 windows of 600-1,000 bp once, cache them, then fit logistic regression or gradient boosting heads.",
+    "licence": "HyenaDNA Apache 2.0; DNABERT-2 permissive; AlphaGenome non-commercial (acceptable); data CC BY 4.0."
+  },
+  "integration": {
+    "partner_dataset": "ENCODE mouse cortex/forebrain candidate cis-regulatory elements and histone ChIP-seq (the paper itself used ENCFF160SCR, ENCSR093DWU, ENCSR094TTT), plus the same group's in vivo Satb2 knockout cortex multi-omics GSE222609 (34 samples)",
+    "join_key": "mm10 genomic coordinates (chromosome, start, end)",
+    "bigger_question_one_sentence": "Do the activity-responsive regulatory elements that need SATB2 sit in a distinguishable pre-existing chromatin state, and does a sequence model trained on cultured neurons find the SATB2-dependent elements of intact cortex?"
+  },
+  "controls": {
+    "positive_control": "The model's learned features must recover the MEF2-family, FOS, JUNB, FOSL2 and NPAS4 motifs the paper's HOMER analysis found at gained OCRs, and the SATB2-binding enrichment I recomputed myself (22.7% of gained OCRs carry a SATB2 peak vs 7.1% of invariant OCRs, a 3.2-fold difference).",
+    "negative_control": "Shuffle the SATB2-dependence labels within chromosome and confirm collapse to the majority class; train on region width alone (gained median 360 bp vs invariant 537 bp) and GC alone to quantify how much of any signal is a width/composition artifact.",
+    "external_validation": "GSE222609 (in vivo Satb2 conditional knockout cortex, same group, 34 samples) and GSE175965 (NPAS4:NuA4 study, 320 samples of stimulated neurons) as independently produced test sets; GSE163113 GRO-seq of KCl-stimulated neurons as a different-assay check."
+  },
+  "honest_claim_h3": "Among open chromatin regions that gain accessibility within one hour of bicuculline stimulation in cultured mouse cortical neurons from a single lab, local DNA sequence predicts which regions lose that gain when Satb2 is deleted, at a stated precision on held-out chromosomes.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence of gene switches that open when a neuron fires to predict which ones need the protein SATB2.",
+    "train_on": "13,573 short stretches of mouse genome (median 360 base pairs) that become more open within one hour of stimulating cultured cortical neurons; of these, 5,923 are labelled SATB2-dependent and about 6,106 SATB2-independent, counts I verified by intersecting the deposited files.",
+    "predict": "A yes/no call on whether that activity-driven opening disappears when the Satb2 gene is deleted. The true answer comes from ATAC-seq, a lab assay measuring how physically open DNA is, run in Satb2 knockout versus control neurons and peak-called with MACS3.",
+    "why_worthwhile": "Labs studying how neuronal firing switches genes on, and clinicians studying SATB2-associated syndrome, would get a ranked shortlist of switches to test in rescue experiments; even a failure tells them SATB2-dependence is not written in local sequence and must come from 3D genome context."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Our 13,573 activity-gained and 11,825 knockout-lost neuronal regions are comparable in size to WTKO-CNN's sets (RelA 9,886, LSD1 1,048, EBF1 58,955 peaks), but ours adds a stimulus axis none of theirs has and covers cortical pyramidal neurons, a cell type absent from their three immune/epigenetic knockouts."},
+    "confidence_score": {"answer": "no", "why": "The deposited files hold no replicate-level peak calls, signal values or FDRs (replicates were merged before calling, verified in the Methods and in the file columns), so per-region confidence cannot be estimated without reprocessing raw reads from the Sequence Read Archive."},
+    "models_beatable": {"answer": "yes", "why": "WTKO-CNN is a 2026 small 1D convolutional network trained from scratch, reporting accuracy only (68-84%) with chromosomes 6 and 7 held out and no pretrained backbone; a frozen DNA language model with matched negatives and auPRC reporting is a fair step up. ChromBPNet is strong but answers a different question."},
+    "guaranteed_improvement": {"answer": "no", "why": "WTKO-CNN's code is public and can be retrained here as our baseline, but no existing model was ever trained on this dataset, so we cannot strictly superset its inputs; the ENCODE mouse cortex tracks that join on mm10 coordinates come from a different tissue and assay."}
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Activity-induced accessibility change is measured in a few other published mouse neuron datasets (GSE175965 stimulated neurons, Su et al. dentate granule ATAC-seq, GSE163113 GRO-seq of KCl-stimulated neurons - all found via this paper's reference list and GEO lookups). SATB2-dependence specifically exists only here and in the same group's GSE222609.",
+    "approx_items": null,
+    "join_key": "mm10 genomic coordinates",
+    "why": "A handful of independent stimulated-neuron datasets give a real external test of the activity-responsiveness half of the task, but the SATB2-dependence label has no large public counterpart, so the model cannot be validated on thousands of outside examples."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Invariant regions are systematically wider than gained ones (median 537 vs 360 base pairs, verified in the files), so region width alone partly encodes the label.",
+      "The paper reports 56% of gained regions are promoter-associated, so a sequence model could learn 'promoter/CpG island' rather than 'responds to neuronal activity'.",
+      "Labels are MACS3 calls on replicate-merged libraries, so any read-depth difference between stimulated and silenced samples can create systematic calls that track GC content and mappability.",
+      "Neighbouring peaks from the same locus or repeat family can fall on both sides of a random split, inflating performance.",
+      "SATB2 binding (CUT&Tag) is both a candidate feature and close to the biological definition of SATB2-dependence, so including it can look like prediction when it is near-definition."
+    ],
+    "split": "Leave-one-chromosome-out over the 24 chromosomes present in the `chrom` column (I confirmed this column and its 300-1,066 gained regions per chromosome in the files), plus a WTKO-CNN-matched chr6/chr7 held-out run for comparability; before splitting, match negatives to positives on region width, GC content and promoter/distal annotation.",
+    "checks": [
+      "Shuffle labels within chromosome and confirm performance collapses to the majority-class baseline.",
+      "Train on width alone, on GC alone, and on promoter/distal annotation alone, and report how much of the headline number those explain.",
+      "Measure nearest-neighbour sequence similarity (repeat-masked) between each test window and the training set, and re-score after dropping the closest matches.",
+      "Ablate the SATB2 CUT&Tag feature block and report sequence-only performance separately."
+    ],
+    "verdict": "Manageable, but only if negatives are matched on width, GC and promoter status first - unmatched negatives are the serious risk and would produce a meaningless high score."
+  },
+  "success_criteria": {
+    "metric": "Area under the precision-recall curve (auPRC) for SATB2-dependence on leave-one-chromosome-out, plus precision among the top 100 ranked regions, because the user would only test a handful of elements in the lab.",
+    "baselines": "Majority class = 49% positives (5,923 of 12,029 assignable gained regions, counted in the files); region width alone; GC alone; SATB2-peak overlap alone (22.7% of gained vs 7.1% of invariant regions, my own count); and WTKO-CNN retrained on this data, whose published accuracies are 68-84% on three other mouse knockouts.",
+    "success": "auPRC >= 0.70 on leave-one-chromosome-out with width/GC/annotation-matched negatives, beating a confound-only model by >= 0.10 auPRC, and >= 0.60 precision in the top 100 ranked regions.",
+    "noise_ceiling": null,
+    "kill": "If, after negatives are matched on width, GC and promoter/distal class, no model beats the confound-only baseline by more than 0.03 auPRC within two weeks, stop and write up the negative result."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Cell Genomics", "why": "Publishes biology-first machine learning on genome regulation; would need the sequence model to predict SATB2-dependence well and to transfer to the in vivo cortex data in GSE222609."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes careful benchmarks and modest-scope regulatory-genomics models; the likely result - sequence partly predicts activity-responsiveness, SATB2-dependence only weakly, with the confounds quantified - fits well."},
+    "fallback": {"journal": "bioRxiv preprint plus a machine-learning-in-computational-biology workshop", "why": "Even a clean negative result with matched negatives and an open labelled mm10 table is worth posting, and the table itself could go to Scientific Data as a small resource."}
+  },
+  "pitch": {
+    "headline": "13,573 gene switches that open when a neuron fires, of which 5,923 stop opening when one protein is deleted - a sequence-labelled table in 4 MB.",
+    "what_makes_the_data_unusual": "Both axes in one experiment: stimulation versus silence, and Satb2 knockout versus control, in the same cortical neuron cultures. Zero duplicate coordinates, zero overlap between the gained and invariant classes, counts matching the paper exactly.",
+    "the_win": "auPRC 0.70 or better for SATB2-dependence on held-out chromosomes with width- and GC-matched negatives, against a confound-only baseline and a retrained WTKO-CNN (68-84% accuracy on other knockouts).",
+    "even_if_it_fails": "A null result says SATB2-dependence is not written in local DNA sequence, so it must come from 3D genome context - which is exactly the paper's own claim, tested independently for the first time.",
+    "who_wants_it": "The Apostolova/Dechant lab in Innsbruck, who already deposited AAV-SATB2 rescue ATAC-seq samples with no processed files; a ranked shortlist would tell them which elements to look at first."
+  },
+  "ml_idea": "Two nested tasks on mm10 intervals from one lab's ATAC-seq. (1) Classify open chromatin regions as activity-gained (13,573) versus invariant (109,573) in control cortical neurons from DNA sequence, using a frozen open-weight DNA backbone (HyenaDNA-tiny or DNABERT-2) plus a simple head, with negatives matched on width, GC and promoter status. (2) The distinctive task: among the 13,573 activity-gained regions, predict which are SATB2-dependent (5,923 that are lost in Satb2 knockout, verified by interval overlap) versus SATB2-independent (~6,106), with SATB2 CUT&Tag binding as a separately ablated feature block. Evaluate leave-one-chromosome-out, benchmark against WTKO-CNN retrained on the same data, and test transfer to the group's in vivo knockout cortex data (GSE222609).",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 6,
+    "cv_run_minutes": 10,
+    "compute_note": "BED parsing and the overlap join took under a minute on this laptop (timed). Embedding time is an estimate only: ~40,000 matched windows of 600-1,000 bp at roughly 2 sequences/second through a small DNA backbone on CPU; cross-validation time assumes cached embeddings fed to a linear or gradient-boosted head.",
+    "cheapest_killing_check": "Already done: count how many activity-gained regions are SATB2-dependent (5,923 of 13,573 overlap a knockout-lost region - the label set is real and near-balanced). Next cheapest: build width/GC/promoter-matched negatives and confirm a confound-only model scores near chance; if it does not, the headline number will be an artifact."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Part A verified file by file: everything downloads without login, the class label is the file identity, the counts match the paper exactly (13,573 / 550 / 1,569 / 11,825), there are no duplicates and no overlap between classes, and the labels trace to ATAC-seq measurements rather than any model's output. The distinctive task - predicting from sequence which activity-responsive elements need SATB2 - has 5,923 positives against ~6,106 negatives, which I computed myself, and no published model addresses it; the nearest one (WTKO-CNN, 2026) is a small from-scratch convolutional network reporting accuracy only. The data is 4 MB, the backbone is Apache-licensed and CPU-friendly, there is a concrete positive control (the 3.2-fold SATB2-binding enrichment I recomputed) and real external validation in the same group's in vivo data. Main risks, both testable in the first week: the gained and invariant classes differ in width and promoter content, so negatives must be matched, and a motif-count baseline may do nearly as well as a deep model."
+}

@@ -1,0 +1,140 @@
+{
+  "paper_id": "nar2026-gkag731",
+  "title": "Modeling the spatial organization of replicated chromosomes in yeast reveals a loose asymmetric cohesion between sister chromatids.",
+  "doi": "10.1093/nar/gkag731",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE145695",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened with h5py the SisterC mitotic inter-sister contact map GSE145695_2019-MOsisC-M-DpnII-BrdU-UV-R1R2R3.sacCer3.inter_sister_1500_cis_mapq.1000.mcool (6,555,366 bytes): valid HDF5/cooler v3, 10 resolutions, at 1 kb it has 12,165 genomic bins over 17 yeast chromosomes (sacCer3 assembly), 3,511,463 non-zero bin pairs, 35,873,609 total ligation counts, columns bin1_id/bin2_id/count plus a bins/weight normalisation column with 8.4% missing. Listed all 48 .mcool files in GSE145695 and found they are 16 libraries x {all, inter_sister, intra_sister}, i.e. only G1 and mitosis, two restriction enzymes (DpnII, HindIII), with BrdU-vs-thymidine and UV-vs-no-UV controls. Listed GEO file manifests for GSE151553 (Micro-C .mcool, 156-243 MB each), GSE162193 (.hic, 5-24 MB), GSE248144 (bigwig ~1 MB plus peak BED) and GSE151416 (Mcd1p cohesin bigwig, 1.4-44 MB). Downloaded GSM7906339_Scc2-PK_wt_rep1.bed.gz and counted exactly 178 cohesin-loader peaks genome-wide. Read the central directory of the Zenodo archive 10.5281/zenodo.18417570 via a ranged request: 1,497 entries, 514 .c, 287 .h, 119 .hpp, 64 .cpp plus a bundled VTK graphics library - source code only, no simulation output, no tables. Zenodo licences: 10.5281/zenodo.18416770 is CC-BY-4.0, 10.5281/zenodo.18417570 states no licence.",
+    "what_came_from_paper_text_only": "How cohesin-associated regions (CARs, the genomic sites where the cohesin ring concentrates) were defined - SciPy find_peaks with a height threshold of 20 on the Mcd1p ChIP-seq signal; the ~35 kb average spacing between cohesive cohesins; the asymmetric non-homologous cohesion conclusion; all polymer-simulation parameters. I did not open the Mcd1p bigwig (pyBigWig is not installed) nor the 156-243 MB Micro-C maps (over the 50 MB cap). The journal supplement could not be listed: Europe PMC's supplementaryFiles endpoint timed out twice, so I am relying on the paper's own caption text that the supplement is figures S1-S15+, not data tables."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "PASS, but with a caveat: this paper deposits no data of its own. Its two Zenodo items are the LatticePoly C++ simulator source (verified: 1,497 files, almost all .c/.h/.cpp). Every measurement it analyses is third-party GEO data, which I confirmed downloads freely without login (one 6.5 MB contact map and one 178-line peak file retrieved)."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The quantity this paper is about - how strongly and how asymmetrically two sister chromatids are tethered at a given site - exists in no column anywhere. It has to be constructed by inference across sources: take the inter-sister contact counts, divide out the genomic-distance decay, apply the cooler balancing weights, subtract the unreplicated G1 map as background, compare against the intra-sister map from a separate file, then fit a polymer simulation to decide which cohesin-site pairs are genuinely cohesive versus merely brought together by loop extrusion. The paper spends its whole methods section doing exactly that construction. What IS a column is the raw ligation count per bin pair, but predicting that is a different and far less interesting task (see A5)."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "PASS. Predictors would be the Mcd1p cohesin ChIP-seq bigwig (GSE151416) and the sacCer3 genome, both free, joined to the contact maps on genomic coordinates in the same assembly - a clean standard key, not an identifier-lookup problem. Verified the bin table carries chrom/start/end in sacCer3."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "PASS. The cooler format documents its units: count is an integer number of ligation events, weight is the iterative-correction balancing factor, bins are in base pairs. Verified directly in the file attributes (bin-size 1000, storage-mode symmetric-upper, genome-assembly sacCer3)."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 178,
+      "note": "FAIL, in disguise - the same trap as the scCT-DB candidate. 3,511,463 non-zero bin pairs looks enormous, but the unit that matters here is the cohesin-associated region, and I counted 178 cohesin-loader peaks genome-wide in the WT file; published yeast cohesin peak sets are a few hundred. The second relevant unit is the experiment, and the 48 .mcool files collapse to 4 real biological maps (G1 and mitosis, times two restriction enzymes) from one lab, one strain and one species - the rest are UV and thymidine controls. A whole yeast genome is 12.1 Mb, so even the generic contact-prediction framing has roughly 120 non-overlapping 100 kb windows to learn from, against the 3 Gb and many cell types that existing contact-prediction models use."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "note": "PASS comfortably. The SisterC maps are 4-7 MB each; all 48 total well under 1 GB, and a single map loaded as a dense 12,165 x 12,165 float matrix is ~1.2 GB, easily subset per chromosome. No GPU needed for a tabular baseline."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "PASS. Nothing contradicts: the file reports 17 chromosomes with sacCer3 lengths (chrIV = 1,531,933 bp) and the paper simulates chromosome 4 as a 1,531-monomer chain at 1 kb per bead, which matches exactly."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the paper's own target, pass for raw counts. Raw ligation counts are a physical measurement, so no circularity there. But the cohesion strength and asymmetry conclusions - the only novel labels this paper produces - are outputs of the authors' own polymer simulation fitted to the maps. Training on those would be distilling their simulator, which is the circularity A8 is written to catch. Flagged for completeness; the project already died at A2."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "LatticePoly (this paper's own model) - a lattice polymer simulator of replicated yeast chromosomes with loop-extruding and cohesive cohesin",
+        "open_weights": true,
+        "score_and_split": "No held-out split and no machine-learning metric; the paper reports qualitative and correlation-level agreement between simulated and experimental contact maps after scanning two parameters (loop density d_loops and number of active barriers N_barrier). Source code is on GitHub and archived at Zenodo 10.5281/zenodo.18416770 (CC-BY-4.0) and 10.5281/zenodo.18417570 (no licence stated) - verified by reading the archive file listing.",
+        "authors_named_unsolved": "The abstract itself states it is still unclear how cohesion is established, and the discussion questions what partial, asymmetric sister alignment is functionally for - i.e. the mechanism, not a prediction accuracy, is the open problem.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "C.Origami - a convolutional and transformer network predicting Hi-C contact maps from DNA sequence plus CTCF ChIP-seq and ATAC-seq",
+        "open_weights": true,
+        "score_and_split": "Reported as a leading cell-type-generalising contact predictor in Nature Biotechnology (2023) and benchmarked on held-out chromosomes and held-out cell types; I retrieved the paper listing but did not read its exact numbers, so I quote no figure.",
+        "authors_named_unsolved": "Not read in detail; the general open problem the field names is transfer to unseen cell types and species.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Epiphany - a model predicting Hi-C contact maps from one-dimensional epigenomic tracks",
+        "open_weights": true,
+        "score_and_split": "A 2026 bioRxiv benchmark I retrieved (Evaluation of deep learning tools for chromatin contact prediction) compared five such tools - C.Origami, Epiphany, ChromaFold, HiCDiffusion and GRACHIP - and reports Epiphany as best overall on accuracy, cross-cell-type generalisation and loop recovery. I read the benchmark's summary, not its tables, so I quote no number.",
+        "authors_named_unsolved": "The benchmark names cross-cell-type generalisation and realistic loop recovery as the remaining weak points.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Graph neural network for inferring polymer-model interaction parameters from Hi-C (Chromatin structures from integrated AI and polymer physics model, PLOS Computational Biology 2025)",
+        "open_weights": null,
+        "score_and_split": "Trained almost entirely on simulated data from the polymer model and reported to reproduce experimental contact maps across chromosomes and several cell lines with roughly an order of magnitude less simulation time than maximum-entropy fitting. Retrieved via search; numbers not read.",
+        "authors_named_unsolved": "The same literature notes that loop-extrusion parameters still require scanning hundreds of hand-chosen parameter sets - which is precisely what this paper did by hand.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None that fits. DNA language models (Nucleotide Transformer, DNABERT-2, HyenaDNA) are trained on human or multispecies genomes, not budding yeast, and the informative input here is a one-dimensional cohesin ChIP track rather than sequence. AlphaGenome covers human and mouse only.",
+    "freeze_and_head_viable": false,
+    "hardware": "A tabular baseline would run on a laptop CPU; an image-to-image contact-map network would need a GPU.",
+    "licence": "Data is public GEO (unrestricted). Paper code: one Zenodo item CC-BY-4.0, the other states no licence, which is a reuse ambiguity."
+  },
+  "integration": {
+    "partner_dataset": "Could be joined on sacCer3 coordinates to yeast gene annotation (SGD), replication-origin maps (OriDB) and the Micro-C maps in GSE151553. All real, all small.",
+    "join_key": "sacCer3 genomic coordinates (chromosome, start, end)",
+    "bigger_question_one_sentence": "Does the position of replication origins and convergent gene pairs predict where sister chromatids are tethered - a question neither the contact maps nor the annotation answers alone? It is a real question, but with 178 cohesin sites it is a statistics problem, not a machine-learning one."
+  },
+  "controls": {
+    "positive_control": "Available and good: the unreplicated G1 inter-sister map is a true negative-background map, and the intra-sister map should show the known 20-70 kb cohesin loops between cohesin sites. Both files exist and I verified they are present in GSE145695.",
+    "negative_control": "The thymidine (no BrdU) and no-UV libraries are built-in assay controls for strand-destruction specificity - I verified all four control arms exist as separate .mcool files.",
+    "external_validation": "Weak. The only second source is the Micro-C and Hi-C data from the same organism and overlapping groups; there is no independent sister-chromatid contact dataset in another species or lab that I found."
+  },
+  "honest_claim_h3": "At best: in one laboratory strain of budding yeast, in mitosis, a model can predict the distance-normalised inter-sister ligation frequency at 1 kb bin pairs about as well as cohesin peak proximity plus the genomic-distance decay already do - a claim about one genome, 4 maps and 178 cohesin sites, which says nothing about whether cohesion is asymmetric.",
+  "plain_idea": {
+    "one_liner": "Use cohesin binding profiles along yeast DNA to predict how tightly the two copies of a chromosome stick together after copying.",
+    "train_on": "For each pair of 1 kb genomic windows: the cohesin protein binding signal at both windows, the distance between them, and nearby gene orientation. I verified 3,511,463 non-zero window pairs in one mitotic map, but only 178 cohesin binding sites and 4 genuinely distinct experiments exist.",
+    "predict": "The number of DNA-DNA ligation events linking the two sister copies at that window pair, measured by SisterC - a method that labels newly made DNA strands with BrdU, destroys them with ultraviolet light, and so can tell contacts between sisters from contacts within one sister.",
+    "why_worthwhile": "Chromosome-folding modellers (the Jost, Dekker and Mirny groups) would like a fast stand-in for their slow polymer simulations. But the paper already shows a two-parameter physical model fits these maps, so a black-box predictor would be less informative than what exists."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The opposite. Existing contact-map predictors (C.Origami, Epiphany) train on roughly 3 Gb human genomes across many cell types; this offers one 12.1 Mb yeast genome, 178 cohesin sites and 4 real maps from a single lab and strain, all verified by me in the files."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Replicates do exist - the SisterC libraries pool 3-4 replicates (R1R2R3, R1R2R3R4 in the filenames) and two restriction enzymes give an independent technical repeat, so a noise floor is estimable. But the replicates are already merged in the deposited maps, so per-replicate scatter would have to come from reprocessing raw reads, which the no-raw-sequencing rule forbids."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The relevant incumbent is this paper's own two-parameter polymer model, which is mechanistic, published in 2026, open-source and fitted to the same maps. Beating it on contact-map correlation would be a worse scientific product, not a better one, because it would lose the mechanism. The mammalian contact predictors cannot be beaten here either since they do not run on yeast."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on the first condition: LatticePoly cannot be run as our baseline in reasonable time (500 trajectories times 10 million Monte Carlo steps per parameter set, C++ with a bundled graphics library), and it emits contact maps rather than per-row predictions, so there is no shared evaluation split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict the distance-normalised inter-sister chromatid contact frequency at 1 kb genomic window pairs in mitotic budding yeast from the cohesin (Mcd1p) ChIP-seq profile, gene orientation and genomic separation, evaluated by holding out whole chromosomes. Also considered a learned surrogate that maps the paper's two simulation parameters (loop density, number of active cohesin barriers) to a predicted contact map, so the parameter scan becomes instant - but that training set does not exist, since the Zenodo deposits contain only the C++ source code (verified: 1,497 files, 514 of them .c), so we would have to generate it ourselves at non-laptop compute cost, and a graph-neural-network approach to inferring polymer parameters from Hi-C was already published in PLOS Computational Biology in 2025.",
+  "effort": {
+    "hours_to_feature_table": 25,
+    "working_set_gb": 0.3,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": null,
+    "cv_run_minutes": 20,
+    "compute_note": "Estimated, not timed end to end, but grounded in two measurements I did make: the 6.5 MB map opened in under a second with h5py, and a dense 12,165-squared float matrix is ~1.2 GB, so per-chromosome subsetting keeps peak memory around 4 GB. The 25 hours is for distance-normalisation, balancing, extracting the bigwig cohesin signal (which needs pyBigWig installed via uv, since it is absent) and joining four GEO series on coordinates."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A5. The paper deposits no data at all - I read the Zenodo archive listing and it is 1,497 files of C++ simulator source, no contact maps, no tables - so any project here is reuse of 2019-2020 third-party yeast contact maps. Those maps download cleanly and parse perfectly (verified: 12,165 bins, 3,511,463 non-zero pairs, sacCer3), but the paper's actual target, cohesion strength and its asymmetry, is nowhere a column: it is constructed by distance-normalising, balancing, subtracting a G1 background, comparing against a separate intra-sister file, and then fitting a polymer simulation. A5 then fails in disguise: the biological unit is the cohesin-associated region, and I counted 178 of them genome-wide, with the 48 deposited files collapsing to 4 real maps from one lab, one strain, one species. A fallback framing of predicting raw contact counts would enter a saturated field - C.Origami, Epiphany, ChromaFold, HiCDiffusion and GRACHIP were all benchmarked against each other in 2026 - with a 12.1 Mb genome instead of 3 Gb, no pretrained backbone that covers yeast, and a two-parameter mechanistic model from this very paper that already explains the data better than a black box would."
+}

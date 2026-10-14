@@ -1,0 +1,51 @@
+{
+  "paper_id": "natgen2026-02673-0",
+  "title": "Paired mutation calling and spatial transcriptomics identify cellular neighborhoods associated with the neoplastic outcome of mouse colitis.",
+  "doi": "10.1038/s41588-026-02673-0",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE334067",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO series text for GSE334067 (32 Visium samples, a 4.15 GB RAW.tar) and GSE297394 (18 bulk RNA-seq samples, two xlsx count files of about 2.4 MB). The GSE334067 file list: each sample has a 10x filtered_feature_bc_matrix.h5 (12–23 MB), tissue_positions.csv, images and spatial_enrichment.csv. I downloaded sample GSM9779857: 3,698 in-tissue spots, and spatial_enrichment.csv has 19,355 genes with Moran's I (a per-gene spatial autocorrelation statistic), not per-spot labels. No file in the listing holds spot cluster labels, tumor annotations, mutation calls or the biopsy-to-spot map.",
+    "what_came_from_paper_text_only": "The Muc2 hom + ENU cohort: 5 mice, 16 Visium slides. 288 biopsies of 2 mm with amplicon sequencing on a 22-gene panel. Mutation calls are in Supplementary Tables 5–6, which I could not retrieve (the Europe PMC supplementaryFiles endpoint timed out). Spot clusters came from Seurat/Harmony clustering of the expression data. Raw amplicon reads are in SRA PRJNA1366784."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: GEO files are public. Per-sample h5 matrices download without a login. The supplementary mutation tables could not be retrieved."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in the files: no deposited file has a per-spot label (cluster, tumor or mutation). Per-biopsy mutation calls (Supplementary Tables 5–6, if they are per biopsy) would have to be matched to spots through a biopsy grid that isn't deposited. So the label has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: per-spot gene count matrices and spot coordinates are present for all 32 samples."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI (unique molecular identifier) counts in a standard 10x format, with units implicit but standard."},
+    "a5_enough_rows": {"pass": false, "n_rows": 288, "note": "From the paper: the measured outcome (mutations) exists for 288 biopsies from 5 mice, under the 400-row minimum for classification. There are about 100k spots (3,698 counted in one sample × 32), but spots carry no measured label."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.6 GB of h5 matrices across 32 samples (estimated from file-list sizes)", "note": "Fits on a laptop if you skip the 4.15 GB tar and the images."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO's design text matches the paper: 5 Muc2 hom + ENU, 6 DSS+ENU, 4 Apc+ENU and 3+3 untreated mice, giving 32 GSM samples. I didn't verify per-cohort slide counts."},
+    "a8_label_provenance": {"pass": false, "note": "The only spot-level labels (16 neighborhood clusters, the 'tumor cluster') come from unsupervised clustering of the same expression features, and they aren't deposited anyway. Predicting them would be circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "CalicoST (Nature Methods 2024), infers copy-number changes and clones from spatial transcriptomics", "open_weights": true, "score_and_split": "Search summary reports about 86% average accuracy on 4 human colorectal liver-metastasis samples. It targets copy-number changes, not point mutations.", "authors_named_unsolved": "Not retrieved", "runnable_as_baseline": false},
+      {"name": "STARCH, copy-number and clone inference from spatial transcriptomics (bioRxiv 2020)", "open_weights": true, "score_and_split": "Not retrieved", "authors_named_unsolved": "Search summary: requires the number of clones to be specified in advance", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "None fits directly. Spot-level Visium data could use Geneformer or scGPT (single-cell models), but they are trained on human single cells, not mouse FFPE (formalin-fixed) spots.", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "GEO data public"},
+  "integration": {"partner_dataset": "Human ulcerative colitis clonal mutation atlases (e.g. the Kakiuchi and Olafsson studies), joinable only on gene symbol via mouse-human orthologs", "join_key": "gene symbol (ortholog mapping)", "bigger_question_one_sentence": "Whether local expression neighborhoods predict which driver mutations expand, but the per-spot mutation link isn't deposited."},
+  "controls": {"positive_control": "Nuclear β-catenin and Ctnnb1-mutant regions should map to the tumor cluster (from the paper)", "negative_control": "Untreated Muc2 het mice (3 deposited samples)", "external_validation": "DSS+ENU and Apc+ENU cohorts are in the same GEO series"},
+  "honest_claim_h3": "At best, with 288 biopsies from 5 mice, a model could say whether neighborhood composition near a biopsy relates to which of 22 genes is mutated there. That is a statistical association, not a predictive model.",
+  "plain_idea": {
+    "one_liner": "Use spatial gene expression around a colon biopsy to predict which cancer-related mutations that biopsy carries in inflamed mouse colon.",
+    "train_on": "Gene counts from Visium spots (each spot is a roughly crypt-sized tissue patch) overlying each 2 mm biopsy. The paper reports 288 biopsies; I didn't verify this.",
+    "predict": "Presence of mutations in 22 colitis/cancer genes per biopsy, from targeted amplicon sequencing. These calls sit in supplementary tables I couldn't retrieve, and the biopsy-to-spot map isn't deposited.",
+    "why_worthwhile": "IBD (inflammatory bowel disease) surveillance researchers would learn whether tissue state flags pro-cancer clones. But n is too small, and the link between spots and biopsies is missing."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict per-biopsy driver mutations from neighboring Visium expression. This is not feasible: the label isn't linked to spots in the deposited files, and only 288 biopsies come from 5 mice.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.6, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Working set estimated from GEO file-list sizes of the 32 filtered h5 matrices. Nothing was timed.", "cheapest_killing_check": "Open Supplementary Table 5 and check for per-biopsy coordinates that map onto Visium spot coordinates. If there are none, the label can't be built."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2/A5/A8. The deposited Visium data has no per-spot labels. Mutation calls cover only 288 biopsies from 5 mice, with no deposited map to spots. The spot clusters themselves come from the expression features."
+}

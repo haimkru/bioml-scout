@@ -1,0 +1,72 @@
+{
+  "paper_id": "gb2026-04274-w",
+  "title": "Genolator enables protein function interpretation using a multimodal large language model fusing genomic and structural interpretation with natural language interaction.",
+  "doi": "10.1186/s13059-026-04274-w",
+  "journal": "Genome Biology",
+  "data_url": "https://huggingface.co/datasets/CHGGM-Aachen/genolator-v1-qa",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded all three 42 MB 'sample' parquet files (2,000 rows each) and read the full published train (345,927 rows) and test (35,387 rows) splits column-wise over HTTP range requests. Confirmed the 12 columns, the three embedding sizes per row (4,096 / 2,560 / 1,280 numbers), zero missing values, zero gene overlap between splits, and the yes/no label balance. Then ran the decisive test: a plain bag-of-words logistic regression trained on the question wording ALONE (no DNA, no protein sequence, no structure, no embeddings, no gene name) over the authors' own 230,226 train / 30,406 test yes-no questions. It scored accuracy 0.9724, F1 0.9729, MCC (Matthews correlation coefficient, a balanced accuracy measure from -1 to 1) 0.9449 - above every baseline the paper reports and level with the paper's second-best full model.",
+    "what_came_from_paper_text_only": "Table 1 numbers quoted from the results text, not from the table itself: Genolator full Evo2+PST MCC 0.959, Evo2+ESM2 0.948, projector-only 0.924, XGBoost on structure plus BioBERT question embeddings 0.913, GPT-4.1 0.179. Also taken from the text only: how the questions were generated (GPT-4.1 with few-shot prompts), the k-means (a clustering method) similarity-aware splitting procedure, and the manual quality review of 56 genes. I did not run the released Genolator model itself (a fine-tuned Llama-3 8B, which needs a GPU)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open on Hugging Face, no login or application. I downloaded 127 MB of sample files and streamed columns from the 7.2 GB train file. Code is MIT-licensed on GitHub; the dataset repo itself states no licence."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the files: 'kind' is a literal column with values confirmation / denial / generic, balanced 115,113 / 115,113 in train. No construction needed for the yes/no task."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: coding DNA, transcript and amino-acid sequences are present as text, plus three precomputed embeddings per row (Evo2-7B 4,096 numbers, ESM-2 2,560, structure-aware PST 1,280), all finite, no lookups required."},
+    "a4_units_stated": {"pass": true, "note": "Not a measurement dataset; the label is categorical and the embedding dimensions and source models are documented on the dataset card. Nothing ambiguous."},
+    "a5_enough_rows": {"pass": true, "n_rows": 417835, "note": "Verified against the Hugging Face size endpoint and by reading the files: 345,927 train + 36,521 validation + 35,387 test = 417,835 rows over 17,732 genes."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.6 GB", "note": "8.1 GB on disk, but embeddings repeat across questions of the same gene; deduplicated to 17,732 unique genes it is about 0.6 GB. I read the text columns from the 7.2 GB file over range requests using ~2 GB of RAM."},
+    "a7_counts_match_paper": {"pass": true, "note": "Files and dataset card agree exactly. Two small paper-vs-file mismatches: the paper says 'over 365,000' training pairs (files hold 345,927) and a test set of '34,743 questions' (files hold 35,387 total, 30,406 of them yes/no). Reconcilable, not confusing."},
+    "a8_label_provenance": {"pass": false, "note": "FAILS, and I measured it. The questions were written by GPT-4.1, which knew the answer, and it encoded the answer in its writing style: 'could / might / may / potential' for yes, assertive specific phrasing for no. A bag-of-words model on question text alone, with zero biological input, reaches MCC 0.9449 on the authors' own test split versus the paper's headline 0.959. The label is therefore recoverable from a feature without any biology - leakage by construction. Separately, the free-text answers are themselves GPT-4.1 output, so training to generate them distils GPT-4.1 rather than learning biology."
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Prot2Chat (protein large language model fusing text, sequence and structure; Bioinformatics 2025, arXiv 2502.06846)", "open_weights": null, "score_and_split": "Not retrieved - I saw the title and abstract summary in search results only, so I will not quote a number.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "ProteinGPT (multimodal large language model for protein property prediction and structure understanding; arXiv 2408.11363)", "open_weights": null, "score_and_split": "Not retrieved - search-result level evidence only.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Prot2Text / Protein2Text (free-text protein function generation; Protein2Text at NAACL 2025 industry track)", "open_weights": null, "score_and_split": "Not retrieved - search-result level evidence only.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "ProteinChat and ProtST (chat interface over 3D structures; sequence-text alignment)", "open_weights": null, "score_and_split": "Not retrieved - search-result level evidence only.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DeepGO-SE (Gene Ontology function prediction from ESM-2 embeddings, Nature Machine Intelligence 2024) and successors DeepGO-ESM, STAR-GO, POSA-GO, SPROF-GO", "open_weights": null, "score_and_split": "Evaluated on the CAFA (Critical Assessment of Functional Annotation) benchmarks with Fmax, Smin and AUPR; I did not retrieve the specific values.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "XGBoost on structure embeddings plus BioBERT question embeddings - the paper's own baseline", "open_weights": true, "score_and_split": "MCC 0.913 on the paper's k-means similarity-aware gene-disjoint test split (from the paper text). My question-text-only model scores 0.9449 on the same split, which suggests most of that 0.913 is question style, not structure.", "authors_named_unsolved": "The authors note the gap between Genolator and this small baseline was 'less obvious' than against GPT-4.1.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "Evo2-7B (genomic language model), ESM-2 (protein language model) and PST (structure-aware protein transformer) embeddings are all precomputed in the files, so no backbone needs running", "freeze_and_head_viable": true, "hardware": "CPU laptop; embeddings already computed, a head on 0.6 GB of vectors trains in minutes", "licence": "Code MIT; paper CC-BY 4.0; the Hugging Face dataset repo states no licence, which is a gap if the data were reused"},
+  "integration": {"partner_dataset": "UniProt-GOA human Gene Ontology annotations, and the Human Protein Atlas for subcellular location", "join_key": "HGNC gene symbol (the 'gene_name' column) via UniProt accession", "bigger_question_one_sentence": "Does a genomic language model's view of the coding DNA add anything to protein function prediction beyond what a protein language model already sees in the amino-acid sequence?"},
+  "controls": {"positive_control": "Predict amino-acid sequence length or molecular weight from the ESM-2 embedding - must be near-perfect or the plumbing is broken.", "negative_control": "The one that killed this: strip all biological input and train on question wording alone. I ran it; it scores MCC 0.9449, so the benchmark fails its own negative control.", "external_validation": "UniProt-GOA annotations and CAFA benchmark splits exist for far more proteins than the 17,732 genes here, joinable on gene symbol."},
+  "honest_claim_h3": "A model trained on this dataset would honestly only be claiming that it can tell apart two styles of machine-written question - hedging phrasing for true protein-function associations, assertive phrasing for false ones - because that alone gets 97% of the yes/no answers right without any DNA, protein or structure input.",
+  "plain_idea": {
+    "one_liner": "Use coding DNA, protein sequence and predicted 3D structure to answer yes-or-no questions about what a human protein does.",
+    "train_on": "Each example is one natural-language question about an unnamed human protein, paired with three precomputed numeric fingerprints of that protein: its coding DNA (Evo2-7B), its amino-acid sequence (ESM-2) and its AlphaFold-predicted structure (PST). I verified 417,835 examples covering 17,732 human genes.",
+    "predict": "Whether the function described in the question really is annotated for that protein (yes) or not (no). The true answer comes from Gene Ontology annotations for the gene, rewritten into plain English by GPT-4.1.",
+    "why_worthwhile": "If it worked, it would show that reading a gene's DNA adds information about protein function beyond the protein sequence itself - which is the open question behind every genomic language model. As built, the benchmark cannot answer that, and demonstrating why is the useful result."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "17,732 human genes with Evo2-7B DNA embeddings precomputed is genuinely rare and could not be reproduced on a laptop, but the function labels themselves are just Gene Ontology, which function-prediction models such as DeepGO-SE already train on for far more proteins across many species."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements and no noise floor: each question has one machine-written answer, and nothing in the files supports estimating how uncertain a prediction should be."},
+    "models_beatable": {"answer": "no", "why": "Beating the reported MCC 0.959 is meaningless, because I reached 0.9449 with bag-of-words on question wording alone. The number measures writing style, so improving it is not evidence about any model."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails is the evaluation split: the target itself is contaminated, so no added data can make predictions on this benchmark more meaningful. Running the released Genolator as a baseline would also need a GPU."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "UniProt-GOA (Gene Ontology annotations, known resource), the CAFA (Critical Assessment of Functional Annotation) benchmark sets, and the Human Protein Atlas for subcellular location. Named from knowledge of these resources plus search results on Gene Ontology prediction methods; I did not download them here.",
+    "approx_items": null,
+    "join_key": "HGNC gene symbol (present as the 'gene_name' column) mapped to UniProt accession",
+    "why": "Gene Ontology labels exist publicly for far more proteins than the 17,732 genes here, so a clean function-prediction project could be built on these precomputed embeddings with labels taken from outside this dataset - which is the only salvage route, and it bypasses the contaminated question text entirely."
+  },
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The dataset as published cannot support an honest model: the yes/no target is readable from question wording. The only defensible use is to throw away the GPT-4.1 question text and treat the files as a free feature store - 17,732 human genes with Evo2-7B DNA, ESM-2 sequence and PST structure embeddings already computed (about 0.6 GB deduplicated) - then attach Gene Ontology labels from UniProt-GOA and ask whether the DNA embedding adds anything over the protein embedding. That is a different project with an externally sourced label, and it should be evaluated on its own terms rather than on this benchmark.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.6,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 0,
+    "cv_run_minutes": 3,
+    "compute_note": "Timed, not guessed: I downloaded 127 MB of samples, streamed two text columns from the 7.2 GB train file over HTTP range requests, and trained the text-only model on 230,226 rows in a single call of a few minutes using about 2 GB of RAM. Embedding hours are zero because all three backbones' outputs ship in the files.",
+    "cheapest_killing_check": "Train any text classifier on the 'prompt' column alone, with every biological column deleted, and compare to the paper's MCC. I did exactly this: 0.9449 versus a headline 0.959. It takes under an hour and kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A8 (label provenance), verified in the files rather than inferred. A bag-of-words model on the question wording alone - no DNA, no protein sequence, no structure, no gene identity - reaches MCC 0.9449 on the authors' own gene-disjoint test split, beating every baseline in the paper (XGBoost 0.913, GPT-4.1 0.179) and matching the second-best Genolator variant (0.948) against a headline of 0.959. GPT-4.1 wrote the true questions in hedging language and the false ones in assertive language, so the benchmark measures style, not biology; the free-text answers are also GPT-4.1 output, so generative training would distil that model. Everything else about the release is exemplary - open, documented to the column, counts matching, three expensive backbone embeddings precomputed for 17,732 human genes - which is why the only salvage is to discard the questions and relabel the embeddings from UniProt-GOA. Worth noting separately: this leakage result is a short, publishable comment in its own right (a Matters Arising or a Bioinformatics note), since the authors never ran a question-only ablation."
+}

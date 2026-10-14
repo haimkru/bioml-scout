@@ -1,0 +1,109 @@
+{
+  "paper_id": "cell2026-07-021",
+  "title": "Co-option of retrotransposons promotes antibody diversification.",
+  "doi": "10.1016/j.cell.2026.07.021",
+  "journal": "Cell",
+  "data_url": null,
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "No data file exists to open. I checked: Europe PMC record (not open access, no PMCID, hasSuppl=N, no text-mined accessions beyond antibody/Addgene RRIDs); NCBI elink from PubMed 42546688 to GEO, SRA and BioProject (all three returned zero links); GEO DataSets searched by author (Lauring MC -> only GSE210888, a 2023 PAX5 4C-seq series, PMID 38049665; Basu U 2025-2026 -> three series, all unrelated: GSE297796, GSE315245, GSE274097); GEO and BioProject searched by topic (LINE-1 + somatic hypermutation, HUSH + AID, MPP8/TASOR 2026, antisense + Igh, 'somatic hypermutation' 2026 BioProjects, Columbia University as submitter organization) - none matched this study; Crossref metadata (licence is CC-BY-NC-ND 4.0 on the version of record, full text only behind the Elsevier text-mining API which needs a key); Zenodo/Dryad DOI search via paper_context (empty).",
+    "what_came_from_paper_text_only": "Everything about the experiments comes from the abstract alone: LINE-1 (L1, a type of jumping-gene sequence) elements upstream of many VH antibody gene segments, antisense RNA from recombined VH promoters, recruitment of the HUSH silencing complex and AID (activation-induced cytidine deaminase, the enzyme that mutates antibody genes), HUSH conditional-knockout mice, mice engineered to lack upstream L1s, and L1 insertion at non-antibody loci. I never saw the methods, the data availability statement, any figure, any supplementary table, or a single number (no mouse counts, no sequence counts, no mutation counts)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "No downloadable data could be found two months after publication. Zero GEO/SRA/BioProject links from the PubMed ID, no accession in any text-mined annotation, no Zenodo or Dryad deposit, no PMC copy, and Europe PMC reports no retrievable supplementary files. Author-, topic- and institution-based repository searches all came back empty. Nothing to download, so A1 fails."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "Not assessable, and almost certainly a fail by construction. The natural label (per-base somatic hypermutation frequency at each position of each VH gene segment) would have to be built from raw amplicon sequencing reads by aligning, deduplicating and calling mutations - that is building the thing you want to predict, not reading a column."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "Not assessable. The inputs (DNA sequence of each VH segment plus its upstream region, and whether an L1 sits there) are not provided as a table anywhere I could reach; they would have to be re-extracted from the mouse and human reference genomes."
+    },
+    "a4_units_stated": {"pass": false, "note": "Not assessable - no file, no column headers, no units seen."},
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "No row count verified or claimed anywhere I could see. The biological unit is a VH gene segment (roughly 100-200 functional VH segments per mouse genome), which is far below the ~1,500-row bar even before any file exists."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "unknown",
+      "note": "Not assessable. The only data this study could have produced is raw sequencing (deep amplicon sequencing of mutated VH genes, RNA-seq, nascent-transcription sequencing, chromatin immunoprecipitation, possibly long reads), which project rules exclude from download and which would be tens to hundreds of gigabytes."
+    },
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot compare: no download and no count stated in the abstract."},
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Not assessable, and the risk is real: a per-position mutation rate derived from the same reference sequence used as the feature, plus an L1-presence feature annotated by RepeatMasker (a repeat-finding program), is partly computed from the features and partly from another tool's output."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepSHM (a convolutional neural network predicting somatic hypermutation rate from surrounding DNA sequence)",
+        "open_weights": null,
+        "score_and_split": "Not verified. Search snippets say it uses 5-21 base windows and improves on earlier motif models, and that it found an extended DWRCT mutation hotspot motif; I did not retrieve the paper itself, so I have no metric or split.",
+        "authors_named_unsolved": "Snippet level only: wider sequence context adds predictive power, implying context beyond the immediate motif is still unexplained.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "S5F / RS5NF (5-mer sequence-context models of hypermutation targeting built from synonymous mutations in antibody repertoire sequencing)",
+        "open_weights": null,
+        "score_and_split": "Not verified; known as a standard baseline in the immune-repertoire field, distributed with the SHazaM R package, but I retrieved only titles.",
+        "authors_named_unsolved": "Not verified.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Position-plus-context hypermutation landscape model (Spisak/Walczak/Mora-type repertoire model)",
+        "open_weights": null,
+        "score_and_split": "Not verified. Snippet states both sequence context and absolute position along the gene matter for predicting mutation profiles.",
+        "authors_named_unsolved": "Not verified.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models) would be the natural fit for predicting mutation rate from local sequence",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only laptop would suffice for embedding a few hundred short VH-plus-upstream windows",
+    "licence": "Not checked, because there is no dataset to apply a backbone to."
+  },
+  "integration": {
+    "partner_dataset": "Observed Antibody Space (OAS, ~2 billion publicly deposited antibody sequences) and GSE283316 (per-position hypermutation profiles from a 2026 EMBO J study), joinable in principle on IMGT VH gene-segment name plus genome coordinates",
+    "join_key": "VH gene-segment identifier (IMGT name) and mouse/human genome coordinates with build recorded",
+    "bigger_question_one_sentence": "Does the presence and transcriptional activity of an upstream LINE-1 element explain which antibody V gene segments mutate most in real immune repertoires, over and above the known local sequence motifs? - a good question, but it would have to be answered entirely from other people's public data, because this paper supplied none."
+  },
+  "controls": {
+    "positive_control": "Would be the textbook WRC/WA hotspot preference of AID, which any working mutation-rate model must recover - but unusable here with no data.",
+    "negative_control": "Label shuffling across VH segments; not runnable, no labels exist.",
+    "external_validation": "Observed Antibody Space repertoires and GSE283316 exist as independent sources, but they would be the project, not a validation of this paper."
+  },
+  "honest_claim_h3": "No claim is possible: with roughly 100-200 V gene segments per genome and no released measurements, any model would be fitting a few hundred points whose labels I could not obtain, so nothing could be honestly stated.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence upstream of each antibody gene segment to predict how often that segment gets mutated during an immune response.",
+    "train_on": "For each antibody heavy-chain variable (VH) gene segment: its own DNA sequence, the few kilobases upstream, and whether a decayed LINE-1 jumping-gene fragment sits there. A mouse or human genome contains only about 100-200 functional VH segments, so the example count is in the hundreds, not thousands - and I verified no count at all from this paper.",
+    "predict": "The mutation rate of that segment during somatic hypermutation, the deliberate mutation process B cells use to improve antibodies. The true answer would come from deep sequencing of antibody genes from germinal-center B cells, a measurement this paper presumably made but did not deposit anywhere I could find.",
+    "why_worthwhile": "Antibody-engineering groups and vaccine designers want to know which parts of an antibody gene will mutate, and immunologists want to know why AID hits antibody genes but mostly spares the rest of the genome; a jumping-gene feature that explains part of that would be a genuinely new input to existing mutation models."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and abandoned: predict per-segment or per-position somatic hypermutation rate from upstream sequence, with LINE-1 presence and antisense-transcription strength as features, benchmarked against 5-mer motif models. The idea is sound but cannot be built from this paper - it would need Observed Antibody Space repertoires plus an independent per-position mutation dataset such as GSE283316, and the LINE-1 annotation would have to be generated from the reference genome. If that project is wanted, evaluate those datasets directly rather than this paper.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated: there is no dataset, so every number would be invented.",
+    "cheapest_killing_check": "One NCBI elink call from the PubMed ID to GEO, SRA and BioProject. It returned zero links, and so did every author, topic and institution search - that single check kills the project in under a minute."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A1 fails outright: no data deposit is discoverable anywhere. The paper is not in PubMed Central, Europe PMC reports no retrievable supplementary files, PubMed links to zero GEO, SRA or BioProject records, and author-, topic- and institution-level repository searches found nothing matching this study. Even if the deposit appears later it would be raw sequencing, which project rules exclude, and the natural label (per-position mutation rate) would have to be constructed from reads (A2), over roughly 100-200 V gene segments, which fails A5 on sample size regardless. This is a strong piece of mechanistic immunology, not an ML dataset."
+}

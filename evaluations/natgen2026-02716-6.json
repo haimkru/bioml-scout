@@ -1,0 +1,56 @@
+{
+  "paper_id": "natgen2026-02716-6",
+  "title": "Plasticity of human microglia and brain perivascular macrophages in aging and Alzheimer's disease.",
+  "doi": "10.1038/s41588-026-02716-6",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.synapse.org/#!Synapse:syn52795287",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Synapse REST API (Synapse is Sage Bionetworks' data-sharing platform) for project syn52795287: entity metadata, the wiki listing 18 supplementary tables and 2 processed single-cell files (DataS1_FreshMG_final.h5ad syn52795302, DataS2_PsychAD_final.h5ad syn52795303, TableS4_metadata_PsychAD.csv syn52795314, TableS11 pseudotime CSV). Access-requirement endpoint returns 0 requirements and restrictionLevel OPEN, but every download attempt returns 403 'Anonymous users have only READ access permission'; file sizes are also hidden from anonymous users. GitHub code repo DiseaseNeuroGenomics/scMyeloidAD README read (MIT licence, analysis code only, no data).",
+    "what_came_from_paper_text_only": "832,505 myeloid cells, 1,607 donors, 13 subtypes in 6 subclasses, AD (Alzheimer's disease) pathology phenotypes and age per donor: all from the abstract and the Synapse wiki text. Full text not open (no PMCID; nature.com and medRxiv both blocked fetching). No row counts, column names or file sizes verified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Checked via Synapse API: files are marked OPEN with no data-use agreement, but download requires logging in to a (free, certified) Synapse account; anonymous requests get HTTP 403. Login requirement = A1 fail by our rule. Underlying raw PsychAD data is separately controlled-access through the AD Knowledge Portal."},
+    "a2_label_is_a_column": {"pass": true, "note": "Not verified. Per the wiki, TableS4_metadata_PsychAD.csv holds donor clinical metadata (presumably age, AD diagnosis, Braak/CERAD pathology scores) that would serve as donor-level labels; columns unseen."},
+    "a3_inputs_present": {"pass": true, "note": "Not verified. Processed h5ad (annotated single-cell expression matrix) files are listed; contents unseen."},
+    "a4_units_stated": {"pass": true, "note": "Not verified; pathology stages are ordinal scales without units, expression is counts."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Not verified. The modelling unit for any donor-level label is the donor: 1,607 per the abstract, just above the ~1,500 bar and only if most have labels; cell count (832,505) is not the independent unit."},
+    "a6_fits_laptop": {"pass": true, "working_set": "unknown; h5ad sizes hidden from anonymous users", "note": "832k cells × ~30k genes sparse would likely be a few GB; donor pseudobulk would be small. Not verified."},
+    "a7_counts_match_paper": {"pass": false, "note": "Could not check: no file opened."},
+    "a8_label_provenance": {"pass": true, "note": "Not verified. Neuropathology scores (Braak, CERAD) are physical post-mortem measurements, not model outputs; subtype labels and pseudotime would be computed from the expression features and must not be used as targets."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Cell-type-resolved pseudobulk classifier (bioRxiv 2026, microglial PTPRG paper)", "open_weights": null, "score_and_split": "Logistic regression on 228 variable genes from ROSMAP single-nucleus pseudobulk; balanced accuracy 0.87, AUC 0.89 on held-out ROSMAP samples, reported to generalise to independent cohorts (from search snippet only).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Trivedi et al. 2026 MLP on ROSMAP microglia", "open_weights": null, "score_and_split": "Multi-layer perceptron classifying AD vs control nuclei; score and split not retrieved (cell-level classification risks donor leakage).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models)", "freeze_and_head_viable": true, "hardware": "CPU embedding of 832k cells would take many hours; subsample per donor", "licence": "scGPT MIT; Geneformer Apache-2.0"},
+  "integration": {"partner_dataset": "ROSMAP / SEA-AD single-nucleus atlases (AD Knowledge Portal, controlled or login-gated)", "join_key": "gene symbol / Ensembl gene; donor-level pathology scales", "bigger_question_one_sentence": "Does a donor's microglial state mix predict AD pathology in an independent brain bank?"},
+  "controls": {"positive_control": "GPNMB-subtype fraction rising with Braak stage (paper's headline result).", "negative_control": "Shuffle pathology labels across donors.", "external_validation": "FreshMG cohort in the same Synapse project, or ROSMAP/SEA-AD."},
+  "honest_claim_h3": "Predicts post-mortem AD pathology stage from the prefrontal-cortex myeloid-cell composition of donors in Mount Sinai/Rush brain banks.",
+  "plain_idea": {
+    "one_liner": "Use each donor's brain immune-cell gene activity to predict how much Alzheimer's damage their brain shows at autopsy.",
+    "train_on": "Per-donor summaries of gene activity and cell-type proportions of microglia and brain macrophages; 1,607 donors per the abstract (unverified).",
+    "predict": "Post-mortem neuropathology scores (plaque and tangle stage) and age, recorded by brain-bank pathologists per donor.",
+    "why_worthwhile": "Would test whether the immune-cell state alone carries enough signal to stage disease, and whether that transfers to other brain banks."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "1,607 donors (paper) is larger than typical ROSMAP microglia sets (~400–450 donors), but unverified and myeloid-only."},
+    "confidence_score": {"answer": "no", "why": "No replicate brains per donor; nothing checked supports calibrated uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "The 2026 pseudobulk logistic regression already reports AUC 0.89 on held-out ROSMAP; a simple baseline that is hard to beat by much."},
+    "guaranteed_improvement": {"answer": "no", "why": "Existing models' code/weights not confirmed runnable and cohorts differ, so same-split comparison is not possible."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "ROSMAP and SEA-AD record the same Braak/CERAD pathology scores per donor (known resources), but behind the AD Knowledge Portal login or data-use agreements.", "approx_items": null, "join_key": "Not joinable item-wise; donors are different people, shared only at gene and phenotype level", "why": "Other cohorts allow external validation of a donor-level model but not more training rows for the same donors."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Donor-level pseudobulk (and subtype-proportion) model predicting Braak/CERAD stage and age from myeloid cells, trained on PsychAD and tested on FreshMG or ROSMAP. Blocked at download: needs a Synapse login.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": null, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimable: file sizes are hidden from anonymous Synapse users and nothing was downloaded.", "cheapest_killing_check": "With a free Synapse account, download TableS4_metadata_PsychAD.csv and count donors with non-missing Braak and CERAD scores; under ~1,000 kills the donor-level regression."},
+  "verdict": "reject",
+  "verdict_reason": "A1 fails: the processed files are flagged OPEN with no data-use agreement, but Synapse refuses anonymous downloads (HTTP 403) and requires a free certified account, so nothing could be opened or counted. If the user registers a Synapse account, this is worth re-evaluating, since a donor-level metadata CSV plus myeloid h5ad from about 1,607 donors is listed; the existing 2026 pseudobulk AD classifiers (AUC 0.89) mean the field is moderately crowded."
+}

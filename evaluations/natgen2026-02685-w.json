@@ -1,0 +1,48 @@
+{
+  "paper_id": "natgen2026-02685-w",
+  "title": "Intrinsically disordered regions restrain genomic targeting of RNA and histone demethylases in mammals and plants.",
+  "doi": "10.1038/s41588-026-02685-w",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE287841",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found GEO (Gene Expression Omnibus) SuperSeries GSE287841 (277 samples, 10 GB RAW tar) and SubSeries GSE305606, GSE287065, GSE286066, GSE285802 and GSE285801 by title search; PubMed elink returned no GEO links. Listed the supplement folders. Downloaded and opened: GSE285802_m6A_norm.tsv (2,292 Arabidopsis m6A peaks x 10 normalized samples, 5 genotypes x 2 replicates), GSE285802_Expr_norm.tsv (30,705 genes x 10), GSE305606_mRNA.filter.out.txt (raw featureCounts table, 56,943 mouse genes), and the WT caMeRIP and CLIP narrowPeak files (43,143 and 12,458 peaks). GSE287065 holds 0.4–1 GB bigwig signal tracks for ChIP/CUT&Tag and ATAC (chromatin accessibility) data.",
+    "what_came_from_paper_text_only": "The biology (IDR deletion shifts ALKBH5 and histone demethylases onto chromatin and opens it) comes from the abstract only. The paper is paywalled with no PMC full text, so I could not check the methods, replicate numbers or any differential-analysis table the authors may have in their supplement."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public GEO, no login. Checked in the folder listings."},
+    "a2_label_is_a_column": {"pass": false, "note": "The natural target (which loci gain binding, accessibility or lose a repressive mark when the IDR, the disordered tail, is deleted) is not a column. It would have to be built by differential peak calling across WT vs deletion peak files or bigwigs. No differential results table is deposited (checked the GSE305606 and GSE285802 file lists)."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs would be genomic coordinates (mm39 / TAIR10); sequence can be pulled from the reference genome."},
+    "a4_units_stated": {"pass": true, "note": "Peak files use standard narrowPeak columns. Normalization in the m6A/expression tables is undocumented but looks consistent."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "There are tens of thousands of peaks per file, but how many differential loci a constructed label would give is unknown. Two replicates per condition in GSE285802."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1 GB peak files; bigwigs 0.4–1 GB each", "note": "Peak-level work fits. Bigwig-based quantification is heavier but can be streamed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Could not compare: no full text."},
+    "a8_label_provenance": {"pass": true, "note": "Labels would come from measured sequencing assays (CLIP, MeRIP, ATAC), not model output. Peak-caller thresholds would shape them, though."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "Nucleotide Transformer or DNABERT-2 (DNA language models) could embed loci in principle", "freeze_and_head_viable": null, "hardware": "CPU for peak-level embeddings", "licence": "not assessed"},
+  "integration": {"partner_dataset": "ENCODE mouse ESC (embryonic stem cell) chromatin tracks", "join_key": "mm39 genomic coordinates", "bigger_question_one_sentence": "Which pre-existing chromatin features predict where a de-restrained demethylase lands? Not pursued because the label must be built first."},
+  "controls": {"positive_control": "Transposable-element (TE) loci should gain accessibility after deletion (stated in the abstract).", "negative_control": "Label shuffle.", "external_validation": "The Arabidopsis data set is a different species, but with different assays and genotypes."},
+  "honest_claim_h3": "At best, it would predict which mouse ESC loci a single lab's peak-calling pipeline flags as changed after IDR deletion of a few demethylases, in one cell line with two replicates.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and baseline chromatin state to predict which genomic sites open up when a demethylase loses its disordered tail.",
+    "train_on": "Genomic regions (peaks) from mouse embryonic stem cells, with sequence and wild-type chromatin marks; the number of differential regions is unknown.",
+    "predict": "Whether a region gains accessibility or loses a repressive histone mark in the IDR-deletion line, labelled by comparing WT and mutant sequencing peak sets ourselves.",
+    "why_worthwhile": "It would show whether the de-restrained enzyme's targets are encoded in the sequence, which matters for engineering crops with IDR-deleted proteins. But this is one lab and one cell line."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify mouse ESC regions as gained or unchanged in accessibility or binding after IDR deletion, from sequence embeddings plus WT chromatin. This needs a constructed differential label from WT vs knock-in peak files.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only. Differential peak calling from bigwigs or the RAW tar is the main cost; nothing was timed.", "cheapest_killing_check": "Intersect the WT and IDR-deletion (KI) ATAC peak files in GSE305606 and count reproducible gained peaks. Under ~1,000 kills it."},
+  "verdict": "reject",
+  "verdict_reason": "A2 fails. The data are public GEO peak calls and signal tracks for a mechanism study, but the only interesting target (sites changed by IDR deletion) has to be constructed by our own differential analysis of WT vs mutant peaks. It also comes from one cell line with about two replicates, and no differential table is deposited."
+}

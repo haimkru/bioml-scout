@@ -1,0 +1,302 @@
+{
+  "paper_id": "nar2026-gkag881",
+  "title": "KinaseDB: an integrated multi-omics platform for the human kinome with disease-specific target prioritization.",
+  "doi": "10.1093/nar/gkag881",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://kinasedb.raylab.iiitd.edu.in/download (bulk CSVs at /api/download/{kinases,kps,substrates,pockets,drugs,disease,expression,variants,cosmic})",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the bulk endpoints in the site's JavaScript bundle and downloaded them without logging in. kinases.csv has 562 rows, 559 unique UniProt IDs, one shifted row and full sequences. kps.csv has 559 rows (KPS = kinase prioritization score; 56/224/279 rows in the higher/intermediate/lower tiers). substrates.csv (57 MB) has 33,606 kinase\u2013substrate rows covering 663 kinase IDs and 6,644 substrates; 26,103 rows name the phosphorylated site; 0 duplicates. By source: 'Phosphosite only' 12,609, OmniPath 7,503, KiNet+PhosphoSitePlus 7,398, PhosphoFormer 4,407, KiNet 1,689. By species: human 24,522, mouse 5,103, rat 2,745. drugs.csv has 502 rows, and 453 of its best_affinity_nM values are negative, which is impossible for an affinity. disease.csv has 5,513 rows of Open Targets scores. expression.tsv has 471 rows. variants.csv has 7,846 rows. pockets.csv fails to parse at line 29,640.",
+    "what_came_from_paper_text_only": "No full text is available (no PMCID), so I only read the abstract. From it: 11 core source resources, 625 tissue-cell-type combinations, 38,571 kinase-disease pairs across 69 diseases, KPS AUROC 0.773 against FDA-approved targets versus IDG (Illuminating the Druggable Genome) dark kinases. I did not open the per-disease KPS file or the COSMIC (cancer mutation catalogue) file (12.9 MB)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Checked in the files: all nine bulk CSV/TSV endpoints return HTTP 200 with no login. The substrate file is slow; it needed a 280 s timeout."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Checked in the files: for kinase\u2013substrate prediction, each row is a known kinase\u2013site pair (a positive). Negatives are not recorded and would have to be sampled. KPS is a column, but it is a computed score, not a measured label."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Checked in the files: the substrate file contains full kinase and substrate sequences plus a 15-residue window around each site, so no ID lookups are needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Checked in the files: the substrate label is binary, so no units are needed. The non-target column best_affinity_nM is negative in 453 of 502 rows; this is a data-quality flag, not a killer for the substrate task."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 33606,
+      "note": "Checked in the files: 33,606 substrate rows; about 29,200 remain after dropping the 4,407 PhosphoFormer-predicted rows. Any per-kinase table has only 559 rows."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~57 MB substrate CSV; ESM-2 embeddings for ~7k proteins under 1 GB",
+      "note": "Easily fits."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Checked against the abstract: 559 kinases matches kps.csv. The substrate file has 663 kinase IDs because it includes non-human orthologs. The 38,571 kinase-disease pairs were not checked."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Checked in the files: 4,407 substrate rows have Data|source = PhosphoFormer, i.e. another model's predictions. They pass only if dropped through the source column; the rest are curated literature pairs. KPS fails A8 as a target, because it is computed from the database's own features."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "Seen in files: nine separate CSVs joined on UniProt; the substrate file stands alone with sequences inline."
+    },
+    "B2": {
+      "score": 1,
+      "why": "Seen: substrates, kps and disease parse cleanly; pockets.csv breaks at line 29,640; kinases.csv has one shifted row."
+    },
+    "B3": {
+      "score": 1,
+      "why": "Seen: substrate labels pooled from five sources, one of them a model (PhosphoFormer); curation standards differ."
+    },
+    "B4": {
+      "score": 2,
+      "why": "Binary pair labels have no censored values (substrate file checked)."
+    },
+    "B5": {
+      "score": 2,
+      "why": "Seen: 0 duplicates on kinase+substrate+site in 33,606 rows."
+    },
+    "B6": {
+      "score": 1,
+      "why": "Column names are mostly self-explanatory; no data dictionary found; negative affinity values unexplained."
+    },
+    "C1": {
+      "score": 0,
+      "why": "Kinase\u2013substrate prediction only matters if we beat Phosformer or DARKIN-style baselines."
+    },
+    "C2": {
+      "score": 0,
+      "why": "Several open models (Phosformer, Phosformer-ST, ESM-2 autoregressive model, DARKIN benchmark) already evaluated on held-out kinases."
+    },
+    "C3": {
+      "score": 0,
+      "why": "The data is re-packaged PhosphoSitePlus/OmniPath/KiNet, which the existing models already used."
+    },
+    "C4": {
+      "score": 2,
+      "why": "Confirming kinase\u2013substrate pairs in the lab is expensive and slow."
+    },
+    "C5": {
+      "score": 2,
+      "why": "Published Phosformer and DARKIN numbers and runnable code exist."
+    },
+    "D1": {
+      "score": 2,
+      "why": "ESM-2, a protein language model, is open and fits sequence pairs."
+    },
+    "D2": {
+      "score": 2,
+      "why": "Embeddings for ~7k proteins can be cached once on CPU."
+    },
+    "D3": {
+      "score": 1,
+      "why": "ESM-2 is MIT-licensed, but the PhosphoSitePlus-derived rows carry a non-commercial licence."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Held-out kinase or kinase-family splits are possible using the Group/Family columns (seen)."
+    },
+    "E2": {
+      "ok": true,
+      "why": "Seen: 9 kinase groups and 663 kinase IDs."
+    },
+    "E3": {
+      "ok": true,
+      "why": "A per-kinase motif frequency or position-specific scoring matrix baseline is trivial."
+    },
+    "E4": {
+      "ok": false,
+      "why": "There are no replicate measurements; labels are binary curated literature claims."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Known motifs (proline after the site for CDKs, arginine at position \u22123 for AGC kinases) should be recovered."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Label shuffling and kinase-sequence ablation are runnable."
+    },
+    "E7": {
+      "ok": true,
+      "why": "The Johnson 2023 peptide-library specificity atlas is a known independent resource (not retrieved here)."
+    },
+    "E8": {
+      "ok": true,
+      "why": "Phosformer code is public and its benchmark is reproducible."
+    },
+    "G1": {
+      "score": 2,
+      "why": "Seen: UniProt, HGNC, Ensembl gene and protein IDs present."
+    },
+    "G2": {
+      "score": 2,
+      "why": "PhosphoSitePlus, OmniPath, ChEMBL and DepMap are all joinable on UniProt or gene."
+    },
+    "G3": {
+      "score": 2,
+      "why": "One row per kinase\u2013site pair; clean joins."
+    },
+    "G4": {
+      "score": 0,
+      "why": "Joins mostly recover the resources KinaseDB was built from; no new question emerges."
+    },
+    "H1": {
+      "score": 0,
+      "why": "Seen: only positive pairs; no tested-negative pairs."
+    },
+    "H2": {
+      "score": 1,
+      "why": "Seen: five sources, but heavily biased to well-studied kinases; 73% human."
+    },
+    "H3": {
+      "score": 2,
+      "why": "Claim can be stated precisely: predicts literature-curated pairs, biased to well-studied kinases."
+    },
+    "H4": {
+      "score": 1,
+      "why": "Provenance column is visible, but model-derived rows are not flagged in the abstract."
+    },
+    "I1": {
+      "score": 1,
+      "why": "Kinase signalling community generally; no new decision unlocked versus existing tools."
+    },
+    "I2": {
+      "score": 1,
+      "why": "Marginal gains over Phosformer would not change experiment choice."
+    },
+    "I3": {
+      "score": 1,
+      "why": "Ranking metrics are roughly aligned with substrate-screening decisions."
+    },
+    "I4": {
+      "score": 2,
+      "why": "Kinase\u2013substrate specificity mapping is genuinely complex."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Real modelling with protein language model embeddings and held-out kinase splits."
+    },
+    "J2": {
+      "score": 1,
+      "why": "Motif knowledge allows sanity checks; domain help is needed for dark kinases."
+    },
+    "J3": {
+      "score": 1,
+      "why": "A cleaned de-circularised substrate table is a minor deliverable."
+    },
+    "J4": {
+      "score": 1,
+      "why": "Not set; roughly 2 weeks."
+    },
+    "J5": {
+      "score": 0,
+      "why": "No kill date written."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Phosformer (Bioinformatics 2023)",
+        "open_weights": true,
+        "score_and_split": "Kinase-specific phosphosite prediction from kinase+peptide pairs; benchmarked against prior tools (exact numbers not retrieved).",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Phosformer-ST (Bioinformatics 2024, 'Using explainable machine learning to uncover the kinase-substrate interaction landscape')",
+        "open_weights": true,
+        "score_and_split": "Multitask model predicting beyond seen kinase\u2013substrate pairs; numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ESM-2 + autoregressive decoder (CSBJ 2025)",
+        "open_weights": null,
+        "score_and_split": "Binary kinase\u2013substrate classification with hard negatives and zero-shot prediction for kinases with no known substrates; numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DARKIN benchmark (2025)",
+        "open_weights": true,
+        "score_and_split": "Zero-shot dark-kinase substrate prediction with ESM, ProtT5 and SaProt on held-out kinases; numbers not retrieved.",
+        "authors_named_unsolved": "Predicting substrates for dark kinases with no known substrates.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (650M or 150M checkpoint)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU",
+    "licence": "MIT (model); PhosphoSitePlus data is non-commercial"
+  },
+  "integration": {
+    "partner_dataset": "Johnson et al. 2023 kinome substrate specificity atlas; DepMap",
+    "join_key": "UniProt / gene symbol",
+    "bigger_question_one_sentence": "Do protein-language-model substrate predictions agree with peptide-library specificities for dark kinases? Existing benchmarks already ask this."
+  },
+  "controls": {
+    "positive_control": "Recover the proline-after-site motif for CDK/MAPK and the arginine-at-\u22123 motif for AGC kinases.",
+    "negative_control": "Shuffle kinase labels within group; drop PhosphoFormer rows to test circularity.",
+    "external_validation": "Peptide-library specificity atlas (Johnson 2023) or a temporal PhosphoSitePlus release."
+  },
+  "honest_claim_h3": "The model would predict which literature-curated kinase\u2013site pairs exist, mostly for well-studied human kinases, with negatives assumed rather than measured.",
+  "plain_idea": {
+    "one_liner": "Use a kinase's protein sequence and a candidate substrate site to predict whether that kinase phosphorylates that site.",
+    "train_on": "Kinase sequence plus the 15-residue window around the substrate site, for 33,606 verified pairs (about 29,200 after removing model-predicted rows); negatives would have to be sampled.",
+    "predict": "Whether the pair is a known kinase\u2013substrate relationship, as curated from PhosphoSitePlus, OmniPath and KiNet literature records.",
+    "why_worthwhile": "It would help assign substrates to understudied kinases, but several open models already do this on the same source data."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "KinaseDB re-aggregates PhosphoSitePlus, OmniPath and KiNet, the same sources Phosformer and DARKIN train on, and adds 4,407 model-predicted rows."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicates or tested negatives, so there is no basis for calibrated confidence."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The 2023\u20132025 models use pretrained protein language models and held-out-kinase evaluation (DARKIN)."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "No new independently measured data; the extra rows partly come from another model."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "PhosphoSitePlus, OmniPath, KiNet (named as sources in the file); peptide-library specificity atlas (known resource)",
+    "approx_items": 33606,
+    "join_key": "UniProt + residue position",
+    "why": "Labels are already public elsewhere, which is exactly why this dataset adds little."
+  },
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Kinase\u2013substrate pair classification with frozen ESM-2 embeddings and held-out kinase-family splits. Considered and rejected: the field is crowded and the data is not new.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 3,
+    "cv_run_minutes": 10,
+    "compute_note": "Estimated, not timed: ~7.3k unique proteins through ESM-2 150M on CPU; logistic or gradient-boosting head.",
+    "cheapest_killing_check": "Count rows left after dropping PhosphoFormer rows and rows already in Phosformer's training set; done for the first part (~29.2k remain)."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The downloads work, but KinaseDB re-packages public substrate and disease resources. 4,407 substrate rows are another model's predictions, and the KPS label is computed from the database's own features. Kinase\u2013substrate prediction is already covered by open, honestly evaluated models (Phosformer, DARKIN)."
+}

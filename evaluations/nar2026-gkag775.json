@@ -1,0 +1,148 @@
+{
+  "paper_id": "nar2026-gkag775",
+  "title": "A self-iterative orthogonal base-editing platform enables multiplex N-to-N diversification and genome-scale functional screening in Escherichia coli.",
+  "doi": "10.1093/nar/gkag775",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1450559",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Pulled the SRA (Sequence Read Archive) run table for PRJNA1450559: exactly 6 runs, all 'AMPLICON' paired-end Illumina NovaSeq, 3.1-57.3 million read pairs each, ~14.6 GB total, named 'NGS of gRNA', 'NGS of origin', 'NGS of library test', etc. - i.e. raw FASTQ only. Fetched the Zenodo record 10.5281/zenodo.18993788 (metadata + license CC-BY-4.0) and the GitHub repo Liurmlab/NGS via the API: it holds just README.md (1,003 bytes) and one file named 'code' (6,539 bytes) - a merge/quality-control/trim/barcode-classify script, no data, no model. Parsed the Europe PMC full-text XML: the article has exactly one supplementary item, gkag775_supplemental_file.pdf. Tried four routes to that PDF (Europe PMC supplementaryFiles endpoint twice with a 120 s timeout - both timed out; PMC /bin/ path - returns a 1,817-byte challenge page; europepmc.org /bin/ - HTTP 403; supplementaryFiles with fileName - HTTP 500). PMC open-access package service returns 404 for this article.",
+    "what_came_from_paper_text_only": "All numbers about the experiments: 4,597 gRNAs split into five libraries, 151 targeted genes, 84 amino-acid and 252 codon combinations at four ompR sites, the 56.2% isobutanol increase, and every per-site editing efficiency. Supplementary Tables S1-S13 (strains, plasmids, primers, gRNA spacer sequences, the 151-gene list) exist only inside the one supplemental PDF, which I could not retrieve, so I could not confirm a single row of any of it."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The raw sequencing is genuinely public: SRA BioProject PRJNA1450559, 6 runs, no login or access application. But the processed data is described only as 'available in the main text or the source data', and the sole supplementary file (one PDF) could not be downloaded by any of four routes."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. No label column exists anywhere. Every quantity a model would predict - per-site base-editing efficiency, gRNA (guide RNA) enrichment under ethanol selection, variant phenotype - would have to be constructed from 14.6 GB of raw amplicon FASTQ by running the authors' 6.5 KB merge/trim/barcode-classify script, and the barcode-to-gRNA key needed to demultiplex it sits in a PDF supplement that is not retrievable. This is exactly the 'build the thing you are predicting' failure."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "The model inputs would be the 20-nucleotide gRNA spacer sequences and their genomic context. The paper says these are in Supplementary Tables S4/S5, inside the single supplemental PDF; they appear in no machine-readable file, no FASTA, and not in the GitHub repository."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Not assessable: there is no data file in which to check a units column. Editing efficiency is reported as a percentage in the figures only; read counts and enrichment ratios for the screen are not deposited in any tabular form."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": null,
+      "note": "The text reports 4,597 gRNAs across five libraries, which would be enough rows in principle, but I verified zero rows - no table exists to count. n_rows is null because I did not see it."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "The only deposited data is ~14.6 GB of raw paired-end FASTQ (57.3 million read pairs in the largest run). Project rules forbid downloading raw sequencing, and reprocessing six amplicon runs plus demultiplexing is not a laptop-afternoon job."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot be checked: with no downloadable table there is nothing to compare against the paper's 4,597 gRNAs, 151 genes or 84 amino-acid combinations."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Provenance would be fine if the data existed: labels would be read counts from targeted amplicon sequencing, a direct physical measurement, not another model's output and not computable from the gRNA sequence features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "BE-Hive (Arbab et al., Cell 2020) - machine-learning predictor of base-editing genotype outcomes and efficiency",
+        "open_weights": true,
+        "score_and_split": "Reported Pearson R about 0.9 for genotype outcome frequencies and about 0.7 for efficiency, trained on 38,538 genomically integrated target sites in mammalian cells; held-out target-site split.",
+        "authors_named_unsolved": "Transfer across cell types and to editors/contexts outside the training panel; sequence motifs driving efficiency remain only partly explained.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BE-DICT (Marquart et al., Nature Communications 2021) - attention-based deep learning for base-editing outcomes",
+        "open_weights": true,
+        "score_and_split": "High correlation with measured outcomes on high-throughput target-library screens (benchmarked against BE-Hive and DeepBaseEditor, all three similar by Pearson correlation); library-based held-out split.",
+        "authors_named_unsolved": "Predictions degrade on endogenous sites versus synthetic libraries; generalisation to new editors needs retraining.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepBE (Nature Biotechnology 2023) - deep learning for efficiencies and outcomes of 63 base editors",
+        "open_weights": true,
+        "score_and_split": "Trained across 63 base editors built from nine Cas9 variants and seven editor variants; evaluated on held-out target libraries (mammalian cells).",
+        "authors_named_unsolved": "Coverage of editor/PAM (protospacer-adjacent motif) combinations not in the training panel.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ABEdeepon / CBEdeepon (BEdeepon) - deep learning for on-target efficiency and outcome frequencies",
+        "open_weights": true,
+        "score_and_split": "Mean Pearson R 0.79-0.87 for outcomes and 0.85-0.89 for efficiency on high-throughput datasets; held-out target split.",
+        "authors_named_unsolved": "Low-throughput endogenous-site prediction and cross-dataset transfer.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BE-dataHIVE (BMC Bioinformatics 2024) - a public base-editing database, not a model",
+        "open_weights": true,
+        "score_and_split": "Not a model: over 460,000 gRNA-target combinations pooled from five studies, with melting temperatures and energy terms; shows how much labelled base-editing data is already public.",
+        "authors_named_unsolved": "Bacterial and non-mammalian base-editing data are essentially absent from the aggregated corpus.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models) would be the natural backbone for gRNA-context features",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only embedding of a few thousand short sequences is feasible, but irrelevant here because there are no labels to fit a head to.",
+    "licence": "Backbone licences are permissive; the paper's own code is CC-BY-4.0, which does not help since it is a FASTQ-processing script."
+  },
+  "integration": {
+    "partner_dataset": "BE-dataHIVE (over 460,000 gRNA-target base-editing measurements) joined on gRNA spacer sequence and target context",
+    "join_key": "20-nucleotide spacer sequence plus flanking genomic context (and E. coli MG1655 genome coordinates)",
+    "bigger_question_one_sentence": "Do base-editing outcome models trained on mammalian cell libraries transfer to bacterial chromosomes, where DNA repair differs - a question that is unanswerable here because this paper deposits no per-gRNA outcome table to test against."
+  },
+  "controls": {
+    "positive_control": "None runnable: with no outcome table, the obvious control (recover the known protospacer-position preference of the editing window) cannot be computed.",
+    "negative_control": "Label shuffling is not applicable without labels.",
+    "external_validation": "BE-dataHIVE and the BE-Hive/DeepBE training sets would be excellent external sets, but they cover mammalian cells, not E. coli, and there is nothing on this side of the join to validate."
+  },
+  "honest_claim_h3": "No claim is supportable from the deposited files: the only public artefacts are 14.6 GB of raw amplicon FASTQ, a 6.5 KB read-processing script, and one unretrievable supplementary PDF, so any statement about editing efficiency or screen enrichment would rest entirely on the paper's own figures.",
+  "plain_idea": {
+    "one_liner": "Use guide RNA sequence and its genomic surroundings to predict how efficiently a bacterial base editor rewrites each target letter.",
+    "train_on": "The project I considered would train on each guide RNA's 20-letter spacer plus flanking E. coli genome sequence; the paper reports 4,597 guide RNAs across five libraries, but I verified zero of them because no table is deposited.",
+    "predict": "Per-position editing efficiency (percentage of sequencing reads carrying each base change) and, for the screen, how much each guide RNA's carrier cells grow or shrink in abundance under ethanol as the only carbon source. Truth would come from targeted amplicon sequencing on an Illumina NovaSeq.",
+    "why_worthwhile": "Groups engineering industrial E. coli pick guide RNAs by trial and error, and every published base-editing predictor was trained in mammalian cells, so a bacterial one would be genuinely new - if the measurements were released as a table."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "E. coli base-editing outcomes are near-absent from the public corpus (BE-dataHIVE's 460,000+ combinations are mammalian), so 4,597 bacterial gRNAs would fill a real gap - but that number comes from the paper's text and exists in no downloadable file."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Replicate structure is described in the paper but no per-replicate read counts are deposited, so per-prediction uncertainty could not be estimated from anything I can open."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "BE-Hive (2020), BE-DICT (2021), BEdeepon and DeepBE (2023) are all open, recent, and evaluated on held-out target libraries with correlations of 0.7-0.9; they are not obviously weak, and in any case cannot be compared without a bacterial outcome table."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: we have no labels for our side of the comparison, the assay (bacterial chromosomal editing) differs from the mammalian training assay, and no shared evaluation split exists."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict per-position base-editing efficiency and ethanol-selection fitness from guide RNA spacer plus E. coli genomic context, using a frozen DNA language model with a small regression head, and test whether mammalian-trained predictors (BE-Hive, BE-DICT, DeepBE) transfer to bacteria. Not executable: the labels are not deposited.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 14.6,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working set is the measured SRA size (sum of the 6 runs' size_MB field: ~14.6 GB of raw FASTQ). Everything downstream is unestimable because producing a labelled table requires rerunning the authors' amplicon pipeline with a barcode key I could not obtain; I timed nothing.",
+    "cheapest_killing_check": "Open the single supplementary file and ask whether any table gives per-gRNA editing efficiency or read counts. It is a PDF of strain/plasmid/primer lists, and it is not even retrievable from Europe PMC or PMC - that check alone kills the project in ten minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A2 fails: no editing-efficiency or screen-enrichment label exists as a column anywhere. The only deposited data is 14.6 GB of raw amplicon FASTQ (6 SRA runs) plus a 6.5 KB read-processing script; the sole supplement is one PDF that four download routes could not retrieve, and it holds strain/primer lists rather than measurements. Every number in the paper (4,597 gRNAs, 151 genes, 84 amino-acid combinations) is unverifiable, A6 also fails on raw-sequencing size, and the task itself is served by four open models (BE-Hive, BE-DICT, BEdeepon, DeepBE) scoring 0.7-0.9 on held-out libraries. Excellent synthetic-biology paper, unusable as an ML substrate."
+}

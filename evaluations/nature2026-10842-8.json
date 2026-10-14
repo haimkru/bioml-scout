@@ -1,0 +1,84 @@
+{
+  "paper_id": "nature2026-10842-8",
+  "title": "Miniaturizing and modifying natural proteins with Raygun.",
+  "doi": "10.1038/s41586-026-10842-8",
+  "journal": "Nature",
+  "data_url": "https://zenodo.org/records/19546626",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 19546626 metadata via API: one file, training_fastas.tar.gz, 987,431,248 bytes, CC-BY-4.0. I pulled the first 3 MB with a ranged request and decompressed it: the first member is active-binding-fastas/binding-sampled-0.fasta (4,992,909 bytes), plain protein sequences with headers of the form '>B2T1N4|ARGB_PARPJ| binding_sites=72-73' — i.e. UniProt accession plus copied UniProt binding-site positions, no measured outcome. I listed the whole GitHub repo rohitsinghlab/raygun (183 files) and downloaded three: unfiltered_egfp_0.05_1000.pll.tsv (1,000 generated eGFP sequences with columns name/length/pll/sequence), all_gfp_seqs.fasta (934 unlabelled fluorescent-protein sequences), and old_modelv1/fluorescentmodel.py (a brightness classifier head, code only, no training labels). I parsed the Addgene article page and counted exactly 19 deposited plasmids: 11 TurboID, 4 eGFP, 4 mCherry designs. I also checked Zenodo record 14031281 (pretrained Raygun checkpoint, 2.86 GB).",
+    "what_came_from_paper_text_only": "The experimental outcomes themselves: 6 of 8 fluorescent-protein designs fluoresced, 6 of 11 TurboID designs expressed with 2 showing significant biotinylation, and 4 EGF variants assayed with dissociation constants of 0.274, 0.561 and 0.759 micromolar (wild type) — I read these in the main text and figure captions; no table of them is deposited anywhere. Also from text only: the claim that 70,000 candidates per fluorescent-protein template and 500,000 TurboID candidates were generated in silico. The Europe PMC supplementary-file listing timed out twice, so the Supplementary Information contents are unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo (CC-BY-4.0), GitHub and Addgene all open, no login. I opened the Zenodo tarball's first member and three GitHub files successfully."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. Nothing in the deposited data is a measured outcome. The 987 MB Zenodo tarball is unlabelled sequences for self-supervised training; the only annotation in the headers is copied UniProt binding-site positions. The actual experimental results (fluorescence, biotinylation, binding) exist only as bars in Figures 3 and 4 and would have to be transcribed by eye from images."},
+    "a3_inputs_present": {"pass": true, "note": "Full amino-acid sequences are present in every file I opened, so no identifier lookups would be needed."},
+    "a4_units_stated": {"pass": false, "note": "No units because there is no measurement column. The one numeric column I found, pll (pseudo-log-likelihood from ESM-2, a protein language model), is unitless and is a model score, not an assay."},
+    "a5_enough_rows": {"pass": false, "n_rows": 23, "note": "FAIL. Experimentally measured designs total about 23: 8 fluorescent proteins, 11 biotin ligases, 4 epidermal growth factor variants. Addgene confirms only 19 constructs deposited. The checklist floor is ~400 for classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.99 GB Zenodo tarball plus 25 MB of GitHub FASTA files", "note": "Size is fine on a 16 GB laptop; this is not where the project dies."},
+    "a7_counts_match_paper": {"pass": true, "note": "Addgene's 19 plasmids match the paper's 11 TurboID + 4 eGFP + 4 mCherry. The 1,000-row pll file matches its filename. No contradictions found."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL for the only large-n alternative. Every abundant per-sequence number here is another model's output: pll comes from ESM-2, pLDDT and TM-score come from AlphaFold3/OmegaFold, thermostability from TemStaPro, binding rank from ProTrek. Training on those distils the scorer, not biology."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Raygun (this paper's own model; encoder-decoder over ESM-2 embeddings that resizes proteins)",
+        "open_weights": true,
+        "score_and_split": "No held-out predictive metric of the kind we could beat. Reported results are generation statistics plus wet-lab hit rates: 6 of 8 fluorescent designs fluoresced, 2 of 11 biotin-ligase designs active, 2 of 4 expanded growth-factor variants bound more tightly than wild type.",
+        "authors_named_unsolved": "In the discussion they say designs are dim and 'will require directed evolution to reach high fluorescence', and that 'maintaining catalytic efficiency for multi-domain proteins with highly specialized enzymatic functions may require additional optimization'. Both are wet-lab problems, not prediction problems.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ESM-3 de novo green fluorescent protein design (Hayes et al.), cited and compared against inside this paper's text",
+        "open_weights": null,
+        "score_and_split": "The Raygun paper reports it kept template length (229 amino acids) and hard-constrained 6 chromophore residues plus residues 58-71; like Raygun, its result is a wet-lab hit, not a benchmark number on a split.",
+        "authors_named_unsolved": "Not retrieved directly, so I will not quote it.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "ProteinMPNN (Science 2022), retrieved in search; the standard open sequence-design baseline",
+        "open_weights": true,
+        "score_and_split": "Reported sequence-recovery on native backbones; it designs sequences for a fixed backbone and cannot change protein length, so it does not address this paper's task.",
+        "authors_named_unsolved": "Not retrieved in detail.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {"name": "ESM-2 650M (protein language model) — already the backbone Raygun is built on", "freeze_and_head_viable": false, "hardware": "Not applicable: there is no labelled target to fit a head to.", "licence": "ESM-2 is MIT; the Zenodo data is CC-BY-4.0; the Nature article text is CC-BY-NC-ND."},
+  "integration": {"partner_dataset": "FPbase (a curated database of fluorescent proteins with measured brightness and spectra) and the Sarkisyan green-fluorescent-protein mutagenesis dataset, both cited by this paper as refs 39-40.", "join_key": "Protein sequence; UniProt accession for the Zenodo training sequences.", "bigger_question_one_sentence": "Can a model predict whether a shortened fluorescent protein still glows? — but the labelled data for that question lives in FPbase and Sarkisyan, not in this paper, so the join does not rescue this candidate."},
+  "controls": {"positive_control": "Would be: recover the known chromophore motif XYG at positions 65-67 as essential. Not runnable, because there is no labelled set to run it on.", "negative_control": "Label shuffling — not applicable, no labels.", "external_validation": "FPbase exists as an independent source of measured fluorescent-protein properties, but it is a different dataset, not a validation set for anything this paper deposited."},
+  "honest_claim_h3": "Any model built only on what this paper deposited could claim nothing about protein function; it could at best reproduce another model's score (ESM-2 pseudo-log-likelihood or AlphaFold confidence) for sequences that one generator happened to emit.",
+  "plain_idea": {
+    "one_liner": "Use a designed protein's amino-acid sequence to predict whether the shortened version still works in cells.",
+    "train_on": "The project I considered would train on each designed sequence plus its parent template. The paper supplies only about 23 such examples with a measured outcome (8 fluorescent proteins, 11 biotin ligases, 4 growth-factor variants), which I verified against the 19 plasmids deposited at Addgene.",
+    "predict": "Whether the design is functional — fluorescent under a microscope, able to attach biotin to nearby proteins in a western blot, or binding its receptor with a measured dissociation constant. All three readouts are in figure panels only.",
+    "why_worthwhile": "Protein engineers burn weeks cloning and testing designs; a filter that ranked candidates by likely success would cut that. But with roughly 23 measured examples this paper cannot support such a filter."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The deposited data is about 1 GB of unlabelled sequences sampled from UniRef50 — strictly a subset of what ESM-2 and every other protein language model already trained on. We would have less, not more."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements of anything are deposited, and with about 23 wet-lab outcomes reported only as figure bars there is no basis for calibrating per-prediction confidence."},
+    "models_beatable": {"answer": "no", "why": "Raygun is a 2026 Nature generative model with open weights and wet-lab validation; beating it means running a cell-culture experiment, not a better split. Its own quality filters already chain ESM-2, hmmscan, TemStaPro, AlphaFold3 and ProTrek."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails first is that there is no shared evaluation split and no measured quantity to predict. Raygun is judged by wet-lab hit rate, which we cannot compute offline."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only well-posed supervised task adjacent to this paper — predict whether a length-altered fluorescent protein still fluoresces — would have to be built almost entirely from FPbase and the Sarkisyan green-fluorescent-protein mutagenesis dataset, with this paper contributing 8 extra examples as a tiny prospective test set. That is a project about those other resources, not about this paper, and should be evaluated as such if anyone wants it.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 1.0,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated beyond file sizes, because the project dies at Part A. For context: Raygun itself reports 0.3 s per generation on an NVIDIA A100 graphics card, so reproducing its generation step is not a CPU-laptop job.",
+    "cheapest_killing_check": "Count the rows that carry a measured outcome. I did: about 23 across all three assays, and 19 constructs at Addgene. That alone ends it, and it took one page parse."
+  },
+  "verdict": "reject",
+  "verdict_reason": "No prediction target exists in the deposited data. The 987 MB Zenodo release is unlabelled protein sequences for self-supervised training (I opened it and confirmed the headers carry only copied UniProt binding-site positions), so A2 fails outright. The wet-lab outcomes that would be labels — fluorescence, biotin-ligase activity, receptor binding — total about 23 designs and appear only in figure panels, failing A5 by a factor of twenty. The one abundant numeric column, the pseudo-log-likelihood score in the GitHub files, is ESM-2's own output, so using it as a label fails A8 by circularity. This is a generative-design paper validated in cells, not a feature-and-label resource; the labelled data that would make the interesting question answerable lives in FPbase and the Sarkisyan mutagenesis dataset instead."
+}

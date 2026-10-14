@@ -1,0 +1,45 @@
+{
+  "paper_id": "nar2026-gkag372",
+  "title": "AlphaFind v2: similarity search in AlphaFold DB and TED domains across structural contexts.",
+  "doi": "10.1093/nar/gkag372",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.6084/m9.figshare.31802743",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Figshare API file listing for 10.6084/m9.figshare.31802743 (CC BY 4.0): alphafind-evaluation-data.zip 257,769,754 bytes, results.zip 7,915,896,701 bytes, statistical_tests.zip 9,237 bytes, figures.zip, scripts zip. Downloaded and opened statistical_tests.zip: chain-level comparison n_pairs 2,012-2,016, domain-level n 4,418-4,419; values are mean TOP10/TOP100 TM-score-style retrieval metrics. HEAD on the embeddings DOI 10.58074/mv1w-y227 resolves to an EGI DataHub share page (HTML, size of the embeddings not seen).",
+    "what_came_from_paper_text_only": "Figshare description says the benchmark is 2,050 multidomain AlphaFold DB chains and 4,420 TED (The Encyclopedia of Domains) domains; results.zip holds Foldseek outputs re-scored with TM-scores. Did not open the 258 MB or 7.9 GB zips (over the 50 MB cap)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Figshare files are public, CC BY 4.0, no login; verified via API listing. Main zips exceed the 50 MB cap so contents not opened."},
+    "a2_label_is_a_column": {"pass": false, "note": "No measured biological outcome exists. The only targets are structural similarity scores (TM-score, a 0-1 measure of 3D shape overlap) that would have to be computed or taken from the authors' alignment outputs."},
+    "a3_inputs_present": {"pass": true, "note": "Structures are deposited (per Figshare description) and keyed by UniProt accession; not opened."},
+    "a4_units_stated": {"pass": true, "note": "TM-score is unitless 0-1; statistics CSV opened shows consistent 0-1 means."},
+    "a5_enough_rows": {"pass": true, "n_rows": 2050, "note": "2,050 chains and 4,420 domains per Figshare description; statistics CSV shows ~2,012-2,016 chain pairs and ~4,419 domains, consistent."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.26 GB evaluation zip; 7.9 GB results zip optional", "note": "Benchmark structures fit; full results archive does not need to be loaded."},
+    "a7_counts_match_paper": {"pass": true, "note": "Opened statistics CSV n (2,012-2,016 chains, 4,418-4,419 domains) roughly matches 2,050 / 4,420 described; small gap from failed queries."},
+    "a8_label_provenance": {"pass": false, "note": "Any label is computed from the inputs: TM-scores come from US-align on AlphaFold-predicted structures, so a model predicting them is distilling an alignment tool on predicted (not measured) structures. Leakage by construction and circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Foldseek (structure search tool, cited in the paper)", "open_weights": true, "score_and_split": "Mean TOP10 0.599 vs AlphaFind v2 0.733 on 2,016 multidomain chains (from opened statistics CSV).", "authors_named_unsolved": "Not retrieved separately.", "runnable_as_baseline": true},
+      {"name": "Merizo-search / Foldclass (embedding-based domain search, cited in the paper)", "open_weights": true, "score_and_split": "Mean TOP10 0.865 vs AlphaFind v2 0.947 on 4,418 TED domains (from opened statistics CSV).", "authors_named_unsolved": "Not retrieved separately.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model) would apply in principle", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "CATH / TED domain labels", "join_key": "UniProt accession + domain ID", "bigger_question_one_sentence": "None beyond benchmarking structure search; the join adds no measured biology."},
+  "controls": {"positive_control": "none meaningful", "negative_control": "label shuffle", "external_validation": "none independent of computed TM-scores"},
+  "honest_claim_h3": "A model here could only claim to approximate US-align TM-scores between AlphaFold-predicted structures, not any measured property.",
+  "plain_idea": {
+    "one_liner": "Use protein sequences or structures to predict how similar in 3D shape two predicted proteins are.",
+    "train_on": "Pairs of AlphaFold-predicted protein chains or domains from a 2,050-chain / 4,420-domain benchmark.",
+    "predict": "Shape-similarity score between two structures, which comes from an alignment program run on predicted structures, not from any lab measurement.",
+    "why_worthwhile": "Little: fast structure search is already served by Foldseek, Merizo-search and AlphaFind itself, and the target is computed rather than measured."
+  },
+  "pitch": null,
+  "ml_idea": "Learn embeddings that rank structural neighbours as US-align would; this is the paper's own method and the label is computed from the inputs.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.26, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated; rejected at Part A.", "cheapest_killing_check": "Ask whether any column is a lab measurement rather than an alignment score; answer from the opened stats file and description is no."},
+  "verdict": "reject",
+  "verdict_reason": "A tool paper whose only possible labels are TM-scores computed by US-align on AlphaFold-predicted structures (A2, A8 fail); no measured biological outcome, and the task is served by open tools (Foldseek, Merizo-search)."
+}

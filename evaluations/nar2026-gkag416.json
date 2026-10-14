@@ -1,0 +1,45 @@
+{
+  "paper_id": "nar2026-gkag416",
+  "title": "COMMBAT: a web platform for exploring expression control of biosynthetic gene clusters.",
+  "doi": "10.1093/nar/gkag416",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://gitlab.uliege.be/Silvia.RibeiroMonteiro/commbat.git",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Listed the GitLab repository tree through its API: folders antiSMASH_DB/info (per-genome GCF folders), mibig_gbk_4.0, mibig_json_4.0, matrices (COMMBAT_DB_2023.1, LogoMotif_v_0.1, Prodoric_2021.9, RegPrecise_v_3.2), example_inputs, and seven R/Perl scripts including Calculation_COMMBAT_score.R. Read the README (install and run instructions). No file of experimentally validated TF-BGC (transcription factor to biosynthetic gene cluster) interactions or any labelled table was visible in the tree. Web server responds (HTTP 200). Europe PMC supplementary endpoint timed out.",
+    "what_came_from_paper_text_only": "That the COMMBAT score is a hand-designed formula (motif match score times weighted region and gene-function scores); that ~300 experimentally validated TF binding sites from a prior meta-analysis set the weights; 2,278 PWMs (position weight matrices, i.e. binding-motif profiles) in the text vs 'over 4000' in the abstract; 'over 400,000' BGCs from MIBiG and antiSMASH DB; that validated 'reference BGCs' can be highlighted in the web interface."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Code, motif matrices and public BGC files are openly on GitLab (tree listed via API); no login. Licence file present but not read."},
+    "a2_label_is_a_column": {"pass": false, "note": "No labelled table exists. The only per-pair output is the COMMBAT score, which you would generate yourself by running the pipeline; true regulatory interactions would have to be assembled from literature (checked repo tree, none found)."},
+    "a3_inputs_present": {"pass": true, "note": "BGC GenBank/JSON files and PWMs are in the repo, so sequences are present (seen in tree listing, files not opened)."},
+    "a4_units_stated": {"pass": true, "note": "Scores are unitless normalized ratios per the paper; not an issue for this task (paper text only)."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Experimentally validated interactions number roughly 300 binding sites per the paper's cited meta-analysis, far under 400; not found as a file, so unverified."},
+    "a6_fits_laptop": {"pass": true, "working_set": "unknown; MIBiG subset small, antiSMASH DB scan of 400,000 BGCs large", "note": "A MIBiG-only scan would fit; not measured."},
+    "a7_counts_match_paper": {"pass": false, "note": "Abstract says over 4,000 PWMs, results text says 2,278 PWMs; files not counted, so cannot tell which is right."},
+    "a8_label_provenance": {"pass": false, "note": "The scalable 'label' is the COMMBAT score, a deterministic formula computed from the motif and gene-annotation features; learning it is pure distillation and circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "COMMBAT score (Ribeiro Monteiro et al., Microbial Genomics 2025)", "open_weights": true, "score_and_split": "Reported to outperform sequence-only motif scanning at recovering validated binding sites; exact metric and split not retrieved.", "authors_named_unsolved": "Binding sites in BGCs diverge from canonical motifs, limiting motif scanning (this paper's abstract).", "runnable_as_baseline": true},
+      {"name": "iModulon ICA (independent component analysis) of 454 Streptomyces coelicolor transcriptomes (Lee et al., Advanced Science 2024)", "open_weights": null, "score_and_split": "Unsupervised; 117 gene modules explaining 81.6% of expression variance, putative regulons for 40 regulators. Not a supervised split.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer or DNABERT-2 (DNA language models) on promoter windows, hypothetically", "freeze_and_head_viable": null, "hardware": "CPU for a few thousand windows", "licence": "not checked"},
+  "integration": {"partner_dataset": "MIBiG 4.0 (curated BGCs with known products), already bundled", "join_key": "MIBiG BGC accession (BGC0000xxx)", "bigger_question_one_sentence": "Which environmental signals switch on cryptic antibiotic clusters - but without measured regulation labels the join answers nothing new."},
+  "controls": {"positive_control": "Validated reference TF-BGC pairs highlighted in the web interface (count unknown).", "negative_control": "Shuffled-motif PWMs scanned against the same BGCs.", "external_validation": "None found; iModulon regulons for S. coelicolor could serve as a partial independent check."},
+  "honest_claim_h3": "At best: ranks candidate regulator-cluster pairs among a few hundred literature-validated binding sites, mostly from Streptomyces, without any measured negatives.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around antibiotic-making gene clusters to predict which regulatory proteins switch those clusters on.",
+    "train_on": "DNA windows upstream of genes in bacterial biosynthetic gene clusters paired with a regulator's binding-motif profile; number of truly validated pairs unknown (roughly 300 binding sites per the paper).",
+    "predict": "Whether the regulator really controls the cluster. The only large-scale answer available is the authors' own formula score, not a measurement; real answers come from scattered lab experiments (binding assays, knockouts).",
+    "why_worthwhile": "Natural-product chemists could pick growth conditions or genetic tweaks to wake up silent antibiotic clusters, but only if trained on real measured interactions."
+  },
+  "pitch": null,
+  "ml_idea": "Considered: train a DNA-language-model head to predict validated TF-BGC binding versus background, benchmarked against the COMMBAT score. Blocked because no labelled interaction table is released and the scalable label is the formula itself.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": null, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated; project rejected at Part A before any compute planning.", "cheapest_killing_check": "Count experimentally validated TF-BGC pairs available as a file (from the 2025 Microbial Genomics paper supplement or the web server's reference list); under 400 kills it."},
+  "verdict": "reject",
+  "verdict_reason": "A tool, not a labelled dataset: the only scalable output is the authors' hand-built COMMBAT formula score (A8 circular), no table of measured interactions is released (A2), and validated binding sites number roughly 300 per the paper (A5)."
+}

@@ -1,0 +1,67 @@
+{
+  "paper_id": "nar2026-gkag837",
+  "title": "Temporal dynamics of intragenic enhancer RNAs regulate Lin28a expression in response to external stimuli in embryonic stem cells.",
+  "doi": "10.1093/nar/gkag837",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://europepmc.org/article/MED/42656197 (supplementary zip); https://figshare.com/s/9f48ad4070e0ec1e5c52 and https://figshare.com/s/f322458d7c39d6b57772 (authors' 'private link' deposits)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked the 17.5 MB supplementary zip and opened every table: Table S1 (52-row list of re-used public GEO samples and software), Table S2 (enhancer coordinate lists: 30,905 mouse embryonic stem cell (mESC) enhancers = 15,250 intergenic + 15,655 intragenic, plus 26,672 human ESC enhancers; score column is '.' in all 30,905 rows, no duplicate coordinates, median width 334 base pairs), Table S3 (.xlsb read with pyxlsb: 441,341 SOX2 and 517,428 KLF4 JASPAR motif hits on chromosome 4 only), Table S4/S5 (41 short hairpin RNA / guide RNA sequences, 59 primers), Table S6 (505 rows of Gene Ontology enrichment results, not raw data). Both Figshare 'private link' URLs returned HTTP 202 with zero bytes through the fetch helper and through a browser user agent, and a Figshare application programming interface (API) search on the paper's DOI returned nothing.",
+    "what_came_from_paper_text_only": "That the enhancer list comes from MACS3 broad peak calling on public H3K27ac chromatin immunoprecipitation sequencing (ChIP-seq) sample GSM1000126 filtered for p300 enrichment; that the eRNA (enhancer RNA) time courses were measured by reverse-transcription quantitative PCR (RT-qPCR) and are shown in figures; that the Figshare deposits hold 'processed datasets' (contents unknown to me)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "The supplementary zip downloads openly and parses (verified in the files). But the authors' own processed datasets sit behind two Figshare 'private links' that returned HTTP 202 with no content, and the statement adds 'available on request from the lead contact' — so the only usable data is the supplement."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAILS. Table S2 has no label column at all: it is BED coordinates with score '.' in all 30,905 rows and a constant deepTools_group value 'enhancer'. There is no enhancer activity value, no eRNA expression level, no stimulus or timepoint column, and no negatives — any prediction target would have to be constructed from scratch (sample background regions, or re-quantify the public ChIP-seq/GRO-seq signal myself)."},
+    "a3_inputs_present": {"pass": false, "note": "Only mm10 and hg38 genomic coordinates are given; the DNA sequence itself is absent, so every row needs a genome FASTA lookup. Workable, but nothing model-ready is present."},
+    "a4_units_stated": {"pass": false, "note": "Nothing is measured in the tables, so there are no units to state. Table S3's SCORE column (motif match score, e.g. a constant 47.5 for SOX2 rows I sampled) has no documented scale."},
+    "a5_enough_rows": {"pass": false, "n_rows": 30905, "note": "30,905 enhancer coordinates sounds like plenty, but they are all one class with no outcome. The paper's actual new measurements — eRNA induction over time at the Lin28a locus — cover roughly a handful of eRNAs across a few stimuli and timepoints and appear only in figures, far under the ~1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~20 MB of supplementary tables plus a ~3 GB mm10 genome FASTA if sequences were needed", "note": "Size is not the problem here (verified file sizes)."},
+    "a7_counts_match_paper": {"pass": true, "note": "Internally consistent: 15,250 intergenic + 15,655 intragenic = 30,905 = the all-enhancer sheet, no duplicated coordinates (checked in the files)."},
+    "a8_label_provenance": {"pass": false, "note": "FAILS for every label the files could supply. 'Intragenic vs intergenic' is computed from the coordinates plus gene annotation, i.e. derivable from the features. The SOX2/KLF4 rows in Table S3 are FIMO motif-scan output, i.e. a position-weight-matrix model's predictions read off the same sequence a model would use as input — pure leakage by construction. The enhancer calls themselves are MACS3 peak calls on a single public H3K27ac sample, so the 'label' is one peak-caller's output on one re-analysed dataset."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepSTARR (convolutional network predicting quantitative enhancer activity from sequence, Nature Genetics 2022)", "open_weights": true, "score_and_split": "Reported Pearson correlation ~0.68 for developmental enhancer activity on held-out chromosomes of Drosophila STARR-seq; not evaluated on mouse ESC H3K27ac peaks.", "authors_named_unsolved": "Transfer of sequence rules across species and cell types.", "runnable_as_baseline": true},
+      {"name": "Enformer (transformer predicting thousands of chromatin and expression tracks from 200 kb of DNA, Nature Methods 2021)", "open_weights": true, "score_and_split": "Published correlations on held-out human/mouse genomic intervals across ENCODE/FANTOM tracks, including mouse H3K27ac; evaluation is by held-out chromosome.", "authors_named_unsolved": "Predicting the effect of distal regulatory variation on individual genes.", "runnable_as_baseline": true},
+      {"name": "DNABERT-Enhancer (fine-tuned DNA language model for enhancer calling, Bioinformatics 2026)", "open_weights": true, "score_and_split": "Reported 88.05% accuracy (350 base-pair model) and 82.04% (201 base-pair model) on human enhancer benchmarks; split details per that paper.", "authors_named_unsolved": "Allele-specific activity and cross-cell-type generalisation.", "runnable_as_baseline": true},
+      {"name": "Predictive design of tissue-specific mammalian enhancers (compact convolutional network plus transfer learning, Nature Genetics 2026)", "open_weights": null, "score_and_split": "15 of 15 designed enhancers active in the intended mouse embryonic tissue (in vivo validation, not a held-out split).", "authors_named_unsolved": "Quantitative strength control and non-coding variant interpretation.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer / DNABERT-2 / AlphaGenome would all fit DNA sequence input", "freeze_and_head_viable": true, "hardware": "CPU embedding of ~31k 300-base-pair windows is feasible overnight", "licence": "Paper text is Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC); backbone licences vary (AlphaGenome non-commercial)."},
+  "integration": {"partner_dataset": "ENCODE mouse ESC chromatin tracks and the AlphaGenome Atlas of precomputed variant effects, joinable on mm10 genomic coordinates", "join_key": "mm10 genomic coordinates (chrom/start/end)", "bigger_question_one_sentence": "Do intragenic enhancers follow different sequence rules from intergenic ones? — a real question, but it needs quantitative activity data this paper does not provide, and the ENCODE data it would be built from is already public without this paper."},
+  "controls": {"positive_control": "A sequence model should recover CpG/GC content and the SOX2/OCT4/KLF4 motif enrichment known to mark mESC enhancers.", "negative_control": "Shuffle enhancer vs background labels; dinucleotide-shuffled sequences must collapse to the dummy baseline.", "external_validation": "Mouse tissue H3K27ac sets (GSE52386, GSE98101) and the human ESC enhancer sheet would allow a cross-tissue/cross-species test — but all of these are public ENCODE-style resources, not contributions of this paper."},
+  "honest_claim_h3": "At best, a model built from these files could claim: 'DNA sequence distinguishes MACS3-called H3K27ac/p300 enhancer peaks in one serum+LIF mouse ESC line from background regions I chose myself' — a task Enformer and DNABERT-Enhancer already do on the same public data.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around each enhancer to predict whether it makes enhancer RNA and how fast it responds to a stimulus.",
+    "train_on": "The project I considered would train on the 30,905 mouse embryonic stem cell enhancer regions listed in Supplementary Table 2 (verified count), each turned into a few hundred bases of mm10 sequence, with background regions sampled as negatives.",
+    "predict": "Whether a region is an active enhancer, and ideally how strongly its enhancer RNA is induced over time after a stimulus. The true answer would have to come from nascent-transcription data (GRO-seq/PRO-seq) that is not in these files — the paper's own time courses are RT-qPCR readings shown only in figures.",
+    "why_worthwhile": "Stem cell and gene regulation labs want to know which enhancers inside gene bodies actually fire and when; but the measured answers here exist only for a handful of enhancers at one gene, so nothing trainable comes out of this paper."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The enhancer list is a re-call of public H3K27ac ChIP-seq sample GSM1000126; Enformer was trained on thousands of ENCODE tracks including mouse ESC H3K27ac, so this adds no data those models have not seen."},
+    "confidence_score": {"answer": "no", "why": "No replicate-level values, no signal intensities and no per-region uncertainty are in the files — the score column is '.' in all 30,905 rows."},
+    "models_beatable": {"answer": "no", "why": "The relevant models are recent and open (Enformer 2021, DeepSTARR 2022, DNABERT-Enhancer 2026, a 2026 Nature Genetics enhancer-design model validated in vivo), and are evaluated on held-out chromosomes rather than random splits."},
+    "guaranteed_improvement": {"answer": "no", "why": "There is no new measured quantity to add; the condition that fails is 'our model sees everything theirs sees plus new data' — we would see strictly less, since the underlying ChIP-seq is already in their training sets."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a frozen DNA language model with a small head to classify the 30,905 mESC enhancer regions against matched background, or to predict intragenic vs intergenic status. The first needs negatives and activity values that are not in the files and is already covered by Enformer/DNABERT-Enhancer on the same public ChIP-seq; the second predicts a label computed from the coordinates themselves.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 3.0,
+    "needs_gpu": true,
+    "peak_ram_gb": 4.0,
+    "embedding_hours": 10.0,
+    "cv_run_minutes": 30,
+    "compute_note": "Estimated, not timed: ~31k windows of ~300 base pairs through a small DNA language model on CPU at a few windows per second, plus a 3 GB mm10 genome FASTA download; a competitive convolutional model on this task would want a GPU.",
+    "cheapest_killing_check": "Open Supplementary Table 2 and ask how many of the 30,905 rows carry any measured value. The answer is zero — the score column is '.' throughout — which kills every quantitative version of the project in five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A8 in the files. The supplement holds only enhancer coordinate lists with no measured value (score is '.' in all 30,905 rows, no negatives, no timepoints) plus FIMO motif-scan output, which is a model's prediction read off the input sequence. The paper's genuinely new data — enhancer RNA induction over time at the Lin28a locus — is a handful of RT-qPCR measurements shown only in figures, and the authors' processed datasets sit behind two unresolvable Figshare 'private links' (HTTP 202, zero bytes) with the rest 'available on request'. Everything modellable here is public ENCODE-style ChIP-seq that Enformer and DNABERT-Enhancer already train on."
+}

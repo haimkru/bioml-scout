@@ -1,0 +1,51 @@
+{
+  "paper_id": "nature2026-10577-6",
+  "title": "Cell-type-specific eQTLs underlie the genetic architecture of complex traits.",
+  "doi": "10.1038/s41586-026-10577-6",
+  "journal": "Nature",
+  "data_url": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-026-10577-6/MediaObjects/41586_2026_10577_MOESM3_ESM.xlsx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded supplementary workbook MOESM3 (20.9 MB xlsx, no login needed) and parsed every sheet. Table S3 (OneK1K, cis-only): 10,288 genes (Ensembl IDs, unique, 0 missing values), 56 columns giving per-gene shared and cell-type-specific genetic variance for 7 cell types, plus SEs (standard errors), p-values, shared_h2, specific_h2 and specificity, with a column legend in the sheet header. Table S13 (CLUES/ImmVar replication cohorts): 10,553 genes, 40 columns. 9,888 genes appear in both. Agreement of per-gene specificity between the two cohorts: Spearman 0.063 (all genes), 0.146 (genes with total h2 > 0.05), 0.49 on the 179 genes nominally significant in both. OneK1K: only 800 genes have p:V (cell-type-specific genetic effect) < 0.05, against ~514 expected by chance out of 10,288; CLUES: only 99. 3,205 OneK1K genes have negative shared_h2 and 4,278 negative specific_h2 (estimates are unconstrained). Specificity ranges from -1,393 to 4,857. Also checked the CIGMA code repo (GitHub Minhui-Chen/CIGMA, GPL-3.0; Zenodo 19424343 is the software only) and the OneK1K site (original 2022 eQTL tables on S3, open).",
+    "what_came_from_paper_text_only": "Abstract only (article paywalled, no PMCID, no full text in Europe PMC). The cohort sizes (928 individuals, 7 cell types, ~1,190 cells per individual) come from a search-result snippet of the article, not from the files. Other supplementary file numbers (MOESM1, 2, 4) returned 403 and were not inspected."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Per-gene result tables download openly as a 20.9 MB supplementary xlsx (verified). Underlying single-cell data and genotypes for OneK1K are listed publicly (GEO GSE196830, per OneK1K site) but were not needed or checked."},
+    "a2_label_is_a_column": {"pass": true, "note": "Yes: 'specificity', 'shared_h2' and 'specific_h2' are columns in Tables S3 and S13 (verified). Nothing has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Only Ensembl gene IDs are present; gene features (constraint, enhancer counts, network degree, promoter sequence) would come from one standard-key join each, which is acceptable for ~10k genes."},
+    "a4_units_stated": {"pass": true, "note": "Variance components and heritability fractions, defined in the sheet legend (verified); unitless and consistent."},
+    "a5_enough_rows": {"pass": false, "n_rows": 10288, "note": "A5 in disguise: 10,288 rows, but the label is mostly noise. Only 800 genes have a nominally significant cell-type-specific genetic effect (about 514 expected by chance), and just 179 are significant in both cohorts. Cross-cohort per-gene agreement is Spearman 0.063 (computed from the files)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~21 MB xlsx", "note": "Trivially fits."},
+    "a7_counts_match_paper": {"pass": true, "note": "10,288 genes and 7 cell-type columns in Table S3 match the 10,288 genes / 7 cell types quoted from the article snippet."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a statistical variance-component (CIGMA) estimate fit to measured single-cell expression and genotypes, not another ML model's output and not computed from gene features. The problem is noise, not circularity."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scooby (Nature Methods 2025), a Borzoi-based sequence-to-single-cell-expression model", "open_weights": null, "score_and_split": "Used OneK1K fine-mapped cell-type-specific eQTLs to assess variant-effect prediction (from search snippet only; numbers not retrieved).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "CIGMA, this paper's variance-component model (statistical, not ML)", "open_weights": true, "score_and_split": "Not a predictor; produces the per-gene estimates themselves.", "authors_named_unsolved": "Not retrieved (paper paywalled).", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Enformer/Borzoi cell-type tracks around each gene's promoter (DNA sequence models); none tested", "freeze_and_head_viable": null, "hardware": "CPU for cached features", "licence": "AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "gnomAD constraint (LOEUF), ABC enhancer–gene maps, GTEx", "join_key": "Ensembl gene ID", "bigger_question_one_sentence": "Which gene properties predict whether a gene's genetic regulation is cell-type-specific, the property the paper links to complex-trait heritability."},
+  "controls": {"positive_control": "Paper's reported association of specificity with gene constraint (LOEUF) should be recovered.", "negative_control": "Label shuffling.", "external_validation": "Table S13 CLUES/ImmVar estimates for 10,553 genes, but these agree with OneK1K at Spearman 0.063."},
+  "honest_claim_h3": "At best: gene-level features weakly rank the few hundred genes with detectable genetic effects by cell-type specificity in blood immune cells, in mostly European cohorts; per-gene labels are too noisy to support more.",
+  "plain_idea": {
+    "one_liner": "Use gene properties and DNA sequence to predict whether a gene's inherited expression differences show up in all immune cell types or only some.",
+    "train_on": "One row per gene (10,288 genes verified) with gene-level features joined by Ensembl ID, such as mutation intolerance, enhancer count and network connections.",
+    "predict": "The fraction of genetic expression variance that is cell-type-specific, estimated by the authors' variance-component model from single-cell RNA data on ~1,000 blood donors.",
+    "why_worthwhile": "Geneticists prioritising disease genes could flag genes whose regulation is likely cell-type-specific without single-cell cohorts; but the label proves too noisy to learn from per gene."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 1, "sources": "Original OneK1K per-cell-type eQTL tables (onek1k.org, verified listed); eQTL Catalogue single-cell datasets (known resource). Sharing could be computed from these, but that would mean constructing the label.", "approx_items": null, "join_key": "Ensembl gene ID", "why": "Other cohorts could give replicate estimates, but the one replication here (CLUES) already shows near-zero agreement."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Gene-level regression of cis-eQTL cell-type specificity (Table S3) on constraint, enhancer and network features plus sequence-model embeddings, validated on CLUES (Table S13). Killed by label noise: the two cohorts agree at Spearman 0.063 per gene.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.02, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated from table size (10k rows); nothing timed beyond parsing the xlsx in seconds.", "cheapest_killing_check": "Already done: cross-cohort Spearman of per-gene specificity = 0.063 (0.49 on only 179 genes significant in both), so the per-gene label has no usable signal."},
+  "verdict": "reject",
+  "verdict_reason": "The labels are clean, open and in columns, but they are almost all noise. Per-gene cell-type specificity replicates between OneK1K and CLUES at Spearman 0.063. Only 800 of 10,288 genes have a nominally significant specific effect (about 514 expected by chance), and just 179 are significant in both cohorts. That is an A5 failure in disguise, and it leaves no learnable target."
+}

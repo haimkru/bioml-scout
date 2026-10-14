@@ -1,0 +1,44 @@
+{
+  "paper_id": "natgen2026-02677-w",
+  "title": "Genome-wide association analyses of gestational phenotypes identify context-specific genetic effects.",
+  "doi": "10.1038/s41588-026-02677-w",
+  "journal": "Nature Genetics",
+  "data_url": "https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90837001-GCST90838000/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GWAS Catalog API for PMID 42509370 lists 111 studies (GCST90837213-GCST90837323), all with full summary statistics, CC0 licence. FTP folders for GCST90837255 (height) and GCST90837243 (GDM, gestational diabetes) each hold one GWAS-SSF tsv.gz of 152 MB and 157 MB (over the 50 MB cap, not downloaded). A ranged read of the first 256 KB of the height file decoded 12,978 rows: 14 columns (chromosome, position, alleles, beta, standard_error, effect_allele_frequency, p_value, rsID, two-cohort Direction, N, GENE, IMPACT, Consequence), no missing values in that chunk. Metadata yaml says GRCh38, whole-genome sequencing, n=108,202. API reports about 7.28 million variants per study.",
+    "what_came_from_paper_text_only": "No open full text or supplement (no PMCID; paywalled). That the individual-level data are in GSA-Human HRA006833 (controlled access), that 7.8% of variants have gestation-specific effects and 18.7% show genotype-by-timing interactions, and the 4,688 signals / 1,703 new count come from the abstract and search snippets only. The tables listing which variants are gestation-specific are in the unretrieved supplement. Units of beta (raw vs standardised trait) are not stated in the file metadata."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Summary statistics download openly from GWAS Catalog FTP (checked, CC0 licence). Individual-level genotypes and phenotypes are controlled access in GSA-Human HRA006833 (Genome Sequence Archive for Human, China; needs an application), per the paper's data statement only."},
+    "a2_label_is_a_column": {"pass": false, "note": "Files hold per-variant association estimates (beta, p-value) per trait, not a per-example outcome. Any ML target worth predicting (causal variant, pregnancy-specific effect, genotype-by-timing interaction) would have to be built by fine-mapping or by matching to non-pregnant GWAS such as BioBank Japan; the paper's own context-specific calls sit in a paywalled supplement."},
+    "a3_inputs_present": {"pass": true, "note": "Genomic coordinates (GRCh38) and alleles are present (checked), so DNA sequence context could be pulled from the reference genome without lookups."},
+    "a4_units_stated": {"pass": false, "note": "Beta has no stated unit or trait scale in the file or metadata yaml (checked); whether quantitative traits were inverse-normal transformed is unknown without the methods."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "About 7.28 million variants per study per the API snp_count; not counted in the file. Independent signals (4,688) are from the abstract only."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 150 MB gz per trait; 111 traits about 16-17 GB gz", "note": "One trait streams easily; all 111 would exceed the 5 GB working-set guide unless filtered to significant variants."},
+    "a7_counts_match_paper": {"pass": true, "note": "111 studies in the Catalog match the abstract's 111 phenotypes; the height sample size 108,202 matches the metadata. Signal counts not checked."},
+    "a8_label_provenance": {"pass": false, "note": "Beta and p-value are regression estimates smeared across correlated nearby variants (linkage disequilibrium), not a per-variant measurement; usable variant labels would be fine-mapping model outputs, which is the circularity A8 warns against."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "GDM (gestational diabetes) prediction model combining polygenic risk score and prenatal records, Nature Communications 2025 (same NIPT cohort group)", "open_weights": null, "score_and_split": "AUC (area under the ROC curve) 0.729, accuracy 0.835, for GDM before 20 weeks; split not checked (from search snippet).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome (DNA sequence model) would be the only candidate, for variant-level features", "freeze_and_head_viable": null, "hardware": "CPU for embeddings of a few thousand lead variants; untested", "licence": "AlphaGenome non-commercial; summary statistics CC0"},
+  "integration": {"partner_dataset": "BioBank Japan female GWAS or AlphaGenome Atlas variant effects", "join_key": "GRCh38 chromosome:position:alleles or rsID", "bigger_question_one_sentence": "Do pregnancy-specific genetic effects concentrate in hormone- or placenta-active regulatory DNA that sequence models can recognise?"},
+  "controls": {"positive_control": "Known height and hemoglobin loci (e.g. HBB region for hemoglobin A2/F) should top their traits.", "negative_control": "Shuffle which variants are labelled pregnancy-specific.", "external_validation": "BioBank Japan female GWAS for the non-pregnant comparison; none for pregnancy-specific labels."},
+  "honest_claim_h3": "At best: predicts, among genome-wide significant variants in Han Chinese pregnancies from NIPT (non-invasive prenatal test) low-coverage sequencing, which ones show a stronger effect in pregnancy than in a separate non-pregnant cohort, a label we would have built ourselves.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around trait-linked variants to predict whether a variant's effect on a blood trait changes during pregnancy.",
+    "train_on": "Lead variants from 111 pregnancy trait association studies with surrounding DNA sequence; number of usable variants unknown (4,688 signals per abstract, not verified).",
+    "predict": "Whether the variant's effect differs between pregnancy and non-pregnant women, which would have to be computed by comparing these statistics with another cohort's; no measured label exists in the files.",
+    "why_worthwhile": "Maternal-health geneticists would learn whether pregnancy-specific genetic effects have a recognisable regulatory signature; but the label is constructed, so the answer is fragile."
+  },
+  "pitch": null,
+  "ml_idea": "Variant-level classification of pregnancy-specific versus shared genetic effects from sequence-model embeddings; rejected because the label must be constructed across cohorts and the paper's own calls are in a paywalled supplement.",
+  "effort": {"hours_to_feature_table": 24, "working_set_gb": 0.5, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only: streaming one 150 MB gz trait file and filtering to significant variants fits in a few GB; nothing timed.", "cheapest_killing_check": "Obtain the supplementary table of gestation-specific variants and count how many independent variants are labelled specific versus shared; under ~400 kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Open data are 111 sets of GWAS (genome-wide association study) summary statistics (checked, CC0), not a labelled table; any prediction target must be constructed by fine-mapping or cross-cohort comparison (A2, A8), beta units are unstated (A4), and individual-level data are controlled access in GSA-Human HRA006833."
+}

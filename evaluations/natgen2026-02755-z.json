@@ -1,0 +1,44 @@
+{
+  "paper_id": "natgen2026-02755-z",
+  "title": "Single-cell analysis of chromatin accessibility in the human intestine identifies regulatory programs and clarifies genetic associations in Crohn's disease.",
+  "doi": "10.1038/s41588-026-02755-z",
+  "journal": "Nature Genetics",
+  "data_url": "https://zenodo.org/records/14278310",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 14278310 (CC-BY-4.0, 15 files) listed via API. Downloaded and parsed scATAC_peak_matrix_row_peaks.txt (557,310 unique 500 bp peaks on 23 chromosomes, no duplicates, matches the abstract) and scATAC_cell_metadata.csv (178,030 cells, 39 patients (16 'C' controls, 23 'P' patients), 71 samples, 2 sites (terminal ileum 91,411; ascending colon 86,619), 4 inflammation states, 3 lineages, 29 cell-type labels with 173 to 34,161 cells each).",
+    "what_came_from_paper_text_only": "The paper's own cCRE classes (cell-type-specific, inflammation-specific), heritability enrichment and the 30 fine-mapped variants come from the abstract only; the Nature full text and supplement were not retrievable (no PMCID), and the medRxiv preprint (PMC11661348) XML held only front matter. The genome build is not stated in the files. NCBI elink found no GEO/SRA/dbGaP link; raw-data controlled access not checked."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo 14278310 is open, CC-BY-4.0, no login; small files downloaded fine (checked)."},
+    "a2_label_is_a_column": {"pass": false, "note": "No deposited table gives accessibility per cCRE (candidate cis-regulatory element) per cell type or per inflammation state. The label would have to be built by pseudobulking (summing reads per cell type) the 25.6 GB cell-by-peak matrix using the metadata (checked: only matrix, metadata and topic files exist)."},
+    "a3_inputs_present": {"pass": true, "note": "Peaks are given as genomic coordinates (chr:start-end), so DNA sequence must be pulled from a reference genome whose build is not stated in the files (checked)."},
+    "a4_units_stated": {"pass": false, "note": "The matrix holds raw fragment counts (per the file name; not opened, 25.6 GB). No genome build or normalization is documented in the Zenodo record (checked: description empty)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 557310, "note": "557,310 peaks and 178,030 cells (checked). But for disease-state prediction the real unit is the patient: 39 patients, 71 samples (checked)."},
+    "a6_fits_laptop": {"pass": false, "working_set": "25.6 GB scATAC_peak_matrix.mtx to download and stream (about 130 MB once summed per cell type)", "note": "The only file holding the labels is a 25.6 GB text matrix, far above the 5 GB working-set limit and the 50 MB download cap; streaming is possible but means downloading all of it (size checked via the API, file not downloaded)."},
+    "a7_counts_match_paper": {"pass": true, "note": "557,310 peaks in the file match the abstract; the 39 patient IDs match 23 patients plus 16 controls (checked). The abstract gives no total cell count to compare with the 178,030."},
+    "a8_label_provenance": {"pass": true, "note": "Pseudobulk accessibility would come straight from measured snATAC-seq (single-nucleus chromatin accessibility sequencing) fragments. Cell-type labels are the authors' clustering, and the topic matrices are LDA model outputs, so those should not be used as targets."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ChromBPNet (Kundaje lab, sequence-to-accessibility convolutional network)", "open_weights": true, "score_and_split": "Reports variant-effect prediction competitive with larger models across assays and cell contexts (bioRxiv 2024); not trained on this intestinal atlas as far as found.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Nucleotide Transformer (DNA sequence models), frozen with a per-cell-type head", "freeze_and_head_viable": true, "hardware": "CPU for embedding 557k x 500 bp is many hours; GPU preferable", "licence": "AlphaGenome non-commercial; Nucleotide Transformer CC-BY-NC-SA"},
+  "integration": {"partner_dataset": "Crohn's disease / IBD (inflammatory bowel disease) GWAS fine-mapping credible sets; GTEx colon and ileum eQTLs", "join_key": "genomic coordinates (build must first be confirmed)", "bigger_question_one_sentence": "Does a sequence model trained on inflamed-versus-healthy intestinal cell-type accessibility prioritise fine-mapped Crohn's variants better than generic atlases?"},
+  "controls": {"positive_control": "Known cell-type marker promoters (e.g. CD3E open in T cells, LGR5 in stem cells) must come out accessible in the right pseudobulk.", "negative_control": "Shuffle cell-type labels before pseudobulking; dinucleotide-shuffled sequences.", "external_validation": "Zhang et al. 2021 adult human single-cell accessibility atlas (GSE184462), which includes colon tissue."},
+  "honest_claim_h3": "A model would predict cell-type accessibility of 500 bp intestinal peaks from sequence, among peaks called in biopsies from 39 people at one centre, two gut sites only.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence of intestinal regulatory regions to predict how open they are in each gut cell type, healthy or inflamed.",
+    "train_on": "557,310 regulatory regions, each 500 DNA letters long (verified), with per-cell-type openness summed from 178,030 single cells (verified count, sums not built).",
+    "predict": "How accessible each region is in each of 29 cell types, measured by single-nucleus chromatin accessibility sequencing of biopsies from 23 Crohn's patients and 16 controls.",
+    "why_worthwhile": "Inflammatory bowel disease geneticists could score Crohn's risk variants in the cell types that matter, but generic accessibility models already do much of this."
+  },
+  "pitch": null,
+  "ml_idea": "Pseudobulk the 25.6 GB peak matrix by cell type and inflammation state, then fit a frozen DNA-backbone head to predict per-cell-type accessibility and score fine-mapped Crohn's variants. Blocked because the label table is not deposited and the source file is 25.6 GB.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 25.6, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only: one streaming pass over a 25.6 GB text matrix accumulating 557,310 x 29 sums needs about 130 MB RAM, but the download and parsing take hours; nothing timed.", "cheapest_killing_check": "Check whether the Nature supplement deposits per-cell-type cCRE or pseudobulk tables; if not, the label must be built from the 25.6 GB matrix."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A6: the per-cell-type accessibility label is not a deposited column and has to be built by pseudobulking a 25.6 GB matrix, with no genome build stated (A4). Sequence-to-accessibility modelling is also well served by open models such as ChromBPNet."
+}

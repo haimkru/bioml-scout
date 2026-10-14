@@ -1,0 +1,145 @@
+{
+  "paper_id": "cell2026-08-002",
+  "title": "Genome-scale perturb-seq in primary human CD4+ T cells maps context-specific regulators of T cell programs and human immune traits.",
+  "doi": "10.1016/j.cell.2026.08.002",
+  "journal": "Cell, Aug 2026 (PMID 42664972, PMC13614707). NIHMS author manuscript: Europe PMC isOpenAccess=N, licence cc by-nc. Europe PMC fullTextXML returned HTTP 500, so the full JATS came from NCBI efetch. Preprint is bioRxiv 10.64898/2025.12.23.696273. Zhu, Dann, ... Pritchard, Marson.",
+  "data_url": "s3://genome-scale-tcell-perturb-seq/marson2025_data/ (public; anonymous HTTPS listing at https://genome-scale-tcell-perturb-seq.s3.amazonaws.com/). Landing page: https://virtualcellmodels.cziscience.com/dataset/genome-scale-tcell-perturb-seq. Raw data at GEO GSE314342 / SRA SRP643211. Code at github.com/emdann/GWT_perturbseq_analysis_2025 and github.com/emdann/pert2state_model.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "S3 listing: 57 objects, 1.84 TB, not truncated. Twelve cell-level D*_*.assigned_guide.h5ad files of 118.6-172.8 GB each. GWCD4i.DE_stats.h5ad 16.79 GB, DE_stats.by_guide.h5mu 29.4 GB, by_donors.h5mu 16.9 GB, pseudobulk_merged.h5ad 44.6 GB, suppl_tables 3 KB-45 MB. I downloaded the readme and 10 small CSVs. DE_stats.suppl_table.csv (7.28 MB) has 33,983 rows x 28 columns: Rest 11,287 / Stim8hr 11,415 / Stim48hr 11,281, with 11,526 unique Ensembl targets (11,086 tested in all 3 conditions). Sum of n_downstream is 2,035,203. n_downstream median is 2, p95 277, and 4,157 rows have >=50. ontarget_significant is False in 12,762 rows, neighbouring-gene KD is flagged in 2,619 and distal off-target in 433. donor_correlation_hits_mean exists for 4,880 rows (median 0.731; all-genes median 0.111). I read the DE_stats.h5ad HDF5 metadata by HTTP range requests (h5py+fsspec, no full download). It has six layers (log_fc, lfcSE, zscore, p_value, adj_p_value, baseMean), each a dense float64 33,983 x 10,282 array, contiguous and uncompressed, 2,795,305,648 bytes (zscore offset 13,990,933,219). X is empty. obs is ordered gene-major (ENSG_condition). var holds Ensembl IDs and symbols. In 20 sampled zscore rows: 0 NaN, no zero-fill, max|z| 3.7-33.4. varm n_regulators sums: 591,491 / 778,699 / 662,136. K562_comparison.suppl_table.csv: 5,640 rows = 1,880 genes x 3 conditions; median K562-vs-CD4 logFC r is 0.30-0.32, against 0.003 for random pairs. sample_metadata: 4 donors aged 22-34, 3F/1M, Hispanic, African American x2 and Asian; D1-D2 ran in R1 and D3-D4 in R2 (donor is confounded with run). Kill-check counts: 2,271 genes have >=50 downstream genes in some condition (2,088 of them in all 3). 213 are stim-specific, 92 rest-specific, and 733 appear in the K562 table (median r 0.39-0.40). GEO GSE314342 went public 2026-02-06 with 577 samples; RAW.tar is 159 GB and the bulk-validation CSVs are 0.9-7.4 MB. The GitHub suppl_tables sizes match S3 byte for byte. The GitHub repos and the VCP page licence are MIT.",
+    "what_came_from_paper_text_only": "Not checked against files: 22M / 33.4M cells, 21.99M single-guide cells, the 26,504-guide / 12,779-gene library, 73% knockdown rate, 2,035,311 trans-effects, 27/32 concordance with arrayed KO, the Th2/Th1 elastic-net CV R of 0.39 / 0.27, and 3,081 genes tested in K562. Not opened (all over the 50 MB cap): cell-level files, pseudobulk, by_guide, by_donors, and only 20 z rows were read from the DE layers. External resources not opened: Replogle K562 (scPerturb), OneK1K, UKB burden Zenodo, NBDC E-GEAD-397. Prior-work numbers for Palla et al. come from the bioRxiv full text via WebFetch. X-Cell CD4 numbers were not retrieved because bioRxiv returned HTTP 429. Pop-Corn's 'primary T-cell benchmark' is not confirmed to be this dataset."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). The S3 bucket lists anonymously, and 11 HTTPS GETs returned 200; GEO and GitHub are public; no login needed. No controlled-access data in the core resource. Donor genotypes are not released at all, so genotype x perturbation work is impossible. The NBDC E-GEAD-397 Th1/Th2 cohort's access tier was not checked."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass (checked). Perturbation effects are already stored as layers (log_fc, lfcSE, zscore; 33,983 x 10,282) in DE_stats.h5ad, and per-perturbation summaries (n_downstream, ontarget_effect_size) are columns in the 7 MB CSV. Nothing has to be built for within-dataset tasks. Only the K562 transfer arm needs a join, on Ensembl ID."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass for cross-context tasks: the Rest profile used as input sits in the same matrix. For unseen-perturbation prediction the input is an Ensembl ID that must be mapped to a sequence or embedding. That is one bulk UniProt/Ensembl file, not thousands of lookups."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked in the readme). log_fc is log2 fold change vs NTC, zscore = log_fc/lfcSE, and baseMean is mean normalized expression. Trap: z scales with cells per perturbation (17-11,510, median 539), so compare contexts on log_fc, not z."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 33983,
+      "note": "Pass (checked): 33,983 perturbation-condition rows over 11,526 genes. The effective signal set is much smaller: 2,271 genes with >=50 downstream genes, only 213 stim-specific and 92 rest-specific regulators, and median n_downstream = 2."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "One DE layer is 2.80 GB float64 (checked), about 1.4 GB as float32 for all 3 conditions (~465 MB per condition). log_fc+lfcSE is ~2.8 GB float32. The full DE file is 16.8 GB, cell-level data 1.84 TB, pseudobulk 44.6 GB.",
+      "note": "Pass only for the DE layers. Because they are contiguous and uncompressed, HTTP range reads of single layers or gene blocks work (checked). Anything at cell or pseudobulk level fails A6 badly."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass (checked). The file's 33,983 rows match the readme's n_obs. Per condition, 11,287/11,415/11,281 vs the paper's 11,289/11,417/11,333 (Stim48hr is 52 short); 11,526 vs 11,527 perturbed genes; 7,806 vs 7,807 with >=3 DE genes; 2,035,203 vs 2,035,311 trans-effects. The small gaps fit post-hoc off-target exclusion."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass with caveat. Labels are DESeq2 Wald statistics on summed UMI counts against NTC pseudobulks: a summary of the measurement, not another model's prediction. Guide-to-cell assignment uses a mixture model (crispat). Regulator-status labels depend on power (n_cells_target, target_baseMean, low_target_gex), so those columns must not be used as features."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 10,
+    "c_worth_asking": 8,
+    "d_backbone_fit": 6,
+    "g_integration": 7,
+    "h_missing_data": 7,
+    "i_does_anyone_care": 5,
+    "j_fit_finishability": 7
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Palla, Hillsley, Kim, Royer 2026, 'Tabular Foundation Models Are Competitive Cellular Perturbation Predictors' (bioRxiv 10.64898/2026.06.28.735106). TabPFN and TabICL vs PRESAGE, scGPT and the mean, run on this exact dataset (Zhu et al.).",
+        "open_weights": true,
+        "score_and_split": "Two donors, guide-level LFC, ~7k perturbations with significant KD, perturbation holdout by 5-fold CV within donor (60/20/20). Cosine on top-20 DE genes: TabPFN +0.108; TabICL, PRESAGE and scGPT ≈ the mean baseline (−0.026). Code is said to be at github.com/royerlab/tfm-perturbation (not opened).",
+        "authors_named_unsolved": "Weak per-perturbation signal (logFC sd ≈ 0.057) and noisy guide-level pseudobulk. They call for models that handle cell- and sample-level variability. Cross-context and K562-to-primary transfer were not tested.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "X-Cell / X-Cell-Ultra (Xaira 2026, bioRxiv 10.64898/2026.03.18.712807). Diffusion LM trained on X-Atlas/Pisces (25.6M cells, including rested and stimulated Jurkat).",
+        "open_weights": null,
+        "score_and_split": "Abstract claims zero-shot generalization to primary CD4+ T cells from multiple donors and 5x Pearson-delta on held-out perturbations; the CD4 numbers were not retrieved. The HF repo Xaira-Therapeutics/X-Cell is CC-BY-NC-SA-4.0 but shows only a README and a PNG (no weight files seen).",
+        "authors_named_unsolved": "Not read (bioRxiv 429).",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Ahlmann-Eltze, Huber, Anders 2025 Nat Methods (PMC12328236): low-rank linear baseline vs GEARS, scGPT, scFoundation, UCE, scBERT (CPA excluded for unseen perturbations). Code at github.com/const-ae/linear_perturbation_prediction-Paper.",
+        "open_weights": true,
+        "score_and_split": "Unseen single perturbations in Replogle K562/RPE1 and Adamson, L2 on the top 1,000 genes. No deep model beat the linear baseline. Best was a linear model whose perturbation embeddings were pretrained on another cell line's perturb-seq. Not run on this dataset.",
+        "authors_named_unsolved": "'Prediction of perturbation effects still remains an open challenge'. Successful transfer learning on perturbation data has not been shown.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "pert2state elastic-net (this paper; github.com/emdann/pert2state_model, MIT). Reconstructs cell-state DE signatures from eigen-perturbations.",
+        "open_weights": true,
+        "score_and_split": "Held-out genes of the Th2/Th1 signature from Stim8hr effects: mean CV R 0.39 (training cohort), 0.27 (validation cohort). Beats K562-trained models (paper text).",
+        "authors_named_unsolved": "Models that 'directly incorporate context-dependent perturbation effects'. 'Predicting perturbation effects across cellular contexts, a difficult, but essential task'.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Pop-Corn (Chen ... Martínez 2026, bioRxiv 10.64898/2026.09.25.754560). Predicts cell-state composition shifts for held-out perturbations.",
+        "open_weights": null,
+        "score_and_split": "Abstract only: beats expression-prediction pipelines on composition in 'the primary T-cell benchmark'. Not confirmed to be this dataset; no numbers retrieved.",
+        "authors_named_unsolved": "Good mean-expression predictors fail at composition shifts (abstract).",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Frozen gene embeddings plugged into an Ahlmann-Eltze low-rank ridge model: ESM-2 (150M/650M) mean-pooled embeddings of the perturbed protein, plus Geneformer or scGPT gene-token embeddings. The strongest prior-work variant uses K562 perturbation profiles as the embedding (not a pretrained network). Random embeddings are a mandatory control.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU. ESM-2 over ~11.5k proteins takes about 1-4 h, cached once. Ridge on 2,088-11,526 perturbations x 10,282 genes in float32 fits in 16 GB per condition. No GPU needed. X-Cell needs a GPU.",
+    "licence": "Dataset MIT (VCP page, checked). Article CC BY-NC. Code MIT (checked). ESM-2 MIT, Geneformer Apache-2.0, scGPT MIT (believed; not re-checked). X-Cell CC-BY-NC-SA-4.0 (checked)."
+  },
+  "integration": {
+    "partner_dataset": "Replogle et al. 2022 K562 genome-wide CRISPRi Perturb-seq via scPerturb (Zenodo 7041849; cited by the paper; not opened). Optional second partner: X-Atlas/Pisces rested and stimulated Jurkat.",
+    "join_key": "Ensembl gene ID of the perturbed gene (target_contrast) x Ensembl ID of the measured gene (var gene_ids); both checked present. Coverage: 1,880 shared perturbed genes in the paper's K562 table, 733 of the 2,271 strong CD4 regulators (checked). Collapse rule: one gene-level profile per perturbed gene per context (pool guides), keep only measured genes present in both, record the Ensembl release.",
+    "bigger_question_one_sentence": "How much of a regulator's effect in stimulated primary T cells can be predicted from its resting-state and K562 effects, and which regulators are 'context-private', i.e. which contexts must actually be screened?"
+  },
+  "controls": {
+    "positive_control": "(1) On-target knockdown: the perturbed gene's own log_fc must come out strongly negative (ontarget_effect_size column). (2) Members of annotated complexes (Integrator, INO80, etc.; 112-row clustering table, checked) must have the most similar predicted profiles. (3) Well-replicated perturbations (high donor_correlation_hits_mean) must be the easiest to predict.",
+    "negative_control": "Shuffle perturbation labels, and shuffle within condition. Use random gene embeddings of the same size, which Ahlmann-Eltze found nearly as good as FM embeddings. Dummies: the mean-perturbation profile and copy-Rest. Hold out by gene across all 3 conditions together to avoid leakage.",
+    "external_validation": "Arrayed KO bulk RNA-seq (GSE171737; paper reports 27/32 concordant) and this study's arrayed bulk validations (GSE314342 CSVs, file list checked). K562/Jurkat via scPerturb. A held-out donor pair via by_donors.h5mu (16.9 GB, not opened). No year column."
+  },
+  "honest_claim_h3": "Predicts CRISPRi-knockdown pseudobulk DESeq2 effect profiles on ~10k variable genes in ex vivo-expanded, CD3/CD28-restimulated blood CD4+ T cells from four 22-34-year-old donors in one lab, and only for perturbations with detectable knockdown. It says nothing about knockouts, polarized or tissue T cells, or single-cell heterogeneity.",
+  "pitch": {
+    "headline": "33,983 x 10,282 CRISPRi effect matrix in primary human CD4+ T cells across three activation states, MIT-licensed, range-readable.",
+    "what_makes_the_data_unusual": "Checked in the files: 11,526 perturbed genes profiled in resting, 8 h- and 48 h-stimulated primary CD4+ T cells (11,086 in all three), four donors aged 22-34 who are 3F/1M and Hispanic, African American x2 and Asian, under an MIT dataset licence. The six DE layers are dense, contiguous, uncompressed float64, so single genes (~247 KB per gene) can be pulled by HTTP range read without touching the 1.84 TB of cell-level files; 733 of the 2,271 strong CD4 regulators also appear in the K562 comparison table (median logFC r 0.30-0.32 vs 0.003 for random pairs).",
+    "the_win": "A number of the form \"predicting Stim48hr log2FC profiles from resting-state effects reaches X% of the cross-donor ceiling (median donor_correlation_hits_mean 0.731 on hit genes), versus Y% for frozen ESM-2/Geneformer embeddings and Z% for copy-Rest\", stratified over the 213 stim-specific and 92 rest-specific regulators. Cross-context and K562-to-primary transfer were not tested by Palla et al. on this dataset (their TabPFN result, +0.108 top-20-DE cosine, is from the preprint text, not from files I opened).",
+    "even_if_it_fails": "A failure is still an answer for screen design: it would say that stimulated-state effects cannot be recovered from resting-state or K562 profiles, so those contexts must be screened directly - and because scores are expressed as a fraction of the donor-agreement ceiling, a low score is not just noise. The one outcome that teaches nothing is if copy-Rest already reaches ~90% of that ceiling, or if the all-gene cross-donor correlation (r ~ 0.12, checked) leaves too little headroom to separate methods; that is exactly why the copy-Rest-vs-ceiling check comes first.",
+    "who_wants_it": "The dataset's own authors, who named \"predicting perturbation effects across cellular contexts\" and models that \"directly incorporate context-dependent perturbation effects\" as open problems, and the Royer group, who asked for models handling cell- and sample-level variability. The decision it changes: whether a group planning a CRISPR screen in T cells pays for the activated-state screen or predicts it from a resting or K562 screen they already have."
+  },
+  "plain_idea": {
+    "one_liner": "Use a gene's silencing effects in resting immune T cells and in a lab-grown cell line to predict its effects in activated T cells.",
+    "train_on": "One example per silenced gene. The input is how the expression of about 10,282 measured genes shifts when that gene is silenced in resting helper T cells. Two other inputs can be used instead or added: the same kind of profile from a lab cell line called K562 (available for 1,880 silenced genes), or fixed numerical descriptions of the gene taken from pretrained protein and single-cell models. The data were checked: 33,983 gene-by-condition profiles covering 11,526 silenced genes across three conditions, of which 2,088 strongly acting genes were tested in all three. Each gene is held out as a whole, across all three conditions at once. Only about 300 genes act differently depending on the condition.",
+    "predict": "For each held-out gene, the predicted log2 fold change of about 10,000 genes at 8 and at 48 hours after stimulation, compared with cells that got non-targeting control guides. The true answers come from a genome-wide screen in one lab. Genes were silenced by CRISPR interference in expanded blood helper T cells from four donors aged 22-34, and the cells were read out by single-cell gene-expression sequencing. Cells were pooled per silenced gene and compared with the controls using a standard differential-expression test. Accuracy is reported as a fraction of how well the donors agree with each other.",
+    "why_worthwhile": "People designing genetic screens would learn which regulators act only in activated T cells, which must be screened in that state, and which can be predicted from resting-cell or cell-line screens. Because scores are measured against the donor-agreement ceiling, a failed model still tells us that activated-state effects can't be predicted from the other contexts."
+  },
+  "ml_idea": "A cross-context transfer benchmark on the DE layers. With a grouped split over held-out perturbed genes, predict Stim8hr/Stim48hr log2FC profiles from (a) the gene's Rest profile, (b) its K562 profile, and (c) frozen ESM-2/Geneformer embeddings in a low-rank ridge model. Report each as a fraction of the cross-donor ceiling, stratified by context-specific (213 stim-specific) vs shared regulators.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "cheapest_killing_check": "Range-read only the log_fc rows for the 2,088 strong genes tested in all 3 conditions. Rows are gene-major, about 247 KB per gene, so ~515 MB in total. For each gene, compute copy-Rest Pearson on hit genes and compare it with donor_correlation_hits_mean (median 0.737). If copy-Rest already reaches >=90% of that ceiling for most genes, or if strong context-specific regulators stay at ~300, stop.",
+    "working_set_gb": 1.4,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": 2.5,
+    "cv_run_minutes": null,
+    "compute_note": "Figures come from checked file sizes (2.80 GB float64 DE layer, 16.8 GB full DE file, working HTTP range reads) plus estimates for the 1-4 h ESM-2 embedding pass and the ridge fit said to fit in 16 GB; nothing was actually timed."
+  },
+  "roi": 8.7,
+  "verdict": "verify_first",
+  "verdict_reason": "Part A passes and is checked in the files: public MIT data, a well-documented 33,983 x 10,282 effect matrix, and counts that match the paper to within ~0.2%. The DE layers fit a laptop (2.8 GB per float64 layer, range-readable); the 1.8 TB cell-level data does not. Risks: the dataset is already a 2026 benchmark (Palla et al. with open code, X-Cell, Pop-Corn), and signal is weak (all-gene cross-donor r ≈ 0.12; only ~300 context-specific strong regulators). Run the copy-Rest vs ceiling check first.",
+  "c2_backfill": {
+    "score": 1,
+    "why": "Palla TabPFN, pert2state, Ahlmann-Eltze are open but untested on cross-context transfer; X-Cell weights unseen."
+  }
+}

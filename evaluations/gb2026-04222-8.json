@@ -1,0 +1,53 @@
+{
+  "paper_id": "gb2026-04222-8",
+  "title": "Benchmarking cell-type deconvolution in cross-platform transcriptomic data.",
+  "doi": "10.1186/s13059-026-04222-8",
+  "journal": "Genome Biology",
+  "data_url": "https://doi.org/10.5281/zenodo.19677865",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Zenodo record 19677865 file listing via API: Data.zip 2.80 GB, intermediate_data.zip 3.02 GB, manuscript.zip 390 MB, scripts.zip 3.1 MB, Results.zip 2.6 MB, README (read in full). GEO series text for GSE271255, GSE338144 and GSE338314: the new data is 4 brain-tumour specimens, 13 GeoMx regions (9 immune aggregates, 4 tumour regions) plus Visium on the same blocks; raw files withheld for privacy. Did not download the zips (all data zips are over the 50 MB cap).",
+    "what_came_from_paper_text_only": "That the only measured ground truth is pathologist-counted B and T cells from multiplex immunofluorescence (mIF) for 28 GeoMx regions from 10 glioma patients; all other ground-truth proportions come from simulated pseudo-bulk mixtures built from public PBMC and bone-marrow single-cell data."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo (CC BY 4.0) and GEO processed files are open; checked listings only, not contents."},
+    "a2_label_is_a_column": {"pass": false, "note": "Cell-type proportions for most samples are constructed by the authors' own pseudo-bulk simulation; the real cross-platform pairs (GeoMx vs Visium) have no measured truth. Based on README and paper text."},
+    "a3_inputs_present": {"pass": true, "note": "Expression matrices are deposited (GEO processed files, Zenodo RData), per paper and README."},
+    "a4_units_stated": {"pass": true, "note": "Proportions and cell counts; TPM normalisation stated in paper."},
+    "a5_enough_rows": {"pass": false, "n_rows": 28, "note": "Only 28 regions from 10 patients have measured (mIF) cell counts, two cell types each; paper text, not verified in files. The new cross-platform set is 13 regions from 4 specimens (GEO)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~6 GB zipped total; the measured subset would be MB-scale", "note": "Measured subset is small; full zips exceed the download cap."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO design text (9 immune + 4 tumour regions, 4 specimens) matches paper description; not checked at file level."},
+    "a8_label_provenance": {"pass": false, "note": "Simulated pseudo-bulk proportions are computed from the same single-cell data used to build deconvolution signatures, so labels are derived by construction; only the 28 mIF counts are real measurements."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "SpatialDecon (deconvolution tool benchmarked in this paper)", "open_weights": true, "score_and_split": "Paper reports it as most consistent across simulated and real cross-platform settings; moderate correlation with mIF counts across 28 regions (exact value not extracted).", "authors_named_unsolved": "Platform-specific technical bias still degrades cross-platform deconvolution.", "runnable_as_baseline": true},
+      {"name": "cell2location (Bayesian spatial deconvolution tool benchmarked here)", "open_weights": true, "score_and_split": "Co-best with SpatialDecon in the paper's benchmark; numbers not extracted.", "authors_named_unsolved": "Same as above.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "scGPT / Geneformer (single-cell foundation models) could embed references", "freeze_and_head_viable": null, "hardware": "CPU feasible for small sets", "licence": "open"},
+  "integration": {"partner_dataset": "", "join_key": "gene symbol", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "Simulated pseudo-bulk mixtures with known proportions", "negative_control": "Shuffled proportions", "external_validation": "28 mIF-counted regions (too few)"},
+  "honest_claim_h3": "With 28 measured regions, a model could at most claim it estimates B and T cell fractions in glioma immune aggregates on GeoMx about as well as existing tools; everything else is fit to simulation.",
+  "plain_idea": {
+    "one_liner": "Use spatial gene-expression profiles from two platforms to predict the fraction of each cell type in a tissue region.",
+    "train_on": "Simulated mixtures of single-cell profiles (count unknown, inside a 3 GB zip) plus 13 matched real regions on two platforms.",
+    "predict": "Cell-type proportions; real truth exists only as pathologist mIF (multiplex immunofluorescence) counts of B and T cells in 28 regions.",
+    "why_worthwhile": "Spatial labs choosing a deconvolution tool would benefit, but the paper already delivers that guidance and the measured truth is too thin to train on."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "28 measured regions versus the many simulated and public benchmarks deconvolution tools already use."},
+    "confidence_score": {"answer": "no", "why": "No replicate measured truth to calibrate against."},
+    "models_beatable": {"answer": "partly", "why": "Tools are open and the paper shows cross-platform weakness, but 28 truth points cannot show a win."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new data measuring the same truth the same way joins to this set."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Learn a platform-bias correction for deconvolution; dead because measured ground truth is 28 regions and the rest is self-simulated.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 3.0, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from Zenodo zip sizes only; nothing timed.", "cheapest_killing_check": "Count regions with measured (non-simulated) cell proportions: paper says 28, which already kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Benchmark paper: only 28 regions (10 patients) have measured cell counts; all other labels are simulated pseudo-bulk mixtures built from the same reference data (A2, A5, A8 fail)."
+}

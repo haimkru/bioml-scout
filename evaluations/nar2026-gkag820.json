@@ -1,0 +1,224 @@
+{
+  "paper_id": "nar2026-gkag820",
+  "title": "DeepPNI: a language- and graph-based model for mutation-driven protein-nucleic acid binding energetics.",
+  "doi": "10.1093/nar/gkag820",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21795622",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the 8,536,945-byte Zenodo archive (needed a resumed GET; the server stalled twice) and opened data/Dataset.xlsx: 7 sheets, main sheet 1,754 rows x 4 columns (PDB_ID, chain, mutation, 'DDG (kcal/mol)'), 0 missing values, 0 duplicate rows on PDB+chain+mutation, 406 unique PDB entries, DDG range -2.308 to 6.642, 74.6% alanine substitutions, 79.4% destabilizing. Confirmed 1,754 refined + 197 'Removed outliers' = 1,951 and 406 union 114 = 439 PDB entries, both exactly matching the paper. Found the five test-fold sheets (350/351/351/351/351) and showed they share 116-127 PDB entries between every pair, i.e. the published cross-validation is a random mutation-level split. Downloaded the Nabe source database (2,506 rows: PDB, chain, DNA/RNA partner, mutant, temperature in K, Kd, deldelG, PubMed ID), joined it to the label table (54.4% coverage, 83.7% of joined rows agree within 0.01 kcal/mol). Ran my own baselines on the paper's own folds: global mean PCC -0.06, per-PDB training mean 0.669 (MAE 0.539), gradient-boosted trees on amino-acid physicochemistry+position 0.338, same plus per-PDB mean 0.697 (MAE 0.516); under a PDB-grouped split the cheap model falls to 0.238. Confirmed three PDB structures fetch from RCSB (HTTP 200) and read the released code (graph_builder.py, DeepPNI_prediction.py, requirements.txt, MIT licence).",
+    "what_came_from_paper_text_only": "DeepPNI's own scores (PCC 0.76 random five-fold, 0.47 PDB-grouped, 0.58-0.81 on blind sets), the DeePNAP comparison (0.52 on the same set), the assay-specific blind-set counts (ITC 210, gel shift 181, fluorescence polarization 95, filter binding 70), the temperature-group counts, and the 193/219 PremPDI training overlap. I could not retrieve ProNAB's download page (404s), so the blind sets themselves are unverified. I did not load model/best_model.pt (no PyTorch installed locally), so the released checkpoint's contents are unverified beyond its 8.2 MB size and filename. Europe PMC's supplementary-file endpoint timed out, so the supplementary tables were not retrieved."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 21795622, CC-BY-4.0, open access, no login. I downloaded the full 8,536,945-byte archive, though the server stalled and needed a resumed request. The Nabe source database also downloads freely."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is literally one column, 'DDG (kcal/mol)', in data/Dataset.xlsx. Nothing has to be constructed or inferred: 1,754 values, no missing entries."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are referenced, not embedded: PDB_ID + chain + residue position. But that is 406 automated RCSB downloads, not thousands of manual lookups, and I confirmed three fetch with HTTP 200. Protein sequence context is read out of the structure file by the released code."},
+    "a4_units_stated": {"pass": true, "note": "Units are in the column header: kcal/mol. The Nabe source adds temperature in kelvin and Kd in molar. One consistent unit throughout, no mixed scales."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1754, "note": "1,754 labelled rows counted in the file, just over the ~1,500 regression threshold. The unit that matters for generalisation is the structure, and there are only 406 of those - thin, but above the >=5-groups bar by a wide margin."},
+    "a6_fits_laptop": {"pass": true, "working_set": "133 KB label table + ~0.5 GB of 406 PDB structure files + ~10 MB of cached embeddings", "note": "Trivially laptop-sized. ESM-2 650M on CPU needs about 3 GB peak RAM; no GPU required for a frozen-backbone-plus-head baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Counts match exactly: 1,754 refined + 197 removed outliers = 1,951 unique mutations, and 406 union 114 = 439 PDB entries, both as the paper's Table 1 states. One small flaw: the five fold sheets disagree with the refined sheet on 25 of 1,754 keys (1.4%) - 25 keys are in the refined sheet but no fold, and 25 different keys are in folds but not the refined sheet, most likely a chain-label edit. Totals are unaffected."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are experimental, not model output. They trace to measured dissociation constants in Nabe (ddG = RT ln(Kd_mutant/Kd_wild-type)); I joined 1,020 rows to Nabe and 83.7% agreed within 0.01 kcal/mol, the rest explained by the authors' averaging of duplicates. Kd itself must never be used as a feature, since the label is computed from it."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One sheet, 1,754 rows x 4 columns, clean PDB+chain+mutation key; structures join one-to-one on PDB ID. Seen in file."},
+    "B2": {"score": 2, "why": "Dataset.xlsx parsed first try with pandas/openpyxl; all 7 sheets read, label column already float64. Verified."},
+    "B3": {"score": 1, "why": "Labels pool ITC, gel shift, fluorescence and filter binding across 4-363 K; authors averaged duplicates but did not normalize across assays."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; 0 missing across all 1,754 rows and 4 columns, checked in the file."},
+    "B5": {"score": 2, "why": "0 duplicate rows on PDB+chain+mutation in the delivered table; upstream Nabe duplicates (296 keys) were averaged by the authors."},
+    "B6": {"score": 1, "why": "Four self-explanatory columns with units in the header, but no data dictionary, no per-row assay/temperature/source, and the 25-key fold mismatch is undocumented."},
+    "C1": {"score": 2, "why": "Informative either way: a honest-split leaderboard is publishable whether or not any model beats the per-structure average I measured at 0.669."},
+    "C2": {"score": 1, "why": "Eight recent models exist (DeepPNI, MutPNI, TopoML, SAMPDI-3Dv2, PNBACE, DeePNAP, mCSM-NA, mmCSM-NA) but all headline numbers use random splits."},
+    "C3": {"score": 2, "why": "Clear 'better' angle: I verified a per-PDB training mean alone reaches PCC 0.669 of DeepPNI's 0.76, so published numbers are largely memorization."},
+    "C4": {"score": 2, "why": "Ground truth needs calorimetry or gel-shift titration per mutant; the paper states this is costly and unscalable for screening."},
+    "C5": {"score": 2, "why": "Published numbers on the exact folds shipped in the file (DeepPNI 0.76/0.47, DeePNAP 0.52), plus dummy baselines I computed myself."},
+    "D1": {"score": 2, "why": "ESM-2, a protein language model, open weights via the fair-esm package; the released code already uses esm2_t33_650M_UR50D."},
+    "D2": {"score": 2, "why": "1,754 sequence windows embed once on CPU and cache to ~10 MB; the archive even ships a 540 KB example embedding cache."},
+    "D3": {"score": 2, "why": "Permissive throughout: ESM-2/fair-esm MIT, DeepPNI code MIT (LICENSE file read), Zenodo record CC-BY-4.0."},
+    "E1": {"ok": true, "why": "PDB-grouped split is published and reproducible; a 30%-identity MMseqs2 clustering of chains is a stricter option."},
+    "E2": {"ok": true, "why": "406 distinct PDB entries in the refined set, 439 across the full curation - far more than the five groups needed."},
+    "E3": {"ok": true, "why": "I computed them: global mean PCC -0.06, per-wild-type-residue mean 0.156, per-PDB training mean 0.669 on the paper's folds."},
+    "E4": {"ok": true, "why": "Nabe has 296 duplicate PDB+chain+mutant keys with differing deldelG, giving a direct replicate-disagreement noise floor."},
+    "E5": {"ok": true, "why": "Arginine/lysine-to-alanine at the interface must come out destabilizing; and the five published test folds let us reproduce their per-fold numbers."},
+    "E6": {"ok": true, "why": "Label shuffling, per-PDB-mean-only training and the paper's own six-way edge ablation are all runnable on this table."},
+    "E7": {"ok": true, "why": "ProNAB assay-specific blind sets and MPR311 exist, plus Nabe's 429 PubMed IDs allow a temporal split; PremPDI is unusable (193/219 overlap)."},
+    "E8": {"ok": true, "why": "The exact five test folds ship in the xlsx and DeepPNI's per-fold scores are in its Supplementary Table S4 - direct reproduction."},
+    "G1": {"score": 2, "why": "Standard identifiers present and verified: 406 PDB accessions, chain IDs and residue positions, all resolvable at RCSB."},
+    "G2": {"score": 2, "why": "Nabe downloads cleanly (I opened it): 2,506 rows adding temperature, Kd, DNA/RNA partner flag and PubMed ID; plus PDB and AlphaFold DB."},
+    "G3": {"score": 1, "why": "I measured it: 54.4% of rows join to Nabe on PDB+chain+mutation and 102 keys hit more than one Nabe row - manageable, not clean."},
+    "G4": {"score": 2, "why": "Combining with Nabe's PubMed years and assay context tests whether accuracy survives on measurements published after training - unanswerable from either alone."},
+    "H1": {"score": 1, "why": "Both signs present but skewed: 79.4% destabilizing, only 106 of 1,754 clearly stabilizing, and |Z|>1.5 outlier removal truncated both tails."},
+    "H2": {"score": 1, "why": "406 structures and 429 source publications, but one curation pipeline (Nabe), 74.6% alanine substitutions, and protein-DNA outnumbers protein-RNA 1,197 to 558."},
+    "H3": {"score": 2, "why": "Written out below as one sentence naming the alanine bias, the destabilizing skew, the outlier deletion and the unseen-fold caveat."},
+    "H4": {"score": 2, "why": "Unusually explicit paper: it reports the 0.47 structure-split drop, the 193/219 PremPDI overlap and calls 1,754 'a modest dataset size'."},
+    "I1": {"score": 2, "why": "Named groups: Mehra lab (IIT Bhilai), Deng lab (Nabe), Gromiha lab (ProNAB), Alexov lab (SAMPDI-3D), Ascher lab (mCSM-NA), Wei lab (TopoML)."},
+    "I2": {"score": 2, "why": "An honest leaderboard changes which predictor these groups recommend and which mutations get picked for costly titration experiments."},
+    "I3": {"score": 1, "why": "The field reports Pearson correlation, but the real decision is which mutants to assay, so top-k precision and sign accuracy fit better."},
+    "I4": {"score": 1, "why": "My own result argues against heavy ML on random splits: a per-structure average gets 0.669. Complexity only matters in the extrapolation regime."},
+    "J1": {"score": 2, "why": "Real modelling content: homology-aware splits, frozen protein-language-model transfer, graph features, leakage controls, calibration."},
+    "J2": {"score": 2, "why": "ddG in kcal/mol with a clear sign convention; arginine-to-alanine at a nucleic-acid interface gives a textbook sanity check."},
+    "J3": {"score": 2, "why": "The leakage benchmark alone is shareable even if no model improves; so is the joined Nabe+DeepPNI table with assay and year columns."},
+    "J4": {"score": 1, "why": "Scope implies roughly four weeks (one week to the feature table, three to models) but no budget is fixed in writing yet."},
+    "J5": {"score": 0, "why": "No kill date or condition written down anywhere; needs a line in NOTES.md before starting."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepPNI (this paper, 2026) - relational graph network plus ESM-2 protein language model embeddings",
+        "open_weights": true,
+        "score_and_split": "Pearson correlation 0.76 (MAE 0.51) on random five-fold cross-validation over 1,754 mutations, but only 0.47 (MAE 0.66) when whole PDB structures are held out. I verified its five published folds share 116-127 PDB entries pairwise, and that a per-PDB training mean alone already reaches 0.669.",
+        "authors_named_unsolved": "Extrapolating to completely unseen structural scaffolds; they also say the model gives no residue- or atom-level explanation for individual predictions.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeePNAP (2024) - sequence-only deep network trained on ProNAB",
+        "open_weights": false,
+        "score_and_split": "Pearson 0.52 on DeepPNI's 1,754-mutation set under the same random five-fold protocol; 0.59 on the MPR311 benchmark. Web server only (http://14.139.174.41:8080/); I found no code repository.",
+        "authors_named_unsolved": "Not retrieved - I only read DeepPNI's description of it, not the DeePNAP paper itself.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "MutPNI (2025) - transformer over ESM-2 and ProtT5 embeddings plus FoldX energy terms",
+        "open_weights": null,
+        "score_and_split": "Pearson 0.661 (DNA) and 0.701 (RNA) on its own benchmark test sets; 0.75 on MPR311 under ten-fold cross-validation. Splits are mutation-level, not structure- or homology-grouped.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "SAMPDI-3Dv2 (2025) - gradient boosting on structural and position-specific-scoring-matrix features",
+        "open_weights": null,
+        "score_and_split": "Pearson 0.68 for protein mutations and 0.80 for DNA mutations on its expanded training database; 0.83 on PremPDI as reported by DeePNAP. Cross-validation, not grouped.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "mmCSM-NA / mCSM-NA (2021, 2017) - graph-based structural signatures with Gaussian process and extremely randomized trees",
+        "open_weights": false,
+        "score_and_split": "mmCSM-NA reports Pearson up to 0.67 (RMSE 1.06 kcal/mol) for single-point mutations under 5-, 10- and 20-fold cross-validation. Web servers only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "PNBACE (2024) - ensemble predictor handling both protein and nucleic-acid mutations",
+        "open_weights": null,
+        "score_and_split": "Pearson 0.660 on MPD48 and 0.711 on the PDM set, beating five earlier methods. Its own paper notes the runtime is too high for large-scale screening.",
+        "authors_named_unsolved": "Computational cost - the authors state it cannot be applied to large-scale investigations.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "TopoML (2025) - persistent-Laplacian topological features plus transformer sequence embeddings and gradient boosting",
+        "open_weights": null,
+        "score_and_split": "Pearson 0.72 versus a prior 0.67 on a 710-mutation protein-RNA test set, and reported state of the art on a 596-mutation protein-DNA benchmark. Both are much smaller sets than DeepPNI's, evaluated on mutation-level splits.",
+        "authors_named_unsolved": "Not retrieved beyond the abstract, which says computational methods 'remain limited in accuracy'.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (esm2_t33_650M_UR50D), a protein language model, used frozen; optionally the smaller 150M checkpoint",
+    "freeze_and_head_viable": true,
+    "hardware": "16 GB laptop CPU. One-time embedding of 1,754 sequence windows takes roughly 1.5 hours; the archive already ships a 540 KB example embedding cache showing the pattern works.",
+    "licence": "MIT for fair-esm/ESM-2 and for DeepPNI's own code; the Zenodo record is CC-BY-4.0. Nothing blocks reuse, commercial included."
+  },
+  "integration": {
+    "partner_dataset": "Nabe, the source energetics database (verified download: 2,506 rows adding temperature in kelvin, dissociation constant Kd, a DNA/RNA partner flag and a PubMed ID for 429 distinct publications), plus RCSB PDB structures and AlphaFold DB models for chains lacking coordinates",
+    "join_key": "PDB ID + chain + mutation string. I measured the coverage myself: 1,020 of 1,754 rows (54.4%) join, and 102 keys map to more than one Nabe row, so the collapse rule must be to average deldelG per key before joining.",
+    "bigger_question_one_sentence": "Once each measurement carries its assay, temperature and publication year, we can ask how much of a predictor's apparent accuracy comes from assay-specific artifacts and whether it would have worked on the measurements published after its training cutoff - a question neither the model table nor the energetics database answers alone."
+  },
+  "controls": {
+    "positive_control": "Arginine- and lysine-to-alanine substitutions at the nucleic-acid interface must come out strongly destabilizing (removing a positive charge from a phosphate contact is textbook); and reproducing DeepPNI's published per-fold numbers on the five test-fold sheets shipped inside the archive is the strongest available check.",
+    "negative_control": "Shuffle the ddG labels and confirm collapse to the global mean, which I measured at Pearson -0.06; separately train on the per-PDB training mean alone, which I measured at 0.669 on random folds and which must fall to near zero once whole structures or sequence clusters are held out.",
+    "external_validation": "ProNAB-derived assay-specific blind sets (isothermal titration calorimetry 210, gel shift 181, fluorescence polarization 95, filter binding 70 - counts from the paper; I could not retrieve ProNAB) and the MPR311 benchmark. A temporal split via Nabe's PubMed IDs is the cheapest option. PremPDI cannot be used: 193 of its 219 mutations are in the training set."
+  },
+  "honest_claim_h3": "Among single amino-acid substitutions at the interfaces of 406 already-crystallized protein-DNA and protein-RNA complexes curated from one database - three-quarters of them substitutions to alanine, four-fifths weakening binding, with the most extreme values deleted as outliers - the model ranks how much a substitution weakens binding in kcal/mol, and we report separately and honestly how far that ranking degrades on protein folds never seen during training.",
+  "plain_idea": {
+    "one_liner": "Use a protein-DNA or protein-RNA structure plus a single amino-acid change to predict how much that change weakens binding.",
+    "train_on": "Each example is one amino-acid substitution at a protein's nucleic-acid-binding interface: the experimentally solved 3-D structure of the complex, the chain and position changed, and which residue replaced which. I counted 1,754 such examples across 406 structures in the file, with 197 more set aside as outliers.",
+    "predict": "A single number, the change in binding free energy in kcal/mol (positive means weaker binding). The true answer comes from measured dissociation constants of the wild-type and mutant complexes - by calorimetry, gel-shift, fluorescence or filter-binding assays - converted to free energy and curated in the Nabe database, which I downloaded and matched to the labels.",
+    "why_worthwhile": "Groups that study disease mutations in DNA- and RNA-binding proteins currently pick which mutants to measure using tools whose published accuracy, I verified, is largely reproduced by simply averaging the other mutations in the same structure; an honest, homology-aware leaderboard would tell them which tool to trust and how far to trust it."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "The 1,754-mutation set I opened is the largest in this subfield and uniquely pools DNA and RNA partners (TopoML used 596 and 710 separately; PremPDI 219; MPR311 311), but it is the same Nabe curation everyone draws on, not new measurements of our own."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Nabe contains 296 duplicate PDB+chain+mutant keys with differing values, which gives a real measurement-noise estimate, and no model in the C2 audit reports calibrated per-prediction uncertainty. But the duplicates are only 12% of rows, so calibration would be coarse."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The only honestly-split number published anywhere in this subfield is DeepPNI's own 0.47 Pearson on held-out structures, and my cheap gradient-boosted baseline reaches 0.238 there - a wide gap with plenty of headroom. mCSM-NA (2017) and mmCSM-NA (2021) predate pretrained protein language models entirely, and every headline score uses random mutation-level splits."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "DeepPNI's weights and folds are available so it can be our baseline, but the new data that joins (Nabe's temperature, Kd and PubMed year) covers only 54.4% of rows, is metadata rather than extra labelled examples, and does not measure ddG a second way - so it cannot guarantee a better prediction by construction."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "ProNAB (binding affinities of protein-nucleic acid complexes and their mutants, Gromiha lab; the paper's blind sets came from it, but its download page returned 404 for me), Nabe (2,506 rows, which I downloaded and opened), and the legacy ProNIT thermodynamic database. SKEMPI 2.0 holds the same physical quantity in the same units for protein-protein interfaces, joinable on PDB plus mutation, and would serve for pretraining rather than validation.",
+    "approx_items": 2506,
+    "join_key": "PDB ID + chain + mutation string (and PubMed ID for provenance)",
+    "why": "A second curation of the same measurement lets us train on one source and test on the other, which is the cleanest external validation available here - though the only count I verified myself is Nabe's 2,506 rows."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The same crystal structure appears in training and test: I verified every pair of the paper's five published folds shares 116-127 PDB entries, and a per-PDB training mean alone reaches Pearson 0.669 against DeepPNI's reported 0.76.",
+      "Homologous proteins under different PDB accessions (for example the methyltransferases 10MH and 3MHT, or multiple p53 entries) survive even a PDB-grouped split, so sequence-identity clustering is needed on top.",
+      "The label is computed from the dissociation constant Kd, which sits in a column of the Nabe partner table - including Kd as a feature would be perfect leakage.",
+      "74.6% of substitutions are to alanine, so a model can score well by learning only 'which residue was removed' rather than any structural context.",
+      "The PremPDI benchmark cannot be used for external validation: the paper states 193 of its 219 mutations are already in the training set, which is why its 0.90 correlation is meaningless."
+    ],
+    "split": "Pull the mutated chain's sequence from each of the 406 PDB entries, cluster with MMseqs2 at 30% sequence identity, and hold out whole clusters. That grouping column does not exist in the files - they contain only PDB_ID and chain - so it must be built, which is one MMseqs2 run. Also report the PDB-grouped split so numbers stay comparable with the paper's 0.47.",
+    "checks": [
+      "Shuffle the ddG labels and confirm performance collapses to the global-mean baseline I measured at Pearson -0.06.",
+      "Train on the per-PDB training mean as the only feature: it gives 0.669 on random folds and must drop to near zero once clusters are held out, which proves the grouping is working.",
+      "Compute nearest-neighbour sequence identity between each held-out chain and the training chains, and report accuracy as a function of that distance.",
+      "Ablate the amino-acid identity block alone, since 74.6% alanine substitutions make that the most likely shortcut."
+    ],
+    "verdict": "Manageable. The leakage is already well characterized - I quantified it in an afternoon - and the fix is a standard clustering step, but it will roughly halve every headline number, so expectations must be set before starting."
+  },
+  "success_criteria": {
+    "metric": "Pearson correlation between predicted and measured ddG on held-out 30%-identity sequence clusters, reported alongside precision among the top 50 predicted strongly-destabilizing mutations (ddG > 1 kcal/mol) - the top-50 figure matches the real decision, which is which mutants a lab titrates next.",
+    "baselines": "Measured by me on the paper's own five folds: global training mean Pearson -0.06; per-wild-type-residue mean 0.156; per-PDB training mean 0.669 (MAE 0.539); gradient-boosted trees on amino-acid physicochemistry and position 0.338; the same plus a per-PDB mean feature 0.697 (MAE 0.516). Under a PDB-grouped five-fold split the cheap model falls to 0.238. Published numbers to beat: DeepPNI 0.76 random / 0.47 PDB-grouped, DeePNAP 0.52 random on the same 1,754 rows.",
+    "success": "Pearson >= 0.55 on held-out 30%-identity clusters, against DeepPNI's 0.47 on the looser PDB-grouped split and my 0.238 cheap baseline on the same grouping - with the per-PDB-mean baseline confirmed to collapse below 0.15 under that split.",
+    "noise_ceiling": null,
+    "kill": "If after two weeks nothing exceeds Pearson 0.47 on the PDB-grouped split and every method sits at the global-mean level on the clustered split, stop modelling and publish the benchmark note with the released splits."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nucleic Acids Research",
+      "why": "NAR publishes protein-nucleic-acid interaction predictors, DeepPNI among them; it would take a frozen protein-language-model-plus-structure head clearly beating 0.47 Pearson on a homology-aware held-out-cluster split, with a usable server or package."
+    },
+    "realistic": {
+      "journal": "Bioinformatics (Application Note or Original Paper)",
+      "why": "Bioinformatics publishes exactly this kind of corrected benchmark - a demonstration that published protein-nucleic-acid ddG scores are largely reproduced by a per-structure average, plus released homology-aware splits and a re-scored leaderboard."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics, or a bioRxiv preprint with the splits on Zenodo",
+      "why": "Even a wholly negative outcome - no method beats the per-structure average, and all of them drop to the global mean across sequence clusters - is a publishable evaluation note there, since mmCSM-NA itself appeared in that journal."
+    }
+  },
+  "pitch": {
+    "headline": "A per-structure average reaches 0.669 of this model's headline 0.76 correlation - I measured it on the authors' own published folds.",
+    "what_makes_the_data_unusual": "One 1,754-row sheet with the label in kcal/mol, zero missing values, zero duplicate keys, the exact five test folds shipped alongside, and MIT-licensed weights and code - so the published numbers can be re-scored directly, not approximated.",
+    "the_win": "Pearson 0.55 or better on held-out 30%-identity protein clusters, against DeepPNI's own 0.47 on held-out structures and the 0.238 my cheap gradient-boosted baseline gets there.",
+    "even_if_it_fails": "We still publish the verified finding that every protein-nucleic-acid ddG score in this subfield is reported on random splits where knowing the structure alone gives 0.669, plus released homology-aware splits the field currently lacks.",
+    "who_wants_it": "The Mehra (IIT Bhilai), Deng (Nabe), Gromiha (ProNAB), Alexov (SAMPDI-3D) and Ascher (mCSM-NA) groups - it would change which predictor they recommend and which mutants they titrate."
+  },
+  "ml_idea": "Rebuild mutation-induced protein-nucleic-acid binding free energy prediction under an honest split. Step 1: fetch the 406 PDB structures, cluster the mutated chains at 30% sequence identity with MMseqs2, and re-score DeepPNI (weights released, MIT) and any runnable competitor on held-out clusters as well as the paper's own published folds. Step 2: train a frozen ESM-2 (protein language model) embedding of the mutation-centred sequence window plus simple interface-structure features (interface contact counts, relative solvent accessibility, charge and volume change) with a small head, and compare against the per-PDB-mean baseline I measured at 0.669 on random folds and 0.238 under grouping. Step 3: join the Nabe source table to attach temperature, assay type and publication year, then run a temporal split (train on measurements published before a cutoff, test after) and report calibrated per-prediction uncertainty from the 296 duplicate-key disagreements. The deliverable is a re-scored leaderboard, released homology-aware splits, and a model that is honest rather than merely high-scoring.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 3.0,
+    "embedding_hours": 1.5,
+    "cv_run_minutes": 20,
+    "compute_note": "I timed my own baseline script: ten five-fold runs over 1,729 rows finished in 15 seconds wall-clock on CPU, so the head-training cross-validation estimate of 20 minutes is generous. The 1.5-hour embedding figure is estimated from 1,754 windows of roughly 200 residues through ESM-2 650M on CPU, not timed. The ~0.5 GB of structure files is estimated from typical PDB entry sizes; I confirmed three fetch with HTTP 200 but did not measure their bytes.",
+    "cheapest_killing_check": "Already done, and it came out in the project's favour: fit a per-PDB training mean on the five fold sheets shipped in the archive. It gives Pearson 0.669 and MAE 0.539 against DeepPNI's reported 0.76 and 0.51, which is the whole leakage result in one afternoon."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes on the actual files, not the abstract: one clean 1,754-row sheet with the label in kcal/mol, zero missing values, zero duplicate keys, counts matching the paper exactly (1,754+197=1,951; 406 union 114=439), and labels traced to measured dissociation constants in Nabe, which I downloaded and matched to 83.7% agreement within 0.01 kcal/mol. The cheapest killing check is done and favours the project: the paper's five published folds share 116-127 PDB entries pairwise, and a per-PDB training mean alone reaches Pearson 0.669 against the headline 0.76 - so most of the subfield's reported accuracy is structure memorization. The honest number, 0.47 on held-out structures, is published and has wide headroom, the weights and code are MIT-licensed and runnable as a baseline, ESM-2 freezes onto a laptop CPU, and Nabe adds temperature, assay and publication year for a temporal split. Against that: the field holds eight recent models, 1,754 rows is barely above the threshold, only 54.4% of rows join to the partner table, and the data is someone else's curation rather than ours. The project is worth doing because the leakage benchmark cannot produce a useless answer; the modelling upside is a bonus. Write the kill date in NOTES.md first - J5 is the only item scoring zero."
+}

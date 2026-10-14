@@ -1,0 +1,51 @@
+{
+  "paper_id": "natgen2026-02705-9",
+  "title": "Rare variant effect estimation and polygenic risk prediction.",
+  "doi": "10.1038/s41588-026-02705-9",
+  "journal": "Nature Genetics",
+  "data_url": "https://doi.org/10.5281/zenodo.20935280",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded both Zenodo archives (CC-BY-4.0, 7.5 MB + 0.12 MB) and parsed all 4 TSVs (tab-separated text files). Variant-level files: 365,130 rows (61 continuous traits, 1,183 genes, 149,116 distinct variants) + 42,248 rows (39 binary traits, 347 genes); columns pheno, gene, variant (chr:pos:ref:alt or pooled 'lof_UR'), beta, PEV (prediction error variance). Gene-level files: 2,644 + 390 rows with LoF/mis/syn heritability and signed_h2. 61+39 = 100 traits, matching the paper. Only ~10 genes per binary trait and a median of 41 per continuous trait. Median beta is about 0 (heavily shrunk); binary-trait beta runs from -9.9 to 500.6. 8,767 duplicate trait-variant pairs. No missing values.",
+    "what_came_from_paper_text_only": "That beta is a BLUP (best linear unbiased predictor) shrinkage estimate computed from per-gene, per-annotation-class variance components (LoF = loss of function, missense, synonymous). That the source is 392,748 white British UK Biobank exomes. How the genes were selected, which looks like a top-genes filter but I did not confirm the criterion. The supplementary tables could not be retrieved (Europe PMC timed out)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Summary results download openly from Zenodo (checked). Individual-level UK Biobank exomes and phenotypes need an access application, so any project needing raw genotypes would fail here."},
+    "a2_label_is_a_column": {"pass": true, "note": "beta (variant effect size) and signed_h2 (gene heritability) are columns in the files (checked)."},
+    "a3_inputs_present": {"pass": false, "note": "Files contain only trait, gene symbol, a variant ID (chr:pos:ref:alt, genome build not stated) and the estimates. Any features (AlphaMissense, ESM-2, conservation) would need a lookup for ~150k variants, and an unstated build makes the join error-prone."},
+    "a4_units_stated": {"pass": false, "note": "Zenodo README gives no units or trait scaling. Continuous betas are likely per standardized trait unit, binary ones on the log-odds scale, but this is not stated, and the values range from 1e-8 to 500."},
+    "a5_enough_rows": {"pass": true, "n_rows": 407378, "note": "407,378 variant-trait rows (checked), but most betas are shrunk near zero, so the number of informative rows is far smaller."},
+    "a6_fits_laptop": {"pass": true, "working_set": "26 MB unzipped", "note": "Trivially small (checked)."},
+    "a7_counts_match_paper": {"pass": true, "note": "100 traits (61 continuous + 39 binary) matches the abstract's 100 traits."},
+    "a8_label_provenance": {"pass": false, "note": "The label is the output of the paper's own statistical model: an empirical-Bayes BLUP shrunk toward the heritability of each variant's gene and annotation class. Predicting it from variant annotations distills RareEffect, and the label is partly computed from the annotation class (LoF/mis/syn) a model would use as a feature."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "RareEffect (this paper, in SAIGE v1.5.2)", "open_weights": true, "score_and_split": "The paper reports beating DeepRVAT, AlphaMissense and PrimateAI-3D rare-variant PRS (polygenic risk scores) on 5 UK Biobank phenotypes, using a train/test split of individuals. Exact numbers were not retrieved.", "authors_named_unsolved": "Only marginal PRS gains for binary traits. Shrinkage bias, with low confidence-interval coverage for true causal variants.", "runnable_as_baseline": false},
+      {"name": "DeepRVAT (deep rare-variant gene impairment model, named in paper)", "open_weights": true, "score_and_split": "Used as a comparator in this paper. Its own numbers were not retrieved.", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "ESM-2 / AlphaMissense scores as features (not used)", "freeze_and_head_viable": null, "hardware": "n/a", "licence": "Zenodo data CC-BY-4.0. AlphaMissense scores CC-BY-NC-SA."},
+  "integration": {"partner_dataset": "Genebass / AstraZeneca PheWAS portal (UK Biobank exome association results)", "join_key": "gene symbol + variant chr:pos:ref:alt", "bigger_question_one_sentence": "Not pursued: both sides are estimates from the same UK Biobank cohort, so the join would not be independent."},
+  "controls": {"positive_control": "Known lipid genes (e.g. PCSK9 LoF lowering LDL) should show the expected signed_h2 direction.", "negative_control": "Synonymous variants should carry about zero effect.", "external_validation": "None independent: all estimates come from UK Biobank white British participants."},
+  "honest_claim_h3": "A model trained here would predict RareEffect's shrunken UK Biobank effect estimates for pre-selected top genes, not measured variant effects.",
+  "plain_idea": {
+    "one_liner": "Use variant annotations and protein-model scores to predict how strongly each rare gene variant shifts a human trait.",
+    "train_on": "One annotated rare variant per row for each of 100 traits, 407,378 variant-trait rows (checked). Features would have to be looked up externally.",
+    "predict": "The variant's effect size on the trait. The 'true' value is RareEffect's own statistical shrinkage estimate from UK Biobank exomes, not a direct measurement.",
+    "why_worthwhile": "Geneticists could weight rare variants in risk scores without access to individual-level biobank data. But the labels are another model's output, so we would only learn to copy RareEffect."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 1, "sources": "Genebass and similar UK Biobank exome association browsers (known resources, not queried). They come from the same cohort, so they are not independent.", "approx_items": null, "join_key": "variant chr:pos:ref:alt", "why": "Other per-variant trait associations exist, but they come from the same UK Biobank participants, so they offer no independent validation."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict RareEffect variant betas from AlphaMissense/ESM-2 features. Rejected because the label is RareEffect's shrinkage output and partly a function of the annotation-class feature.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.03, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Files are 26 MB and load in seconds (timed by parsing). Feature lookup for ~150k variants was estimated, not done.", "cheapest_killing_check": "Already done: the label column is the paper model's BLUP posterior, built from annotation-class variance components."},
+  "verdict": "reject",
+  "verdict_reason": "The open data is only RareEffect's own shrunken effect estimates for pre-selected top genes, with no units and no features. Any label is another model's output, partly computed from the annotation class (A8, A4 and A3 fail), and the real measured data is controlled-access UK Biobank."
+}

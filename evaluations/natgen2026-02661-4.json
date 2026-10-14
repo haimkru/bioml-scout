@@ -1,0 +1,127 @@
+{
+  "paper_id": "natgen2026-02661-4",
+  "title": "Evolving patterns of co-mutations from tumor initiation to metastatic progression.",
+  "doi": "10.1038/s41588-026-02661-4",
+  "journal": "Nature Genetics",
+  "data_url": "https://doi.org/10.5281/zenodo.13752869",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded Zenodo record 13752870 (CC-BY-4.0): supplementary_data_2.tar (16.7 MB, 395 files) and supplementary_data_1.tar (3.4 MB, 115 files). Opened the pan-cancer R objects in R: each holds two binary gene-by-sample matrices (missense, truncating) over 396 OncoKB genes, a per-sample mutation count (TMB), and a tumour-subtype label. Counts seen: MSK primary 27,825 and metastatic 14,965 samples; DFCI (Dana-Farber) primary 14,657 and metastatic 7,607; TCGA 9,082 (all primary). Total 74,136. In MSK there are 67 subtype labels, no duplicate sample IDs and 0 patients shared between the primary and metastatic files. Values are 0/1 only. Oddity: on average a sample carries 1.12 oncogenic missense calls but 2.36 truncating calls, which looks suspicious. Listed the 615 MB analysis archive (record 16077065) without downloading it (over the 50 MB cap).",
+    "what_came_from_paper_text_only": "That the mutations were curated as putatively oncogenic with OncoKB, that 119 subtypes exist across all cohorts, the MSK-MET metastasis-count elastic net (12,925 samples), and that primary versus metastatic status comes from the GENIE sample-type annotation. Panel-specific files and the GENIE per-centre files were not opened one by one."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo, open, CC-BY-4.0, no login; downloaded both tars. Raw GENIE needs a Synapse login, but the processed matrices here don't."},
+    "a2_label_is_a_column": {"pass": true, "note": "Primary versus metastatic sample is encoded by which file a sample sits in (separate primary/meta files per centre), so it is one concatenation away from a column. Tumour subtype is a named vector. Checked in the files."},
+    "a3_inputs_present": {"pass": true, "note": "The inputs are the matrices themselves: 396 genes x 2 mutation types, plus TMB (tumour mutational burden). No lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Binary 0/1 mutation calls and an integer mutation count, so units aren't really an issue. The README documents the object layout."},
+    "a5_enough_rows": {"pass": true, "n_rows": 74136, "note": "42,790 MSK and 22,264 DFCI samples with primary/metastatic status, plus 9,082 TCGA primaries. Counted in the files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 20 MB compressed; ~65k x 793 binary matrix, under 0.5 GB in RAM", "note": "Tabular, CPU only."},
+    "a7_counts_match_paper": {"pass": true, "note": "74,136 samples counted, consistent with the paper's '>70,000 tumours'. The paper's '119 subtypes' wasn't verified across cohorts (MSK alone has 67)."},
+    "a8_label_provenance": {"pass": true, "note": "Primary/metastatic is a clinical annotation of where the biopsy came from (GENIE sample type), not computed from mutations. Caveat: the mutation features were filtered by OncoKB, a curated annotation, which is fine for features but bakes in OncoKB's choices."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Few R objects per centre (primary and meta files) that join cleanly on sample ID; seen in files."},
+    "B2": {"score": 1, "why": "RDS needs R or pyreadr to export; parsed first try in R."},
+    "B3": {"score": 1, "why": "Same 396-gene OncoKB space, but MSK and DFCI use different panels; older panels lack some genes, which show up as structural zeros."},
+    "B4": {"score": 2, "why": "Binary calls and integer counts, nothing censored; seen in files."},
+    "B5": {"score": 2, "why": "0 duplicate sample IDs and 0 patient overlap between MSK primary and meta files; checked."},
+    "B6": {"score": 1, "why": "README explains object layout; missense/truncating averages look suspicious and gene-panel masking isn't documented per sample."},
+    "C1": {"score": 1, "why": "MSK-to-DFCI transfer is informative either way, but a single-centre primary/metastatic score mostly repeats MetaNet."},
+    "C2": {"score": 1, "why": "MetaNet (XGBoost, 32,176 samples), TF-GateNet and P-NET exist for this task; mostly random or within-cohort splits."},
+    "C3": {"score": 1, "why": "Weak 'better' angle: cross-centre test, plus whether co-mutation features add over single genes."},
+    "C4": {"score": 1, "why": "Metastasis status is known clinically; a prediction would only matter for risk stratification of primaries."},
+    "C5": {"score": 2, "why": "Obvious baselines: tumour-type-only model and single-gene logistic regression; MetaNet reports AUROC >0.8 in breast and prostate."},
+    "D1": {"score": 0, "why": "No pretrained backbone for binary cancer-gene panel profiles; gene embeddings would be decoration."},
+    "D2": {"score": 1, "why": "Gradient boosting or logistic regression on CPU runs in minutes; no embeddings needed."},
+    "D3": {"score": 2, "why": "Data are CC-BY-4.0; GENIE terms ask for acknowledgement."},
+    "E1": {"ok": true, "why": "Held-out centre (train MSK, test DFCI) and held-out tumour type are both possible from the files."},
+    "E2": {"ok": true, "why": "Two centres, 67 MSK subtypes; per-panel files give further groups."},
+    "E3": {"ok": true, "why": "Tumour-type-only and TMB-only baselines are directly computable."},
+    "E4": {"ok": false, "why": "No replicate biopsies of the same tumour; primary and metastatic files share no patients."},
+    "E5": {"ok": true, "why": "Known treatment-driven enrichments in metastases (ESR1 in breast, AR in prostate; Nguyen 2022) must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffling within tumour type, and a panel-version-only model, are both runnable."},
+    "E7": {"ok": true, "why": "The DFCI cohort is an independent centre with a different panel (OncoPanel)."},
+    "E8": {"ok": false, "why": "MetaNet's exact split isn't in this data; the paper's elastic net needs MSK-MET clinical counts in the 615 MB archive."},
+    "G1": {"score": 2, "why": "HGNC gene symbols and GENIE sample IDs joinable to cBioPortal MSK-MET and MSK-CHORD."},
+    "G2": {"score": 2, "why": "MSK-MET on cBioPortal adds metastatic-site counts and organotropism for the same MSK samples."},
+    "G3": {"score": 2, "why": "One sample per row; GENIE-MSK-P-xxxx-T01 maps one-to-one to the cBioPortal sample ID."},
+    "G4": {"score": 1, "why": "Joining adds metastatic sites, but site-tropism from MSK-IMPACT is already published."},
+    "H1": {"score": 2, "why": "Both primary and metastatic samples present, roughly 2:1 in MSK; seen in files."},
+    "H2": {"score": 1, "why": "Two US academic centres plus TCGA; panel sequencing only, no copy-number or fusion features in these objects."},
+    "H3": {"score": 2, "why": "Claim is precise: separating biopsy site type from oncogenic panel mutations at US tertiary centres."},
+    "H4": {"score": 1, "why": "Paper discusses panel heterogeneity; therapy-induced confounding of metastatic samples is only partly discussed."},
+    "I1": {"score": 1, "why": "Ciriello lab and cancer-genomics groups; clinicians unlikely to act on a sample-type score."},
+    "I2": {"score": 1, "why": "Might shape which co-mutations to test as metastasis risk factors; no direct clinical decision."},
+    "I3": {"score": 1, "why": "AUROC per tumour type roughly matches risk-ranking, but the label is biopsy site, not future metastasis."},
+    "I4": {"score": 1, "why": "Tumour type plus a few genes probably explains most signal; ML adds interactions."},
+    "J1": {"score": 1, "why": "Real cross-centre evaluation and leakage work, but tabular gradient boosting, no transfer learning."},
+    "J2": {"score": 1, "why": "Known gene enrichments give sanity checks; cancer-genomics expertise helps for confounding."},
+    "J3": {"score": 2, "why": "Cleaned pan-centre table and transfer numbers are shareable even if the model is modest."},
+    "J4": {"score": 1, "why": "Roughly two weeks; not formally set."},
+    "J5": {"score": 1, "why": "Kill condition proposed below; date not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "MetaNet (Nature Communications 2021, 'Machine learning of genomic features in organotropic metastases stratifies progression risk of primary tumors')", "open_weights": null, "score_and_split": "XGBoost on 32,176 MSK-IMPACT, FoundationOne, MET500 and TCGA samples; AUROC (area under the ROC curve) >0.8 for primary vs metastasis in breast and prostate; split details not checked.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "TF-GateNet (PMC13296772), a biologically constrained neural network", "open_weights": null, "score_and_split": "Primary vs metastatic in prostate and breast on a fixed 80/10/10 random split over 10 runs, plus independent prostate external validation; numbers not retrieved.", "authors_named_unsolved": "Abstract names cross-institution batch effects and gene-coverage differences in GENIE-like data.", "runnable_as_baseline": null},
+      {"name": "Deep learning on mutational signatures (Scientific Reports 2023) and the passenger-mutation classifier (Nature Communications 2019)", "open_weights": null, "score_and_split": "Whole-genome-based primary vs metastatic classification; numbers not retrieved. Different input (whole genomes), so not directly comparable to panels.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "none suitable (binary cancer-gene panel features; gradient boosting is the baseline)", "freeze_and_head_viable": false, "hardware": "laptop CPU", "licence": "CC-BY-4.0 data; GENIE acknowledgement terms"},
+  "integration": {"partner_dataset": "MSK-MET (cBioPortal, ~25,000 patients with metastatic-site counts) and MSK-CHORD (treatments)", "join_key": "GENIE sample ID with the 'GENIE-MSK-' prefix stripped (P-xxxxxxx-Txx-IMx)", "bigger_question_one_sentence": "Do co-mutations found in primaries predict where and how much a cancer spreads, beyond treatment-induced mutations?"},
+  "controls": {"positive_control": "Recover known treatment-driven metastatic enrichments: ESR1 in hormone-receptor-positive breast and AR in prostate metastases (Nguyen et al. 2022).", "negative_control": "Shuffle the primary/metastatic label within tumour type; also train on panel version (IM3/IM5/IM6/IM7 suffix) alone to measure the leak.", "external_validation": "Train on MSK, test on DFCI (Dana-Farber, a different centre and panel), both present in the downloaded files."},
+  "honest_claim_h3": "Among tumours panel-sequenced at two US cancer centres, oncogenic mutation profiles distinguish biopsies taken from metastatic sites from primary-site biopsies to some degree, partly because of therapy-selected mutations; this isn't a prediction of whether a primary will spread.",
+  "plain_idea": {
+    "one_liner": "Use the set of cancer-gene mutations in a tumour biopsy to predict whether it came from a metastasis or the original tumour.",
+    "train_on": "For each tumour sample, yes/no calls for missense and truncating mutations in 396 cancer genes, plus mutation count and cancer subtype; 42,790 MSK samples (verified).",
+    "predict": "Whether the sample was taken from a metastatic site or the primary tumour, as recorded clinically in the AACR GENIE registry; tested on 22,264 Dana-Farber samples (verified).",
+    "why_worthwhile": "Shows whether metastasis-linked mutation patterns carry over between hospitals with different gene panels, or are mostly centre and panel artefacts."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "42,790 MSK plus 22,264 DFCI labelled samples, against MetaNet's 32,176 across four sources; ours adds a second centre for transfer but is not much larger."},
+    "confidence_score": {"answer": "no", "why": "No replicate biopsies, so there is nothing to calibrate noise against beyond standard probability calibration."},
+    "models_beatable": {"answer": "partly", "why": "MetaNet (2021, XGBoost) and TF-GateNet (random 80/10/10 split) aren't evaluated across centres here; but a strong gradient-boosting baseline is easy and leaves little room."},
+    "guaranteed_improvement": {"answer": "no", "why": "MetaNet's code and split aren't available in these files, and DFCI is a different panel, so the same-split, superset-data conditions fail."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "AACR GENIE full releases (sample type for all centres; Synapse login needed, known resource); MSK-MET on cBioPortal (open, same MSK patients; searched).", "approx_items": null, "join_key": "GENIE / cBioPortal sample ID", "why": "Other GENIE centres would allow testing transfer to more hospitals, but only behind a registration."},
+  "leakage_plan": {
+    "risks": [
+      "Panel version (IM3 to IM7 in the sample ID) tracks sequencing date and gene coverage, and may correlate with how many metastases were biopsied.",
+      "Genes missing from older panels appear as 0, so 'not sequenced' looks like 'not mutated'.",
+      "Tumour subtype strongly predicts the metastatic fraction, so a model can score well by learning subtype alone.",
+      "Treatment-induced mutations (ESR1, AR) mark metastases because those patients were treated, not because the mutation drives spread."
+    ],
+    "split": "Train on MSK, test on DFCI (centre = which file, seen); within MSK, hold out whole tumour subtypes (sample.class vector, seen) and stratify by panel suffix in the sample ID (seen).",
+    "checks": [
+      "Shuffle labels within subtype; AUROC must drop to the subtype-only baseline.",
+      "Train on panel suffix and subtype only, and report that as the floor to beat.",
+      "Repeat with genes restricted to those common to every panel and check the result holds."
+    ],
+    "verdict": "Manageable, but confounding by subtype, panel and treatment is the main risk and must be reported as a baseline."
+  },
+  "success_criteria": {
+    "metric": "Mean per-subtype AUROC (area under the ROC curve) on DFCI after training on MSK, because subtype mixing otherwise inflates pooled AUROC.",
+    "baselines": "Subtype-plus-TMB-only logistic model (to compute); MetaNet reports AUROC >0.8 in breast and prostate on its own split (not comparable).",
+    "success": "Mutation model beats the subtype-plus-TMB baseline by ≥0.05 mean per-subtype AUROC on DFCI, with the gain surviving restriction to genes common to all panels.",
+    "noise_ceiling": null,
+    "kill": "Gain under 0.02 AUROC over the subtype-plus-TMB baseline on DFCI after the first week."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes cross-cohort genomic benchmarks; would need a clear cross-centre transfer result plus co-mutation features adding real signal."},
+    "realistic": {"journal": "JCO Clinical Cancer Informatics", "why": "Takes modest clinical-genomics ML evaluations, such as an honest cross-centre test of metastasis classifiers."},
+    "fallback": {"journal": "NAR Cancer or a bioRxiv preprint", "why": "A negative result, that panel and subtype confounding explain most of the signal, is still a useful short report."}
+  },
+  "pitch": {
+    "headline": "74,136 tumour profiles in open CC-BY matrices, with 65,054 labelled primary or metastatic across two independent cancer centres.",
+    "what_makes_the_data_unusual": "Harmonised OncoKB-filtered calls for the same 396 genes at MSK (42,790) and Dana-Farber (22,264), so the raw GENIE Synapse login isn't needed and cross-centre transfer can be tested directly.",
+    "the_win": "A mutation model beating the subtype-plus-TMB baseline by ≥0.05 per-subtype AUROC when trained on MSK and tested on Dana-Farber.",
+    "even_if_it_fails": "Quantifies how much published primary-vs-metastasis accuracy comes from subtype, panel version and treatment-selected mutations rather than biology.",
+    "who_wants_it": "The Ciriello lab (SelectSim authors) and GENIE consortium analysts deciding whether pooled-centre metastasis signatures are trustworthy."
+  },
+  "ml_idea": "Concatenate the MSK and DFCI primary and meta run_data matrices into one sample-by-(396 genes x 2 types + TMB + subtype) table. Train gradient boosting on MSK and test on DFCI, comparing against a subtype-plus-TMB baseline and against added SelectSim co-mutation pair features.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.3, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": 0, "cv_run_minutes": 10, "compute_note": "Estimated from the matrix sizes seen (about 65k samples x 793 binary features); nothing was timed.", "cheapest_killing_check": "Fit subtype-plus-TMB-only and subtype-plus-panel-suffix models on MSK and test on DFCI; if adding mutations gains under 0.02 AUROC, stop."},
+  "verdict": "park",
+  "verdict_reason": "The data are clean, open and verified (74,136 samples, two centres), but primary-vs-metastasis prediction from panels is already done (MetaNet, TF-GateNet). No pretrained backbone fits, and the label is heavily confounded by subtype, panel and treatment, so the likely result is a modest benchmark note."
+}

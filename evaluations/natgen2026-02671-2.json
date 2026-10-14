@@ -1,0 +1,55 @@
+{
+  "paper_id": "natgen2026-02671-2",
+  "title": "Spatial transcriptomic analyses highlight distinct erythroid niches in mice and humans.",
+  "doi": "10.1038/s41588-026-02671-2",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE271824",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Read the GEO file lists for all four spatial series. GSE271077 is mouse Visium (spatial spot-level sequencing): 14 samples, 427 MB tar. GSE271150 is human Visium: about 15 samples, 232 MB tar. GSE271693 is mouse Xenium (single-cell spatial imaging): 6 samples, 32 GB tar. GSE271824 is human Xenium: 3 samples, 33 GB tar. Every file is a standard 10x Genomics output (matrix.mtx, barcodes, features, tissue positions, cells.csv, cell/nucleus boundaries, transcripts.csv, images), and no file holds cell-type, cluster or erythroblastic-island annotations. I downloaded GSM8945653_E13-5_fetal_liver_cells.csv.gz: 5,285 rows by 14 columns, all geometry and QC counts (centroids, transcript counts, cell area, segmentation method), no label column. The Zenodo record 10.5281/zenodo.20414337 (CC-BY-4.0) contains only 44 R scripts plus a README, no annotated objects.",
+    "what_came_from_paper_text_only": "That EBI (erythroblastic island) composition, C1q+ macrophages and ICAM4-dependent human erythroid clusters were identified by Giotto/Seurat clustering and spatial neighbourhood analysis. The 'Source data' files were not retrieved: the Europe PMC supplementaryFiles call timed out after 75 s and was not retried. Cell counts per Xenium sample were not checked beyond the one small file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All four GEO series are public with no login (checked the file lists). The Xenium tars are 32–33 GB, but per-sample processed files can be fetched one by one."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in the files: no cell-type, cluster or niche-membership column exists in any GEO deposit or on Zenodo. Any target (cell type, 'is in an erythroid cluster', 'is an EBI central macrophage') would have to be rebuilt by rerunning the authors' Giotto clustering and spatial-neighbour analysis."},
+    "a3_inputs_present": {"pass": true, "note": "Expression matrices and cell coordinates are present as files (seen in the file lists)."},
+    "a4_units_stated": {"pass": true, "note": "Raw transcript counts and micron coordinates are standard 10x outputs."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Cells number in the thousands to hundreds of thousands, but the independent unit is the tissue section: 3 human Xenium samples (fetal liver, one normal marrow, one MDS (myelodysplastic syndrome) marrow) and 6 mouse Xenium samples, seen in the GEO metadata. Total cell count not verified."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.1–2 GB per sample using matrix + cells.csv and skipping images and transcripts", "note": "Feasible if the multi-GB morphology TIFFs and transcript CSVs are skipped."},
+    "a7_counts_match_paper": {"pass": true, "note": "The GEO sample lists match the tissues the paper describes. Per-sample cell counts were not compared with the paper."},
+    "a8_label_provenance": {"pass": false, "note": "Any label would be an unsupervised cluster assignment computed from these same expression features, so a model would be recovering its own inputs (circular). The only measured, non-derived contrasts are condition labels (wild type vs C1qa knockout, normal vs MDS, phenylhydrazine stress) across a handful of sections."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "Nicheformer or scGPT (single-cell/spatial foundation models), not assessed", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "gene symbol / Ensembl gene ID", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "Any model could only say that it reproduces the authors' unsupervised cell clusters within 3 human and 6 mouse tissue sections, which is not a biological prediction.",
+  "plain_idea": {
+    "one_liner": "Use each cell's gene expression and its neighbours' expression to predict whether a red-blood-cell precursor sits in a niche cluster.",
+    "train_on": "Single-cell spatial transcriptomes (gene counts plus x/y position) from 3 human and 6 mouse tissue sections. The cell count is unknown; one small mouse section has 5,285 cells.",
+    "predict": "Cell type or niche membership. No measured answer exists: these labels come only from the authors' clustering of the same expression data, which is not deposited.",
+    "why_worthwhile": "Haematology labs studying erythroid niches in marrow disease could map niches automatically. But with labels derived from the inputs and only 3 human sections, the result would not be trustworthy."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict erythroid-cluster or EBI (erythroblastic island) membership of cells from spatial neighbourhood expression, and transfer the model from mouse to human. Rejected: no labels are deposited, and labels rebuilt by clustering would be circular.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated, because the project fails Part A.",
+    "cheapest_killing_check": "Check whether the Nature Genetics source-data files contain per-cell cluster labels for the Xenium sections. Even if they do, the labels are clustering outputs (A8)."
+  },
+  "verdict": "reject",
+  "verdict_reason": "No label column in any deposited file (verified in GEO and Zenodo). Cell types and niches come from the authors' unsupervised clustering of the same expression data, so the label is circular (A2, A8). Only 3 human Xenium sections exist, so the independent sample size is tiny (A5)."
+}

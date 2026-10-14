@@ -1,0 +1,145 @@
+{
+  "paper_id": "cell2026-07-045",
+  "title": "Multimodal brain cell atlas across the adult macaque lifespan.",
+  "doi": "10.1016/j.cell.2026.07.045",
+  "journal": "Cell, Aug 2026 (PMID 42612631). Paywalled: Europe PMC reports isOpenAccess=N, no PMCID, and no DB cross-references, and NCBI elink to GEO/SRA/BioProject/BioSample returned nothing. Methods and data availability were taken from the open bioRxiv v1 preprint (10.1101/2025.03.11.641786, CC BY-NC-ND). BGI Research (M.A. Esteban).",
+  "data_url": "https://db.cngb.org/stomics/nhpabc/download/ (anonymous HTTPS/FTP at https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000407/, STOmicsDB STDS0000407). Raw reads are at CNGB CNSA CNP0004459 (not checked).",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Portal data.js manifest: 834 files, about 213 GB processed, nothing raw. snRNA-seq is 8 h5ad (17.1 GB), Single_region_integrated is 8 h5ad (21.9 GB), Global_integrated is 7 h5ad (16.1 GB), GroupFragments is 404 tsv.gz (123 GB), PeakMatrix is 404 rds (34.6 GB), and there are 3 supplementary tables. I read the HDF5 headers and obs over HTTP range requests, at most 6 MB per file. The 8 per-region snRNA files total 1,461,941 nuclei. The 8 RNA+ATAC integrated files total exactly 2,955,873, matching the published abstract. obs columns are Individual (23 animals: Y1-6, M1-5, O1-6, V1-6), Age (int, 5/6/10/11/12/22/23/28/29/31), Age_group (4), Region (8), Subtype (44 in Table 3), Higher_resolution_subtype, nCount/nFeature, and TSSEnrichment/nFrags/Tech in the integrated files. In the snRNA files, X is DENSE float64 gzip (chunks 127x256) plus a dense int32 counts layer. So Cer (79,783 x 32,586) would be about 20.8 GB in RAM and PFC (241,352 x 32,588) about 63 GB. Cer per-animal nuclei range from 99 to 11,877, and Y1/Y2 are absent. Global_downsample_RNA_ATAC_integrated.h5ad is TRUNCATED on the server: it serves 7,978,385,408 B, but its HDF5 superblock EOF is 15,260,868,211 B, so it is unreadable. I downloaded Supplementary_Material_Tables_3.xlsx (44.35 MB). 3A pDAREs: 132,455 rows, 83,098 unique 500-bp peaks on NC_088375-95 (T2T-MFA8v1.1), 94 region x subtype groups, Up 42,263 / Down 90,192, 9,397 peaks with conflicting trend across groups, median |r| 0.55. 3B sDAREs: 434,612 rows, 168,289 peaks, 93.3% with Q > 0.05. I read the first 1 MB of Table 2 (.bed.tar.gz, 58 MB): it is a 341 MB bed of peak x subtype x region (the peak universe). Cer_Choroid_plexus_Young.tsv.gz: 46,932 fragments, 6 cells, 4 columns, and the barcode carries the animal ID. Rhesus partner GSE307184 (listing only): count.npz 16 GB, cell_annotate.csv.gz 579 MB, gene_annotate 547 KB.",
+    "what_came_from_paper_text_only": "All of the following come from the abstract and the bioRxiv v1 text only, not from files: the DNBelab C4 platform, Mfa 5.0 as the reference (the files actually use T2T-MFA8v1.1), the limitations (small n, female only), and the human integration sets (GSE168408, GSE247988, ROSMAP syn52293417/syn44424170). The preprint describes 13 animals, 1,985,317 nuclei and the oldest at 28-29 y. The files have 23 animals, 2,955,873 nuclei and ages up to 31, so the published version expanded the cohort and the published Methods could not be read. The DAR statistical procedure (pseudobulk unit, covariates) was not verified. The CNSA CNP0004459 page is JS-rendered, so I did not check whether it is public. I did not open Table 1 (113 MB), the PeakMatrix rds files, or any expression matrix values beyond 3 rows of VS."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). Anonymous HTTPS with range support, no login. Caveat: the server is slow (about 0.3-1 MB/s here), and the 7.43 GB global integrated h5ad is truncated and unusable."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass (checked) for both candidate labels. obs.Age (integer years) and Table 3A 'Trend' (Up/Down per peak x region x subtype) are columns. Negatives for the DAR task (stable peaks) need an exact-string join to the Table 2 peak universe, which is a clean key join, not inference."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass (checked). Expression matrices are present. For the DAR task only coordinates are given (NC_088375.1-start-end), so the sequence needs one genome download (T2T-MFA8v1.1, GCF_037993035.2, 3.06 Gb) plus window extraction, not per-row lookups."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked). Age is integer years by context (the column has no unit label, but the values match the preprint's 5-29 y description). Table 3 columns are r, p, coefficient and log2FC, with typo'd but readable headers. X is log-normalized and counts are raw ints."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 132455,
+      "note": "Split verdict. The aging-clock task FAILS A5 in disguise: there are about 3M nuclei, but the unit is the animal (23 animals, 10 distinct ages in 4 clusters, nothing between 12 and 22 y). The DAR-direction side task passes, with 132,455 labelled rows over 83,098 unique peaks. Part A is passed only on that side task."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "DAR task: 44 MB Table 3, 58 MB gz / 341 MB Table 2 bed, and about 0.9 GB gz / 3.1 GB genome FASTA, so under 4 GB. Clock variant: 17 GB of dense-gzip snRNA h5ad that must be streamed with h5ad chunks into per-animal x subtype pseudobulk. Naive anndata loading needs 20-63 GB per region.",
+      "note": "Pass for the DAR task. The clock variant fits only with custom h5py streaming: never call sc.read_h5ad on these files."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass (checked). The 8 integrated files sum to exactly 2,955,873 and there are 23 individuals, matching the published abstract. The preprint's 13 animals and 1,985,317 nuclei reflect an earlier cohort, and its Mfa 5.0 reference differs from the T2T-MFA8v1.1 coordinates in the files."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass with caveats. Age comes from colony records, a physical label. DAR Trend is the sign of a correlation between measured accessibility and age, which is a statistic and not computed from sequence. But it was thresholded at nominal p (pDARE |r| of about 0.5-0.68, n of 13-23 animals), and 93% of sDAREs fail Q < 0.05, so the label is noisy. Subtype labels are clustering output from the same expression data, so they are circular and should not be used as a target."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 7,
+    "c_worth_asking": 7,
+    "d_backbone_fit": 6,
+    "g_integration": 6,
+    "h_missing_data": 7,
+    "i_does_anyone_care": 4,
+    "j_fit_finishability": 5
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Human brain cell-type-specific snRNA aging clocks (Muralidharan et al., Adv Sci 2025, PMC12631854). ElasticNet per cell type.",
+        "open_weights": true,
+        "score_and_split": "31 human PFC donors, fivefold CV (donor-grouping not verified). Single-cell clocks r 0.74-0.83, MAE 10.2-12.2 y. Bootstrapped pseudobulk r 0.78-0.89, MAE 8.5-11.2 y. Validated on 2 external human snRNA sets. Code is MIT on GitHub (SZTAKI-SU-Rejuvenation-Group) and the models are in Data S5.",
+        "authors_named_unsolved": "Small sample size, limited geographic origin and sex representation, and poor single-cell (vs pseudobulk) clock performance.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Cell type-resolved snATAC chromatin accessibility clocks for brain aging (Yu, Yu, Xue, Noble; bioRxiv 10.64898/2026.08.22.746439, CC BY-NC).",
+        "open_weights": null,
+        "score_and_split": "Abstract only: 357 human PFC donors (15-100 y), and the clocks 'generalize to accurately predict age across brain regions and species'. Which species, and whether NHPABC was used, was not verified.",
+        "authors_named_unsolved": "Not read beyond the abstract.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Single-cell aging clocks in mouse SVZ (Buckley et al., Nat Aging 2023, PMC10154228).",
+        "open_weights": null,
+        "score_and_split": "Abstract only: 28 mice; generalizes to independent cohorts, other brain regions and other species.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "scAgeClock (npj Aging 2026, PMC13230536). Gated multi-head attention clock over 16M human cells.",
+        "open_weights": true,
+        "score_and_split": "Abstract: about half of tissue-level cell types have MAE < 10 y. Human only. Stated as publicly available, but the repository was not opened.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Cross-species CNN accessibility models: 'Challenges in predicting chromatin accessibility differences between species' (NARGAB 2026, PMC13291610) and hPICA CNNs (Sci Adv 2026, PMC13082337).",
+        "open_weights": true,
+        "score_and_split": "These predict accessibility per species, not age-associated change. NARGAB data and code are on figshare/CMU, and its multi-species training improved held-out-species generalization.",
+        "authors_named_unsolved": "NARGAB: models predict quantitative accessibility differences between species at orthologous regions poorly.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 (117M), frozen, with a logistic/MLP head on 500-bp DAR windows, multi-task across region x subtype. For the clock variant: no gene-level backbone is needed (pseudobulk ElasticNet). Geneformer/scGPT are human-vocabulary models, and the LOC-only macaque genes would drop out.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: about 83k-170k windows x 500 bp, embedded once (estimated 1-3 h, not benchmarked).",
+    "licence": "The DNABERT-2 GitHub repo is Apache-2.0 (checked). Nucleotide Transformer repo licence is 'Other'. No licence is stated on the NHPABC portal (CNGB terms apply). The preprint is CC BY-NC-ND."
+  },
+  "integration": {
+    "partner_dataset": "GSE307184: rhesus macaque brain lifespan atlas, 55 animals (29F/26M), 5 mo-21 y, 11 regions, 5.3M cells, sci-RNA-seq3, a different lab. The file listing was verified (16 GB npz + 579 MB cell annotation), but the files were not opened.",
+    "join_key": "Gene symbol (cynomolgus T2T-MFA8 RefSeq vs rhesus annotation; LOC IDs drop) plus harmonized major cell class plus age in years. Collapse rule: one pseudobulk per animal x region x cell class. Expected gene coverage is unmeasured.",
+    "bigger_question_one_sentence": "Does a cell-type-resolved brain transcriptomic aging signature trained in one macaque species, lab and platform transfer to another, and which cell types and regions carry the shared signal?"
+  },
+  "controls": {
+    "positive_control": "DAR task: (1) GC content / CpG o/e predicted from sequence (trivial target). (2) Known TF motif classes enriched in age-gained vs age-lost peaks (the authors' motif findings; their specific TFs were not read). Clock variant: Young vs Exceptionally old must be perfectly separable.",
+    "negative_control": "Label shuffle within region x subtype; dinucleotide-shuffled sequences. Hold out by chromosome (21 present) and check that conflicting-trend peaks are not split across folds.",
+    "external_validation": "DAR task: no second macaque DAR set was found; human snATAC aging peaks (Yu/Noble) after liftover are unverified. Clock variant: GSE307184 rhesus (verified listing). There is no year column."
+  },
+  "honest_claim_h3": "Predicts, from 500-bp sequence, whether a peak's accessibility in a given cell type correlates up or down with age. This holds only among peaks that passed a nominal-p threshold in 13-23 female captive cynomolgus macaques from one lab, and says nothing about males, other species or causality.",
+  "pitch": {
+    "headline": "2,955,873 RNA+ATAC brain nuclei from 23 macaques, plus 83,098 sequence-labelled age-trend peaks, downloadable without a login.",
+    "what_makes_the_data_unusual": "Verified in the files: 2.96M RNA+ATAC integrated nuclei across 8 brain regions, 44 subtypes and 23 individually-aged animals (ages 5-31), served over anonymous HTTPS with range support and no application, and shipped with a 132,455-row peak x region x subtype age-trend table (83,098 unique 500-bp windows, Up 42,263 / Down 90,192, median |r| 0.55). The non-human-primate framing, the single-lab and female-only cohort, and the platform all rest on the paper and preprint text rather than the files; no licence is stated on the portal.",
+    "the_win": "A frozen DNABERT-2 head that separates age-gained from age-lost 500-bp windows at chromosome-held-out AUROC above the GC%/CpG-o-e/TSS-distance logistic baseline and inside the informative 0.55-0.80 band, reported per cell type across the 94 verified region x subtype groups.",
+    "even_if_it_fails": "A null is still worth having: if sequence adds nothing over GC content, CpG o/e and distance to the nearest transcription start site, that is direct evidence the authors' age-associated peak calls are largely a promoter or sample-quality artifact, which is consistent with the 93.3% of sDAREs that fail Q < 0.05 and the 9,397 peaks whose trend flips across cell types.",
+    "who_wants_it": "The human brain-clock groups named in the C2 audit - Muralidharan et al. (MIT-licensed ElasticNet clocks, r 0.74-0.89 on 31 donors, who listed small n and narrow sex and geographic representation as unsolved) and the Yu/Noble snATAC clock preprint that claims its 357-donor clocks generalize across species. A sequence-level result on macaque would tell them whether to keep betting on cross-species transfer or to treat the accessibility signal as cohort-specific."
+  },
+  "plain_idea": {
+    "one_liner": "Use a stretch of macaque DNA to predict whether its chromatin opens, closes or stays stable with age in each brain cell type.",
+    "train_on": "500-base-pair DNA windows from the cynomolgus macaque genome (T2T-MFA8v1.1), each paired with a brain region and cell subtype. There are 132,455 labelled region-by-cell-type rows covering 83,098 unique DNA regions (verified). The number of 'stable' negative examples is unknown; these come from an exact-match join to the authors' full list of open-chromatin regions.",
+    "predict": "Whether that region's openness goes up, goes down or stays stable with age in that cell type. The true answer is the sign of the authors' correlation between measured chromatin openness (single-nucleus chromatin accessibility sequencing) and age from colony records, across 13–23 female captive macaques from one lab. Regions were kept at an uncorrected p-value cutoff, and 93% of them fail false-discovery-rate correction, so the labels are noisy.",
+    "why_worthwhile": "We would learn whether DNA sequence carries information about which regulatory regions gain or lose openness with age in specific brain cell types. If GC content and distance to the nearest gene start predict the trend just as well, that would suggest the labels mostly reflect a promoter or sample-quality artifact."
+  },
+  "ml_idea": "Main: frozen DNABERT-2 plus a multi-task head predicting Up vs Down vs stable age-trend for each peak x cell type, with chromosome held out, benchmarked against a GC/CpG/TSS-distance logistic model. Alternative (evaluation-only, fails A5 for training): apply the MIT-licensed human ElasticNet clocks and a rhesus GSE307184 pseudobulk clock to the 23 cynomolgus animals, and report per-cell-type Spearman.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "cheapest_killing_check": "Using the already-verified Table 3A plus the T2T-MFA8v1.1 FASTA and RefSeq GTF, fit a logistic model of Up vs Down on GC%, CpG o/e and TSS distance for the 83,098 pDARE peaks with chromosome hold-out. If that alone gives AUROC ≥ 0.80 (a promoter or sample-quality artifact) or ≤ 0.55, while 9,397 peaks flip trend across cell types, stop.",
+    "working_set_gb": 3.5,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": 2,
+    "cv_run_minutes": null,
+    "compute_note": "Numbers are read off stated file sizes (44 MB Table 3, 58 MB gz/341 MB bed, ~0.9 GB gz/3.1 GB FASTA, under 4 GB total) and the DNABERT-2 embedding time is an explicit 1-3 h estimate; nothing was benchmarked or timed, and no peak RAM or cross-validation runtime is given for the DAR task."
+  },
+  "roi": 11.5,
+  "verdict": "park",
+  "verdict_reason": "Clean, public, count-verified atlas (2,955,873 = abstract), but the natural task, a cell-type aging clock, fails A5: there are 23 animals in 4 age clusters. Part A passes only on an off-label DAR-direction side task. Its labels are nominal-p statistics (93% of sDAREs fail FDR), B is 7/12, and a GC/TSS rule may explain it (I4). The snRNA h5ad files are dense float64 at 20-63 GB per region in RAM, and the global integrated file is truncated on the server. It is a genomics-scale resource without an unusually strong angle.",
+  "c2_backfill": {
+    "score": 2,
+    "why": "Clocks (Muralidharan, scAgeClock, Yu snATAC) predict age; NARGAB/hPICA CNNs predict accessibility, not age-trend from sequence."
+  }
+}

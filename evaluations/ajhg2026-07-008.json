@@ -1,0 +1,138 @@
+{
+  "paper_id": "ajhg2026-07-008",
+  "title": "Systematic and proactive evaluation of AIRE missense variant effects.",
+  "doi": "10.1016/j.ajhg.2026.07.008",
+  "journal": "American Journal of Human Genetics 113(9):1873-1893, Sep 2026 (PMID 42561935; PMC13635998/NIHMS2211556 exists but Europe PMC full text returned HTTP 500, likely embargoed). Open preprint: bioRxiv 10.1101/2025.11.18.688830, PMC12667976.",
+  "data_url": "https://api.mavedb.org/api/v1/score-sets/urn:mavedb:00001255-a-2/scores (MaveDB, CC0); code and derived files at https://github.com/axakova/AIRE (no licence file)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the MaveDB urn:mavedb:00001255-a-2 scores CSV (1.5 MB, 10,837 rows, 21 columns; parsed with pandas on the first try). It has 9,790 missense, 519 synonymous and 528 nonsense rows. There are no duplicate hgvs_pro and no NA scores. Positions run 2-545 (544 positions). 8,503 missense variants are in both replicates and 3,127 are SNV-accessible. Synonymous median is 1.002 and nonsense median 0.011. ClinVarClass is filled for 375 rows: 309 VUS, 33 P/LP, 16 B/LB, 17 conflicting. a-1 is identical to a-2 (max score difference 3e-7). Pulled authors' GitHub files: AlphaMissense/ESM1b/VARITY on map variants and region-1 replicate files. Computed: map vs AlphaMissense Spearman -0.361 (non-PHD1 -0.443), ESM1b -0.322, VARITY -0.373 (n=3,127); region-1 rep1-vs-rep2 Spearman 0.477, AM vs rep1 -0.466; leave-one-out per-position mean Spearman 0.534. ProteinGym DMS_substitutions.csv (216 sets) has no AIRE entry. A MaveDB text search found no other AIRE map.",
+    "what_came_from_paper_text_only": "From the preprint full text: the overall replicate Pearson R=0.49, insensitivity in the PHD1 domain (no dominant-negative or H3K4me0 readout, and HEK293 has no WT AIRE), and the reference sets (36 P/LP and 17 B/LB; 28/9 when intersected with the predictors). Also the balanced precision-recall result that the map is 'on par' with REVEL/AlphaMissense/ESM1b, the 98-patient APS-1 cohort, and the UK Biobank ORs. I did not read the AJHG version of record (embargoed); its abstract matches the 9,790 count. I did not open the bioRxiv supplementary xlsx (Data S2)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified: MaveDB API CSV downloads without login, licence CC0. The usage policy says 'data must be pre-printed prior to usage', which is already met by the bioRxiv preprint and the AJHG paper."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified: the 'score' column is the per-variant normalized reporter enrichment, with 'se' beside it. No label construction is needed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: hgvs_pro (e.g. p.Ala2Glu) plus pos are given. The WT sequence is one protein (UniProt O43918 / NP_000374.1, the UniProt ID as used in the authors' AM file), so only a single lookup is needed. MaveDB's target is the codon-optimized DNA, and hgvs_nt is NA."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Dimensionless score, rescaled per replicate so nonsense median = 0 and synonymous median = 1 (MaveDB methodText). Verified in the file: medians 0.011 and 1.002."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 9790,
+      "note": "9,790 missense variants with scores (8,503 in both replicates). Caveat: one protein, so the independent unit is closer to 544 positions, and per-position mean alone gives Spearman 0.53 under a random split."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "1.5 MB CSV; ESM-2 embeddings of ~50 MB (9,790 x 1,280 float32)",
+      "note": "Embeddings can be cached on CPU: one WT pass for per-position embeddings, or about 10k mutant passes with ESM-2 150M/650M in a few hours."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Verified that the 9,790 missense matches the abstract, the 3,127 SNV-accessible matches the paper (98% of 3,189), and the 10,837 rows match MaveDB numVariants. a-1 and a-2 are duplicate score sets with identical values."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The score is a physical measurement: sequencing-count enrichment of GFP-high sorted HEK293 cells, not a model output. Flag: llr, evidence_weight, ACMG, FinalClass and Reclass are derived from score plus ClinVar via KDE calibration. They must never be used as features or labels (leakage)."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 11,
+    "c_worth_asking": 6,
+    "d_backbone_fit": 6,
+    "g_integration": 6,
+    "h_missing_data": 6,
+    "i_does_anyone_care": 4,
+    "j_fit_finishability": 6
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "AlphaMissense (Cheng et al., Science 2023), as benchmarked in the AIRE paper",
+        "open_weights": false,
+        "score_and_split": "Zero-shot. My computation from the authors' repo file: Spearman -0.361 vs the map on all 9,790 missense, -0.443 on non-PHD1. The authors report balanced precision-recall on 28 P/LP + 9 B/LB, 'on par' with the map.",
+        "authors_named_unsolved": "The AIRE authors name the PHD1 domain and dominant-negative effects as uncaptured by the assay, not by AM.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ESM1b (zero-shot LLR), as used in the AIRE paper",
+        "open_weights": true,
+        "score_and_split": "Zero-shot Spearman -0.322 vs the map (n=9,790), my computation from the repo file.",
+        "authors_named_unsolved": "Not stated for ESM1b specifically.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "VARITY, as used in the AIRE paper",
+        "open_weights": null,
+        "score_and_split": "Zero-shot Spearman -0.373 vs the map; covers only 3,127 SNV-accessible variants. My computation.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Kermut (Groth et al., NeurIPS 2024; github.com/petergroth/kermut)",
+        "open_weights": true,
+        "score_and_split": "Per the search summary, state of the art on the ProteinGym supervised substitution benchmark under random, modulo and contiguous splits. AIRE is not in ProteinGym, so it has never been run on this map.",
+        "authors_named_unsolved": "Not read (search summary only).",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (esm2_t30_150M or t33_650M), frozen, with a ridge/GP/MLP head",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU / Apple Silicon. Cache WT per-position embeddings in seconds, or mutant embeddings in about 1-3 h.",
+    "licence": "ESM-2 is MIT. Data is MaveDB CC0. The authors' GitHub repo has no licence, but the VEP scores in it are reproducible from the public sources."
+  },
+  "integration": {
+    "partner_dataset": "ProteinGym DMS substitutions (216 sets, AIRE absent), for cross-protein training and transfer. ClinVar and gnomAD v4.1 extracts (already in the authors' repo) and AlphaMissense on O43918 serve as baselines and labels.",
+    "join_key": "UniProt O43918 + protein position + mutant aa (hgvs_pro). The join is one-to-one. Collapse rule for ClinVar: keep the highest-star record per protein change. AM and ESM1b cover 9,790/9,790 (100%), VARITY 3,127.",
+    "bigger_question_one_sentence": "Do supervised heads trained on ProteinGym DMS maps transfer to an out-of-benchmark, mostly disordered transcription factor's transactivation map better than zero-shot VEPs, and does each fail in ordered or disordered regions?"
+  },
+  "controls": {
+    "positive_control": "Nonsense vs synonymous separation (verified). PHD2 zinc-coordinating Cys434/437/446/449/457/472/475 and His454, plus buried CARD hydrophobics, must be predicted damaging. Substitutions to proline should be most damaging. Trivial target: mutant-aa hydrophobicity.",
+    "negative_control": "Label shuffle and within-position shuffle must collapse to the per-position-mean dummy. PHD1 is a known assay blind spot (median score 0.98), so expect model and map to disagree there.",
+    "external_validation": "No second AIRE DMS exists (MaveDB checked). Weak options: ClinVar 1-star P/LP vs B/LB (33/16 in file), gnomAD v4.1 allele frequency, and the 98-patient APS-1 cohort in Data S2 (not opened). Transfer from ProteinGym is the main out-of-distribution test."
+  },
+  "honest_claim_h3": "Predicts the HEK293 insulin-promoter-GFP reporter score of AIRE missense variants at held-out sequence blocks. This is a single-lab, AIRE-WT-free transactivation readout with replicate r about 0.49. It is not APS-1 pathogenicity, and it is blind to PHD1 and dominant-negative mechanisms.",
+  "pitch": {
+    "headline": "9,790 missense variants scored in one 1.5 MB CC0 table, counts matching the paper exactly, and absent from ProteinGym's 216 sets.",
+    "what_makes_the_data_unusual": "I verified it is the only AIRE deep mutational scan in MaveDB and that AIRE has no entry in ProteinGym's 216 DMS substitution sets, so every supervised head benchmarked there has a genuinely unseen target; the file is CC0, parsed with pandas on the first try (10,837 rows, no duplicate hgvs_pro, no NA scores), and ships its own controls with 528 nonsense rows at median 0.011 against 519 synonymous at median 1.002. The claim that makes this interesting as a benchmark gap, that AIRE is a largely disordered transactivation protein, rests on the paper's description rather than on anything in the files.",
+    "the_win": "A number for an abstract: a frozen ESM-2 head beats AlphaMissense's zero-shot |Spearman| of 0.361 on the full map (0.443 outside PHD1) by more than 0.05 under contiguous position-held-out splits, against a replicate ceiling of 0.477 and a per-position-mean dummy at 0.534 — and the stronger version, a head trained only on ProteinGym and tested on AIRE, beats the same zero-shot bar. All four of those numbers are my own computations from the downloaded scores file and the authors' repo, not quotes from the paper.",
+    "even_if_it_fails": "Something is learned, but it is a note rather than a model: the first published zero-shot numbers on this map for AlphaMissense (0.361), ESM1b (0.322) and VARITY (0.373, 3,127 variants), split by ordered versus disordered region, plus a direct answer to whether ProteinGym-trained heads transfer off-benchmark. That transfer result is informative in either direction, which is the main reason to run it; the per-position mean at 0.534 means a head that merely matches position averages has told you nothing.",
+    "who_wants_it": "The ProteinGym and Kermut community (Groth et al., NeurIPS 2024, open weights; never run on this map because AIRE is not in the benchmark) would use it to decide whether to add a disorder-heavy transactivation set to the benchmark and whether their random-split rankings survive contiguous splits on one. Variant-effect-predictor developers get a cleaner read on where AlphaMissense and ESM1b fail by region; the 309 ClinVar variants of uncertain significance in the file are context, not a clinical claim, since this score is a single-lab HEK293 reporter readout and not APS-1 pathogenicity."
+  },
+  "plain_idea": {
+    "one_liner": "Use a single amino-acid change in the autoimmune regulator protein to predict how strongly the altered protein still switches on a reporter gene.",
+    "train_on": "Each example is one single amino-acid change in the autoimmune regulator (AIRE) protein. It is given as the position and the new amino acid on the normal protein sequence, then turned into numbers by a pretrained protein language model (ESM-2) that is kept frozen. There are 9,790 scored variants, 8,503 of them measured in both replicates. They come from only about 544 positions in one protein, so the number of truly independent examples is much smaller. In the transfer version, the model trains on 216 other proteins' mutation-scan datasets and is tested only on AIRE.",
+    "predict": "A score for how well the altered protein still turns on a green fluorescent reporter gene. The reporter is controlled by the insulin gene's promoter, the stretch of DNA that switches a gene on, in human embryonic kidney (HEK293) cells that have no normal copy of the protein. The true answer comes from one lab: cells were sorted for high fluorescence, and DNA sequencing counted how enriched each variant was. Scores are rescaled so that changes which cut the protein short have a median of 0 and changes which leave the protein unaltered have a median of 1. The two replicates agree only moderately (correlation about 0.49). The score measures this reporter readout, not whether a change causes the autoimmune disease.",
+    "why_worthwhile": "The lab map already covers 94.5% of possible single amino-acid changes, so the value is not new predictions for this gene. It is a fair test of whether predictors trained on other proteins' mutation scans work on this mostly unstructured gene-switching protein, which no standard benchmark includes, better than ready-made predictors, and whether they fail in folded or unfolded regions; that answer is useful whichever way it comes out."
+  },
+  "ml_idea": "Use AIRE as an out-of-ProteinGym held-out map. (1) Benchmark zero-shot AM, ESM1b and VARITY by ordered vs disordered region against the replicate ceiling. (2) Fit frozen ESM-2 plus a head under contiguous/domain-held-out CV. (3) Train a head on ProteinGym only and test on AIRE, a transfer question that is informative either way.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "cheapest_killing_check": "In one afternoon, run frozen ESM-2 + ridge on 5-fold contiguous blocks against AlphaMissense zero-shot (|rho| 0.36) and the neighbour-position mean. Use both-replicate variants only, and compare to rep-rep Spearman 0.48. If the head doesn't beat AM by more than about 0.05, the result is a one-page benchmark note, not a model.",
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": 2,
+    "cv_run_minutes": null,
+    "compute_note": "All figures are the evaluation's own estimates — a 1.5 MB CSV plus ~50 MB of ESM-2 embeddings (9,790 x 1,280 float32) and a stated 1-3 hour CPU pass to cache ~10k mutant embeddings — with nothing actually timed and no peak RAM or cross-validation runtime given."
+  },
+  "roi": 11,
+  "verdict": "verify_first",
+  "verdict_reason": "Exceptionally model-ready (one CC0 table, counts match the paper exactly, label is a measured column). But it is a single protein with noisy replicates (r about 0.49), the map already covers 94.5% of missense variants, and single-DMS supervised fitting is a crowded generic task. Value hinges on the ProteinGym-to-AIRE transfer framing and on headroom over AlphaMissense under contiguous splits.",
+  "c2_backfill": {
+    "score": 1,
+    "why": "AlphaMissense closed; ESM1b and VARITY zero-shot only (rho ~0.35); open Kermut never evaluated on AIRE."
+  }
+}

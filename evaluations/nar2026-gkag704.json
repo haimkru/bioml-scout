@@ -1,0 +1,140 @@
+{
+  "paper_id": "nar2026-gkag704",
+  "title": "Systematic contextual biases in SegmentNT potentially relevant to other nucleotide transformer models.",
+  "doi": "10.1093/nar/gkag704",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.20813582 (code, GPL-3.0) and https://doi.org/10.5281/zenodo.15025141 (supplementary plots, CC-BY-4.0); GitHub https://github.com/jmillerlab/nt_context_evaluation",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the 407,552-byte code archive from Zenodo record 20813582 (GPL-3.0) and parsed every data file in it. Verified: example_auc_at_all_lengths.txt = 165 rows (5 genes x 11 window sizes x 3 normalisation schemes; columns Input, Normalized, Gene, First, Middle, Last, SD); example_exon_probabilities_at_different_lengths.txt = 55 rows; example_tnf_sliding_window_4096.txt = JSON with exon and intron probability arrays of 2,770 values each for first/middle/last position; apoe_first_middle_last_predictions.txt = 3,612 values each; apoe_at_pos_850_4096.txt = 24,576 exon and 24,576 intron probabilities for one single nucleotide across all context offsets. Ran a HEAD request on the supplementary Zenodo record: one file, Supplementary_data.zip, 348,354,516 bytes, described by the authors as interactive plotly HTML plots for five genes plus a negative control. Listed the full GitHub file tree (21 files, no further data tables).",
+    "what_came_from_paper_text_only": "The study design numbers: 5 primary genes (APOE, EGFR, TNF, TP53, VEGFA) plus 5 validation genes (DPM2, ECM1, LINC00207, NAV2-AS5, WFDC5) plus 1 non-genic control region (chr3:153050001-153053613); 2,120,483 total input sequences and 10,056,354,216 total input bases; the 24-nucleotide periodic oscillation; the statement that intermediate output files exceed 500 GB and are 'available upon reasonable request'; the compute environment (four NVIDIA A100 40GB graphics cards, 500 GB RAM). I did not download the 348 MB supplement (over the 50 MB cap) so its contents rest on the authors' description."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The code archive and the 348 MB plot archive download with no login (I opened the code archive). But the dataset itself - the nucleotide-level SegmentNT probabilities for all 2.1 million input sequences - exceeds 500 GB and the data availability statement says those files are 'available upon reasonable request'. Only two genes' probability arrays are actually public."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Depends on the framing and both framings have a column. If we predict SegmentNT's own probability, that number is a column in the deposited arrays. If we predict exon versus intron, the truth label comes from the NCBI RefSeq annotation file for GRCh38, a single standard download and a clean coordinate join - effort, not construction."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The DNA sequence itself is not in the deposited files, only gene names and coordinates, but GRCh38 (assembly GCF_000001405.26) is one download and the paper gives exact coordinates. No per-row identifier lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Verified in the files: probabilities on a 0-1 scale, area under the curve values unitless, window sizes in nucleotides, and the normalisation scheme (raw, z-score, subtraction) named in its own column."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 165,
+      "note": "FAIL. The largest public table I opened has 165 rows and the other has 55. Nucleotide-level probabilities are public for exactly two genes (2,770 and 3,612 nucleotides). The unit that any claim would have to generalise over is the gene, and there are 10 genes plus 1 control region - far under the ~400 minimum. Millions of nucleotides inside 10 genes are not independent examples; they are one gene measured many times."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "FAIL. The deposited files are tiny, but any project here means re-running SegmentNT, a 500-million-parameter Nucleotide Transformer encoder with a U-Net head, over a 1-nucleotide sliding window. The authors needed four NVIDIA A100 graphics cards and 500 GB of RAM for 2,120,483 input sequences and produced over 500 GB of output. Not reproducible on a 16 GB central-processing-unit-only laptop, and no subsetting route preserves the claim."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Counts match where checkable, which is a good sign: 165 rows = 5 genes x 11 window sizes x 3 normalisations exactly; the APOE array is 3,612 values and the paper states APOE is 3,612 nucleotides in RefSeq; window sizes in the file are exactly 24 to 24,576 as described."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the natural project. Every number in the deposited data is SegmentNT's own output probability. Training on it means distilling SegmentNT, so the accuracy ceiling is SegmentNT's and we would never learn where it is wrong - the circularity case the checklist warns about. The only non-model label available is the RefSeq exon/intron annotation, which is itself a curated annotation rather than a direct measurement, and predicting it from sequence is simply redoing SegmentNT's job."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SegmentNT (the model this paper audits; Nucleotide Transformer v2 500M encoder plus a one-dimensional U-Net segmentation head)",
+        "open_weights": true,
+        "score_and_split": "Published in Nature Methods 2025; predicts 14 genomic element classes at single-nucleotide resolution on held-out human chromosomes, reported as comparable to SpliceAI on splice sites and better than the hidden-Markov-model tool AUGUSTUS on gene annotation. Weights are on Hugging Face (InstaDeepAI/segment_nt).",
+        "authors_named_unsolved": "Generalisation beyond the 30 kb training context and to non-human genomes; the present paper adds that raw probabilities are unstable with respect to nucleotide position and show a 24-nucleotide periodic oscillation.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "SpliceAI (a deep dilated convolutional network for splice site prediction)",
+        "open_weights": true,
+        "score_and_split": "Long-standing reference model for per-nucleotide splice acceptor/donor probability; exon and intron segments must be assembled from its donor and acceptor calls afterwards. Evaluated on held-out chromosomes and repeatedly benchmarked against massively parallel splicing assays.",
+        "authors_named_unsolved": "Does not directly predict exon and intron bodies; deep intronic and tissue-specific splicing remain hard.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Benchmarking foundation models for splice site and exon annotation (bioRxiv 2026, PubMed 42124697), which also introduces a fine-tuned model named STEP2h",
+        "open_weights": null,
+        "score_and_split": "Head-to-head comparison of SegmentNT, Enformer and Borzoi with segmentation heads against the convolutional SpliceAI and AlphaGenome on per-base splice site and exon annotation. I retrieved the record, not the numbers.",
+        "authors_named_unsolved": "Not read in detail; the existence of this 2026 benchmark means the honest head-to-head evaluation this project would offer has already been done.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Benchmarking DNA foundation models for genomic and genetic tasks (Nature Communications 2025)",
+        "open_weights": null,
+        "score_and_split": "Compares DNABERT-2, Nucleotide Transformer v2, HyenaDNA, Caduceus-Ph and GROVER across sequence classification, gene expression, variant effect and topologically-associating-domain tasks, and reports that longer inputs gave no clear advantage.",
+        "authors_named_unsolved": "Context-length benefit is inconsistent across tasks - the same conclusion this paper reaches for SegmentNT, reached on far more tasks and data.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "SegmentNT / Nucleotide Transformer v2 500M multi-species (open weights on Hugging Face)",
+    "freeze_and_head_viable": false,
+    "hardware": "The paper used four NVIDIA A100 40GB graphics cards and 500 GB of RAM; a single forward pass per nucleotide offset is not a central-processing-unit job at this scale.",
+    "licence": "Nucleotide Transformer weights are openly released; the analysis code in this paper is GPL-3.0 and the supplementary plots are CC-BY-4.0."
+  },
+  "integration": {
+    "partner_dataset": "GENCODE/Ensembl v113 annotations and GTEx long-read isoform expression (used by the authors themselves via ebbertlab.com), joinable to the predictions on GRCh38 genomic coordinates.",
+    "join_key": "GRCh38 genomic coordinates plus Ensembl transcript identifier (for example ENST00000434152, the alternatively spliced APOE isoform the paper highlights).",
+    "bigger_question_one_sentence": "Do the places where SegmentNT disagrees with RefSeq mark real alternative isoforms that are expressed in some tissues - the one genuinely interesting question in this paper - but answering it needs genome-wide predictions, which were never deposited."
+  },
+  "controls": {
+    "positive_control": "Exists in principle and the authors used it: the non-genic region chr3:153050001-153053613, matched to APOE for size and repeat content, should score near-zero exonic probability.",
+    "negative_control": "Label shuffling is runnable on the deposited arrays, but with two genes of nucleotide-level data it would be uninformative.",
+    "external_validation": "Two of the ten genes were deliberately chosen from chromosomes 20-22, outside the Nucleotide Transformer training set - a sound idea, but two genes is not a validation set."
+  },
+  "honest_claim_h3": "Any model built on the public files could only claim something about SegmentNT's exon and intron probabilities inside two specific human genes (APOE and TNF), which is a claim about one model's behaviour on two genes, not about genome annotation.",
+  "plain_idea": {
+    "one_liner": "Use nucleotide position and input length to predict and correct a genome annotation model's prediction error",
+    "train_on": "What is actually public: 165 summary rows of prediction accuracy (5 genes x 11 input lengths x 3 normalisation schemes) and per-nucleotide exon/intron probability arrays for 2 genes (2,770 and 3,612 nucleotides). The full prediction set behind the paper exceeds 500 GB and is only available on request.",
+    "predict": "A corrected exon-versus-intron probability for each nucleotide, with the truth taken from NCBI RefSeq exon coordinates on GRCh38 - a curated human annotation, not a direct experimental measurement.",
+    "why_worthwhile": "Anyone using SegmentNT to annotate a genome would want to know how to de-bias its raw probabilities; but the paper has already published the fix (z-score standardisation, or subtracting intron from exon probability), so the remaining gain is small."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The opposite: 10 genes and 1 control region here, against SegmentNT's genome-wide training on 14 element classes across whole human chromosomes, and against 2025-2026 benchmarks that evaluate five or more foundation models across many tasks."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements - SegmentNT is deterministic, so the spread across positions is a bias, not noise. With 10 genes there are not enough groups to say 'we are unsure here' in any calibrated way."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "SegmentNT is a 2025 Nature Methods model with open weights, evaluated on held-out chromosomes, already honestly re-benchmarked against SpliceAI, Enformer, Borzoi and AlphaGenome in a 2026 benchmarking preprint. Beating it needs graphics-card-scale compute we do not have."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: SegmentNT cannot be run as our baseline on a 16 GB central-processing-unit-only laptop at the sliding-window scale required, and the paper's own prediction data was not deposited."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The idea considered and rejected: learn a position-and-length-aware correction that maps SegmentNT's raw exon/intron probability to a calibrated probability, evaluated against RefSeq exon coordinates on held-out genes. It dies three ways - only 10 genes exist as independent units, the training signal is another model's output (distillation, not biology), and regenerating the predictions needs graphics cards the project does not have. The paper's own remedies (z-score standardisation and exon-minus-intron subtraction) already capture most of the available gain, and they are published.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 500.0,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working-set figure is the authors' own statement that intermediate outputs exceed 500 GB for 2,120,483 input sequences and 10,056,354,216 input bases; the deposited public files total about 349 MB. I timed nothing - the public files are too small to be worth timing and the real workload is not laptop-runnable. Hours to a feature table is null because the feature table cannot be built from what was deposited."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails three Part A killers, verified in the files. A5: the only public tables have 165 and 55 rows, nucleotide-level probabilities exist for just 2 genes, and the unit any claim must generalise over is the gene - there are 10, plus 1 control region. A6: reproducing the analysis needs four A100 graphics cards and produces over 500 GB, which the authors say is available only on request. A8: every deposited number is SegmentNT's own output, so modelling it distils SegmentNT rather than learning biology. This is a careful and useful audit paper - the 24-nucleotide oscillation finding is real and worth knowing - but it deposited figures and code, not a dataset, and the field already has 2025-2026 benchmarks (Nature Communications; a bioRxiv splice-annotation benchmark) covering the honest-re-evaluation angle."
+}

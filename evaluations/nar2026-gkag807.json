@@ -1,0 +1,135 @@
+{
+  "paper_id": "nar2026-gkag807",
+  "title": "Modeling conformational transitions in DNA, RNA, and protein-nucleic acid complexes.",
+  "doi": "10.1093/nar/gkag807",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/domenicoscaramozzino/Protein_DNA_RNA_edENM (archived at https://doi.org/10.5281/zenodo.21331566)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the whole GitHub repository tree via the GitHub application programming interface (1,687 files, 768 MB of blobs, MIT licence) and the Zenodo record (one 255 MB zip, CC-BY-4.0). Opened the top README, the MD_testing README, the manifest file analysis_results.json (451 kB), one per-nucleotide fluctuation file (rmsf_traj-0_window-0.dat), and an experimental-ensemble folder (ensemble.txt, pc_variances.txt, exp_ensemble_proj_PC.txt). Counted benchmark units directly from the tree: 26 experimental structure-pair ensembles, 17 nucleic-acid NMR (nuclear magnetic resonance) ensembles, 21 protein-nucleic-acid NMR ensembles, 4 large transition cases, and 25 molecular dynamics (MD, a physics simulation of atoms moving) systems. Cross-checked the manifest against the files actually present: it lists 1,353 fluctuation files, 1,353 eigenvector files and 1,353 explained-variance files, of which only 98, 90 and 98 respectively exist in the repository.",
+    "what_came_from_paper_text_only": "The claim of agreement with experiment across '~60 systems', the parametrization procedure itself, and the reported overlap values between model modes and experimental motions. I did not run the code, and I did not verify the Zenodo zip contents beyond its size and licence (it is a tagged snapshot of the same repository)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "Code and benchmark structures download freely (GitHub, MIT licence; Zenodo zip 255 MB, CC-BY-4.0). But the actual parametrization data — the simulation-derived motion files — is 93% absent: MD_testing/README.md says the missing files 'can be retrieved from figshare at [INSERT LINK]', a literal unfilled placeholder, repeated in MD_testing/DNA/Pyne_2021/README.md. A figshare search for 'edENM' and for the author returned nothing."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no label column anywhere. The quantity the paper reports (how well the model's predicted motions overlap with observed motions) exists only as a figure in the paper; to build it you would have to run the authors' code on each structure pair and compute the overlap yourself."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are real and present: full Protein Data Bank coordinate files for every benchmark system are in the repository, plus coarse-grained three-bead versions already aligned and labelled (e.g. 4WLS_ABC_CA_P_C1_C2_ali_labeled.pdb). No identifier lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Every numeric data file is a headerless column of numbers in scientific notation (rmsf_*.dat, explained_variance_*.dat, eigenvectors_*.dat, pc_variances.txt). No column names, no units anywhere in the files or READMEs; fluctuations are presumably in angstroms and variances in percent, but that is inference, not documentation."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 64,
+      "note": "The unit of analysis is a molecular system, and I counted them in the tree: 26 experimental ensembles + 17 nucleic-acid NMR ensembles + 21 protein-nucleic-acid NMR ensembles = 64, plus 4 large transitions and 25 MD systems (only 4 of which have fluctuation files present). Far under the 1,500-row bar, and under the 400 needed even for classification. Counting the ~11,000 individual nucleotide beads does not help: they come from only 4 independent molecules with data present."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.3 GB for benchmark structures; ~0.77 GB for the whole repository",
+      "note": "Everything present fits comfortably in 16 GB of memory; the two biggest items are 18 MB zipped transition trajectories."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "The repository's own manifest (analysis_results.json) lists 1,353 simulation-analysis files per quantity; only 98 are in the download. 21 of the 25 MD systems named in the manifest, including all 10 protein-nucleic-acid complexes and 4 of 5 RNA systems, have no data files at all. The paper's '~60 systems' matches the structure folders, but the parametrization data behind it cannot be checked."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Both candidate targets fail. The overlap scores are outputs of the authors' own elastic network model, so predicting them is distilling that model, not learning biology. The fluctuation profiles are outputs of molecular dynamics force fields, not physical measurements. The experimental principal components are computed directly from the same deposited structure files that would be the model's input, so that target leaks by construction."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "edENM / eBDIMS2 (this paper's own elastic network model and path sampler; an elastic network model treats a molecule as beads connected by springs)",
+        "open_weights": true,
+        "score_and_split": "Reported agreement with experimental conformational changes across ~60 DNA, RNA and protein-nucleic-acid systems; parameters were tuned on NMR ensembles and simulations, with no held-out split that I could verify in the files.",
+        "authors_named_unsolved": "Extending the framework to larger, megadalton-scale assemblies and to more diverse nucleic-acid systems; the abstract and READMEs do not name a specific quantitative failure.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepRMSF, a 3D convolutional neural network that predicts per-atom RNA flexibility from a 3D structure (Briefings in Bioinformatics, 2026; PubMed ID 41529119, open access)",
+        "open_weights": null,
+        "score_and_split": "Pearson correlation 0.7219-0.7464 in five-fold cross-validation on 311 RNAs and 0.734 on an independent 60-RNA test set, with sequence and structure similarity between sets deliberately minimised; reported to beat the Gaussian network model (0.441) and its parameter-free variant (0.490).",
+        "authors_named_unsolved": "Replacing molecular dynamics entirely; they position the model as a screening-scale alternative rather than a substitute.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "PATHpre, a deep-learning predictor of conformational transition pathways (Advanced Science, 2024)",
+        "open_weights": null,
+        "score_and_split": "Trained on a library of 2,635 proteins with two experimentally determined end states; I read the summary of this work in search results, not the paper itself.",
+        "authors_named_unsolved": "Scarcity of experimentally characterised transition data, which they work around with large-scale biophysical sampling.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model) or a geometric graph network over the coarse-grained beads would be the natural fit",
+    "freeze_and_head_viable": null,
+    "hardware": "CPU would suffice for embedding 64 short systems, but with 64 groups there is nothing to fit a head on",
+    "licence": "MIT for the repository code, CC-BY-4.0 for the Zenodo archive — both permissive"
+  },
+  "integration": {
+    "partner_dataset": "Protein Data Bank and the Nucleic Acid Database, joinable because every benchmark system is a PDB identifier",
+    "join_key": "PDB ID (4-character structure accession)",
+    "bigger_question_one_sentence": "One could ask whether a learned model of nucleic-acid flexibility, trained on many more PDB ensembles than the 64 here, beats spring-network physics — but DeepRMSF already asked and answered that on 371 RNAs, so this repository adds nothing to the question."
+  },
+  "controls": {
+    "positive_control": "A-form double-helical DNA should come out stiffer than single-stranded loops and hairpin ends; the fluctuation file I opened does show end beads at ~8 angstrom-units versus ~3 in the interior, consistent with that.",
+    "negative_control": "Shuffling per-nucleotide fluctuation values within a molecule and confirming that any predictor collapses to the per-molecule mean.",
+    "external_validation": "DeepRMSF's 371-RNA benchmark set is a genuine independent source, but it is also a competing, larger training set — which is the problem, not the opportunity."
+  },
+  "honest_claim_h3": "With 64 benchmark systems, at most four of which have the per-nucleotide simulation data actually deposited, no model trained on this release could claim anything beyond 'it reproduces the authors' own elastic network model on the authors' own examples'.",
+  "plain_idea": {
+    "one_liner": "Use a nucleic acid's 3D structure to predict how flexible each nucleotide is and which way the molecule bends.",
+    "train_on": "Coordinate files for DNA, RNA and protein-nucleic-acid complexes, reduced to three beads per nucleotide. I verified 64 benchmark systems in the repository, plus 25 simulation systems of which only 4 have per-nucleotide flexibility files present.",
+    "predict": "Per-nucleotide fluctuation amplitude, or the direction of the largest observed shape change. The flexibility values come from molecular dynamics simulations run in other labs, not from a measurement; the shape changes come from pairs of deposited structures.",
+    "why_worthwhile": "Structural biologists studying ribosomes, nucleosomes and viral RNA folds would like a fast way to guess which parts of a big nucleic-acid assembly move. The honest answer here is that a 2026 deep-learning model already does this on six times more RNAs."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This release has 64 benchmark systems and 4 systems with per-nucleotide simulation data actually present; DeepRMSF trained and tested on 371 non-redundant RNAs with similarity-controlled splits. We would be bringing less data, not more."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Replicate information exists in principle (multiple trajectories and time windows per system), but 93% of those files are missing from the download, so per-prediction noise cannot be estimated from what is there."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "DeepRMSF is a 2026 convolutional network evaluated on a held-out 60-RNA set with sequence and structure similarity minimised, and it already beats spring-network baselines by a wide margin (0.73 versus 0.44-0.49 correlation). That is an honest evaluation on a proper split."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Several conditions fail at once: the labels here come from a different set of force fields and simulation lengths than DeepRMSF's, there is no shared split, and the per-nucleotide labels that would be needed exist for only 4 molecules in this release."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only well-posed task this release supports is predicting per-nucleotide flexibility or the direction of a conformational change from a single 3D structure. It dies on sample size (64 systems, 4 with per-nucleotide data present), on label provenance (the targets are either the authors' own model's output, a force-field simulation's output, or computable from the input structure itself), and on prior work (DeepRMSF, 2026, already does the flexibility task on 371 RNAs with a similarity-controlled split and beats elastic network models).",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "working_set_gb": 0.8,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 0.2,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed. The whole repository is 768 MB of text-format files and would parse in a couple of gigabytes of memory; the 20 hours is for writing PDB parsers for 64 multi-model ensembles and reconstructing the missing labels, which is the point at which the project stops being worth it.",
+    "cheapest_killing_check": "Count the systems that have both a structure and a per-nucleotide label file. I did this: 4 of 25, because the figshare link holding the other 21 reads '[INSERT LINK]'."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A method-and-code release, not a dataset. Four Part A killers fail: only 64 benchmark systems (A5), no label column anywhere (A2), headerless numeric files with no units (A4), and the repository's own manifest lists 1,353 simulation-analysis files of which 98 are present, the rest promised at a figshare link that literally reads '[INSERT LINK]' (A1/A7). The one target that would be a real measurement traces back to force-field simulations or to the input structure itself (A8). On top of that, DeepRMSF (2026) already predicts RNA per-nucleotide flexibility from structure on 371 non-redundant RNAs with a similarity-controlled split and beats elastic network models, so even a working version of this project would be entering a field that has just been served."
+}

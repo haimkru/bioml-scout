@@ -1,0 +1,53 @@
+{
+  "paper_id": "cellgen2026-101304",
+  "title": "Chromatin topology and distal elements underlie divergent cell-type-specific regulation of 9p21 locus cell cycle genes.",
+  "doi": "10.1016/j.xgen.2026.101304",
+  "journal": "Cell Genomics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE309515",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE309515 SuperSeries record (expression, binding, 'Other' subseries); HEAD on GSE309515_RAW.tar = 8,816,506,880 bytes (not downloaded). Listed GitHub repo broadinstitute/CDKN2A-gene-regulation. Opened data/genes_gRNAs_targets.tsv: 582 rows = 194 guide groups x 3 readout genes (p16, p14, CDKN2B); 514 candidate, 63 negative control, 5 positive control pairs. It is a test-pair specification, not a results table. Opened dialup_ratios.csv and expression_ratios.csv: 25,845 breast-tissue single cells with per-cell 9p21 expression, no perturbation label. genes_gRNAs_guides_MTAP_DMRTA1_IFN_corrected.tsv failed to parse (ragged rows at line 1744).",
+    "what_came_from_paper_text_only": "CRISPRa (CRISPR activation) Perturb-seq screen in WI-38 fibroblasts: 724 guides against 173 regions plus 83 safe-harbor controls; 80 guide-gene pairs checked by RT-qPCR, 30 significant. Per-guide effect sizes are said to be in Table S5. The supplement could not be retrieved (Europe PMC timed out)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO and GitHub are open with no login. The processed screen results (Table S5) are in a supplement that could not be retrieved, and the raw GEO tar is 8.8 GB."},
+    "a2_label_is_a_column": {"pass": false, "note": "None of the files I opened holds a per-element effect label. The GitHub tables list which pairs to test, not results. The label would have to be rebuilt by running SCEPTRE (a single-cell perturbation test) on the 8.8 GB raw tar, or taken from a supplement I could not open."},
+    "a3_inputs_present": {"pass": true, "note": "Target regions are given as a BED file (CRISPRa_target_regions.bed, 11 kB), so sequences can be pulled from hg38 in one step."},
+    "a4_units_stated": {"pass": false, "note": "No result table opened, so units of effect size could not be checked."},
+    "a5_enough_rows": {"pass": false, "n_rows": 582, "note": "Verified: 582 guide-group x gene pairs, of which 514 are candidates, all at one locus in one cell line. The paper reports about 30 hits. That is far below the roughly 400 needed even for classification, and it all comes from one genomic neighbourhood."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<10 MB if Table S5 is obtained; 8.8 GB raw tar otherwise", "note": "Fits a laptop only if the processed table is obtained."},
+    "a7_counts_match_paper": {"pass": true, "note": "194 guide groups x 3 genes in the file agrees with the paper's 173 regions plus control groups. Not checked against the results table."},
+    "a8_label_provenance": {"pass": true, "note": "The label would be a measured change in single-cell RNA after CRISPRa, so it is not another model's output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ENCODE-rE2G (supervised extension of the ABC, Activity-by-Contact, model)", "open_weights": true, "score_and_split": "Benchmarked on 10,375 CRISPRi (CRISPR interference) element-gene pairs with 472 positives, pooled from Nasser 2021, Gasperini 2019 and Schraivogel 2020; split details not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "MPRA-informed enhancer-gene model (NAR 2026)", "open_weights": null, "score_and_split": "Not retrieved beyond the title and abstract snippet.", "authors_named_unsolved": "Prediction of enhancer-gene links that depend on cell context.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Enformer (DNA sequence-to-function models)", "freeze_and_head_viable": false, "hardware": "CPU for inference only; too few labels for a head", "licence": "AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "ENCODE-rE2G CRISPR benchmark (10,375 element-gene pairs)", "join_key": "hg38 genomic coordinates", "bigger_question_one_sentence": "Do enhancer-gene predictors trained on CRISPRi knockdowns in cancer lines also predict CRISPRa activation effects in primary fibroblasts at 9p21?"},
+  "controls": {"positive_control": "Promoter-targeting guides (5 positive-control pairs in file)", "negative_control": "83 safe-harbor guides", "external_validation": "None at this locus beyond the 80 RT-qPCR follow-ups"},
+  "honest_claim_h3": "At most: whether existing enhancer-gene predictors rank about 30 CRISPRa hits at one locus in one fibroblast line above the other roughly 480 tested pairs. That is an anecdotal check, not a trainable task.",
+  "plain_idea": {
+    "one_liner": "Use DNA features of regions near the 9p21 cell-cycle genes to predict which regions switch those genes on when artificially activated.",
+    "train_on": "One CRISPR activation screen: 514 candidate region-gene pairs (verified in file) from 173 regions at a single locus in one fibroblast line.",
+    "predict": "Whether activating a region changes p16, p14 or p15 RNA, measured by single-cell RNA sequencing. The effect table itself was not available in the files I opened.",
+    "why_worthwhile": "Would show whether general enhancer-gene predictors work at a disease-relevant locus. With about 30 hits at one locus, it can only serve as a small test case."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "514 candidate pairs at one locus, against ENCODE-rE2G's 10,375 pooled CRISPRi pairs."},
+    "confidence_score": {"answer": "no", "why": "Only about 3 guides per region, with no replicate screens described in the files."},
+    "models_beatable": {"answer": "no", "why": "ENCODE-rE2G (2024 to 2026, open) is benchmarked on more than 10,000 pairs; one locus cannot show it is beaten."},
+    "guaranteed_improvement": {"answer": "no", "why": "CRISPRa measures activation, not the knockdown used in existing benchmarks, so the new data does not measure the same quantity."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rejected: at best, a zero-shot check of ENCODE-rE2G or AlphaGenome scores against the about 30 CRISPRa hits at 9p21. There is no trainable dataset.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 8.8, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because the project fails Part A. The raw tar size comes from a HEAD request.", "cheapest_killing_check": "Count the rows in Table S5 that have a significant effect. The paper implies about 30, which kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A2. The screen covers one locus in one cell line: 514 candidate pairs verified in the files, about 30 hits according to the paper. The effect labels are not in any file I could open; they sit in a supplement I could not retrieve or in an 8.8 GB raw archive."
+}

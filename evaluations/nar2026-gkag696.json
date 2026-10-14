@@ -1,0 +1,118 @@
+{
+  "paper_id": "nar2026-gkag696",
+  "title": "Nuclear PI3P produced by the Beclin-1/Vps34 complex regulates DNA mismatch repair.",
+  "doi": "10.1093/nar/gkag696",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/pride/archive/projects/PXD066473",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the journal supplement and parsed 'SUP Table 1.xlsx' (644 KB, 5 sheets: BCLN 1,104 data rows, PI3P 1,386 rows, plus Common/unique sheets; real header sits on the third row). Downloaded both MaxQuant 'proteinGroups' tables from PRIDE PXD066473 (776 KB and 1.1 MB, licence CC0) and parsed them: 1,168 rows x 58 columns (runs C1, C2) and 1,443 rows x 56 columns (runs XL005_D1, XL005_D2). Joined the spreadsheet to the MaxQuant files on gene symbol and recomputed every enrichment value. Found the spreadsheet's bait intensities match the MaxQuant 'Intensity' column of one run exactly, but 994 of 1,081 Beclin-1 rows (92%) and 555 of 1,367 PI3P rows (41%) have a measured control intensity of exactly 0 while the spreadsheet lists a control value between 10,007 and 39,987 (981 distinct values in that band) - i.e. zeros were replaced by undocumented random numbers. Where the control was genuinely non-zero the values match exactly (87/87 and 812/812). Also listed the PRIDE directory: only 4 raw instrument files (693 MB-1.3 GB, not downloaded) and the 2 processed tables, so one bait run and one control run per experiment.",
+    "what_came_from_paper_text_only": "That the Beclin-1 pulldown used FLAG immunoprecipitation and the PI3P pulldown used PI3P-coated versus uncoated beads on HeLa nuclear extract; the methods sentence claiming proteins were 'reproducibly detected across replicates' and that intensities were 'divided by the average control intensity plus a pseudocount'; all imaging, immunoblot, microsatellite-instability and zebrafish results, whose underlying data is 'shared by the corresponding contact upon request'."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Supplementary Table S1 opens from the open-access journal supplement, and the two processed proteomics tables download freely from PRIDE PXD066473 under a CC0 (public domain) licence. No login needed. The blanket 'upon request' statement covers only the imaging and assay data, not the proteomics table."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "A 'LOG2 enrichment, bait-scaled' column and a four-level 'Cut-offs' tier column (Tier 1 Extreme / Tier 2 Strong / Tier 3 Moderate / Background) are both present for every row, so no label construction is needed. Passes on structure; the problem is what the number means (see A4, A8)."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Only gene symbols are given - no protein sequences. Mapping 1,386 symbols to UniProt accessions and sequences is one bulk query, not thousands of lookups, so this passes, but some symbols are deprecated (e.g. GNB2L1 is now RACK1) and would silently drop."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "FAIL. The two intensity columns are labelled only 'Relative INTENSITY' - arbitrary mass-spectrometry units, never defined. Worse, the denominator is inconsistent row to row: for 41% of PI3P rows and 92% of Beclin-1 rows it is a random number near the detection floor substituted for a measured zero, while for the rest it is a real measurement. The column header says the pseudocount is 5, but the substituted values are around 10,000-40,000, four orders of magnitude larger. So the same column mixes measured and fabricated quantities with no flag distinguishing them."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 812,
+      "note": "FAIL as a regression target. Only 812 PI3P rows have a genuinely measured control intensity, below the ~1,500 bar; the other 574 of 1,386 rows have a fabricated denominator. Treated as a two-class problem 812 would clear the ~400 bar, but there is exactly one bait run and one control run, so no row has a replicate and nothing can be tested for significance."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~2.5 MB (one 644 KB spreadsheet plus two text tables of 776 KB and 1.1 MB); raw instrument files total ~3.6 GB and are neither needed nor permitted.",
+      "note": "Trivially laptop-sized. Protein language model embeddings for ~1,400 sequences would take a couple of CPU hours."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "FAIL. The methods say a filter retained proteins 'reproducibly detected across replicates', but the deposit contains one bait run and one control run per experiment - there are no replicates to be reproducible across. The methods also say intensities were divided by 'the average control intensity plus a pseudocount', which does not describe what the spreadsheet actually contains (a per-row random value where the control was zero). The paper states no protein counts to check against the 1,104 and 1,386 rows I found."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL, and this is the decisive one. For most rows the label is log2(measured bait intensity / a random number), so it is not traceable to a physical measurement. The consequence is visible: the enrichment score correlates 0.87 with the bait intensity alone in the Beclin-1 sheet, meaning the label is largely just how abundant the protein was, and 1,030 of 1,104 Beclin-1 proteins (93%) land in 'Tier 1 - Extreme'. The top-ranked 'interactors' are PARP1, RPL6, RPL7, MYH9, RPL15 and, for PI3P, RACK1, GEMIN5 and the mitochondrial import protein TOMM22 - the classic sticky-background proteins of any pulldown, not a specificity-corrected binder list."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SLiPP (Structure-based Lipid-interacting Pocket Predictor), a machine-learning detector of lipid-binding cavities in protein structures",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - seen only as a search-result description, so I did not read its numbers or split.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "A proteome-wide machine-learning predictor of lipid-interacting proteins (Journal of Chemical Information and Modeling, 2025; earlier bioRxiv preprint)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - search-result description only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "iDLB-Pred, a convolutional neural network that flags lipid-binding residues in disordered protein regions",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - search-result description only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model that turns an amino-acid sequence into a numeric vector), small CPU-sized checkpoint",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; ~1,400 sequences embed in roughly 1-3 hours",
+    "licence": "MIT (permissive)"
+  },
+  "integration": {
+    "partner_dataset": "UniProt plus InterPro domain families (to supply sequences and known PI3P-reading domains such as FYVE and PX), and AlphaFold DB for predicted structures",
+    "join_key": "Gene symbol resolved to UniProt accession",
+    "bigger_question_one_sentence": "Which human nuclear proteins read the lipid PI3P without carrying a known PI3P-binding domain? - a good question that this dataset cannot answer, because its enrichment score mostly tracks protein abundance rather than lipid binding."
+  },
+  "controls": {
+    "positive_control": "Known PI3P readers (proteins with FYVE or PX domains, e.g. members of the WIPI and SNX families) should rank near the top. I did not test this, but the actual top ranks are ribosomal and cytoskeletal background proteins, which argues the control would fail.",
+    "negative_control": "Shuffle the enrichment labels; and train on protein abundance alone (a published HeLa proteome) to see how much of the signal is just abundance - here that ablation would likely reproduce most of the label.",
+    "external_validation": "None usable: a single HeLa experiment, no second lipid pulldown dataset identified, and no replicate or date column to split on."
+  },
+  "honest_claim_h3": "A model trained on this table would claim only: 'predicts which proteins were abundant enough to be recovered on PI3P-coated beads in one unreplicated HeLa nuclear-extract pulldown, scored against a control value that was invented for 41% of rows' - which is a claim about protein abundance and spreadsheet bookkeeping, not about lipid binding.",
+  "plain_idea": {
+    "one_liner": "Use a protein's amino-acid sequence to predict whether the lipid PI3P pulls it out of a cell nucleus.",
+    "train_on": "One supplementary spreadsheet with 1,386 human proteins scored for enrichment on PI3P-coated beads (and 1,104 scored on Beclin-1 immunoprecipitation), each identified only by gene symbol, so sequences would come from UniProt. Only 812 of the 1,386 have a measured, non-invented control value.",
+    "predict": "A continuous enrichment score, or a binder-versus-background class. The truth comes from a single mass-spectrometry run of PI3P-coated beads compared with a single run of uncoated beads on HeLa cell nuclear extract - no replicates.",
+    "why_worthwhile": "Few tools predict which proteins read signalling lipids, so a list of candidate nuclear PI3P effectors would help DNA-repair and autophagy labs choose what to test next. That upside is real but this particular table cannot deliver it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: embed each protein's sequence with ESM-2 (a protein language model) and fit a head to predict the PI3P-pulldown enrichment score, to find nuclear PI3P-binding proteins that lack any known lipid-binding domain. The idea is sound; this dataset cannot support it.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.003,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 2,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed for the model step. The data work was timed in practice: parsing the spreadsheet and both MaxQuant tables and recomputing all enrichment values took under a minute on this laptop. Size is not the problem here.",
+    "cheapest_killing_check": "Join the supplementary spreadsheet to the deposited MaxQuant proteinGroups table on gene symbol and ask whether the spreadsheet's control intensity equals the measured control-run intensity. It does not: 92% of Beclin-1 rows and 41% of PI3P rows have a measured control of exactly 0 against a spreadsheet value of 10,007-39,987. Ten minutes of work, and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Opening the files killed it. The prediction target is a log2 ratio whose denominator was, for 92% of Beclin-1 rows and 41% of PI3P rows, a random number between 10,007 and 39,987 substituted for a measured zero - undocumented, and not what the methods describe. As a result the label correlates 0.87 with raw protein abundance in the Beclin-1 sheet, 93% of Beclin-1 proteins are graded 'Tier 1 - Extreme', and the top 'interactors' are ribosomal and cytoskeletal background proteins. The methods also claim a filter across replicates, but the deposit holds exactly one bait run and one control run per experiment, so no replicates exist and the noise floor is unknowable. Only 812 rows carry a genuinely measured control, below the row bar for regression. A4, A5, A7 and A8 all fail; the data is a fine figure-making table for a wet-lab mechanism paper and an unusable training set."
+}

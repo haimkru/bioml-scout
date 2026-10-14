@@ -1,0 +1,87 @@
+{
+  "paper_id": "nar2026-gkag710",
+  "title": "CRISPR RNA architecture steers Cas9 catalysis and fidelity via a guide repeat clasp motif.",
+  "doi": "10.1093/nar/gkag710",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://academic.oup.com/nar/article-lookup/doi/10.1093/nar/gkag710#supplementary-data (retrieved as gkag710_supplemental_files.zip via Europe PMC supplementaryFiles for PMC13473882)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the 14 MB supplement archive from Europe PMC, unzipped it (one 13 MB PDF of supplementary figures plus 'Supplemental Tables S1-S3.xlsx', 38 KB) and parsed the spreadsheet with pandas. Table S2 = exactly 255 data rows, columns Assay, Protospacer (all 20 nucleotides), %EE_2part (percent editing efficiency with the two-part dual guide), %EE_sgRNA, delta; zero missing values, 255 unique protospacers, and delta equals %EE_2part minus %EE_sgRNA exactly. Table S1 = 122 synthesised RNA/DNA oligo sequences; Table S3 = 12 on/off-target genomic sites with coordinates. No symmetric cut-off on delta reproduces the paper's 68/43/144 class counts (at +/-3 I get 76/51/128; at +/-4, 57/46/152). Six dual-guide and five single-guide values exceed 100% editing, i.e. normalisation overshoot.",
+    "what_came_from_paper_text_only": "That editing was measured in Jurkat cells by rhAmpSeq amplicon sequencing of indels after ribonucleoprotein electroporation; replicate structure for the 255-target screen; the cryo-EM structures (Protein Data Bank 8G1T, 8FZT, 9B2K); and all biochemical, nanopore off-target and molecular-dynamics results, which appear only as figures in the PDF, not as tables."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement downloads without login from Europe PMC; licence is Creative Commons Attribution 4.0. I opened the spreadsheet itself."},
+    "a2_label_is_a_column": {"pass": true, "note": "Editing efficiency for both guide architectures, and their difference, are literal columns in Table S2 (%EE_2part, %EE_sgRNA, delta). Verified in the file."},
+    "a3_inputs_present": {"pass": true, "note": "The 20-nucleotide protospacer sequence is present for all 255 rows; no accession lookups needed. Verified in the file."},
+    "a4_units_stated": {"pass": true, "note": "Column names state percent editing efficiency (%EE); table title names the assay (rhAmpSeq). Minor caveat: 11 values exceed 100%."},
+    "a5_enough_rows": {"pass": false, "n_rows": 255, "note": "FAIL. Only 255 labelled rows, counted in the file. The checklist needs about 1,500 for regression or about 400 for classification; 255 is below both, and the three-class version gives roughly 40-70 examples per minority class."},
+    "a6_fits_laptop": {"pass": true, "working_set": "38 KB spreadsheet", "note": "Trivially fits; no GPU needed. Verified by download."},
+    "a7_counts_match_paper": {"pass": false, "note": "The 255-row count matches the paper, but the paper's architecture-preference classes (68 dual-guide-favouring, 43 single-guide-favouring, 144 comparable) cannot be reproduced from the delta column by any symmetric threshold I tried, and no class column or criterion is supplied."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are measured percentages of sequencing reads carrying insertions or deletions (rhAmpSeq), not a model output; the delta is arithmetic on two measurements. Verified that delta = dual minus single exactly."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepSpCas9 (Kim et al., Science Advances 2019; convolutional network for SpCas9 single-guide activity)", "open_weights": true, "score_and_split": "Search results state it was trained on measured activity at 12,832 target sequences from a human cell library and is reported as a strong ranker of guide activity; I did not retrieve the paper's own split-by-split numbers.", "authors_named_unsolved": "Not retrieved (abstract/search snippets only).", "runnable_as_baseline": true},
+      {"name": "CRISPRon (Xiang et al., Nature Communications 2021; deep learning with data integration)", "open_weights": true, "score_and_split": "Search results describe it as performing well at ranking guide activity on large homogeneous datasets; exact numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "DeepCRISTL (Bioinformatics 2024; transfer learning for cell-context-specific on-target efficiency)", "open_weights": null, "score_and_split": "Described in search results as using deep transfer learning to adapt on-target efficiency prediction to specific cellular contexts; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "PLM-CRISPR (Bioinformatics 2025; protein language model ESM-2 fused with guide RNA sequence for cross-variant activity)", "open_weights": null, "score_and_split": "Search results say each sample is a 59-nucleotide RNA (20-nt protospacer, 3-nt PAM, 36-nt scaffold) paired with a Cas9 variant sequence and an activity value; numbers not retrieved.", "authors_named_unsolved": "Not retrieved, but the framing implies activity prediction for new Cas9 variants is the open part.", "runnable_as_baseline": null},
+      {"name": "crisprHAL (Nature Communications 2023; transfer learning from small high-quality datasets)", "open_weights": true, "score_and_split": "Reported in search results as improving guide activity prediction via transfer learning with small amounts of high-quality data, generalising across bacteria.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM or a nucleotide language model (Nucleotide Transformer / DNABERT-2) over the 20-nucleotide protospacer",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; 255 short sequences embed in minutes",
+    "licence": "Backbones permissive to non-commercial; data is Creative Commons Attribution 4.0"
+  },
+  "integration": {
+    "partner_dataset": "Published single-guide activity datasets (DeepSpCas9's 12,832 measured target sequences; CRISPRon training data)",
+    "join_key": "20-nucleotide protospacer sequence / genomic coordinates (GRCh38)",
+    "bigger_question_one_sentence": "Does any sequence or predicted-structure feature explain when a two-part dual guide out-edits a fused single guide, a question the single-guide-only public datasets cannot address because they never varied the guide architecture?"
+  },
+  "controls": {
+    "positive_control": "Predict GC content or homopolymer length from the protospacer (must be near-perfect), and check that the model recovers the known preference for G at the position adjacent to the PAM in absolute editing efficiency.",
+    "negative_control": "Shuffle the delta column and confirm performance collapses to the global mean; the paper's own result (Pearson r = 0.22, R-squared = 0.05 for its composite structural score) is effectively a pre-existing near-null benchmark.",
+    "external_validation": "The 15 resynthesised unmodified guides (Supplementary Fig. S2, figure only, not tabulated) and the 12 endogenous on/off-target sites in Table S3 — both far too small to validate anything."
+  },
+  "honest_claim_h3": "Any model here could only claim: among 255 commercially pre-designed, already-highly-active spacers (median editing about 94%) tested once in Jurkat cells with chemically modified guides, sequence features predict the dual-versus-single guide editing difference this well — a claim limited by 255 rows, one cell line, one lab and one assay.",
+  "plain_idea": {
+    "one_liner": "Use a guide RNA's 20-letter targeting sequence to predict whether two-piece or fused guide RNA edits that site better.",
+    "train_on": "Each example is one 20-nucleotide targeting sequence (spacer) plus features computed from it; there are 255 examples, a count I verified by opening the spreadsheet.",
+    "predict": "The difference in percent of DNA molecules carrying an edit between the natural two-part guide and the fused single guide, measured by amplicon sequencing of insertions and deletions in Jurkat cells.",
+    "why_worthwhile": "Anyone ordering CRISPR reagents picks one guide format blindly; a predictor would tell them which to buy. Even a failure confirms the paper's conclusion that the choice is not sequence-encoded."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Our usable table is 255 matched pairs; DeepSpCas9 alone was trained on measured activity at 12,832 target sequences. The only thing unique here is the guide architecture comparison, and it exists for just those 255 spacers."},
+    "confidence_score": {"answer": "no", "why": "The 255-target screen is reported as single aggregate percentages per architecture with no replicate columns in the file, so per-prediction uncertainty cannot be grounded in measured noise."},
+    "models_beatable": {"answer": "partly", "why": "The in-paper benchmark is weak (a multiple-regression composite structural score, Pearson r = 0.22, R-squared = 0.05) and is trivially beatable in principle, but it was fitted on the same 255 rows, so beating it on 255 rows proves little."},
+    "guaranteed_improvement": {"answer": "no", "why": "Public datasets (DeepSpCas9, CRISPRon) measure single-guide activity only, in different cell lines and assays, and never measure the dual-versus-single difference, so they cannot supply more of the same quantity; the condition 'new data measures the same quantity the same way' fails."}
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "Searched for public guide-architecture comparisons and found none; large public resources (DeepSpCas9's 12,832 measured targets, CRISPRon, CRISPR screen repositories) report single-guide activity only, never a matched dual-guide measurement.",
+    "approx_items": null,
+    "join_key": "20-nucleotide protospacer sequence / GRCh38 coordinates",
+    "why": "The quantity to predict here — the editing difference between two guide RNA architectures — is measured nowhere else, so there is no external training or validation set to rescue the 255-row sample size."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict the dual-guide-minus-single-guide editing difference (delta %EE) from the 20-nucleotide protospacer, using a frozen RNA or DNA language model embedding plus a small regression head, benchmarked against the paper's own composite structural score (Pearson r = 0.22). Dead on arrival at 255 rows: with roughly 40-70 examples in each minority preference class, grouped cross-validation would give confidence intervals wider than any effect.",
+  "effort": {
+    "hours_to_feature_table": 1,
+    "working_set_gb": 0.0001,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": 2,
+    "compute_note": "Measured directly: the whole dataset is a 38 KB spreadsheet with 255 rows of 20-nucleotide sequences, already parsed in this evaluation; embedding 255 short sequences on a CPU takes minutes.",
+    "cheapest_killing_check": "Count the rows of Supplementary Table S2 — it is 255, below the Part A5 minimum. Done in five minutes, and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The data is pristine and genuinely unique — 255 matched dual-guide versus single-guide editing measurements, labels already as columns, units stated, zero missing values — but 255 rows fails A5 outright, and the label exists in no other dataset so it cannot be topped up. A7 also wobbles: the paper's 68/43/144 preference classes cannot be reproduced from the delta column by any threshold. The paper's own conclusion is that the signal is not sequence-encoded (R-squared = 0.05), so the most likely outcome is an underpowered confirmation of a published null."
+}

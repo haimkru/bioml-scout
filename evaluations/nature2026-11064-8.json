@@ -1,0 +1,90 @@
+{
+  "paper_id": "nature2026-11064-8",
+  "title": "Spatiotemporal clonal architecture of the newborn mouse forebrain.",
+  "doi": "10.1038/s41586-026-11064-8",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE341480",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded GSE341480_p4_forebrain_lineage_metadata.rds (14 MB) from GEO and read it in R: 416,390 cells x 14 columns, no missing values; clone_index (measured lentiviral barcode), injection_date (8 levels, E11-P0), mouse (27), region (5 dissected regions), cell-type labels at 4 resolutions. 288,826 distinct clone strings, 229,065 singletons, 59,761 clones with 2+ cells covering 187,325 cells; 9,835 of those clones span more than one region; 71,004 cells carry multiple barcodes joined by ';'; no clone string occurs in two mice. Dispersed-clone rate by class: inhibitory neurons 0.388, excitatory neurons 0.055, microglia 0.504. Leave-one-mouse-out baseline on the 9 mice with 4+ regions (149,251 cells): AUC (area under the ROC curve) 0.607 from clone size alone, 0.723 from clone size plus cell subtype. HEAD on the count matrix: 5,053,499,513 bytes (RDS). UCSC Cell Browser JSON lists counts_matrix.mtx.gz at 6,221,133,717 bytes, 416,390 cells; MERFISH (spatial imaging) sub-dataset 9,271,988 cells, 500 genes, no clone column.",
+    "what_came_from_paper_text_only": "Paper full text is paywalled and not in Europe PMC; I read only the abstract, the GEO series summary and the Cell Browser description (29,779 genes, 10x v3.1, FACS-sorted GFP+ cells). Gene expression values were not opened (matrix is over 50 MB). The Cell Browser text says ~8.2 million MERFISH cells, but its JSON lists 9,271,988."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO GSE341480 is public with no login; I downloaded the metadata file. The count matrix is on GEO (5.05 GB RDS) and on UCSC Cell Browser (6.2 GB mtx.gz); checked by HEAD request only."},
+    "a2_label_is_a_column": {"pass": true, "note": "Clone identity (clone_index) is a column. The proposed 'clone spans more than one region' label takes one groupby of clone_index x region inside the same table, with no cross-source join; I computed it in the files."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are per-cell UMI (unique molecular identifier) counts over 29,779 genes, deposited in full, not referenced. Seen only as file listings and sizes, not opened."},
+    "a4_units_stated": {"pass": true, "note": "Values are raw 10x UMI counts, the standard unit; metadata holds counts and categories, with no mixed units. Matrix values themselves were not inspected."},
+    "a5_enough_rows": {"pass": true, "n_rows": 187325, "note": "187,325 cells in 59,761 clones of 2+ cells (verified). The independent unit for a held-out split is the mouse: 27 in total, 9 with 4+ regions sampled."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~2 GB after streaming the 6.2 GB mtx.gz and keeping ~2,000 genes for 187k cells", "note": "Borderline. The 5 GB RDS would need about 15-25 GB of RAM in R (estimate). The Cell Browser mtx.gz can be streamed line by line with a gene filter. The baseline needs no GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "416,390 cells matches the stated ~416,000. 93 sample IDs x 2 libraries matches GEO's 186 samples. The MERFISH count (9.27M vs ~8.2M) disagrees, but that data is not used."},
+    "a8_label_provenance": {"pass": true, "note": "Clone barcodes are measured by targeted PCR of viral barcodes, and region comes from manual dissection; neither is a model output. Cell-type columns come from clustering the expression, so they must not be used as targets."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Metadata RDS plus a separate 5-6 GB matrix, joined on cell barcode rownames; the join was not run."},
+    "B2": {"score": 1, "why": "Metadata is an R RDS (needs R); the matrix comes as RDS or mtx.gz. The metadata parsed first try."},
+    "B3": {"score": 2, "why": "One platform (10x v3.1), one lab, one protocol across all 93 libraries (from description and metadata)."},
+    "B4": {"score": 1, "why": "No censored values, but dispersal is only observable in mice where several regions were dissected (verified: 9 of 27 have 4+)."},
+    "B5": {"score": 1, "why": "71,004 cells carry multiple barcodes joined by ';', so clone calling is ambiguous and a merge rule is needed (verified)."},
+    "B6": {"score": 1, "why": "Column names are self-explanatory, but there is no data dictionary and the methods are paywalled."},
+    "C1": {"score": 1, "why": "Whether expression adds to the 0.723 metadata AUC is informative either way, but it is confounded by clone size."},
+    "C2": {"score": 2, "why": "No predictive model of clone dispersal found; clone2vec (open) is exploratory and was not applied to this data."},
+    "C3": {"score": 1, "why": "Unique-application angle: turn the paper's descriptive dispersal finding into a held-out-mouse prediction test."},
+    "C4": {"score": 1, "why": "Lineage barcoding needs in-utero viral injection and extra sequencing; predicting from expression alone would remove that step."},
+    "C5": {"score": 2, "why": "I computed a dummy baseline: clone size plus subtype gives 0.723 AUC leave-one-mouse-out."},
+    "D1": {"score": 2, "why": "Geneformer and scGPT (single-cell foundation models) have open weights; both are human-trained, so mouse genes need ortholog mapping."},
+    "D2": {"score": 1, "why": "Frozen embeddings are possible, but 187k cells on a CPU is several hours (estimate). PCA features are a cheap alternative."},
+    "D3": {"score": 2, "why": "Geneformer is Apache-2.0 and scGPT is MIT (from general knowledge, not rechecked); GEO data is open."},
+    "E1": {"ok": true, "why": "Leave-one-mouse-out split; no clone string appears in two mice (verified)."},
+    "E2": {"ok": true, "why": "9 mice with 4+ regions, each holding thousands of clone cells (verified)."},
+    "E3": {"ok": true, "why": "Per-subtype dispersal rate and clone-size-only logistic regression, computed: AUC 0.607 and 0.723."},
+    "E4": {"ok": false, "why": "No replicate clones. The 0.504 dispersal rate in microglia, which are not born from these progenitors, hints at a barcode noise floor."},
+    "E5": {"ok": true, "why": "Inhibitory clones disperse far more than excitatory ones (0.388 vs 0.055, verified), matching the abstract."},
+    "E6": {"ok": true, "why": "Labels can be shuffled within mouse, and clone size can be ablated against the expression features."},
+    "E7": {"ok": true, "why": "Earlier STICR atlas GSE188528 from the same lab (65,700 cells on Cell Browser) is a second lineage dataset; not opened."},
+    "E8": {"ok": false, "why": "The paper reports enrichments, not a predictive number; the full text was not retrieved."},
+    "G1": {"score": 1, "why": "Gene symbols, probably Ensembl IDs in the features file (not opened); no other standard IDs for cells."},
+    "G2": {"score": 2, "why": "SFARI Gene, a curated autism gene list, joined on gene symbol; the abstract says dispersed clones are enriched for such genes."},
+    "G3": {"score": 2, "why": "Gene-level join is one-to-one after resolving symbols."},
+    "G4": {"score": 1, "why": "Asks whether disorder-risk genes predict dispersal, but the paper already reports the enrichment."},
+    "H1": {"score": 2, "why": "Both local and dispersed clones are present: 9,835 of 59,761 multi-cell clones are dispersed (verified)."},
+    "H2": {"score": 0, "why": "One lab, one mouse strain, one collection age (P4, postnatal day 4)."},
+    "H3": {"score": 2, "why": "Claim stated precisely below, scoped to sampled regions and FACS-captured cells."},
+    "H4": {"score": 1, "why": "The sampling limits (which regions were dissected per mouse) show in the metadata, not in any open text."},
+    "I1": {"score": 1, "why": "Nowakowski lab and developmental neurobiology lineage groups; no named user who needs a predictor."},
+    "I2": {"score": 1, "why": "A good predictor could flag dispersing lineages in unbarcoded atlases; modest change to experiments."},
+    "I3": {"score": 1, "why": "AUC for dispersed vs local is roughly aligned; there is no explicit decision threshold."},
+    "I4": {"score": 1, "why": "Metadata lookup already reaches 0.723 AUC; expression may add little beyond cell subtype."},
+    "J1": {"score": 2, "why": "Grouped CV, foundation-model embeddings, confound control (clone size), external lineage dataset."},
+    "J2": {"score": 1, "why": "Neurodevelopment cell types are interpretable, but barcode artefacts need expert judgement."},
+    "J3": {"score": 2, "why": "The clean clone/dispersal table and the metadata baseline are useful on their own."},
+    "J4": {"score": 1, "why": "No budget written yet; about 2 weeks is plausible."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "clone2vec (Kharchenko lab, bioRxiv 2026)", "open_weights": true, "score_and_split": "Exploratory clone embeddings; benchmarked on synthetic sparse sampling and several lineage datasets (embryonic CNS, blood, cancer); no held-out predictive score of dispersal; not applied to STICR data.", "authors_named_unsolved": "Depends on barcode induction timing; exploratory and not causal; they point to CoSpar for fate-bias questions.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "Geneformer (single-cell transcriptome foundation model; human-trained, mouse genes mapped to human orthologs) or scGPT", "freeze_and_head_viable": true, "hardware": "CPU laptop, several hours to embed ~187k cells (estimate); PCA on 2,000 genes as a cheap alternative", "licence": "Geneformer Apache-2.0, scGPT MIT (not rechecked); GEO data public"},
+  "integration": {"partner_dataset": "SFARI Gene autism risk list; earlier STICR atlas GSE188528 (Bandler et al. 2021) for external validation", "join_key": "gene symbol / Ensembl gene ID", "bigger_question_one_sentence": "Do the genes that predict whether a GABAergic lineage disperses across forebrain regions overlap with neurodevelopmental-disorder risk genes beyond what cell subtype explains?"},
+  "controls": {"positive_control": "Inhibitory-neuron clones disperse more than excitatory ones (0.388 vs 0.055 verified); the model must recover this. Trivial target: predict dissected region from expression.", "negative_control": "Shuffle dispersal labels within mouse and within size bin; the model should fall to about 0.5 AUC beyond the size-only baseline (0.607).", "external_validation": "Leave-one-mouse-out within GSE341480; then test on GSE188528, an earlier STICR atlas from the same lab (not opened)."},
+  "honest_claim_h3": "Among virally barcoded, FACS-captured cells from P4 mice in which several forebrain regions were dissected, the model predicts whether a cell's sampled clone was observed in more than one region, beyond what clone size and cell subtype already explain.",
+  "plain_idea": {
+    "one_liner": "Use a single newborn-mouse brain cell's gene expression to predict whether its sister cells migrated to other brain regions.",
+    "train_on": "Gene expression of each cell plus its clone's size: 187,325 cells in 59,761 barcoded clones (149,251 cells from the 9 mice with 4+ regions sampled).",
+    "predict": "Whether the cell's clone (cells sharing an inherited viral DNA barcode, read by sequencing) was found in more than one hand-dissected forebrain region.",
+    "why_worthwhile": "Developmental neurobiologists could infer migratory lineages in atlases that have no barcodes. If expression adds nothing beyond cell subtype, that shows dispersal is set by cell class alone."
+  },
+  "pitch": {
+    "headline": "416,390 newborn-mouse forebrain cells with measured clone barcodes across 5 regions and 8 labelling days, fully public on GEO.",
+    "what_makes_the_data_unusual": "59,761 multi-cell clones, 9,835 of them seen in several regions, all from 27 mice with no clone shared between animals (verified). Earlier atlases focused on the cortex.",
+    "the_win": "Beat the 0.723 leave-one-mouse-out AUC that clone size plus cell subtype already reach, using expression alone, then confirm it on the 2021 STICR atlas.",
+    "even_if_it_fails": "A clean clone-dispersal table plus a finding that cell subtype alone explains dispersal, which itself bounds how much the expression state encodes migration.",
+    "who_wants_it": "Nowakowski lab and lineage-tracing groups deciding whether barcoding is needed to study interneuron dispersal."
+  },
+  "ml_idea": "Per-cell binary classifier (dispersed vs local clone) on PCA or frozen Geneformer embeddings plus log clone size, with leave-one-mouse-out CV on the 9 multi-region mice. Compare against the size+subtype logistic baseline (0.723 AUC), then transfer to GSE188528.",
+  "effort": {"hours_to_feature_table": 14, "working_set_gb": 2, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": 4, "cv_run_minutes": 15, "compute_note": "Metadata baseline timed in practice (under 1 minute in R). Matrix streaming, embedding throughput (~15 cells/s CPU) and RAM are estimates; the 6.2 GB matrix was not downloaded.", "cheapest_killing_check": "Stream ~2,000 genes and fit expression PCA plus size within inhibitory neurons only, leave-one-mouse-out. If AUC does not beat size+subtype (0.723 overall) by about 0.03, stop."},
+  "verdict": "park",
+  "verdict_reason": "Open, measured clone labels with real counts. But model-readiness is 7/12 (6 GB matrix, multi-barcode ambiguity, sampling-dependent label), and cell subtype already gives 0.723 AUC, so expression may add little."
+}

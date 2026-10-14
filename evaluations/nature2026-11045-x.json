@@ -1,0 +1,56 @@
+{
+  "paper_id": "nature2026-11045-x",
+  "title": "Rapid patient-specific neural networks for X-ray to volume registration.",
+  "doi": "10.1038/s41586-026-11045-x",
+  "journal": "Nature",
+  "data_url": "https://huggingface.co/datasets/eigenvivek/xvr-data",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Listed the full file tree of the HuggingFace dataset eigenvivek/xvr-data through its API (1,703 files, not gated, licence CC BY-NC-ND 4.0) and counted files per subject: DeepFluoro has 6 subjects with 366 X-ray DICOM images, each with a matching .pt pose file; Femur has 5 subjects and 49 X-rays; Ljubljana has 10 subjects and 20 posed X-rays (a frontal and a lateral view each). Every subject has one CT volume (.nii.gz). Read the GitHub README, which says the data is 4.8 GB, the pretrained models are 3.7 GB, and reproducing the paper needs a CUDA GPU. I did not download any DICOM or .pt file.",
+    "what_came_from_paper_text_only": "There is no open full text (no PMCID), so I only had the abstract. Claims that this is the largest real-fluoroscopy evaluation, that accuracy improves by an order of magnitude, and that the foundation model was pretrained on thousands of whole-body scans come from the abstract alone. I assumed the .pt files hold the ground-truth poses and fiducial landmark points (marker positions used to measure alignment error) from their file names; I did not open them."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: a public, ungated HuggingFace dataset (4.8 GB in total according to the README). The licence is non-commercial with no derivatives (CC BY-NC-ND 4.0)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked the file names only: each X-ray .dcm has a paired .pt file, probably the ground-truth camera pose. The label is a file per image, not a table column, but it is present rather than constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: the CT volumes (.nii.gz) and the X-ray images (.dcm) are hosted directly, so no identifier lookups are needed."},
+    "a4_units_stated": {"pass": true, "note": "Not checked in the files. Poses are rigid transforms in millimetres and degrees by convention, and error is measured in mm at the fiducials. I did not see units written down."},
+    "a5_enough_rows": {"pass": false, "n_rows": 435, "note": "Checked by counting files: about 435 real X-rays with ground-truth poses (366 + 49 + 20) from only 21 patients or cadavers, each with a single CT. The independent unit is the patient, so n = 21, far below the ~1,500 threshold."},
+    "a6_fits_laptop": {"pass": false, "working_set": "4.8 GB of data plus 3.7 GB of pretrained models", "note": "Checked in the README: it says reproducing the paper needs a CUDA GPU. Rendering simulated X-rays from 3D CT volumes and fine-tuning a network per patient is GPU-bound and impractical on a 16 GB CPU laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "No full text was available to compare against. DeepFluoro's 6 subjects and 366 images match the original public DeepFluoro release (Grupp et al., 2020), but I could not check this against the paper's own counts."},
+    "a8_label_provenance": {"pass": true, "note": "Probably sound: ground-truth poses in these benchmarks come from fiducial markers or landmark-based registration (DeepFluoro, Ljubljana), not from model output. I did not check this for Femur."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "xvr (this paper): patient-specific pose regression network plus gradient-based refinement, with a pretrained foundation model", "open_weights": true, "score_and_split": "Abstract only: high accuracy in seconds on real fluoroscopy across anatomies, modalities and hospitals, an order of magnitude better than existing methods. Exact errors and splits were not retrieved.", "authors_named_unsolved": "Not retrieved (no full text). The abstract limits the method to rigid registration, which leaves deformable registration open.", "runnable_as_baseline": false},
+      {"name": "DiffPose, the authors' earlier patient-specific registration method (named in the xvr README)", "open_weights": true, "score_and_split": "Not retrieved. The README says xvr trains 100x faster than DiffPose.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "xvr's own pretrained foundation model (HuggingFace eigenvivek/xvr, 3.7 GB); none of the standard biology backbones apply", "freeze_and_head_viable": false, "hardware": "CUDA GPU, according to the README", "licence": "Code is MIT; the data is CC BY-NC-ND 4.0"},
+  "integration": {"partner_dataset": "None identified: these are imaging volumes with no gene, protein or compound identifiers", "join_key": "none", "bigger_question_one_sentence": "None that a laptop-scale biology project could answer."},
+  "controls": {"positive_control": "Registering simulated X-rays rendered from the patient's own CT, where the true pose is known exactly.", "negative_control": "Registration error from a random starting pose with no refinement.", "external_validation": "Hold out a whole dataset (train on DeepFluoro pelvis, test on Ljubljana brain-vessel images), but only 21 subjects exist in total."},
+  "honest_claim_h3": "At best: a re-tuned registration pipeline aligns about 435 X-rays from 21 subjects to their CT scans with some millimetre error. That is too few patients to claim generalisation, and it repeats what xvr already reports.",
+  "plain_idea": {
+    "one_liner": "Use a patient's 3D CT scan and a 2D X-ray taken during surgery to predict the X-ray camera's exact position relative to the patient.",
+    "train_on": "Simulated X-rays rendered from each patient's CT, then tested on about 435 real X-rays (counted from the file listing) from 21 subjects.",
+    "predict": "The six numbers giving the camera's rotation and position (its pose). The true answer comes from fiducial markers, physical reference points visible in both the X-ray and the CT.",
+    "why_worthwhile": "Surgeons and surgical robots need fast automatic alignment. But xvr already solves this with open code, so a weekend laptop project would add little."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same 21 subjects that xvr was evaluated on. We have no extra data."},
+    "confidence_score": {"answer": "no", "why": "Each subject has one CT and few X-ray views (2 per Ljubljana subject), too few to calibrate per-prediction uncertainty."},
+    "models_beatable": {"answer": "no", "why": "xvr is a 2026 Nature method with open code that reports an order-of-magnitude gain over earlier methods (abstract) on real fluoroscopy from several hospitals."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new joinable data measures poses the same way, and the baseline needs a GPU we don't have."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Re-evaluate or improve xvr's 2D/3D registration (aligning an X-ray to a CT scan) on the DeepFluoro, Femur and Ljubljana datasets. It is dead on the patient count (21) and on needing a GPU.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 4.8, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not timed. Sizes come from the README (4.8 GB of data, 3.7 GB of models), and the README says a CUDA GPU is required to reproduce results.", "cheapest_killing_check": "Count the independent subjects: 21 in total from the file listing, which already kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A6. There are about 435 real labelled X-rays from just 21 subjects, and the method needs a CUDA GPU with 8.5 GB of data and models. It is also a medical-imaging method paper whose open model already sets the bar, with no biological identifiers to join to."
+}

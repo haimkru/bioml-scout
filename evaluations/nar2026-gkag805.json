@@ -1,0 +1,58 @@
+{
+  "paper_id": "nar2026-gkag805",
+  "title": "The pseudouridine synthase PUSL1 modifies U39 of mitochondrial tRNAs and is linked to human neurological phenotypes.",
+  "doi": "10.1093/nar/gkag805",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE281nnn/GSE281373/suppl/GSE281373_mitochondria_psi_profiling.xlsx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both copies of the processed table: GEO (Gene Expression Omnibus) GSE281373_mitochondria_psi_profiling.xlsx (186 KB) and Supplementary Data 1 from the article's supplement (146 KB). Both are 454 data rows x 40 columns, one row per 'tRNA:position' (e.g. MT_TF:39), covering 22 human mitochondrial transfer RNAs at positions 1-77; no duplicate row IDs and no missing values. Columns are truncated reads, coverage, and stopRatio (reverse-transcription stop ratio, 0-1) for 12 samples (4 knockout, 4 overexpression, 4 wild-type) plus three p-value columns. Only 9 rows are at position 39, the site the paper is about; 43 rows have WT-vs-knockout p < 0.05. I also read the two supplementary Word files (figure legends and patient clinical descriptions) and confirmed the GEO series has 12 samples, CC-BY licence.",
+    "what_came_from_paper_text_only": "That the stopRatio is computed by dividing reads stopping one nucleotide downstream of the modified site by coverage at that position, and that significance came from a generalized linear mixed-effects model in R (lme4). The raw sequencing reads themselves were not downloaded (policy: no fastq). Patient-derived primer-extension results are gel images only, not tabulated."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both the GEO processed Excel file and the article supplement downloaded without login; article is Creative Commons Attribution (CC-BY)."},
+    "a2_label_is_a_column": {"pass": true, "note": "stopRatio (pseudouridine level per position) is already a column in the file, with per-sample values and p-values."},
+    "a3_inputs_present": {"pass": true, "note": "Only the tRNA name and position are given, not the sequence; but these are 22 human mitochondrial tRNAs, so sequence lookup is trivial, not thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "stopRatio is a dimensionless 0-1 ratio of truncated reads to coverage, defined in the methods; truncated and coverage are read counts. README sheet defines KO/OE/WT."},
+    "a5_enough_rows": {"pass": false, "n_rows": 454, "note": "454 labelled positions total, from 22 mitochondrial tRNAs in one human cell line. Only 9 rows are the position-39 sites the paper identifies, and only 43 of 454 reach p<0.05 for knockout-vs-wild-type. Far under the ~1,500-row bar, and the 22 tRNAs are the real independent unit."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.4 MB (two Excel files)", "note": "Trivially small; verified by downloading both files."},
+    "a7_counts_match_paper": {"pass": false, "note": "The GEO copy and the supplement copy have the same 454 site IDs and identical truncated-read counts, but different denominators ('full' vs 'coverage', mean difference ~92 reads) and therefore different stopRatio values (mean absolute difference ~0.010-0.013, maximum ~0.36-0.41). Same measurement, two deposited values, no way to tell which is right. Also, in both files the 12 wild-type columns are mislabelled 'OE1-OE4' in the sub-header row."},
+    "a8_label_provenance": {"pass": true, "note": "stopRatio comes from a physical chemical-probing measurement (CMC adduct causing reverse-transcription stops), not from another model's predictions."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "iPseU-CNN (convolutional neural network for pseudouridine sites)", "open_weights": true, "score_and_split": "Reported on the standard H_990/S_628/M_944 benchmark sets with independent test sets; accuracies in the high 80s percent (from search result abstracts, not re-run by me)", "authors_named_unsolved": "Generalization beyond the small curated benchmark sets", "runnable_as_baseline": true},
+      {"name": "Porpoise (stacked ensemble pseudouridine site predictor)", "open_weights": true, "score_and_split": "Benchmarked across human, yeast and mouse datasets with 18 sequence encodings and 9 algorithms (from abstract)", "authors_named_unsolved": "Cross-species transfer and dependence on sequence encoding choice", "runnable_as_baseline": true},
+      {"name": "PseUdeep / MU-PseUDeep / Definer / PseU-ST / Meta-PseU (deep-learning pseudouridine site predictors, 2020-2026)", "open_weights": true, "score_and_split": "PseU-ST reports 93.6%/87.7%/89.6% accuracy on H_990, S_628, M_944 (from abstract); Meta-PseU stacks 32 classifiers aimed at generalizability", "authors_named_unsolved": "Generalizability across datasets; short-sequence bias of the classic benchmarks", "runnable_as_baseline": true},
+      {"name": "PULSE (PseudoUridyLation Site Estimator, convolutional network on Psi-seq profiling data)", "open_weights": null, "score_and_split": "Trained on pseudouridine profiling data to characterize sequence features (from abstract)", "authors_named_unsolved": "Sequence context alone explains only part of site selection", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (RNA language model) would be the natural backbone for pseudouridine context prediction", "freeze_and_head_viable": true, "hardware": "CPU, trivial at this scale", "licence": "Open, but irrelevant here because the dataset is too small to train or honestly evaluate a head"},
+  "integration": {"partner_dataset": "RMBase / MODOMICS (catalogues of RNA modification sites) could supply many more pseudouridine sites", "join_key": "transcript name + position (and genomic coordinate on the human mitochondrial genome, rCRS build)", "bigger_question_one_sentence": "Which uridines in an RNA get pseudouridylated and by which enzyme — but answering it needs the large catalogues, not these 454 mitochondrial tRNA positions, so this paper's table would only ever be a 9-site test case."},
+  "controls": {"positive_control": "The 9 position-39 sites must come out as the strongest knockout-sensitive positions; they do in the file (p-values rounded to 0).", "negative_control": "Shuffling sample labels within position, or comparing PUS1-knockout positions.", "external_validation": "Earlier mitochondrial pseudouridine maps (e.g. RPUSD3/RPUSD4 studies) overlap only a handful of sites."},
+  "honest_claim_h3": "Any model built on this file could only claim something about 454 uridine positions in 22 human mitochondrial transfer RNAs measured in one HEK-293T cell line, which is too narrow to be a prediction task rather than a description of the experiment.",
+  "plain_idea": {
+    "one_liner": "Use RNA sequence context to predict which uridines carry the chemical mark pseudouridine in mitochondrial transfer RNAs.",
+    "train_on": "Each example would be one uridine position in a mitochondrial transfer RNA with its surrounding sequence and predicted fold; there are 454 such positions across 22 tRNAs, which I verified in the file.",
+    "predict": "The pseudouridine level at that position, measured as the reverse-transcription stop ratio in CMC-treated RNA sequencing (a chemical probing assay), and how much it drops when the PUSL1 enzyme is knocked out.",
+    "why_worthwhile": "Groups studying RNA modification enzymes would like to know which uridines a given enzyme picks, but this dataset is far too small to answer that, so the realistic value is as a 9-site sanity check on models trained elsewhere."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "454 positions from one cell line versus the standard benchmark sets used by the published predictors (H_990, S_628, M_944) and the much larger RMBase catalogues; ours is smaller by one to three orders of magnitude."},
+    "confidence_score": {"answer": "partly", "why": "Four biological replicates per condition do let you estimate measurement noise, which the sequence-based predictors do not report, but with 9 positive sites there is nothing to calibrate."},
+    "models_beatable": {"answer": "partly", "why": "Several predictors date from 2019-2022 with small benchmark sets and random splits, so they are in principle beatable, but a 2026 meta-classifier (Meta-PseU) explicitly targets generalizability, and we have no data to beat them with."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails is sample size: our 454 positions cannot be added to their training sets in a way that changes their predictions, and the assay (CMC reverse-transcription stops in mitochondria) differs from the assays behind their benchmark labels."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only coherent task would be predicting per-position pseudouridine level (reverse-transcription stop ratio) from mitochondrial transfer RNA sequence and structure context, with knockout-versus-wild-type change as a second target. It dies on size: 454 positions, 9 of them the sites of interest, 22 tRNAs from a single human cell line.",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.001, "needs_gpu": false, "peak_ram_gb": 0.5, "embedding_hours": 0.05, "cv_run_minutes": 1, "compute_note": "Estimated from the actual file sizes I downloaded (0.4 MB total, 454 rows); everything here runs in seconds on a laptop, which is exactly the problem.", "cheapest_killing_check": "Count the rows and the positives in the deposited table: 454 positions, 9 at position 39, 43 significant at p<0.05 — done in five minutes and it kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on size: 454 labelled positions across 22 mitochondrial transfer RNAs from a single human cell line, with only 9 sites at the position the paper is about and 43 significant sites in total — orders of magnitude short of a trainable set, and the real independent unit is the 22 tRNAs. It also fails A7: the GEO deposit and the article supplement give different coverage denominators and therefore different stopRatio values for the same 454 sites (mean absolute difference ~0.01, maximum ~0.4), with no way to tell which is correct, and both files mislabel the wild-type columns as overexpression. Separately, sequence-based pseudouridine site prediction is a crowded field with at least six open models (iPseU-CNN, Porpoise, PseUdeep, MU-PseUDeep, Definer, PseU-ST, Meta-PseU), so even the widened version of the project has no edge. The paper is a clean piece of molecular biology; it is just not a machine-learning dataset."
+}

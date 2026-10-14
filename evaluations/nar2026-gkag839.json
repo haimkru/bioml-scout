@@ -1,0 +1,128 @@
+{
+  "paper_id": "nar2026-gkag839",
+  "title": "Regulation of the histone H3K36 methyltransferase Set2 by the histone chaperone Spt6.",
+  "doi": "10.1093/nar/gkag839",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE332555",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Read both GEO (Gene Expression Omnibus) series records: GSE331502 has 15 RNA-seq samples, GSE332555 has 72 ChIP-seq (chromatin immunoprecipitation sequencing) samples, all budding yeast. Listed per-sample files: every processed file is a bigWig genome coverage track (1-2 per sample). Downloaded one, 2.66 MB, and confirmed the bigWig magic bytes (0x26fc8f88). Checked archive sizes with HEAD: 86 MB and 318 MB of raw tracks. Fetched the Zenodo record 10.5281/zenodo.21838901 - it is a 38.6 MB snapshot of the lab's analysis code, not data. Supplement is a single 30 MB PDF of figures; no spreadsheet of any kind.",
+    "what_came_from_paper_text_only": "The biophysical results (nuclear magnetic resonance titrations of the catalytic domain against the autoinhibitory domain), the genetic screen for suppressor mutants, the crosslinking mass spectrometry in PRIDE PXD078353, and the identity/number of mutant genotypes behind each sample group. I did not open the proteomics deposit or the structure 9WMS."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Open, no login. Verified by downloading a coverage track from the NCBI (National Center for Biotechnology Information) FTP site and by HEAD-checking both series archives."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. There is no table anywhere in the deposit. Every processed file is a bigWig coverage track of read signal along the genome. Any label - H3K36me2/me3 (histone H3 lysine 36 di/tri-methylation) level per gene, antisense transcript level per gene, differential signal between mutant and wild type - would have to be constructed by binning 87 tracks over gene annotations and normalising with the authors' spike-in factors. That is exactly the 'build the thing you are predicting' failure."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Yeast genome sequence and gene annotation are freely available, so sequence features could be assembled; but the features would come from outside the deposit, not from it."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "FAIL in practice. The bigWig values are spike-in-normalised coverage whose scaling factors live only in a script on GitHub/Zenodo and a prose explanation; no units column and no documented scale exists in the deposited files."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 87,
+      "note": "FAIL on the biological unit. 15 RNA-seq plus 72 ChIP-seq samples = 87 files, representing roughly five to six genotypes in triplicate per antibody. Per-gene aggregation would give about 6,000 yeast genes, but those rows are not independent experiments - they are 6,000 windows of the same handful of cultures."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.4 GB of bigWig tracks",
+      "note": "Size is not the problem. All 87 tracks total well under 1 GB and bin on a 16 GB laptop."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO sample counts and the paper's description of triplicate RNA-seq and five ChIP targets (H3, H3K36me2, H3K36me3, Rpb1, Set2-HA) are consistent as far as I could check."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Any signal derived would be a genuine physical measurement (sequencing read coverage), not another model's output. A8 is not where this dies; A2, A4 and A5 are."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepHistone (BMC Genomics 2019) - a convolutional network predicting histone modification marks from DNA sequence plus chromatin accessibility",
+        "open_weights": true,
+        "score_and_split": "Reported per-mark area under the receiver operating characteristic curve around 0.9 on held-out human genomic sites; split is genomic-region based, human cell lines only.",
+        "authors_named_unsolved": "Transfer across cell types and to marks with diffuse, broad domains such as H3K36me3.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Chromatin deep learning models benchmarked in Nucleic Acids Research 2025 (gkae1212) - convolutional and attention models predicting transcription from histone mark signal",
+        "open_weights": true,
+        "score_and_split": "Mark-to-expression prediction benchmarked across human cell states; no single mark is the best predictor in all contexts.",
+        "authors_named_unsolved": "Which mark predicts transcription depends on mark function, regulatory distance and cell state - no general rule.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate. DNA language models (Nucleotide Transformer, DNABERT-2) exist for yeast sequence, but there is no label table for them to predict.",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU laptop would suffice for the data size; the blocker is the absence of a target, not compute.",
+    "licence": "GEO data is public domain; Zenodo code is CC-BY-4.0."
+  },
+  "integration": {
+    "partner_dataset": "Could in principle join to yeast gene annotation (Saccharomyces Genome Database) and to published H3K36 methylation atlases, on systematic gene name.",
+    "join_key": "Yeast systematic ORF (open reading frame) name, e.g. YDR123C",
+    "bigger_question_one_sentence": "No sentence worth writing: the deposit contributes 87 coverage tracks from one lab and one strain background, which adds no new axis to any existing chromatin resource."
+  },
+  "controls": {
+    "positive_control": "Would exist if the data were modellable - H3K36me3 is known to rise toward gene 3' ends and to track Pol II (RNA polymerase II) occupancy, so a working model must recover that.",
+    "negative_control": "Label shuffling across genes would be runnable.",
+    "external_validation": "Earlier published yeast H3K36 methylation ChIP datasets exist (e.g. set2 mutant studies from 2005 onward), but cross-lab normalisation of coverage tracks is itself a research problem."
+  },
+  "honest_claim_h3": "The most a model built on this deposit could claim is: 'within one S288C-derived yeast strain background from one lab, gene-level H3K36 methylation signal can be predicted from Pol II signal measured in the same cells' - which is a correlation already shown in the paper's own figures, not a prediction anyone needs.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and polymerase occupancy to predict how much H3K36 methylation each yeast gene carries in Spt6 and Set2 mutants.",
+    "train_on": "Would have to be built from scratch: bin 72 chromatin immunoprecipitation coverage tracks and 15 RNA-seq tracks over roughly 6,000 yeast genes, giving ~6,000 rows per genotype across about five or six genotypes. No such table is deposited.",
+    "predict": "Gene-level histone H3 lysine 36 di- or tri-methylation signal, measured by antibody pulldown followed by sequencing with a fission-yeast spike-in for normalisation.",
+    "why_worthwhile": "Chromatin biologists studying how transcription elongation writes histone marks would care in principle, but the answer here is already visible in the paper's own genome-wide plots, so a model adds little."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "87 coverage tracks from one yeast strain background in one lab, versus DeepHistone and the 2025 chromatin-model benchmark which train on many human cell types and dozens of marks."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Biological triplicates do exist for every condition, which would let you estimate measurement noise per gene - but with only five or six genotypes there is nothing to be confident about."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The existing models address a different, much larger problem (human, many marks); there is no published number on this yeast deposit to beat, so 'beating' is undefined."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: no existing model can be run as a baseline on this data, because no shared feature/label table exists."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: bin the deposited coverage tracks over yeast genes and predict H3K36me2/me3 level per gene from sequence plus Pol II occupancy, with genotype held out. Dies because the label does not exist as a column, the normalisation scale is documented only in external scripts, and the independent unit is the genotype (about five), not the gene.",
+  "effort": {
+    "hours_to_feature_table": 25,
+    "working_set_gb": 0.4,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: 87 bigWig tracks total under 0.5 GB and bin quickly with pyBigWig or deeptools; the 25 hours is for writing and checking the binning plus reproducing the authors' spike-in normalisation from their Zenodo scripts.",
+    "cheapest_killing_check": "List the processed files in either GEO series - all are bigWig coverage tracks, so there is no gene-level table and no label column. That check took two minutes and killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A molecular-mechanism paper, not a dataset. The only deposited data is 87 bigWig genome coverage tracks from one yeast lab; the prediction target would have to be constructed by binning and re-normalising them (A2 fail), the signal scale is undocumented in the files (A4 fail), and the independent unit is about five genotypes rather than thousands of rows (A5 fail)."
+}

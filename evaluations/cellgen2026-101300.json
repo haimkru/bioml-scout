@@ -1,0 +1,119 @@
+{
+  "paper_id": "cellgen2026-101300",
+  "title": "Are different populations fairly represented in single-cell omic atlases?",
+  "doi": "10.1016/j.xgen.2026.101300",
+  "journal": "Cell Genomics",
+  "data_url": "https://zenodo.org/records/17161565",
+  "status": "found_and_verified",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Europe PMC search on the DOI returned exactly 1 hit (PMID 42476140, PMC13477034, isOpenAccess=Y, licence CC BY); I pulled the full text XML (127,321 bytes) and read the Methods and 'Data and code availability' sections. The deposit is Zenodo record 17161565 (DOI 10.5281/zenodo.17161565, CC-BY-4.0, version 0.1, published 2025-09-19). I downloaded all 6 files it contains (2.86 MB total) into /private/tmp/.../scratchpad/dl/zen/ and parsed every one with pandas: (1) 'HCA scrnaseq data final.xlsx' (2,441,866 bytes) has 15 sheets totalling 10,125 rows; 14 sheets share a ~45-57 column Human Cell Atlas donor schema, while the 'Lung' sheet is a completely different 27-column table; (2) 'HTAN Data Final.xlsx' (270,168 bytes) is one sheet, 1,959 rows x 139 columns, of which 35 columns are entirely empty (zero non-null values); (3) 'psych-AD_media-1.csv' is 1,494 rows x 27 columns, one row per DonorID, no duplicates; (4) 'SEER_combined_cancer_demographics.csv' 172 rows x 5 cols; (5) 'ADRD_disease_demographics_wide.csv' 8 rows x 8 cols; (6) 'Global_reference.csv' 4 rows x 3 cols, whose 'Source & Numbers' column literally cites '(Wikipedia)'. Counts I computed myself: 10,125 + 1,959 + 1,494 = 13,578 rows, matching the abstract's '>13,500 samples'. Ancestry missingness in the Human Cell Atlas workbook: 7,196 of 10,125 rows (71.1%) have no value in the aggregated ancestry column; non-missing values are European 1,720, Asian 550, African 317, American 188, East Asian 71, South Asian 21, plus junk values ('Homo sapiens' 13, 'Unknown' 36, 'Other' 9, 'Mixed' 2, 'not provided' 1). Counting any of four ancestry columns gives at most 2,964 annotated rows. PsychAD ancestry column: EUR 985, AFR 338, AMR 135, EAS 14, EAS_SAS 8, SAS 5, Unknown 9. HTAN Race column: white 1,362, black or african american 298, 'Not Reported' 159, unknown 76, asian 36, 'Unknown' 10, 'Other' 8, 'not allowed to collect' 3, 'other' 1, blank 6; HTAN Gender has case-inconsistent duplicates (female 1,399 / Female 57, male 343 / Male 70). Data-quality problems I saw in the files: the supposedly yes/no column 'pub_has_race.ethnicity' contains free-text sentences such as \"Don't have access\" and a 200-character note about the Asian Immune Diversity Atlas; donor identifiers repeat (8,546 unique sheet+donor-id pairs for 10,125 rows, one identifier appearing 85 times); and inside the Lung sheet the two ancestry columns disagree on 11 of the 275 annotated rows. I also opened the GitHub repository through the API (Huang-lab/scOmics_equity, 4,207 kB, last push 2026-03-11): it holds the same 6 data files plus 3 R analysis scripts and nothing else - no molecular data, and the HTAN workbook there is 270,042 bytes versus 270,168 on Zenodo. Finally I queried the CELLxGENE Discover application programming interface (HTTP 200, 9.7 MB response): 2,238 public datasets, 292,806,551 cells, a 'self_reported_ethnicity' field present on all of them but set to 'unknown' in 1,463 datasets and 'na' in 612.",
+    "what_came_from_paper_text_only": "The statistical analysis itself and its conclusions: the chi-squared tests against reference distributions, the Benjamini-Hochberg correction, the equity indices and Simpson/Shannon diversity metrics (the paper says these live 'in the code-generated logs', and no log files are deposited). The paper's figure that 69.9% of Human Cell Atlas samples lack ancestry annotation and that 3,043 samples have reported ancestry; I computed 71.1% missing and at most 2,964 annotated from the deposited columns, so their exact number is not reproducible from the file without re-running their R scripts. Also taken from text only: the 6-fold European overrepresentation, the claim that HTAN tumours are 69% European, the curation procedure by which missing ancestry was hand-recovered from linked publications, and the actionable checklist in the discussion."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Fully open, no login: I downloaded all 6 Zenodo files (2.86 MB) and the GitHub repository listing. Licence CC-BY-4.0 on Zenodo, MIT stated for the code. Note, though, that the molecular data these tables describe is a separate matter: PsychAD single-nucleus data sits on the Synapse/AD Knowledge Portal behind an account and a data-use certificate."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Technically yes, for demographics only. Ancestry, sex, tissue and diagnosis are real columns in all three tables (verified counts above). But the paper's actual subject - representativeness - is not a column: every equity figure (observed divided by expected, equity index, diversity index) has to be constructed by joining group-level counts to the SEER/United Nations/dementia reference tables, and those are group-level statistics, not row-level labels a model could be trained on."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAILS, and this is the killer. There is not one molecular measurement anywhere in the deposit: no expression values, no genotypes, no cell-by-gene matrix, not even a file accession per sample. All 2.86 MB is donor demographic and clinical annotation. Any model that predicts ancestry (the obvious task, given 71.1% of Human Cell Atlas rows are missing it) needs the single-cell expression data, which would have to be fetched separately from CELLxGENE, HTAN and Synapse - and the workbook carries Human Cell Atlas donor_organism.uuid values, not CELLxGENE donor_id, so even the join would have to be built from scratch. The only features actually present (tissue, consortium, study name) are metadata about the annotation process, not biology."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Where units apply they are explicit and I saw them: PsychAD has ageDeathUnits='years' (all 1,494 rows) and pmiUnits='minutes' (post-mortem interval, all 1,494 rows); the Human Cell Atlas sheets carry organism_age_unit columns; SEER values are age-adjusted rates per 100,000 with the source named in a column. Most fields are categorical, so units are largely moot."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 13578,
+      "note": "Row counts are fine on paper: 10,125 + 1,959 + 1,494 = 13,578 rows, counted by me. But the labelled subset is much smaller - at most 2,964 Human Cell Atlas rows carry any ancestry value, 1,953 HTAN rows carry race, 1,485 PsychAD donors have a non-unknown ancestry - and rows are not independent donors (8,546 unique donor identifiers for 10,125 Human Cell Atlas rows, one identifier repeated 85 times)."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "2.86 MB (all six deposited files); the molecular data that would be needed to make this modellable is ~293 million cells in CELLxGENE alone",
+      "note": "The deposit itself is trivially small - I loaded all of it in seconds and it is under 3 MB. It passes only because there is nothing in it to be heavy. The feature route fails: CELLxGENE Discover alone holds 292,806,551 cells (number I pulled from their application programming interface), which is far over the ~5 GB working-set limit even after aggressive subsetting."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Top-line counts match exactly: the paper says 10,125 Human Cell Atlas samples, 1,959 HTAN tumour samples and 1,494 PsychAD samples, and I counted precisely those in the files (total 13,578, consistent with '>13,500'). One sub-count does not reconcile: the paper reports 69.9% ancestry missingness and 3,043 annotated samples, while the deposited columns give 71.1% missing and at most 2,964 annotated - a gap of ~79 samples (2.6%) that I cannot close without re-running their R scripts."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Provenance is clean and well documented. Human Cell Atlas and HTAN ancestry is donor self-report (standardised by the authors into broad categories), PsychAD ancestry is inferred from genotype by the PsychAD consortium, and sex and diagnosis come from donor records. Nothing is another predictive model's output. The one caveat is that the authors hand-recovered some ancestry values from the text and supplements of linked publications, which is human curation rather than a measurement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "scAI-SNP (an open tool that infers a donor's ancestry directly from single-cell data by reading ancestry-informative single-letter DNA variants out of the sequencing reads)",
+        "open_weights": true,
+        "score_and_split": "89% classification accuracy with complete data and 86% with 99% of variant sites missing, on an 80/20 train-test split of the 1000 Genomes Project (3,201 individuals, 26 population groups), plus external checks on bone marrow, heart, GTEx and ovarian cancer samples. Read from the open-access paper, not re-run by me.",
+        "authors_named_unsolved": "They name three: the method ignores linkage disequilibrium (correlation between nearby variants), it cannot tell model uncertainty apart from genuine genetic admixture, and American and Southeast Asian ancestries are 'poorly approximated' because the 26 reference populations do not cover global diversity.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Benchmark of genetic-ancestry inference from single-cell transcriptomes (Human Genetics and Genomics Advances, 2026) comparing ADMIXTURE, PCA-Distance and PCA-RandomForest - PCA meaning principal component analysis, a standard way of summarising genetic variation",
+        "open_weights": true,
+        "score_and_split": "With a leave-one-population-out split on the HGDP+1000 Genomes reference, ADMIXTURE had a 0.11% error rate using all variants, 0.21% using variants called from single-cell data, and 1.42% under a simulated 8% genotyping-error rate; the PCA methods ranged 0.59-5.05%. Code at github.com/JianingYao/scRNA-seq-genetic-ancestry. Read from the paper.",
+        "authors_named_unsolved": "Fine-grained (subpopulation-level) ancestry inference still has high error once realistic genotyping error is included, and their six broad ancestry categories 'do not fully represent human genetic diversity'.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CEDAR metadata-value prediction for Gene Expression Omnibus records (rule-mining models that predict missing metadata fields from the fields a submitter did fill in)",
+        "open_weights": null,
+        "score_and_split": "Four rule-mining algorithms applied to the commonest structured metadata fields across more than 1.3 million Gene Expression Omnibus records. I read this from search-result summaries only and so quote no accuracy number.",
+        "authors_named_unsolved": "Not retrieved - I did not open the primary paper.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Systematic assessment of public metadata completeness in the Gene Expression Omnibus (a descriptive audit, not a model)",
+        "open_weights": null,
+        "score_and_split": "Not a model: it measured availability of six phenotype fields including race/ethnicity/ancestry across 2,168,620 samples in 61,950 studies, reporting 63.2% overall metadata availability. From search summaries only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None usable on this deposit. scGPT or Geneformer (single-cell transcriptome foundation models) would be the right backbone for the ancestry-filling task, but they need a cell-by-gene expression matrix, and this dataset contains none.",
+    "freeze_and_head_viable": false,
+    "hardware": "Not applicable. With only categorical demographic columns, the honest baseline is a small logistic regression or gradient-boosted tree on a laptop in under a minute - no transfer learning, and no machine learning worth the name.",
+    "licence": "Data CC-BY-4.0, code MIT (both permissive); irrelevant given there is nothing to fine-tune."
+  },
+  "integration": {
+    "partner_dataset": "CELLxGENE Discover / Census - 2,238 public single-cell datasets and 292,806,551 cells, each carrying donor_id, tissue, disease and a self_reported_ethnicity field (counts I pulled from their application programming interface)",
+    "join_key": "Ideally donor identifier, but the Human Cell Atlas workbook stores donor_organism.uuid while CELLxGENE stores its own donor_id, so in practice you would have to join on study or publication DOI and then re-match donors by hand - exactly the from-scratch identifier mapping the checklist says never to accept.",
+    "bigger_question_one_sentence": "Does a cell-type or disease classifier trained on European-ancestry donors lose accuracy on African, Asian and Latino donors, and by how much? That is a genuinely important question, but it needs the expression matrices, not this annotation table, and 1,463 of 2,238 CELLxGENE datasets have ethnicity set to 'unknown', so the join would also lose most of its rows."
+  },
+  "controls": {
+    "positive_control": "If the expression data existed, the control would be to recover sex from expression of XIST and Y-chromosome genes, which must be near-perfect, and to recover the known excess of African-ancestry donors with high-risk APOL1 variants in kidney tissue. Nothing of the kind is possible on a demographics-only table.",
+    "negative_control": "Shuffle the ancestry label and confirm collapse to the majority class (European, which is 59.5% of annotated Human Cell Atlas rows and so is already a strong dummy); separately, train on study identity alone, which on this table would almost certainly match any 'model', since ancestry is close to constant within a study.",
+    "external_validation": "Possible in principle and attractively cheap: the three consortia are independent, so one could train on HTAN and test on PsychAD. There is no publication-year column in the Human Cell Atlas or PsychAD tables, so no temporal split; HTAN has 'Year of Diagnosis' but only for 1,145 of 1,959 rows."
+  },
+  "honest_claim_h3": "The most a model built on this deposit could honestly claim is: 'given the consortium, tissue and study a sample came from, this predicts which broad ancestry label a curator wrote down for it' - a statement about curation habits in three consortia, not about biology, and one that a per-study lookup table answers just as well.",
+  "plain_idea": {
+    "one_liner": "Use a donor's single-cell gene-activity profile to predict their genetic ancestry, filling in the labels that atlas builders never recorded.",
+    "train_on": "Intended: the gene-activity profile of each donor's cells together with tissue and consortium. Actually available: 13,578 rows of demographic annotation only (10,125 Human Cell Atlas, 1,959 Human Tumor Atlas Network, 1,494 PsychAD - counts I verified), of which at most 2,964 Human Cell Atlas rows carry any ancestry value.",
+    "predict": "Broad ancestry group (European, African, Asian, Latino, other). The true answer is donor self-report for the Human Cell Atlas and the Human Tumor Atlas Network, and genotype-based inference by the PsychAD consortium for the brain samples.",
+    "why_worthwhile": "Atlas builders and the groups training single-cell foundation models would use it: if 70% of donors have no ancestry label, nobody can check whether a model works equally well across populations, and recovering those labels would make that audit possible. Even a failure would be informative about how much population signal survives in gene-activity data."
+  },
+  "ml_idea": "The project this paper invites is to fill in the missing ancestry labels from single-cell expression, then use the completed labels to audit whether single-cell foundation models (scGPT, Geneformer) perform worse on underrepresented donors. It dies here for two separate reasons. First, the deposit is pure annotation - 2.86 MB of demographic spreadsheets with zero molecular measurements - so the model's entire input is absent and would have to be assembled from CELLxGENE (293 million cells), HTAN, and PsychAD on Synapse behind a data-use certificate. Second, the inference step is already a solved and openly benchmarked problem: scAI-SNP reports 89% accuracy and the 2026 Human Genetics and Genomics Advances benchmark reports a 0.11-1.42% error rate for ADMIXTURE under leave-one-population-out validation, both with public code. A legitimate but much smaller salvage exists: the three harmonised demographic tables are a decent substrate for a short data-quality note, since I found free text inside yes/no columns, 35 completely empty HTAN columns, case-duplicated category values, 11 self-contradicting ancestry rows in the Lung sheet, and an annotated-sample count 79 lower than the paper's. That is a note, not a modelling project.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 0.003,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": 1,
+    "compute_note": "working_set_gb is the measured total of the six downloaded files (2.86 MB), not an estimate. hours_to_feature_table is my estimate for harmonising 15 Human Cell Atlas sheets that use two incompatible schemas, stripping free text out of yes/no columns, case-folding categories and de-duplicating donors - I did the counting parts in about 30 minutes, so the rest is extrapolation. cv_run_minutes assumes a logistic regression on ~3,000 rows of categorical features, which is near-instant; nothing was timed beyond the parsing.",
+    "cheapest_killing_check": "Open the workbooks and count the columns that hold a molecular measurement. The answer is zero, in all six files, and it takes five minutes. The second-cheapest check is one web search for 'ancestry inference from single-cell data', which immediately surfaces two open, honestly benchmarked tools."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A at A3: the deposit contains no model inputs at all. All 2.86 MB of it, which I downloaded and parsed in full, is donor demographic annotation - ancestry, sex, tissue, diagnosis - with not a single expression value, genotype or file accession. The counts are honest and reproduce well (10,125 + 1,959 + 1,494 = 13,578 rows, matching the abstract exactly, and my 71.1% ancestry missingness is close to their 69.9%), so this is a good paper with a clean deposit; it is simply a measurement of metadata, not data to model. The obvious project it suggests - predict missing ancestry from expression - would need 293 million cells from CELLxGENE plus Synapse-gated PsychAD data (A6 and A1 both fail on that route), and is in any case already served by two open tools with honest evaluation: scAI-SNP (89% accuracy, 80/20 split on 1000 Genomes) and the 2026 Human Genetics and Genomics Advances benchmark (ADMIXTURE at 0.11-1.42% error under leave-one-population-out). Even the metadata-only fallback is unsound, because ancestry is near-constant within a study, so study identity is the whole signal and a lookup table beats any model. Secondary red flags I verified in the files: free-text sentences inside a yes/no column, 35 of 139 HTAN columns completely empty, case-duplicated categories ('female' 1,399 vs 'Female' 57), two ancestry columns disagreeing on 11 of 275 Lung rows, donor identifiers repeated up to 85 times, a global reference table whose stated source is Wikipedia, and an annotated-sample count 79 below the paper's 3,043."
+}

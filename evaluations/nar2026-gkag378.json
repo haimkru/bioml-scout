@@ -1,0 +1,93 @@
+{
+  "paper_id": "nar2026-gkag378",
+  "title": "ChIP-Atlas 2025 update: 10-year anniversary of a data-mining platform for exploring epigenomic landscape.",
+  "doi": "10.1093/nar/gkag378",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://chip-atlas.dbcls.jp/data/metadata/experimentList.tab",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "HEAD: experimentList.tab 359,471,390 bytes and fileList.tab 126,917,161 bytes (both over the 50 MB cap, so only byte-range samples taken); analysisList.tab 210,378 bytes (downloaded, 6,364 rows, TF / cell-type / evidence / genome-build columns). Byte-range samples of experimentList.tab at four offsets: 3 MB from the start gave 6,760 complete rows, all ce10 (worm), 0 malformed processing-log fields; 2 MB samples at 120, 200 and 300 MB offsets gave 4,504 mm9, 2,467 mm10 and 5,512 hg38 rows. Columns seen: SRX/DRX/ERX experiment ID, genome build, curated antigen class, curated antigen, curated cell-type class, curated cell type, cell-type description, a 'reads,%mapped,%duplicates,peak count' field, submission title, then a variable number (13 to 30 total fields) of free-text submitter key=value attributes. 'Unclassified' or 'No description' antigen class: 2,899/6,760 ce10 rows, 742+321/4,504 mm9 rows, 694/5,512 hg38 rows. Downloaded one peak file, hg38 bed05/SRX10829255.05.bed (1,076,386 bytes, 12,629 peaks, MACS2 narrowPeak-style 10 columns). Zenodo 10.5281/zenodo.17959610 is a code archive only (11.3 MB, MIT licence). Europe PMC supplementaryFiles timed out once; not retried.",
+    "what_came_from_paper_text_only": "The total of 464,655 experiments (Table 1) and the >460,000 figure; that curation is manual but CNN- (convolutional neural network) and SVM- (support vector machine) assisted since ~2019; the new QC (quality control) panels and bigWig correlation clustering; the FANTOM CAGE enhancer/promoter tracks (447,315 human, 288,877 mouse). I did not count the full experimentList rows, so the file-vs-paper count (rows are repeated per genome build, e.g. hg19 and hg38) is unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified: all metadata and peak files served over plain HTTPS from chip-atlas.dbcls.jp with no login (HTTP 200 on every HEAD)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in file: curated antigen class, antigen, cell-type class and cell type are explicit columns next to the raw submitter free text. For a sequence-to-binding task the label would instead have to be constructed from peak BEDs; that variant is not proposed."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: the input text (submission title plus submitter key=value attributes such as 'cell type=embryonic stem cell') sits in the same row; no lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Classification target, so units are mostly moot. The processing-log field packs reads, % mapped, % duplicates and peak count into one comma string; units are implied, not in the file header (documentation on the GitHub wiki not checked)."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Full row count not taken (359 MB file over cap). Byte-range samples alone held 19,243 complete rows across 4 genome builds; ~460k experiments claimed in the paper."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.36 GB (experimentList.tab only)", "note": "Metadata task needs only the 359 MB table. The peak/bigWig side of ChIP-Atlas is terabyte-scale and would fail A6; it is not used."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not fully verified: rows repeat per genome build, so the file will exceed 464,655 rows; deduplicating on experiment ID should reconcile it. No contradiction observed, but count unconfirmed."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are human curation of the same free text the model reads, which is the intended task, not leakage. Caution (paper text): curation has been CNN- and SVM-assisted since ~2019, and there is no flag marking which rows were model-suggested, so recent labels are partly another model's output."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One table, one row per experiment per genome build; verified in byte-range samples."},
+    "B2": {"score": 1, "why": "Tab-separated but ragged: 13 to 30 fields per row with free-text key=value tails; needs a custom parser. Seen in files."},
+    "B3": {"score": 2, "why": "One curation scheme by one team across all builds; class vocabularies consistent across the four samples I read."},
+    "B4": {"score": 1, "why": "'Unclassified'/'No description' common (43% of ce10 sample rows for antigen); easy to drop or use as unlabeled set."},
+    "B5": {"score": 1, "why": "Same experiment repeated across genome builds (hg19/hg38, mm9/mm10); dedupe on ID is trivial. Inferred from file structure."},
+    "B6": {"score": 1, "why": "Columns readable by inspection; formal column documentation (GitHub wiki) not opened by me."},
+    "C1": {"score": 1, "why": "Transfer question (human/mouse curation to worm/fly, old to new submissions) is informative; but 'string match suffices' is a likely dull outcome."},
+    "C2": {"score": 1, "why": "ChIP-Atlas's own CNN/SVM curators (code not checked), LLM curation tools (Metappuccino, GPT-4o annotation); EpiClass predicts metadata from signal, not text."},
+    "C3": {"score": 1, "why": "Weak 'better' angle: open, honestly split text classifier on 6 organisms of curated labels; none retrieved does exactly this."},
+    "C4": {"score": 1, "why": "Manual curation of thousands of new experiments monthly is costly, but already partly automated by the authors."},
+    "C5": {"score": 2, "why": "Obvious dummies: majority class and exact string match of submitter 'cell type' attribute to curated label."},
+    "D1": {"score": 2, "why": "BiomedBERT/PubMedBERT and small sentence-embedding models are open weights for biomedical text."},
+    "D2": {"score": 2, "why": "Short texts; embed unique strings once on CPU, then fit logistic regression head."},
+    "D3": {"score": 2, "why": "BiomedBERT MIT-licensed; ChIP-Atlas code MIT (Zenodo record checked); data openly served."},
+    "E1": {"ok": true, "why": "Hold out by genome/organism or by submission title (study proxy); columns present in file."},
+    "E2": {"ok": true, "why": "Six-plus organisms and thousands of distinct submission titles visible in samples."},
+    "E3": {"ok": true, "why": "Majority class and string-match baselines computable directly from the table."},
+    "E4": {"ok": false, "why": "No replicate curations or curator-disagreement data; noise floor unknowable from this file alone."},
+    "E5": {"ok": true, "why": "Rows whose submitter attribute literally names the curated cell type must be predicted near-perfectly."},
+    "E6": {"ok": true, "why": "Label shuffling and dropping the title vs attribute blocks are straightforward."},
+    "E7": {"ok": true, "why": "Temporal proxy via accession order and ENA-FIRST-PUBLIC dates seen in some rows; Cistrome DB curations as external labels (not opened)."},
+    "E8": {"ok": false, "why": "No published accuracy for ChIP-Atlas's CNN/SVM curators was retrieved."},
+    "G1": {"score": 2, "why": "SRX/ERX/DRX experiment accessions and genome build present in every row; seen in files."},
+    "G2": {"score": 1, "why": "Cistrome DB curated factor/cell annotations are plausible partners; SRX-to-GSM mapping needed, not checked."},
+    "G3": {"score": 1, "why": "One experiment maps to one GEO sample usually, but build duplication must be collapsed first."},
+    "G4": {"score": 1, "why": "Two independent curations would show where human labels disagree; marginal over either alone."},
+    "H1": {"score": 2, "why": "Multiclass: all antigen and cell-type classes present; 'Unclassified' rows record where curators failed."},
+    "H2": {"score": 2, "why": "Thousands of submitting labs, six-plus organisms, four assay types in the samples I read."},
+    "H3": {"score": 2, "why": "Claim stated precisely in honest_claim_h3."},
+    "H4": {"score": 1, "why": "Paper says no quality filtering and ML-assisted curation, but which rows are model-suggested is hidden."},
+    "I1": {"score": 2, "why": "ChIP-Atlas team (Oki lab, Kumamoto) and Cistrome DB curators do this job monthly."},
+    "I2": {"score": 1, "why": "Could replace or triage their curation step, but they already have CNN/SVM helpers."},
+    "I3": {"score": 1, "why": "Their decision is accept/edit a suggestion; top-k accuracy on hard rows matches roughly."},
+    "I4": {"score": 1, "why": "Exact string matching may solve most rows; ML only helps on the messy tail. Untested."},
+    "J1": {"score": 1, "why": "Text classification with grouped splits; little genomics modelling."},
+    "J2": {"score": 2, "why": "Cell-type and antigen names are easy to sanity-check by eye."},
+    "J3": {"score": 2, "why": "String-match baseline accuracy is itself a shareable finding about curation difficulty."},
+    "J4": {"score": 1, "why": "No budget stated; a week seems enough."},
+    "J5": {"score": 1, "why": "Informal kill condition proposed in cheapest_killing_check; not yet written to NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ChIP-Atlas internal CNN- and SVM-assisted curation (Table 1 of this paper)", "open_weights": null, "score_and_split": "No accuracy or split reported in this paper.", "authors_named_unsolved": "Paper names variable data quality and missing quality information as the open problem, not curation.", "runnable_as_baseline": null},
+      {"name": "EpiClass (bioRxiv 2025.09.04.670545), classifiers on epigenomic signal", "open_weights": true, "score_and_split": "~98% assay accuracy on 47,065 ChIP-Atlas signal files; sex 82%, cancer status 88%, biomaterial 91% agreement with provided labels (signal input, not text).", "authors_named_unsolved": "Life-stage classifier poorly calibrated on public data; performance varies by source; best on data like the training distribution.", "runnable_as_baseline": false},
+      {"name": "Metappuccino (bioRxiv 2025.10.31.685769), LLM reconstruction of SRA metadata", "open_weights": null, "score_and_split": "Not retrieved; abstract only says it infers 19 metadata classes from free text for cancer studies.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "GPT-4o annotation of cell lines and mouse strains (Database 2026, baag041)", "open_weights": false, "score_and_split": "77% of mouse-strain and 59% of cell-line GEO experiments correctly annotated, zero-shot plus retrieval.", "authors_named_unsolved": "Not read beyond the abstract snippet.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "BiomedBERT (PubMedBERT) or a small sentence-embedding model, frozen, plus logistic-regression head", "freeze_and_head_viable": true, "hardware": "Laptop CPU", "licence": "MIT (BiomedBERT); ChIP-Atlas code MIT; data openly served (no explicit data licence seen)"},
+  "integration": {"partner_dataset": "Cistrome DB curated sample annotations", "join_key": "SRX experiment accession mapped to GEO GSM sample", "bigger_question_one_sentence": "Where do two independent expert curation teams disagree about the same public experiment, and can a text model flag those rows for re-curation?"},
+  "controls": {"positive_control": "Rows whose submitter 'cell type=' or 'cell line=' attribute string exactly equals the curated cell type must be predicted near-perfectly; antigen class 'Input control' from titles containing 'input'.", "negative_control": "Shuffle labels within genome build and confirm collapse to the majority-class baseline; drop the title block and the attribute block in turn.", "external_validation": "Train on human and mouse, test on worm/fly/yeast/rat rows; or train on older accessions and test on newer ones; optionally Cistrome DB labels for overlapping experiments."},
+  "honest_claim_h3": "Predicts the cell-type and antigen class that the ChIP-Atlas curators (partly assisted by their own CNN/SVM tools) would assign from the free text submitters wrote to SRA, for experiments curators could classify at all.",
+  "plain_idea": {
+    "one_liner": "Use the free-text descriptions scientists submit with public epigenomics experiments to predict the standardized cell type and target protein that expert curators assigned.",
+    "train_on": "Per experiment: the submission title and submitter key=value notes (e.g. 'tissue=whole', 'genotype=...'). Roughly 460,000 experiments per the paper; I counted 19,243 rows in partial samples only.",
+    "predict": "The curated cell-type class and antigen (protein or histone mark) class, which ChIP-Atlas curators assigned by reading the same text, partly with machine help.",
+    "why_worthwhile": "Curation teams like ChIP-Atlas and Cistrome process thousands of new experiments a month; knowing how much a simple string match already solves tells them where human effort is still needed."
+  },
+  "pitch": {
+    "headline": "Hundreds of thousands of public epigenomics experiments with curated cell-type and target labels sitting next to the raw submitter text, in one 359 MB table.",
+    "what_makes_the_data_unusual": "Same curation scheme across at least 4 genome builds (ce10, mm9, mm10, hg38 seen) from one team; raw text and label in the same row; 'Unclassified' rows (2,899 of 6,760 in the worm sample) mark hard cases.",
+    "the_win": "A frozen text-embedding classifier that clearly beats exact string matching on held-out organisms, for example on worm and fly rows when trained on human and mouse. No published baseline accuracy exists to cite.",
+    "even_if_it_fails": "We learn what fraction of curation is solved by string matching alone, which is a useful one-page note for the curators.",
+    "who_wants_it": "The ChIP-Atlas team (Oki lab, Kumamoto University) and Cistrome DB curators, deciding whether to automate or triage monthly metadata curation."
+  },
+  "ml_idea": "Parse experimentList.tab, deduplicate experiment IDs across genome builds, embed title plus submitter attributes once with a frozen biomedical text model, and fit a logistic-regression head for curated cell-type class and antigen class; evaluate with organism-held-out and accession-order (temporal) splits against majority-class and exact-string-match baselines.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 0.36, "needs_gpu": false, "peak_ram_gb": 3, "embedding_hours": 2, "cv_run_minutes": 15, "compute_note": "Estimated, not timed: about 460k experiments, far fewer unique text strings, embedded at roughly 50 to 100 short texts per second on CPU; linear head CV in minutes.", "cheapest_killing_check": "Download experimentList.tab (359 MB), deduplicate on experiment ID, and score an exact-string-match baseline (submitter cell-type attribute vs curated cell type) on held-out submissions; if it exceeds ~90% accuracy on classifiable rows, there is no ML project."},
+  "verdict": "park",
+  "verdict_reason": "The data is open and the label column is real, but the only laptop-sized task (text to curated metadata) is low-impact. String matching may solve it, LLM curation tools already exist, and the labels are partly CNN/SVM-assisted. The genomic side (peaks, signal) is terabyte-scale and its sequence-to-binding task is crowded."
+}

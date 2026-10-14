@@ -1,0 +1,156 @@
+{
+  "paper_id": "nature2026-10730-1",
+  "title": "Identification of cross-stage, cross-species malaria CD8+ T cell antigens.",
+  "doi": "10.1038/s41586-026-10730-1",
+  "journal": "Nature",
+  "data_url": "https://www.ebi.ac.uk/pride/archive/projects/PXD077321",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the only processed file in PRIDE project PXD077321 (Pv_ID.csv, 121 KB): exactly 453 rows, 446 distinct bare peptide sequences, 166 distinct UniProt accessions (all _PLAVS, i.e. Plasmodium vivax), 7 donors across 18 mass-spectrometry runs. Columns are Peptide, -10lgP (the PEAKS search-engine confidence score), Mass, Length, ppm, m/z, Z, RT, Intensity, Fraction, Id, Scan, Source File, Accession, PTM, AScore, Found By. There is no HLA (human leukocyte antigen) allele column, no false-discovery-rate or q-value column, and no non-presented (negative) peptides. 43% of rows have -10lgP below 20, the usual ~1% false-discovery cutoff for PEAKS; only 67/453 peptides are 9 amino acids long, which is unusual for a clean HLA class I ligand set. Also downloaded and opened the four open supplementary spreadsheets of the Research Square preprint (rs-6682089 v1): a 453-row copy of the same peptide table, a 3,357-row human HLA-I peptide table from the same samples, a 50-row list of synthesized peptides (sequence + human-homology only, no assay readout), per-species gene-expression lookups for 166 orthologues, and clinical tables for 60 Plasmodium vivax, 29 asymptomatic, 8 Plasmodium falciparum and 45 healthy donors.",
+    "what_came_from_paper_text_only": "The Nature article itself is subscription-only with no PubMed Central copy, so the immunogenicity results (ELISpot and flow-cytometry T cell responses in humans, non-human primates and rodents), the per-donor HLA typing, and the claim that identical peptides were presented by distinct HLA-A/B/C and HLA-E alleles come from the abstract and preprint text, not from any table I opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "PRIDE PXD077321 is public, no login: I downloaded Pv_ID.csv over plain HTTP. The 14 raw mass-spectrometry files total 6.3 GB and are out of scope by policy. Preprint supplements download freely too."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL, verified in the files. Every one of the 453 rows is a peptide that WAS presented; there is no presented/not-presented column and no negatives anywhere. The target would have to be constructed by sampling decoy peptides from the P. vivax proteome. The other candidate label, which HLA allele presents each peptide, is simply absent: no allele column exists in either the PRIDE file or the preprint supplements."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Peptide amino-acid sequences are literally present in the Peptide column, and the source protein carries a parseable UniProt accession, so no bulk identifier lookup is needed for the inputs."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Units are implied, never stated: Mass and m/z are presumably daltons, RT presumably minutes, Intensity is an arbitrary instrument scale not normalised across the 18 runs, and -10lgP is a PEAKS-specific score with no accompanying false-discovery rate."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 453,
+      "note": "453 parasite peptides (446 unique sequences) and 3,357 human peptides, all positives, from 7 donors. Below the ~1,500-row bar, and the biological unit is really the donor, of which there are 7."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~1 MB processed tables; 6.3 GB of raw files deliberately not downloaded",
+      "note": "The processed data is trivially small. Only re-searching the raw spectra would be heavy, and that is not the proposed task."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The abstract's '453 unique peptides, mapping to 166 proteins' matches the file exactly: 453 rows and 166 distinct UniProt accessions. Minor wrinkle: 446 distinct bare sequences once post-translational-modification annotations are stripped."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "The label is a software call, not an orthogonal measurement: every row is a PEAKS DB or PEAKS PTM database-search assignment against a combined human + P. vivax protein database, with no decoy-based false-discovery control reported. 43% of rows score below the conventional -10lgP of 20, and the near-flat 8-to-15 amino-acid length spread (only 67 nine-mers) is not the shape of a clean HLA class I ligand set, so an unknown fraction of the 'labels' are likely false identifications."
+  }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "NetMHCpan-4.1 (neural network predicting peptide presentation by any HLA class I molecule)",
+        "open_weights": true,
+        "score_and_split": "Median positive predictive value 0.8291 on a held-out mass-spectrometry eluted-ligand benchmark, beating MixMHCpred (0.7911) and MHCflurry (0.7256); trained on >850,000 binding-affinity and eluted-ligand peptides.",
+        "authors_named_unsolved": "Alleles with few or no observed ligands, and separating co-presented motifs within multi-allele samples, remain the hard part.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MHCflurry 2.0 (open-source peptide-HLA presentation predictor with a separate antigen-processing model)",
+        "open_weights": true,
+        "score_and_split": "The integrated presentation model beat NetMHCpan-4.0 and MixMHCpred 2.0.2 on held-out mass-spectrometry experiments; installable from PyPI and runs on CPU.",
+        "authors_named_unsolved": "Predicting which presented peptides actually trigger a T cell response, as opposed to merely being presented.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BigMHC (ensemble of seven pan-allele deep networks for presentation and immunogenicity)",
+        "open_weights": true,
+        "score_and_split": "Area under the receiver operating characteristic curve 0.9733 on 45,409 held-out ligands against 900,592 random decoy peptides; code and weights at github.com/KarchinLab/bigmhc.",
+        "authors_named_unsolved": "Immunogenicity prediction, where labelled data is far scarcer than presentation data.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MUNIS (deep learning predictor of HLA class I epitopes aimed specifically at foreign pathogens)",
+        "open_weights": null,
+        "score_and_split": "Trained on 651,237 unique HLA class I ligands across 205 alleles; published in Nature Machine Intelligence (2025) as improving pathogen-derived CD8+ T cell epitope prediction.",
+        "authors_named_unsolved": "Pathogen epitopes remain harder than human self-peptides because training data is dominated by human and tumour ligands.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "ImmuneApp (attention-based hybrid deep learning for HLA class I epitope prediction and immunopeptidome analysis)",
+        "open_weights": true,
+        "score_and_split": "Trained on 349,650 ligands; published in Nature Communications (2024) with a web server and standalone code.",
+        "authors_named_unsolved": "Deconvolving which allele in a multi-allele sample presented each peptide.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Malaria cytotoxic T-cell epitope benchmark (classical machine-learning classifiers on amino-acid physicochemical features, PMID 34012524)",
+        "open_weights": null,
+        "score_and_split": "Reported that selected classifiers beat generic epitope predictors on malaria-specific epitope sets; split and dataset size not retrieved.",
+        "authors_named_unsolved": "Plasmodium sequence variation and parasite-specific biology make generic predictors unreliable for malaria.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model) or any pan-allele peptide-HLA model such as MHCflurry 2.0 used as a frozen scorer",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU only; embedding 453 short peptides takes under a minute",
+    "licence": "ESM-2 is MIT; MHCflurry is Apache-2.0 — licences are not the obstacle here"
+  },
+  "integration": {
+    "partner_dataset": "IEDB (Immune Epitope Database), which I queried live and which holds 5,671,451 non-negative MHC ligand assay records, plus the eluted-ligand training sets behind NetMHCpan-4.1 and BigMHC",
+    "join_key": "peptide amino-acid sequence plus HLA allele name; UniProt accession for the source protein (166 present and parseable in the file)",
+    "bigger_question_one_sentence": "Do presentation predictors trained overwhelmingly on human and tumour peptides lose accuracy on peptides from a eukaryotic parasite with a very different amino-acid composition — a real question, but one that needs the per-donor HLA typing this release does not contain."
+  },
+  "controls": {
+    "positive_control": "Available in principle: the human half of the same immunopeptidome (3,357 peptides) should score highly under NetMHCpan-4.1, confirming the pipeline works — but without donor HLA typing you cannot run it allele-specifically.",
+    "negative_control": "Label shuffling and decoy-peptide resampling are runnable, but with only positives in the data the decoys are invented, so the negative control tests the decoy-generation scheme rather than the biology.",
+    "external_validation": "IEDB and the published eluted-ligand benchmarks exist and are far larger, which is exactly the problem: this dataset would be the small external set, not the training set."
+  },
+  "honest_claim_h3": "A model built on this release could only claim 'these 453 peptide identifications, made by one search engine at uncontrolled false-discovery rate in reticulocytes from 7 Brazilian Plasmodium vivax patients of unreported HLA type, are distinguishable from randomly drawn parasite peptides' — which is a statement about the search engine and the decoy sampler, not about antigen presentation.",
+  "plain_idea": {
+    "one_liner": "Use a parasite peptide's amino-acid sequence to predict whether the immune system displays it on infected red blood cells.",
+    "train_on": "Short peptide sequences (8-15 amino acids) eluted from HLA class I molecules on Plasmodium vivax-infected reticulocytes: 453 parasite peptides from 166 parasite proteins plus 3,357 human peptides, all from 7 patients. All are positives; negatives would have to be invented.",
+    "predict": "A presented/not-presented call, or ideally which HLA allele does the presenting. The ground truth is mass spectrometry of peptides stripped off HLA molecules, interpreted by the PEAKS search engine — so the 'truth' is itself a software assignment with no reported false-discovery rate.",
+    "why_worthwhile": "Malaria vaccine developers need to know which parasite proteins are visible to killer T cells across parasite stages and species; a predictor that worked on parasite peptides would let them screen whole proteomes instead of running mass spectrometry on patient blood. But this particular release is far too small and too positives-only to build one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "453 parasite peptides from 7 donors against NetMHCpan-4.1's >850,000 training peptides, BigMHC's 45,409-ligand test set and MUNIS's 651,237 ligands across 205 alleles. The one genuine novelty — a eukaryotic parasite in reticulocytes — is wasted because the HLA typing needed to use it is not in the release."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate quantitative measurements of presentation and no false-discovery-rate column; only 4 of 446 unique sequences appear in more than one run, so per-prediction uncertainty cannot be calibrated from this data."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "NetMHCpan-4.1 (2020), MHCflurry 2.0 (2020), BigMHC (2023), ImmuneApp (2024) and MUNIS (2025) are all recent, open, and evaluated on large held-out mass-spectrometry sets with explicit decoy ratios. Nothing here would beat them."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition on two counts: without per-peptide HLA allele labels the existing models cannot even be scored on this data in a like-for-like way, and adding 453 positives to a model trained on hundreds of thousands cannot be expected to change anything."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: train or benchmark a peptide-HLA class I presentation predictor on Plasmodium-derived peptides, asking whether models trained on human and tumour peptides transfer to a eukaryotic parasite. The data cannot support it — 453 positives, no negatives, no HLA allele labels, no false-discovery control. The only defensible use of this release is as a tiny qualitative sanity check inside a larger pathogen-immunopeptidome collection assembled from IEDB and PRIDE.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0.05,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, not timed beyond the actual parse: the whole processed dataset is ~1 MB and loads into pandas in under a second; 453 short peptides through a small ESM-2 checkpoint on CPU is minutes. Compute was never the problem.",
+    "cheapest_killing_check": "Open Pv_ID.csv and look for a presented/not-presented column and an HLA allele column. Both are missing, and that kills it in five minutes — which is exactly what happened."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A2 in the files: the PRIDE release (PXD077321, Pv_ID.csv) and the open preprint supplements contain only the 453 peptides that WERE presented, with no negative class and no HLA (human leukocyte antigen) allele assignment, so both plausible prediction targets would have to be constructed from scratch. It also fails A5 (453 positives from 7 donors), A4 (units implied throughout) and A8 (the label is a PEAKS search-engine call with no false-discovery-rate column; 43% of rows score below the usual confidence cutoff and only 67 of 453 peptides are 9-mers, the length that should dominate a clean HLA class I ligand set). Separately, the field is saturated with open, honestly evaluated models (NetMHCpan-4.1, MHCflurry 2.0, BigMHC, ImmuneApp, MUNIS) trained on 10^5-10^6 ligands. Excellent immunology, no viable machine-learning project."
+}

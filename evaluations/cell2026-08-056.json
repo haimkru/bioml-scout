@@ -1,0 +1,103 @@
+{
+  "paper_id": "cell2026-08-056",
+  "title": "Mitochondrial proteome of Acanthamoeba delineates aerobic and anaerobic pathways dynamically regulated by oxygen.",
+  "doi": "10.1016/j.cell.2026.08.056",
+  "journal": "Cell",
+  "data_url": "https://sites.broadinstitute.org/files/mitocarta/files/documents/acanthamoeba.mitocarta.xlsx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the MitoCarta Tree of Life (MitoTOL) xlsx tables from mitocarta.org for Acanthamoeba (11.5 MB), Arabidopsis (21.5 MB), Giardia, Leishmania and Trypanosoma (Babesia link returned 404). Acanthamoeba 'AllGenes' tab: 15,944 genes x 102 columns, 0 duplicate GeneIDs, AcMitoCarta 0/1 column with 1,122 positives (matches paper), 9,561 genes detected by mass spectrometry (1,115 positives among them), every column documented in a Descriptions tab. Other species: Arabidopsis 1,609/27,559, Leishmania 1,594/8,470, Trypanosoma 1,666/9,678, Giardia 59/4,968. I computed the DeepLoc2.1 mitochondrion-score baseline already in the tables: Acanthamoeba AUROC (area under the ROC curve) 0.956, average precision 0.81; Arabidopsis AP 0.76; Leishmania 0.85; Trypanosoma 0.87. No protein-sequence column in any table. GEO GSE338845 metadata: 48 RNA-seq samples.",
+    "what_came_from_paper_text_only": "That the ACANB re-annotated protein FASTA is in MassIVE MSV000101796 (FTP listing failed, not verified); PCP (protein correlation profiling) method details and 0.6 threshold giving ~8% estimated false discovery rate; the Europe PMC supplement listing timed out, so Cell's own supplement files were not opened (the mitocarta.org file states it is Table S2)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: direct xlsx downloads from mitocarta.org/Broad, no login. Paper is CC BY 4.0."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked: 'AcMitoCarta' 0/1 column (and AtMitoCarta, LtMitoCarta, TbMitoCarta, GlMitoCarta in sister tables); also a continuous 'PCP score' column."},
+    "a3_inputs_present": {"pass": true, "note": "Partial. Checked: no sequences in the tables. Arabidopsis (TAIR AGI IDs), Trypanosoma/Leishmania (TriTrypDB IDs) and Giardia (GenBank KAE accessions) map to public proteomes in one bulk download each; Acanthamoeba uses a new ACANB annotation whose FASTA is said to be on MassIVE (unverified), with UniProt best-bidirectional hits for 11,560 genes as fallback."},
+    "a4_units_stated": {"pass": true, "note": "Checked: binary membership label needs no units; PCP score is a documented Pearson correlation; intensities documented as log10 normalized total intensity."},
+    "a5_enough_rows": {"pass": true, "n_rows": 15944, "note": "Checked: 15,944 Acanthamoeba genes with 1,122 positives; ~66,600 genes and ~6,050 positives across the five species tables I opened."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~70 MB of xlsx plus ~70k protein sequences (~40 MB FASTA)", "note": "ESM-2 embeddings of ~70k proteins are feasible on CPU with the 35M/150M checkpoints; head training is seconds."},
+    "a7_counts_match_paper": {"pass": true, "note": "Checked: 1,122 AcMitoCarta and 1,084 MitoViaPCP match the abstract/tab descriptions; 15,944 total = 1,122 + 14,822 quoted in text."},
+    "a8_label_provenance": {"pass": true, "note": "Checked evidence column: 984 PCP-only, 74 PCP+microscopy, 26 PCP+mtDNA, 22 microscopy-only, 16 mtDNA-only. PCP is a mass-spectrometry fractionation measurement, not a sequence prediction; DeepLoc/TargetP are separate annotation columns and only enter the benchmark labels, not AcMitoCarta. Caveat: undetected proteins (6,383) are labelled 0 by default, so negatives among them are untested."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "One table per species with documented GeneID key; sequences must be joined from separate proteome FASTAs."},
+    "B2": {"score": 1, "why": "xlsx parsed first try with pandas; multi-tab, header row fine. Not csv but trivial."},
+    "B3": {"score": 2, "why": "Same uniform PCP workflow across MitoTOL species per paper; labels already binary 0/1 by authors."},
+    "B4": {"score": 1, "why": "No censored values, but 6,383 Acanthamoeba genes undetected by MS (PCP=-1) default to negative; drop or flag."},
+    "B5": {"score": 2, "why": "0 duplicate GeneIDs checked; protein groups already collapsed to genes by authors."},
+    "B6": {"score": 2, "why": "Descriptions tab documents every column, checked in file."},
+    "C1": {"score": 2, "why": "Leave-one-species-out transfer tells whether localization learned on model organisms holds in divergent protists either way."},
+    "C2": {"score": 0, "why": "DeepLoc2.1, TargetP2.0, MitoFates open; DeepLoc already AUROC 0.956 here (computed from file)."},
+    "C3": {"score": 1, "why": "Diversity angle: first uniform experimental mitoproteomes across five distant eukaryotes; but strong baseline limits headroom."},
+    "C4": {"score": 2, "why": "Each mitoproteome required purification, DIA mass spectrometry, transfection lines and microscopy."},
+    "C5": {"score": 2, "why": "DeepLoc2.1 and TargetP scores already columns; per-species APs 0.76–0.87 computed directly."},
+    "D1": {"score": 2, "why": "ESM-2 open weights, protein sequences are the natural input."},
+    "D2": {"score": 2, "why": "Mean-pooled plus N-terminal ESM-2 embeddings cached once on CPU; logistic or MLP head."},
+    "D3": {"score": 2, "why": "ESM-2 MIT licence; paper CC BY 4.0; data public on mitocarta.org."},
+    "E1": {"ok": true, "why": "Leave-one-species-out split plus orthogroup-cluster holdout; orthogroups (OG_ID) present in Leishmania table."},
+    "E2": {"ok": true, "why": "Five species tables opened, plus human MitoCarta3.0 and yeast lists as extra groups."},
+    "E3": {"ok": true, "why": "Prevalence baseline (1.2%–19% per species) and DeepLoc score baseline both computable."},
+    "E4": {"ok": true, "why": "Three biological replicates per fraction in the table; PCP score per replicate subset estimable; ~8% FDR stated."},
+    "E5": {"ok": true, "why": "mtDNA-encoded proteins and orthologs of human MitoCarta3.0 (goldp: 261/296 positive) must score highest."},
+    "E6": {"ok": true, "why": "Label shuffle and N-terminus-only versus mature-sequence ablations are straightforward."},
+    "E7": {"ok": true, "why": "Hold out whole species; Gawryluk 2014 Acanthamoeba mitoproteome and human MitoCarta3.0 are independent sets."},
+    "E8": {"ok": true, "why": "DeepLoc AUROC/AP reproducible from columns in file; paper's own TargetP 46% (514/1,122) recovered as 45.8%."},
+    "G1": {"score": 1, "why": "Species-specific gene IDs (TAIR, TriTrypDB, GenBank, ACANB) plus UniProt best hits; resolution needed for Acanthamoeba."},
+    "G2": {"score": 2, "why": "Human MitoCarta3.0, yeast mitoproteome, UniProt subcellular-location annotations, joinable on UniProt."},
+    "G3": {"score": 1, "why": "Gene-to-protein is one-to-one after best-transcript choice; ACANB-to-UniProt via BLAST hits is many-to-one at times."},
+    "G4": {"score": 2, "why": "Combined: do opisthokont-trained localization rules transfer to amoebozoa, plants, kinetoplastids and Giardia?"},
+    "H1": {"score": 2, "why": "Detected non-mitochondrial proteins with low PCP scores are real negatives (8,446 in Acanthamoeba)."},
+    "H2": {"score": 1, "why": "Five distant species, but one consortium, one protocol, one strain each."},
+    "H3": {"score": 2, "why": "Claim stated precisely below, restricted to MS-detected proteins in lab-cultured strains."},
+    "H4": {"score": 1, "why": "Paper discusses detection-limited low-abundance proteins; undetected-as-negative default is only in the column notes."},
+    "I1": {"score": 2, "why": "MitoTOL consortium (Mootha, Calvo labs) and parasite drug-target groups; DeepLoc developers at DTU."},
+    "I2": {"score": 1, "why": "Better predictor would prioritise which unexplored protist proteins to tag; marginal given DeepLoc already strong."},
+    "I3": {"score": 2, "why": "Average precision at low prevalence matches the decision: which candidates to tag and image."},
+    "I4": {"score": 1, "why": "DeepLoc plus TargetP threshold already gives AP 0.76–0.87; ML gain likely in the residual cases."},
+    "J1": {"score": 2, "why": "Embedding caching, grouped cross-species splits, calibration and transfer evaluation."},
+    "J2": {"score": 1, "why": "Mitochondrial biology is interpretable via known complexes, but protist specifics need checking."},
+    "J3": {"score": 2, "why": "DeepLoc cross-species benchmark on the new experimental sets is shareable even before any new model."},
+    "J4": {"score": 1, "why": "Roughly two to three weeks plausible; not formally set."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepLoc 2.1 (protein-language-model subcellular localization predictor, DTU)", "open_weights": true, "score_and_split": "Not evaluated by its authors on these sets; I computed from the file AUROC 0.956 / average precision 0.81 on Acanthamoeba, AP 0.76 Arabidopsis, 0.85 Leishmania, 0.87 Trypanosoma, on proteins likely absent from its training data.", "authors_named_unsolved": "Not retrieved from DeepLoc paper; search results note localization predictors underperform on multilocalizing proteins and fine compartments.", "runnable_as_baseline": true},
+      {"name": "TargetP 2.0 (N-terminal targeting signal predictor)", "open_weights": true, "score_and_split": "Paper: only 46% (514/1,122) of AcMitoCarta proteins have a predicted mitochondrial targeting sequence vs 1% of others; confirmed 45.8% vs 0.8% from file.", "authors_named_unsolved": "This paper: targeting-signal predictors miss over half of the experimental mitoproteome, hence need for experiment.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model), 35M or 150M checkpoint", "freeze_and_head_viable": true, "hardware": "Laptop CPU, ~70k sequences", "licence": "MIT"},
+  "integration": {"partner_dataset": "Human MitoCarta3.0 and yeast mitoproteome plus the four other MitoTOL species tables", "join_key": "Species gene ID to proteome FASTA; UniProt accession for cross-resource", "bigger_question_one_sentence": "Do the sequence rules for mitochondrial import learned from animals, fungi and plants hold across deeply divergent eukaryotes, and which lineage-specific proteins break them?"},
+  "controls": {"positive_control": "mtDNA-encoded proteins and orthologs of human MitoCarta3.0 genes (261/296 gold+ are positive) must rank top; recover the TargetP mTP enrichment (45.8% vs 0.8%).", "negative_control": "Shuffle labels within species; random-embedding features; check undetected-protein negatives do not drive the score.", "external_validation": "Leave-one-species-out across five MitoTOL tables; Gawryluk 2014 Acanthamoeba list; human MitoCarta3.0."},
+  "honest_claim_h3": "Predicts whether a protein detected by mass spectrometry in a lab-grown strain co-fractionates with mitochondria, transferring across five MitoTOL eukaryotes, compared against DeepLoc2.1, which already reaches 0.76–0.87 average precision.",
+  "plain_idea": {
+    "one_liner": "Use a protein's amino-acid sequence to predict whether it lives in mitochondria, testing on distant single-celled organisms not used for training.",
+    "train_on": "Protein sequences from four of five species with experimentally measured mitochondrial membership (about 66,600 genes, about 6,050 mitochondrial, verified in the tables), plus human and yeast lists.",
+    "predict": "Yes/no mitochondrial for each protein of the held-out species; truth comes from mass-spectrometry co-fractionation with mitochondrial markers, mitochondrial-DNA encoding, or tagged-protein microscopy.",
+    "why_worthwhile": "Parasite and protist labs could prioritise drug targets and tagging experiments in species without a measured mitoproteome; a failure tells us where current predictors' rules break."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Five uniformly measured mitoproteomes from amoebozoa, plant, kinetoplastids and Giardia (~6,050 positives) cover lineages poorly represented in UniProt-derived training sets; total size is not larger than DeepLoc's training set."},
+    "confidence_score": {"answer": "partly", "why": "Continuous PCP scores and triplicate fractions let us model label noise and calibrate; DeepLoc gives scores but not calibrated per-lineage uncertainty (not verified in its paper)."},
+    "models_beatable": {"answer": "partly", "why": "DeepLoc 2.1 (protein language model, 2022/2024) already scores AP 0.76–0.87 on these held-out species; TargetP 2.0 (2019) is clearly weaker at 46% recall."},
+    "guaranteed_improvement": {"answer": "no", "why": "DeepLoc can be run as baseline and a model could use its score plus MitoTOL data, but labels here (co-fractionation) differ from DeepLoc's literature annotations, so improvement is not guaranteed."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "Human MitoCarta3.0 (~1,136 genes, known resource), yeast Morgenstern mitoproteome (900 genes, cited in paper), UniProt subcellular location annotations (known resource), Human Protein Atlas localization (known resource), four other MitoTOL tables (opened).", "approx_items": null, "join_key": "UniProt accession / species gene IDs", "why": "Extra labelled species allow genuine leave-one-lineage-out tests rather than random splits within one organism."},
+  "publication_target": {
+    "ambitious": {"journal": "Nature Communications", "why": "Publishes biology-first ML; would need a model clearly beating DeepLoc on held-out lineages and new validated protist mitochondrial proteins."},
+    "realistic": {"journal": "Bioinformatics", "why": "Publishes benchmarks of predictors; a cross-lineage benchmark of DeepLoc/TargetP versus an ESM-2 head on MitoTOL data fits."},
+    "fallback": {"journal": "NAR Genomics and Bioinformatics", "why": "Accepts benchmark notes and negative results, e.g. that DeepLoc already transfers and new heads add little."}
+  },
+  "pitch": {
+    "headline": "Five uniformly measured experimental mitoproteomes across deeply divergent eukaryotes, about 6,050 positives in about 66,600 genes, publicly downloadable as documented tables.",
+    "what_makes_the_data_unusual": "Same mass-spectrometry co-fractionation protocol for an amoeba, a plant, two trypanosomatids and Giardia; Acanthamoeba alone has 15,944 genes, 1,122 positives, 0 duplicates, all columns documented.",
+    "the_win": "A leave-one-species-out model beating DeepLoc 2.1's average precision of 0.81 on Acanthamoeba and 0.76 on Arabidopsis.",
+    "even_if_it_fails": "A first honest cross-lineage benchmark of open localization predictors on experimental protist mitoproteomes, showing which lineage-specific proteins (e.g. 381 lacking human/yeast homologs) they miss.",
+    "who_wants_it": "MitoTOL consortium (Mootha and Calvo labs, Broad) choosing which species and proteins to tag next; DeepLoc developers; parasite drug-target groups."
+  },
+  "ml_idea": "Embed all proteins from the five MitoTOL species with frozen ESM-2 (whole-sequence plus N-terminal window), train a logistic/MLP head leave-one-species-out on MS-detected proteins, and compare against DeepLoc2.1 and TargetP scores already in the tables; report average precision per held-out species and on proteins without human/yeast homologs.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.2, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 6, "cv_run_minutes": 5, "compute_note": "Estimated: ~70k sequences at ~3–4 per second with ESM-2 150M on CPU; baseline AUCs were timed in seconds from the xlsx.", "cheapest_killing_check": "Obtain the ACANB protein FASTA from MassIVE MSV000101796 (or confirm UniProt best hits cover most of the 1,122 positives) and confirm TriTrypDB/TAIR/GenBank IDs map to sequences for >95% of rows."},
+  "verdict": "verify_first",
+  "verdict_reason": "Clean, documented multi-species labels verified in files, but DeepLoc already reaches AUROC 0.956 here and Acanthamoeba sequences must still be retrieved; confirm sequence access first, and expect a benchmark rather than a big win."
+}

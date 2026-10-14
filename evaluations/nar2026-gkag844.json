@@ -1,0 +1,43 @@
+{
+  "paper_id": "nar2026-gkag844",
+  "title": "MFDB: a comprehensive database for marine fish functional genomics and evolutionary genomics.",
+  "doi": "10.1093/nar/gkag844",
+  "journal": "Nucleic Acids Research",
+  "data_url": "http://marinefishdb.cn/SeaFish/download/downloadPage",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Site is live with no login. The genome download list (POST /download/getDonwload) returns species with GenBank/RefSeq assembly accessions and taxonomy strings. The RNA-seq download list returns 76 species. I downloaded the Atlantic cod expression file (GCF_902167405.1/rna, 23 MB): a tab-separated table of TPM (transcripts per million) values, 23,376 genes x 107 samples. Its column headers are free text and repeat ('Reference Station' x3, 'PFNA-C' x3, 'Cod gills', 'DMSO_1', SRR/ERR run IDs), and there is no tissue or condition metadata column. The sample-info endpoint (rna/getTranscripReuslt) failed with a server 'file does not exist' error for cod, salmon, fugu and leopard coral grouper. HEAD checks: cod annotation xlsx 28 MB, cod protein FASTA 15 MB, fugu RNA 8 MB, salmon RNA 200 MB.",
+    "what_came_from_paper_text_only": "89 species, co-expression networks, core and pan gene sets, macrosynteny. These come from the abstract only; there is no full text (no PMCID, not open access in Europe PMC)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Genome, GFF, CDS, protein, annotation and TPM files download without a login (checked the files directly)."},
+    "a2_label_is_a_column": {"pass": false, "note": "No prediction target exists as a column. The expression matrices carry free-text, duplicated sample names and no tissue or condition field, and the sample-metadata endpoint is broken. Any tissue or condition label would have to be rebuilt from SRA/ENA (the public sequencing-read archives) run metadata across 76 species. Verified in the cod file."},
+    "a3_inputs_present": {"pass": true, "note": "Protein and coding sequences are downloadable as FASTA, so inputs are present."},
+    "a4_units_stated": {"pass": true, "note": "Each sample's column has mean 42.78 over 23,376 genes, i.e. it sums to 1e6, which is consistent with TPM. The unit is implied by the endpoint path 'rna/tpm', not stated in the file."},
+    "a5_enough_rows": {"pass": true, "n_rows": 23376, "note": "23,376 genes in the cod matrix alone. Sample counts for the other species were not checked."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~8-200 MB per species TPM file", "note": "Salmon is the largest file seen (200 MB). Not every species was checked."},
+    "a7_counts_match_paper": {"pass": true, "note": "The abstract says 89 species and the RNA list has 76. That is plausible because not every species has RNA-seq data, but it was not reconciled against the full text."},
+    "a8_label_provenance": {"pass": true, "note": "TPM values are reprocessed from public RNA-seq runs, so they are measurements, not model output. Annotations (GO/KEGG) are computational and would be circular as labels."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "ESM-2, a protein language model (considered)", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "NCBI SRA/ENA run metadata (would be needed to rebuild tissue labels)", "join_key": "SRR/ERR run accession (present only for some columns)", "bigger_question_one_sentence": "Does protein sequence predict tissue-specific expression consistently across marine fish species?"},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "Not reachable: without per-sample tissue labels, no defined prediction target exists.",
+  "plain_idea": {
+    "one_liner": "Use a gene's protein sequence to predict which tissues it is most active in, across many marine fish species.",
+    "train_on": "Protein sequences of fish genes (23,376 genes in cod alone; other species unknown) with their measured activity across tissues.",
+    "predict": "The tissue profile of each gene's activity, measured by RNA sequencing (reading out which genes are switched on in a sample). This needs tissue labels per sample, which the database does not provide.",
+    "why_worthwhile": "Fish geneticists could annotate genes in poorly studied species. In practice the labels would first have to be rebuilt from archive metadata."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict tissue-specific expression from ESM-2 protein embeddings, holding out whole fish species. This is blocked: tissue labels per sample are absent, and the sample-info endpoint errors.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because the project failed at A2.", "cheapest_killing_check": "Call rna/getTranscripReuslt for any species. It returned a server error for all 4 tried, so no sample-to-tissue mapping is available."},
+  "verdict": "reject",
+  "verdict_reason": "A2 fails. MFDB is a genome browser and download portal, not a labelled table. The expression matrices have free-text, duplicated sample names, no tissue or condition column, and the metadata endpoint is broken, so every label would have to be rebuilt from SRA/ENA across 76 species."
+}

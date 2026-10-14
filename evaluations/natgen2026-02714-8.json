@@ -1,0 +1,148 @@
+{
+  "paper_id": "natgen2026-02714-8",
+  "title": "Developmental and MAPK-responsive transcription factors regulate distinct malignant cell states and associated genetic dependencies in pancreatic cancer.",
+  "doi": "10.1038/s41588-026-02714-8",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE161369",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed from GEO (Gene Expression Omnibus, the public repository for expression data): GSE161365 CRISPR screen count table (12,122 guide RNAs covering 3,084 genes x 24 columns = 6 cell lines x 2 timepoints x 2 replicates), GSE167157 CRISPRi screen count table (same shape), GSE143584 laser-capture RNA-seq table (31,228 gene rows x 401 sample columns, values are non-integer), GSE143584 batch_edit.xlsx (366 rows: sample, title, patient_id), GSE161368 transcription-factor overexpression bulk table (70 columns; only 8 distinct transcription factors plus EGFP/mCHERRY controls in KP4 cells), GSE280160 OVOL2 overexpression table (51 unlabelled sequencing-run columns). Also parsed both GSE143584 series-matrix metadata files: the only per-sample labels are patient_id, compartment (Epithelium 242 / Stroma 159) and group (Primary PDA 221, PanIN 49, IPMN 31); titles S1-S401 map one-to-one onto the 401 count columns. Listed the supplementary-file directories of 18 GEO series.",
+    "what_came_from_paper_text_only": "The three lineage states, the MAPK-low/MAPK-high substates, the master-regulator (MR) analysis pipeline, the barcode lineage-tracing results and the claim of state-specific MR essentiality all come from the paper text. The paper's own Supplementary Tables could not be retrieved (Europe PMC supplementaryFiles endpoint timed out twice; the NCBI GEO web pages are behind a reCAPTCHA challenge), so I could not check whether a state-assignment table is published there."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Processed matrices download without login; I fetched six of them. Sequence-level data are controlled access (dbGaP phs004767, phs001840; EGA EGAD00010001811), but the processed counts are open."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The paper's targets - lineage state, MAPK-low/high substate, state-specific dependency - are a column in nothing I opened. The only per-sample labels deposited are patient_id, compartment and lesion group. The state label would have to be rebuilt by re-running the authors' ARACNe/metaVIPER master-regulator pipeline plus clustering on raw single-cell matrices inside a 33 GB tar archive."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Expression matrices with gene symbols are present; cell-line features for the screen would come from DepMap/CCLE, which is 6 lookups, not thousands."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "CRISPR files are unambiguous raw read counts per guide RNA. The file named GSE143584_CUMC_PDAC_Interactome_Counts holds non-integer values (e.g. 1.0398, 8.7329) with no stated normalisation - a documentation gap I verified in the file, not fatal on its own."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 18504,
+      "note": "FAIL for the fallback projects. The CRISPR screen is 3,084 genes x 6 cell lines = 18,504 gene-line pairs, but the unit that must generalise is the cell line and there are only 6. The transcription-factor overexpression arm has 8 factors. The bulk cohort has 401 samples, but only 242 of them are epithelium, below the ~400 classification floor."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.7 MB per CRISPR table; 64 MB for the bulk count matrix; 33 GB for the single-cell superseries tar",
+      "note": "The tabular pieces are trivial on a laptop; the single-cell archive that actually carries the cell states is 33 GB and over the 50 MB download rule."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "24 CRISPR samples = 6 lines x 2 timepoints x 2 replicates, as expected; 401 count columns match the GEO design (197+26+19 epithelium, 124+23+12 stroma). Minor mismatch: batch_edit.xlsx lists only 366 of the 401 samples. Library size could not be cross-checked because the paper's supplement would not download."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the headline target. A cell-state label is the output of VIPER (a computational method that infers protein activity from the expression of a transcription factor's target genes) run on the very expression profile that would be the model's input - predicting it is circular by construction, and the ceiling is VIPER's own accuracy."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "PurIST (Purity Independent Subtyping of Tumors), a single-sample pancreatic cancer subtype classifier built on top-scoring gene pairs",
+        "open_weights": true,
+        "score_and_split": "Published as a trained single-sample classifier validated across multiple independent pancreatic cohorts; I retrieved it only via search summaries, not the original numbers.",
+        "authors_named_unsolved": "Not retrieved (I did not open the primary paper).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PanSubNet, a deep-learning model that reads routine H&E (haematoxylin and eosin) stained slides and predicts pancreatic molecular subtype",
+        "open_weights": null,
+        "score_and_split": "Mean AUC (area under the receiver operating characteristic curve) 88.5% in high-confidence cases under 5-fold cross-validation on 1,055 patients, and 84.0% on the external TCGA (The Cancer Genome Atlas) cohort.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "DeepDEP, a deep-learning model predicting CRISPR gene dependency from tumour molecular profiles",
+        "open_weights": true,
+        "score_and_split": "Pearson correlation 0.87 on a held-out set of 28 cell lines and 1,298 dependencies, trained on 278 DepMap cell lines.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Transcriptome-based virtual CRISPR screening (bioRxiv 2024), a model inferring dependency from tumour expression",
+        "open_weights": null,
+        "score_and_split": "5-fold cross-validation on DepMap with over 1,100 CRISPR-screened cell lines; applied to 11,373 TCGA tumours and 509 unscreened lines.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "GEARS, a graph deep-learning model predicting the transcriptional response to gene perturbations",
+        "open_weights": true,
+        "score_and_split": "Reported 40% higher precision than prior approaches at predicting genetic-interaction subtypes in a combinatorial screen; evaluated on Perturb-seq benchmarks, not on this paper's data.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (single-cell transcriptome foundation models) for the cell-state task; ESM-2 (a protein language model) for gene-level dependency features",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop for frozen embeddings of the tabular pieces; a GPU would be wanted for the 33 GB single-cell archive",
+    "licence": "scGPT and Geneformer are openly released; ESM-2 is MIT-licensed"
+  },
+  "integration": {
+    "partner_dataset": "DepMap (the Cancer Dependency Map: genome-wide CRISPR knockout fitness scores for ~1,100 cell lines), which already contains all six screened lines (KP4, PANC-1, PaTu-8988, HPAF-II, PK-45H, CAPAN)",
+    "join_key": "HGNC gene symbol plus cell-line name mapped to a DepMap ACH identifier",
+    "bigger_question_one_sentence": "Does a dependency predictor trained on DepMap's knockout screens transfer to an independently produced, focused CRISPR-interference screen in the same pancreatic lines - i.e. did it learn biology or the Broad's assay?"
+  },
+  "controls": {
+    "positive_control": "Core essential genes (ribosome, proteasome, spliceosome) present in the 3,084-gene library must show strong dropout in every one of the 6 lines; I did not compute this.",
+    "negative_control": "Shuffle the gene-to-log-fold-change mapping and confirm performance collapses; compare the two independent replicates of each screen arm, which are present in the file.",
+    "external_validation": "DepMap CRISPR gene-effect scores for the same six cell lines; also the independent Sanger CRISPR screens."
+  },
+  "honest_claim_h3": "Any model built here could only claim: among 3,084 regulatory genes in six pancreatic cancer cell lines grown in vitro, it ranks which gene knockdowns reduce fitness - it could say nothing about the three malignant cell states that are the paper's subject, because those states exist nowhere as a deposited label.",
+  "plain_idea": {
+    "one_liner": "Use a pancreatic tumour cell's gene expression to predict which malignant cell state it occupies and which genes it needs to survive.",
+    "train_on": "The project I considered would train on single-cell and bulk expression profiles from this study: 401 laser-microdissected bulk samples from 232 patients (verified) plus single-cell matrices in a 33 GB archive whose cell count I could not verify.",
+    "predict": "The intended output is one of three developmental lineage states crossed with MAPK-signalling-low versus MAPK-signalling-high, and the gene dependencies that follow. The 'true answer' is not a measurement - it is the output of the authors' own master-regulator inference run on the same expression data.",
+    "why_worthwhile": "Pancreatic cancer labs choosing which transcription factor to target would use a state predictor; even a failure would show how far a cell-state call can be reproduced from expression alone. But it cannot be attempted here, because the state label was never deposited."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Six cell lines with a 3,084-gene focused library against DepMap's ~1,100 lines screened genome-wide; all six of these lines are already in DepMap. The bulk cohort's 401 samples are smaller than the 1,055-patient cohort PanSubNet used."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The CRISPR files do carry two independent replicates per cell line and timepoint, which would let you estimate measurement noise and attach a confidence to each gene's dropout - but with only 6 cell lines there is no group structure to calibrate across."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "DeepDEP (2021) reaches Pearson 0.87 on held-out lines trained on 278 lines, and the 2024 virtual-screening model uses over 1,100 lines with 5-fold cross-validation; six extra lines cannot beat either."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: our data is a different library and, for GSE167157, a different modality (CRISPR interference rather than knockout), so it does not measure the same quantity the same way as the DepMap baseline it would be compared with."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project the paper invites - predict a pancreatic tumour cell's lineage state and MAPK substate from its expression profile, then predict the dependencies that follow - cannot be built from the deposited files, because the state label exists only as the output of the authors' master-regulator pipeline and was not deposited. The only self-contained fallback is to treat the two 6-cell-line CRISPR screens (3,084 regulatory genes, knockout and interference arms, two replicates each) as an external test set for a DepMap-trained dependency model; that is a one-afternoon transfer check, not a project.",
+  "effort": {
+    "hours_to_feature_table": 60,
+    "working_set_gb": 33.0,
+    "needs_gpu": true,
+    "peak_ram_gb": 16,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: rebuilding the cell-state labels means downloading the 33 GB GSE161369 archive, re-running ARACNe network inference and metaVIPER on the single-cell matrices, then reproducing the authors' clustering - realistically a week-plus of work whose output is still a reconstruction of someone else's pipeline. The tabular files I did open parse in seconds."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A8 on the headline task, and A5 on every fallback. Verified in the files: the deposited GEO tables carry only patient_id, compartment (epithelium/stroma) and lesion group (PDA/PanIN/IPMN) as sample labels - the three lineage states and the MAPK-low/high substates that the paper is about appear in no column, and would have to be rebuilt by re-running the authors' ARACNe/metaVIPER master-regulator pipeline on a 33 GB single-cell archive (A2), after which the label is that pipeline's output computed from the same expression that would be the model's input (A8, circular). The fallbacks are too small: the CRISPR and CRISPRi screens cover 3,084 genes but only 6 cell lines, all of which DepMap already screens genome-wide; the transcription-factor overexpression arm has 8 factors; the 401-sample bulk cohort offers only a trivial epithelium-versus-stroma label or a 242-sample lesion-type label."
+}

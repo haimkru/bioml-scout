@@ -1,0 +1,155 @@
+{
+  "paper_id": "nar2026-gkag463",
+  "title": "SynCraft: an integrated web server for ADMET-aware retrosynthesis and molecular design.",
+  "doi": "10.1093/nar/gkag463",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.19822545",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "GitHub repo Q-Aljanabi/SynCraft listed via the API: the whole tree is 2 files, README.md (13 KB) and LICENSE, no code, no model weights, no data, despite the data availability statement promising both. Zenodo record 19822545 holds exactly one file, SynCraft-7.0.0.rar, 2,371,631,709 bytes (2.37 GB); a ranged GET confirmed a real RAR archive whose first entry is named SynCraft-7.0.x, but it is 47x over the 50 MB download cap so I did not transfer it. The Europe PMC supplement zip (2.42 MB) was downloaded and unpacked: 8 figure images plus one 23-page methods PDF, which I read in full with pypdf; it contains only summary tables (solve rates, timings, threshold calibrations), no molecule-level data. The web server at syncraft.denglab.org returns HTTP 200 but is a JavaScript single-page app with no server-side download or dataset page (checked /, /tutorials, /download, /help: all return the same 995-byte shell).",
+    "what_came_from_paper_text_only": "384,512 reaction templates (3,210 USPTO-MIT + 381,302 Retro*, which does sum correctly), 479,035 source USPTO-MIT reactions, 22.4 million purchasable building blocks from ZINC15/eMolecules with prices for 8.7M (38.8%), 71% solve rate on 1,000 unfiltered ChEMBL molecules, MolMVC ClinTox ROC-AUC (area under the receiver-operating curve) 0.984 on a scaffold split of 1,468 compounds, expert ratings from 47 medicinal chemists on 200 routes. None of these tables or molecule lists are deposited anywhere I could reach."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "No dataset is deposited. The GitHub repo named in the data availability statement is empty (README + LICENSE only, verified via the GitHub API), and the only Zenodo artifact is a 2.37 GB .rar code/model bundle, far over the 50 MB cap and not a labelled table."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no label column anywhere, because there is no data file. Any target (route quality, intermediate toxicity, solvability) would have to be constructed by running the web server or the unreleased code on molecules of our own."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs would be SMILES strings (text structures of molecules), which are freely obtainable from ChEMBL or USPTO; but none are deposited by this paper, so this passes only in principle."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Scales are documented in the supplementary PDF: ADMET outputs are dimensionless 0-1 probabilities with stated thresholds (ClinTox > 0.70, ToxCast < 0.40), SA/SC scores and QED defined. Read in the supplement only; no file to check."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "Zero labelled rows released. The only human-labelled set described is 47 medicinal chemists rating routes for 200 ChEMBL molecules, which is both unreleased and below the ~1,500-row bar."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "2.37 GB archive; authors' README demands an NVIDIA GPU with >=16 GB VRAM and 32 GB RAM",
+      "note": "The authors' own requirements (GPU >= 16 GB VRAM for ADMET inference, 32 GB RAM for template search) exceed a 16 GB CPU-only laptop; their own servers used 4x RTX 3090 and 256 GB RAM."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Nothing downloadable to count against. Internal numbers mostly reconcile (3,210 + 381,302 = 384,512 templates), but the 71% headline solve rate versus 94.3% in Supplementary Table S3 and 42 s versus 84 s runtimes need the supplement's footnotes to resolve."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Every number the tool emits is a prediction, not a measurement: toxicity flags are MolMVC (a multi-view contrastive-learning model) outputs, so training on them distills MolMVC; SA, SC, QED and Lipinski are deterministic functions of the input SMILES, i.e. computed from the features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "MolMVC (multi-view contrastive learning molecular representation model, Huang et al., Bioinformatics 2024) - the ADMET engine inside SynCraft",
+        "open_weights": false,
+        "score_and_split": "ClinTox ROC-AUC (area under the receiver-operating curve) 0.984, 95% CI 0.971-0.995, on a scaffold split of the 1,468-compound ClinTox set, per this paper's Supplementary S3.",
+        "authors_named_unsolved": "Supplement concedes the template library under-covers photochemical, multicomponent, enzymatic and carbene reactions (3-12 templates each) and plans literature-mined augmentation; also notes ClinTox is small (1,468 compounds).",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "ADMET-AI (Swanson et al., Bioinformatics 2024), a web and command-line ADMET predictor",
+        "open_weights": true,
+        "score_and_split": "Reported by its authors as having the highest average rank on the Therapeutics Data Commons (TDC) ADMET leaderboard, which uses scaffold splits; number not independently retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AiZynthFinder (Genheden et al., J Cheminform 2020), open-source template-based retrosynthesis planner used as this paper's comparator",
+        "open_weights": true,
+        "score_and_split": "This paper's Supplementary Table S5 reports it generating 4,573 intermediates on the same 1,000-molecule ChEMBL set, with 90.5% Lipinski compliance versus SynCraft's 89.5%.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Syntheseus (Maziarz et al., 2024), a benchmarking library that re-evaluates retrosynthesis algorithms under controlled conditions",
+        "open_weights": true,
+        "score_and_split": "Re-evaluation showed the ranking of state-of-the-art single- and multi-step planners changes under controlled evaluation; specific numbers not retrieved.",
+        "authors_named_unsolved": "Inconsistent evaluation protocols across retrosynthesis papers.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RSGPT (Nat Commun 2025), a generative transformer for retrosynthesis pretrained on ten billion datapoints",
+        "open_weights": null,
+        "score_and_split": "Top-1 accuracy 63.4% on the standard single-step retrosynthesis benchmark, per the paper's abstract in search results.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "",
+    "freeze_and_head_viable": null,
+    "hardware": "",
+    "licence": ""
+  },
+  "integration": {
+    "partner_dataset": "",
+    "join_key": "",
+    "bigger_question_one_sentence": ""
+  },
+  "controls": {
+    "positive_control": "",
+    "negative_control": "",
+    "external_validation": ""
+  },
+  "honest_claim_h3": "A model trained on anything this paper makes available could only claim to reproduce MolMVC's own toxicity probabilities and RDKit's deterministic descriptors, not any measured toxicity or any measured synthetic outcome.",
+  "plain_idea": {
+    "one_liner": "Use a molecule's chemical structure to predict whether a proposed synthetic intermediate is toxic or hard to make.",
+    "train_on": "Intermediate molecules produced by a retrosynthesis planner, described by their structure; this paper deposits none, so the count available from it is zero.",
+    "predict": "A toxicity or synthesizability flag. Here the only available answer key is another model's predicted probability (MolMVC) or a formula computed from the structure itself, not a laboratory measurement.",
+    "why_worthwhile": "Process chemists do want automatic flagging of genotoxic intermediates before scale-up, as the valsartan nitrosamine recalls show, but learning that from predicted labels teaches nothing new about the chemistry."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The paper releases no data at all; its inputs are public resources others already use (USPTO-MIT 479,035 reactions, MoleculeNet, ZINC15/eMolecules), so we would have strictly less than ADMET-AI or AiZynthFinder had."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No replicate or repeated measurements exist, and the authors already report bootstrap confidence intervals for the ClinTox ROC-AUC, so there is nothing to add."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "MolMVC (2024) is a transformer plus graph-transformer plus SchNet ensemble evaluated on a scaffold split, and ADMET-AI (2024) tops the Therapeutics Data Commons leaderboard; both are recent and honestly split."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on the first condition: SynCraft's own model cannot be run as our baseline because the promised code and weights are absent from GitHub and locked in a 2.37 GB RAR we are not permitted to download."
+    }
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "",
+    "approx_items": null,
+    "join_key": "",
+    "why": ""
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "None viable from this paper. It is a web-server/tool paper whose only deliverables are a live interface, a 2.37 GB code archive and an empty GitHub repo; the measured datasets underneath it (MoleculeNet ClinTox/ToxCast, USPTO-MIT, ChEMBL, ZINC15) are public, already heavily modelled benchmarks that belong to other papers, and the paper's own outputs are model predictions.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 2.37,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated beyond the authors' stated requirements (GPU with >=16 GB VRAM, 32 GB RAM) and the 2.37 GB Zenodo archive size read from the Zenodo API; Part A failed so nothing was timed.",
+    "cheapest_killing_check": "List the GitHub tree and the Zenodo file list: 2 files (README, LICENSE) and one 2.37 GB .rar, zero deposited tables of measured labels. One minute, and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Software paper with no deposited dataset: the GitHub repo promised in the data availability statement is empty (verified: README + LICENSE only), the sole Zenodo artifact is a 2.37 GB RAR of code and weights, and every quantity the tool produces is either another model's prediction (MolMVC toxicity probabilities) or a formula computed from the input structure (SA, SC, QED). Fails A1, A2, A5, A6, A7 and A8."
+}

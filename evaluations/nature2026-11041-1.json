@@ -1,0 +1,50 @@
+{
+  "paper_id": "nature2026-11041-1",
+  "title": "Neuronal detection of social actions directs collective escape behaviour.",
+  "doi": "10.1038/s41586-026-11041-1",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.6084/m9.figshare.30223705",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the figshare record 30223705 (CC BY 4.0) through DataCite; its file list via the figshare API is Behavior_data.zip 2.0 GB, Imaging_data_dots.zip 11.7 GB, Imaging_data_fish.zip 13.4 GB and Metadata.zip 7.7 KB. I downloaded and opened Metadata.zip (10 CSVs). Its imaging sheets list 29 sessions for the moving-dot experiment and 27 for the virtual-fish experiment, with 3–10 trials per stimulus. The behaviour sheets list 13–268 videos per experiment. I read the end of each large zip (ranged download of the last 4 MB): each holds compressed per-fish or per-experiment zips nested inside, at 0.2–1.9 GB each for imaging. I pulled out and opened one 35 MB behaviour sub-zip (SocialEscape-CL). It holds 27 SLEAP pose-tracking .h5 files (SLEAP is a pose-tracking tool; 10 body points per frame) and 27 stimulus CSVs (columns time_stamps, fish_showing, fish_escaping), with 370,014 frames and only 108 virtual-escape onsets in total.",
+    "what_came_from_paper_text_only": "The neuron counts (about 3,322 per plane, 23,452 responsive neurons in 12 fish) and the stimulus-decoding SVM (support vector machine, a standard classifier) come from the bioRxiv preprint (PMC12485696), whose data statement says data come 'upon publication'. The Nature paper itself is paywalled; the PMC link that NCBI returned (PMC13222866) is a different paper, on zebrafish social approach. I did not open the imaging sub-zips, so I don't know if they hold extracted neuron traces or raw image stacks."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: public figshare record, CC BY 4.0, ranged downloads work. But the zips are nested Google-Drive exports with compressed inner zips, 27 GB in total."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in files: the behaviour data are pose tracks plus stimulus timing; whether the fish escaped or retreated has to be built from the trajectories. For the imaging data, the only ready label is which stimulus the experimenter showed, a design variable rather than a measured outcome."},
+    "a3_inputs_present": {"pass": true, "note": "Pose tracks are present as SLEAP .h5 arrays (checked). Neural traces are probably inside the per-fish imaging zips, but I did not open one."},
+    "a4_units_stated": {"pass": true, "note": "Checked: metadata gives rig size in mm, video size in pixels and frame rate in Hz for converting pose coordinates. Imaging units (fluorescence change) not checked."},
+    "a5_enough_rows": {"pass": false, "n_rows": 108, "note": "Checked: one closed-loop social-escape experiment has 108 escape events across 27 videos. Imaging covers 12 fish and 27–29 sessions with 3–10 trials per stimulus (metadata), well under 400 independent labelled trials. The real unit is the fish."},
+    "a6_fits_laptop": {"pass": false, "working_set": "about 25 GB of imaging zips; per-fish inner zips 0.2–1.9 GB", "note": "Each imaging inner zip is compressed inside the outer zip, so each must be downloaded whole. The usable working set is unknown until one is opened, and the total is far over 5 GB."},
+    "a7_counts_match_paper": {"pass": true, "note": "Metadata lists imaging sessions from 12 or fewer distinct fish IDs per experiment, consistent with the preprint's 12 fish. Not fully reconciled."},
+    "a8_label_provenance": {"pass": true, "note": "Stimulus labels come from the experimenter's design and behaviour comes from SLEAP pose tracking, so neither is another model's prediction about biology. Pose tracks are themselves outputs of a tracking model."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Authors' own SVM stimulus decoder (Yu et al. 2025 preprint)", "open_weights": false, "score_and_split": "Separated the four stimulus types from principal components of each session's responsive cells, using 8 trials per stimulus with a stratified split within each session; accuracy figure not extracted.", "authors_named_unsolved": "Not retrieved; the paywalled Nature discussion was not read.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "none suitable", "freeze_and_head_viable": false, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "With this data, a model could at most say which of four virtual stimuli a given glassfish was seeing, decoded from its own tectum and thalamus neurons, in 12 fish from one lab.",
+  "plain_idea": {
+    "one_liner": "Use brain-cell activity in a see-through fish to predict whether it is watching a virtual schoolmate escape, vanish or swim.",
+    "train_on": "Per-trial activity of thousands of visual-brain neurons in head-fixed glassfish shown virtual stimuli. Trials number in the low hundreds across 12 fish (from metadata; exact count unknown).",
+    "predict": "Which stimulus was on screen (escape, disappearance, looming, linear motion). The true answer is the experimenter's stimulus log, not a measured outcome.",
+    "why_worthwhile": "It would show how separable 'social danger' signals are in the fish visual brain, but the authors already showed this with a simple decoder."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Decode stimulus type from tectal and thalamic calcium activity across fish, or predict whether a fish retreats from pose-tracked trajectories. Both are tiny-n, single-lab neuroscience analyses with no pretrained backbone. The authors already ran the decoder.",
+  "effort": {"hours_to_feature_table": 24, "working_set_gb": 25, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from file sizes only. Building escape labels from SLEAP tracks and extracting traces from nested imaging zips would take at least a day; nothing was timed.", "cheapest_killing_check": "Count escape events in the 35 MB behaviour sub-zip: 108 across 27 videos, which kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A2 (also A6 on size). The open figshare data (27 GB of nested zips) holds 12 imaged fish and 108 virtual-escape events in the experiment checked. Behaviour labels would have to be built from pose tracks, and the only ready label is the experimenter's stimulus choice, which the authors already decoded."
+}

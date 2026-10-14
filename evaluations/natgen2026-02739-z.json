@@ -1,0 +1,55 @@
+{
+  "paper_id": "natgen2026-02739-z",
+  "title": "Spatiotemporal lineage tracing reveals the dynamic spatial architecture of tumor growth and metastasis.",
+  "doi": "10.1038/s41588-026-02739-z",
+  "journal": "Nature Genetics",
+  "data_url": "https://doi.org/10.5281/zenodo.19771805",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 19771805 (CC-BY-4.0, open): one tarball, KPSpatial_Data.tar.gz, 6.09 GB. Too big to download, so I fetched its first 2 MB, which lists KPSpatial_meta.tsv (49 lines) and slideseq/neighborhood_composition.tsv.gz (255 MB; header shows 11 neighbourhood module scores plus tumor_id and sample). From the GitHub repo mattjones315/KPSpatial-release I downloaded and parsed: puck_meta.txt (44 Slide-seq plus 5 Slide-tags arrays, with mouse, site and batch); slideseq_fitness.tsv (682,659 spots, of which 621,439 are tumour spots in 124 tumour sections from 44 arrays; fitness ranges 0.0068 to 1.0); slidetags_fitness.tsv (5,650 nuclei); and slidetags_plasticity.tsv (41,185 nuclei, with 86% of single-cell plasticity values missing). Joining fitness to mouse: one mouse (SPC-11) contributes 549,114 of 621,439 tumour spots (88%), across 21 arrays and 60 tumour sections. The other 23 mice contribute between 1 and 10,572 spots each.",
+    "what_came_from_paper_text_only": "From the bioRxiv preprint (PMC11526908): fitness is the LBI (local branching index, a tree-shape statistic) from Cassiopeia, computed on reconstructed phylogenies. Missing lineage alleles were first filled in from spatial neighbours within 30 µm, over 5 rounds. Plasticity in Slide-seq is an L2 distance between expression-community scores. Fitness correlates with an earlier fitness gene signature at Pearson r = 0.4. I did not open the AnnData expression objects or the trees, which sit inside the 6 GB tarball."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record is open under CC-BY-4.0, with no login, and a ranged GET on the tarball worked. The derived tables are also on GitHub. Checked in the files."},
+    "a2_label_is_a_column": {"pass": true, "note": "A per-spot 'fitness' column exists in slideseq_fitness.tsv (621,439 tumour spots) and slidetags_fitness.tsv (5,650 nuclei), keyed on spot barcode plus sample. Checked in the files."},
+    "a3_inputs_present": {"pass": true, "note": "Neighbourhood module scores are present (header seen). Per the Zenodo description, the expression AnnData objects and trees are in the tarball. Their contents were not opened."},
+    "a4_units_stated": {"pass": true, "note": "Fitness is a unitless score scaled to 0–1 within each tumour: 36% of tumours have a maximum of exactly 1, which suggests per-tumour scaling. That makes it a within-tumour rank, not comparable across tumours."},
+    "a5_enough_rows": {"pass": true, "n_rows": 621439, "note": "621,439 labelled spots, but they are far from independent. 88% come from one mouse (SPC-11), and there are only 124 tumour sections from 24 mice. Labels are shared within subclones: 308,674 distinct values. The effective sample size is the tumour or the mouse, which is borderline."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1–3 GB after subsetting (estimate); 6.09 GB tarball", "note": "The fitness and neighbourhood tables are under 0.5 GB. The size of the expression AnnData objects inside the tarball was not verified."},
+    "a7_counts_match_paper": {"pass": true, "note": "The paper says 44 Slide-seq and 5 Slide-tags arrays, which matches puck_meta.txt (49 rows). The paper's spot counts per array were not cross-checked."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL. Fitness is not measured. It is the LBI (local branching index) estimator applied to phylogenies reconstructed by Cassiopeia, after missing lineage alleles were filled in from spatial neighbours within 30 µm. So the label is a model output that already carries spatial-neighbourhood information, which then leaks into any spatial or neighbourhood feature. The other candidate label, Slide-seq plasticity, is computed directly from expression-community scores: leakage by construction. The same rule rejected ajhg2026-07-005, whose label was a model estimate rather than a measurement."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "KP-Tracer fitness gene signature (Yang et al. 2022, Cell), a gene-set score for fast-expanding subclones", "open_weights": true, "score_and_split": "Correlates with phylogenetic fitness at Pearson r = 0.4 across Slide-seq tumours (per the preprint text); no held-out split.", "authors_named_unsolved": "Not retrieved from the 2022 paper's discussion.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "None fits well; scGPT or Geneformer (single-cell models) apply poorly to 10 µm Slide-seq spots, which mix several cells", "freeze_and_head_viable": null, "hardware": "CPU for neighbourhood features; a single-cell backbone over 600k spots would be slow", "licence": "Data CC-BY-4.0"},
+  "integration": {"partner_dataset": "Human lung adenocarcinoma spatial or single-cell atlases (no lineage labels)", "join_key": "Mouse-to-human gene orthologs", "bigger_question_one_sentence": "Does a mouse-learned 'expanding subclone' expression program flag expanding regions in human tumours? This can't be validated, because human tissue has no lineage-based ground truth."},
+  "controls": {"positive_control": "Hypoxia and EMT (epithelial-to-mesenchymal transition) community scores should correlate with fitness, as the paper reports.", "negative_control": "Shuffle fitness within tumours.", "external_validation": "None independent: all data comes from one lab and one mouse model, and 88% of spots come from one mouse."},
+  "honest_claim_h3": "A model would predict the local branching index of spatially imputed reconstructed trees (a within-tumour tree-shape statistic) from local expression in KP mouse lung tumours, mostly from one mouse. It would not be predicting measured growth.",
+  "plain_idea": {
+    "one_liner": "Use the gene activity around each tissue spot to predict whether that spot's tumour cells came from a fast-expanding subclone.",
+    "train_on": "621,439 tumour spots (10 µm each) from 124 mouse lung tumour sections, each with local gene-expression neighbourhood scores; 88% of spots come from a single mouse.",
+    "predict": "A 0–1 'phylogenetic fitness' score per spot. It is not measured: it is computed from the shape of a family tree reconstructed from CRISPR barcode scars, after missing scars were filled in from neighbouring spots.",
+    "why_worthwhile": "Tumour biologists could flag expanding, pre-metastatic regions from expression alone. But the paper already reports the main association (fitness goes with hypoxic, fibrotic regions)."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "yes", "why": "621,439 spatially placed fitness-labelled spots, against the single-cell, non-spatial KP-Tracer data behind the 2022 signature. But the labels are model-derived."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate lineage measurements of the same tumour region to estimate label noise."},
+    "models_beatable": {"answer": "yes", "why": "The only baseline is a 2022 gene-set score at r = 0.4. It is easily beaten, but beating it means fitting a tree statistic."},
+    "guaranteed_improvement": {"answer": "no", "why": "No second dataset measures the same quantity the same way. The label pipeline (imputation, reconstruction, LBI) differs from the 2022 study."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict per-spot phylogenetic fitness from neighbourhood expression and composition, holding out whole mice. Rejected because the label is an estimator output on spatially imputed trees, and the data is dominated by one mouse.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 1.5, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": null, "cv_run_minutes": 15, "compute_note": "Estimated only, from the table sizes seen (fitness TSV 46 MB, neighbourhood table 255 MB compressed). The AnnData sizes inside the 6.09 GB tarball are unknown.", "cheapest_killing_check": "Count labelled spots per mouse. Done: SPC-11 holds 88% of them, so a held-out-mouse split has a tiny test set."},
+  "verdict": "reject",
+  "verdict_reason": "A8 fails. The only per-spot labels are computed, not measured. Fitness is a tree-shape estimator (local branching index) on phylogenies whose missing barcodes were filled in from spatial neighbours, so spatial features leak into the label. Plasticity is computed from expression. On top of that, 88% of the 621,439 labelled spots come from one mouse."
+}

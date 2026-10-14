@@ -1,0 +1,68 @@
+{
+  "paper_id": "cell2026-09-013",
+  "title": "Gut microbiota primes stroke severity via the AHR in intestinal dendritic cells.",
+  "doi": "10.1016/j.cell.2026.09.013",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE333893",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the only small file in the deposit: GSE333893_GEO_feature_reference.csv.gz (449 bytes, 12 rows) - it is the antibody-hashtag key, showing 12 multiplexed samples per library (Liver_1-4, mLN_1-4, LP_SI_1-4). Read the full GEO (Gene Expression Omnibus) sample metadata for all 6 libraries, and listed the download directory: only 2 files, the 449-byte key and GSE333893_processed.rds (481 MB, an R Seurat object). Confirmed BioProject PRJNA1473173 exists but its raw reads return no runs in the European Nucleotide Archive mirror. Searched Zenodo, Dryad, figshare, the European Nucleotide Archive and NCBI BioProject for the human-patient and mouse microbiome data: nothing found.",
+    "what_came_from_paper_text_only": "Everything about the human stroke cohort, the indole measurements, infarct volumes, behaviour scores, the AHR (aryl hydrocarbon receptor) knockout comparisons and the faecal transplant experiments comes from the abstract only - the paper is paywalled, has no PubMed Central record, and Europe PMC reports no full text, no supplementary files and no data cross-references. I did not download the 481 MB .rds file (over this project's 50 MB cap), so its cell count, metadata columns and cluster labels are inferred from the GEO processing description, not seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GSE333893 is public with no login: two files, 481 MB .rds plus a 449-byte key, verified by listing the directory. But the data behind the paper's headline human claim (indole-producing Escherichia coli in stroke patients) is in no repository I could find - searched Zenodo, Dryad, figshare, European Nucleotide Archive, NCBI BioProject and the paper's own accession list."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. Nothing in the deposit is an outcome to predict. The GEO metadata carries only design fields (tissue, batch Day0/1/2, genotype C57BL6/J, 'treatment: Sham.Stroke'). Stroke severity, infarct volume and microbiome composition - the quantities the paper is about - are not in any public file, so any label would have to be built from data that was never released."},
+    "a3_inputs_present": {"pass": true, "note": "Gene-by-cell counts plus antibody counts are inside the .rds, so inputs exist in principle; not opened because of the 50 MB cap."},
+    "a4_units_stated": {"pass": true, "note": "Units are clear for what is there: unique molecular identifier counts, SCTransform-normalised, Cell Ranger v8.1.0 against mm10 reference, stated in the GEO processing notes."},
+    "a5_enough_rows": {"pass": false, "n_rows": 12, "note": "FAIL at the biological unit. The hashtag key I opened shows exactly 12 multiplexed samples per library (3 tissues x 4 mice), across 3 libraries (Day0, Day1, Day2) - so roughly 36 tissue samples from about 12 mice, in 3 timepoint groups, one strain, one lab. Cells number in the tens of thousands but cells from one mouse are not independent, so there are ~3 groups and ~12 animals, far under the ~400 needed even for classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "481 MB compressed .rds, likely 6-12 GB in memory once the integrated and scaled Seurat assays are loaded", "note": "Borderline and untested: needs R plus Seurat v5 to open at all (not in this project's Python toolchain), and conversion to a Python-readable format is extra work. Estimated, not measured."},
+    "a7_counts_match_paper": {"pass": false, "note": "FAIL as unverifiable: the paper is paywalled with no full text, so there is no stated cell count, mouse count or patient count to check the deposit against. The 6 libraries and 12 hashtags come from GEO alone."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL. The only cell-level annotations in the object are Louvain clusters hand-labelled from marker genes (stated verbatim in the GEO processing notes), i.e. the output of the authors' own analysis of the same expression matrix we would use as features - circular by construction. The alternative label, timepoint, is a design variable confounded with library batch (batch = Day0/Day1/Day2), so a classifier would learn the 10x run, not biology."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Rectal/oral microbiota outcome classifier (Molecular Neurobiology 2024, 'Functional Outcome Prediction of Acute Ischemic Stroke Based on the Oral and Gut Microbiota', PubMed 39546118)", "open_weights": null, "score_and_split": "Search snippet reports 87.8% accuracy for short-term outcome from rectal bacterial abundances under cross-validation; I read the title and snippet only, not the paper, so the split is unverified.", "authors_named_unsolved": "Not retrieved - paper not opened.", "runnable_as_baseline": false},
+      {"name": "Gut-microbiota recovery model for cerebral hypoxia-ischemia (Frontiers in Pharmacology 2026, PubMed 41988525)", "open_weights": null, "score_and_split": "Not retrieved beyond the title and abstract snippet; described as a single-centre model augmented with public data.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell transcriptome foundation models)", "freeze_and_head_viable": true, "hardware": "CPU embedding of tens of thousands of cells is slow but possible; irrelevant here because there is no honest label", "licence": "scGPT MIT, Geneformer Apache-2.0 - permissive, not the problem"},
+  "integration": {"partner_dataset": "None viable. Tabula Muris Senis or the Immunological Genome Project could supply more mouse immune cells, but they carry no stroke phenotype, so they add features without adding the missing outcome.", "join_key": "mouse gene symbol / Ensembl gene ID", "bigger_question_one_sentence": "Cannot be written: the stroke-severity and microbiome measurements that would make any join meaningful were never deposited."},
+  "controls": {"positive_control": "A model should recover tissue of origin (liver vs mesenteric lymph node vs small-intestine lamina propria) from expression, since the hashtags encode it - but this is trivial and not the paper's question.", "negative_control": "Shuffle timepoint labels; with 3 batch-confounded groups this test cannot distinguish leakage from batch effect.", "external_validation": "None available - no second deposit, no patient data, no replicate cohort."},
+  "honest_claim_h3": "With only this deposit, the strongest honest claim is 'a classifier can tell apart three 10x Genomics libraries run on different days from about twelve wild-type mice', which is a statement about batch effects, not about stroke or the gut microbiota.",
+  "plain_idea": {
+    "one_liner": "Use intestinal immune-cell gene activity to predict how severe a stroke becomes - the project considered, and why it cannot be built here.",
+    "train_on": "Intended: single-cell gene-expression profiles of immune cells from gut, gut-draining lymph node and liver, one profile per mouse or patient. Actually available: 6 sequencing libraries covering about 12 wild-type mice at 3 timepoints (verified from the 12-row hashtag key and GEO metadata).",
+    "predict": "Intended output: stroke severity (infarct volume or behavioural deficit) measured by magnetic resonance imaging or histology, or the abundance of indole-producing Escherichia coli measured by sequencing stool. Neither measurement is in any public file for this paper.",
+    "why_worthwhile": "If gut immune state before injury predicted stroke outcome, neurologists would have a pre-injury risk marker and a drug target; the biology is compelling, but this release contains none of the numbers needed to test it."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The published microbiome-to-stroke-outcome models used patient cohorts with stool sequencing plus recorded outcomes; this deposit has neither - 12 mice, no phenotype column."},
+    "confidence_score": {"answer": "no", "why": "Four mice per tissue per timepoint, no technical replicates of the same animal, no replicate libraries: there is nothing from which to estimate a noise floor or per-prediction uncertainty."},
+    "models_beatable": {"answer": "no", "why": "Irrelevant here: with no outcome label in the data we cannot evaluate against the 2024 and 2026 microbiome classifiers at all, let alone beat their reported numbers."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition - the existing models cannot be run as a baseline on this data because the data has no stroke-outcome measurement and no stool sequencing to join on."}
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "None. Stroke severity for mice is measured per experiment and not aggregated in any public resource I know of; patient outcome scores live in controlled-access clinical registries. The cluster annotations in this object exist only here.",
+    "approx_items": null,
+    "join_key": "none applicable",
+    "why": "There is no external pool of labelled examples to enlarge training or to validate on, so even a well-posed model here would have a sample size of about twelve animals."
+  },
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The idea I considered: freeze a single-cell foundation model (scGPT) on the intestinal CD45+ immune cells and fit a small head to predict stroke exposure and, ultimately, stroke severity from pre-injury gut immune state. It dies on the data: the deposit holds 6 libraries from ~12 wild-type mice at 3 timepoints with no severity, genotype-contrast or microbiome measurement, and the only cell-level labels are the authors' own clustering of the same matrix.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 10,
+    "embedding_hours": 20,
+    "cv_run_minutes": 15,
+    "compute_note": "All estimates, nothing timed: the 481 MB Seurat .rds exceeds this project's 50 MB download cap so it was never opened. Memory and embedding time are extrapolated from the stated processing (Cell Ranger v8.1.0, SCTransform-integrated Seurat v5) and typical 10x library sizes of tens of thousands of cells.",
+    "cheapest_killing_check": "Count the independent animals, not the cells. The 449-byte hashtag key answers it for free: 12 multiplexed samples per library = 3 tissues x 4 mice, so ~12 mice and 3 timepoint groups in total. That check took one minute and killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Mechanistic mouse immunology paper, not a dataset. The single public deposit (GSE333893) is 6 CITE-seq libraries from about 12 wild-type mice at 3 timepoints with no outcome column; stroke severity, indole levels, the AHR-knockout contrast and all human-patient microbiome data were never deposited. Fails A2 (no label), A5 (~12 animals, 3 groups), A7 (no paper text to check counts against) and A8 (only labels are the authors' own clustering of the same matrix, and timepoint is perfectly confounded with sequencing batch)."
+}

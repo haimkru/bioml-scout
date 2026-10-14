@@ -1,0 +1,103 @@
+{
+  "paper_id": "ajhg2026-06-016",
+  "title": "Likelihood-based calibration improves the clinical utility of JAG1 functional data for variant classification.",
+  "doi": "10.1016/j.ajhg.2026.06.016",
+  "journal": "American Journal of Human Genetics (AJHG)",
+  "data_url": "https://api.mavedb.org/api/v1/score-sets/urn:mavedb:00001198-a-1/scores",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the MaveDB score set urn:mavedb:00001198-a-1 (JAG1 membrane expression, CC0 licence, 735 KB CSV): 2,832 rows, 17 columns; continuous 'score' (0 to 1.17) with std/CI and 7 replicate columns (replicate pairwise correlation 0.45-0.76, under 2% missing per replicate); truth_set has 69 pathogenic + 106 benign; functional_consequence normal 2,346 / likely_abnormal 209 / abnormal 277; 638 synonymous rows, 0 nonsense, 2,288 unique protein changes. MaveDB metadata gives the target as JAG1 exons 1-7 with the DNA sequence included. GitHub repo tris-10/JAG1-Variant-Reclassification holds only one R script (KDE-based LLRp, a log-likelihood ratio of pathogenicity) plus README; no data file.",
+    "what_came_from_paper_text_only": "The new LLRp evidence bins (strong 1, moderate 340, supporting 269) and the 29-VUS (variant of uncertain significance) clinical cohort are in Table S1/S2 and the MaveDB calibration record, which I did not download (Europe PMC supplement endpoint timed out). That 2,194 rows are missense comes from the 2024 source paper as reported in search results; I did not recount it."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "MaveDB REST API returned the full CSV without login; CC0 licence. Verified."},
+    "a2_label_is_a_column": {"pass": true, "note": "The measured membrane-localization score is the 'score' column; clinical truth labels are in 'truth_set'. Nothing to construct. Verified in file."},
+    "a3_inputs_present": {"pass": true, "note": "HGVS (standard variant notation) nucleotide and protein changes plus the full target DNA sequence in MaveDB metadata; mutant sequences derivable in one script. Verified."},
+    "a4_units_stated": {"pass": true, "note": "Score is a dimensionless sorting-based ratio on a single 0 to ~1.2 scale from one assay; wild-type-like near 1 per MaveDB method text. Single scale, no unit mixing."},
+    "a5_enough_rows": {"pass": true, "n_rows": 2832, "note": "2,832 variants (about 2,194 missense per source paper); above the 1,500 bar for regression, but only 175 clinically labelled variants."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<1 MB CSV plus ESM-2 embeddings for ~2,200 variants of a 335-residue region", "note": "Trivially fits; ESM embeddings on CPU in minutes."},
+    "a7_counts_match_paper": {"pass": true, "note": "2,832 rows match the 2024 paper title; 69 pathogenic / 106 benign match the reference set of 175 stated in this paper; 277+209 = 486 abnormal matches the paper's 486."},
+    "a8_label_provenance": {"pass": true, "note": "Score is a physical measurement (flow-sorting of surface vs intracellular JAG1, 7 replicates). functional_consequence is a threshold of the score, so it must not be used as a feature; truth_set comes from ClinVar-style clinical classifications, independent of the assay."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One CSV from MaveDB holds variants, scores, replicates and truth labels; verified."},
+    "B2": {"score": 2, "why": "pandas read it first try, 2,832 x 17; verified."},
+    "B3": {"score": 2, "why": "Single assay, single lab, single normalized score scale; verified in file."},
+    "B4": {"score": 1, "why": "Scores floored at 0.0 (min exactly 0), suggesting clipping at the bottom; otherwise no censoring."},
+    "B5": {"score": 1, "why": "2,832 nucleotide rows collapse to 2,288 protein changes; synonymous/codon duplicates need averaging."},
+    "B6": {"score": 2, "why": "MaveDB lists score, count columns and method text; columns are self-explanatory; verified metadata."},
+    "C1": {"score": 1, "why": "Benchmark of predictors on a new trafficking assay is informative either way, but small and single-gene."},
+    "C2": {"score": 1, "why": "Zero-shot predictors (AlphaMissense, ESM) and a VAMP-seq abundance predictor exist; none benchmarked on this JAG1 set."},
+    "C3": {"score": 1, "why": "Weak 'unique application': membrane trafficking in a cysteine-rich secreted-pathway protein vs cytosolic abundance training data."},
+    "C4": {"score": 1, "why": "MAVEs are costly lab assays, but this region is already measured almost exhaustively (97.4%)."},
+    "C5": {"score": 2, "why": "Source paper reports AlphaMissense/CADD enrichment; this paper gives sensitivity 87-92%, OddsPath 18.4 on 175 references."},
+    "D1": {"score": 2, "why": "ESM-2 protein language model, open weights, small checkpoints on CPU."},
+    "D2": {"score": 2, "why": "Cache per-variant embeddings once for ~2,200 variants; fit a ridge or small head."},
+    "D3": {"score": 2, "why": "ESM-2 MIT licence; data CC0 per MaveDB record."},
+    "E1": {"ok": true, "why": "Held-out position or held-out domain splits possible across 335 residues and several EGF/DSL domains."},
+    "E2": {"ok": true, "why": "Domains (C2-like, DSL, EGF repeats) and residue blocks give ≥5 groups."},
+    "E3": {"ok": true, "why": "Per-position mean and per-amino-acid-substitution mean are easy dummies."},
+    "E4": {"ok": true, "why": "Seven replicate columns; replicate correlation 0.45-0.76 gives a noise ceiling; verified."},
+    "E5": {"ok": true, "why": "Cysteine loss is a known strong cause of abnormal localization; synonymous variants should score normal."},
+    "E6": {"ok": true, "why": "Label shuffle and within-domain shuffle are straightforward."},
+    "E7": {"ok": true, "why": "175 clinical truth-set variants and ClinVar give an independent clinical validation; other VAMP-seq sets in MaveDB."},
+    "E8": {"ok": true, "why": "Paper's 486→610 abnormal counts reproducible from score plus their R script."},
+    "G1": {"score": 2, "why": "HGVS on NM_000214.3 transcript and protein positions; mappable to UniProt P78504 and genomic coordinates."},
+    "G2": {"score": 2, "why": "ProteinGym/MaveDB abundance datasets and ClinVar, joinable on gene plus protein position."},
+    "G3": {"score": 2, "why": "One variant per protein change after averaging codons; clean one-to-one."},
+    "G4": {"score": 1, "why": "Asks whether abundance predictors trained on cytosolic proteins transfer to secretory-pathway trafficking; modest scope."},
+    "H1": {"score": 2, "why": "2,346 normal and 486 abnormal variants, plus 106 benign and 69 pathogenic references; verified."},
+    "H2": {"score": 0, "why": "One gene region, one cell line, one lab, one assay."},
+    "H3": {"score": 2, "why": "Claim is precise: predicts JAG1 exon 1-7 surface localization in one cell assay."},
+    "H4": {"score": 2, "why": "Paper states the assay misses NOTCH2-binding defects (4 pathogenic variants scored normal)."},
+    "I1": {"score": 1, "why": "Gilbert/Spinner lab (CHOP) and ClinGen variant curation groups; but they already have measurements."},
+    "I2": {"score": 0, "why": "Region is ~97% measured, so a predictor changes few clinical decisions for JAG1 itself."},
+    "I3": {"score": 1, "why": "Spearman on scores roughly aligned; clinical decision uses evidence-strength bins."},
+    "I4": {"score": 1, "why": "Per-position means and cysteine rules may capture much of the signal."},
+    "J1": {"score": 2, "why": "Real modelling: embeddings, grouped splits, transfer evaluation, noise ceiling."},
+    "J2": {"score": 1, "why": "Biology is interpretable (cysteines, disulfides, domains) but needs variant-effect intuition."},
+    "J3": {"score": 2, "why": "A zero-shot benchmark table alone is a shareable result in a day."},
+    "J4": {"score": 1, "why": "Could be set at one week; not yet stated."},
+    "J5": {"score": 0, "why": "No kill date written in NOTES.md yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "AlphaMissense (proteome-wide missense pathogenicity predictor, 2023)", "open_weights": false, "score_and_split": "Precomputed scores public; source JAG1 paper (2024) reports significant enrichment of high AlphaMissense scores among 435 abnormal missense variants out of 2,194, no correlation number seen by me.", "authors_named_unsolved": "Not retrieved for JAG1 specifically.", "runnable_as_baseline": true},
+      {"name": "Supervised VAMP-seq abundance predictor (Schulze et al., Protein Science 2026)", "open_weights": null, "score_and_split": "Trained on ~32,000 VAMP-seq (variant abundance by massively parallel sequencing) scores across proteins; validated on held-out experiments; exact numbers not retrieved.", "authors_named_unsolved": "Abstract notes experiment-to-experiment differences in score mapping complicate learning across datasets.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model), 150M or 650M checkpoint", "freeze_and_head_viable": true, "hardware": "Laptop CPU, minutes", "licence": "MIT"},
+  "integration": {"partner_dataset": "ProteinGym / MaveDB abundance (VAMP-seq) score sets and ClinVar", "join_key": "Gene symbol + protein position (HGVS on NM_000214.3 / UniProt P78504)", "bigger_question_one_sentence": "Do variant-effect models trained on cytosolic protein abundance transfer to surface trafficking of a disulfide-rich secreted-pathway protein?"},
+  "controls": {"positive_control": "Cysteine-loss variants and synonymous variants: model must rank cysteine losses as most abnormal and synonymous as normal.", "negative_control": "Shuffle scores within domain and globally; performance must fall to per-position-mean dummy.", "external_validation": "The 175 clinically classified variants (69 pathogenic, 106 benign) in truth_set, plus ClinVar JAG1 missense outside the reference set."},
+  "honest_claim_h3": "The model predicts the surface-localization score of JAG1 exon 1-7 missense variants in one cell-based assay, and says nothing about NOTCH2-binding defects or the rest of the protein.",
+  "plain_idea": {
+    "one_liner": "Use protein language-model features of each JAG1 amino-acid change to predict whether the mutant protein still reaches the cell surface.",
+    "train_on": "Each of about 2,200 single amino-acid changes in the first 335 residues of JAG1, described by sequence-model features; 2,832 measured variants in total (verified).",
+    "predict": "The membrane-localization score measured by flow-sorting cells that express each variant, averaged over 7 replicates in one lab.",
+    "why_worthwhile": "Tests whether general variant-effect predictors capture trafficking defects in disulfide-rich secreted proteins; even a failure tells clinical curators how far to trust predictors for such genes."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "2,832 variants is tiny next to ProteinGym's ~2.7M, but it covers surface trafficking of a secreted-pathway protein, a readout rare in VAMP-seq abundance training sets (~32,000 scores in Schulze 2026)."},
+    "confidence_score": {"answer": "partly", "why": "Seven replicates and per-variant std allow a noise ceiling, but one gene gives too few groups for per-region calibrated confidence."},
+    "models_beatable": {"answer": "partly", "why": "AlphaMissense (2023) predicts pathogenicity, not this assay, so a supervised in-gene model will beat it trivially on random splits; held-out-domain is the honest test."},
+    "guaranteed_improvement": {"answer": "no", "why": "Other MaveDB abundance sets measure a different quantity in different assays, so adding them doesn't guarantee better prediction of JAG1 trafficking."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "MaveDB and ProteinGym hold many VAMP-seq abundance and surface-expression deep mutational scans (known resources); trafficking/surface readouts specifically are few.", "approx_items": null, "join_key": "Gene + protein position / UniProt accession", "why": "Other abundance scans could serve as training data for a cross-protein model tested on JAG1, but the readouts differ."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Would need a cross-protein trafficking predictor that clearly transfers to JAG1 held-out domains and improves clinical classification."},
+    "realistic": {"journal": "Human Mutation (or Genetics in Medicine Open)", "why": "Publishes variant-effect predictor benchmarks on single-gene MAVEs with clinical calibration."},
+    "fallback": {"journal": "bioRxiv preprint plus MLCB/MLSB workshop", "why": "A negative transfer benchmark on one gene is still a short note."}
+  },
+  "pitch": {
+    "headline": "2,832 JAG1 variants, 7 replicates each, CC0 on MaveDB, with 175 clinically classified controls in the same table.",
+    "what_makes_the_data_unusual": "Measures surface trafficking, not abundance, across ~97% of possible changes in a disulfide-rich region; replicate correlation 0.45-0.76 gives an explicit noise ceiling.",
+    "the_win": "Show held-out-domain Spearman of a frozen ESM-2 head near the replicate ceiling, beating AlphaMissense on the 175 clinical controls.",
+    "even_if_it_fails": "Quantifies how badly general predictors miss trafficking defects in secreted proteins, useful to curators weighting computational evidence.",
+    "who_wants_it": "Gilbert/Spinner group (CHOP), ClinGen variant curation expert panels, and the Atlas of Variant Effects community deciding how much computational evidence to apply."
+  },
+  "ml_idea": "Benchmark zero-shot predictors (ESM-1v/ESM-2 likelihoods, AlphaMissense) and a frozen ESM-2 embedding + ridge head on JAG1 membrane-localization scores with held-out-domain splits; test transfer of a model trained on other MaveDB abundance sets.",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 3, "embedding_hours": 0.2, "cv_run_minutes": 2, "compute_note": "Estimated: ~2,200 variants of a 335-residue window through ESM-2 150M on CPU at a few per second; ridge CV is seconds. Nothing timed.", "cheapest_killing_check": "Compute the per-position-mean dummy under held-out-domain CV and the replicate ceiling; if AlphaMissense already reaches the ceiling, there's no room."},
+  "verdict": "park",
+  "verdict_reason": "Data is clean, open and verified (2,832 rows, CC0), but it covers one gene region that is already ~97% measured and predictors already exist, so the result is a small benchmark note with low clinical impact."
+}

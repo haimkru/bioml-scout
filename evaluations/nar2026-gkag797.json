@@ -1,0 +1,61 @@
+{
+  "paper_id": "nar2026-gkag797",
+  "title": "RPL41 stabilizes ribosome dynamics and supports long-protein homeostasis in mammals.",
+  "doi": "10.1093/nar/gkag797",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE308nnn/GSE308359/suppl/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all three processed files in GEO (Gene Expression Omnibus) series GSE308359: HEK counts table (226,882 transcript rows x 28 count columns, 0 missing), Mouse counts table (142,604 rows x 30 count columns; 46,174 transcripts with >=10 reads in every kidney ribosome-profiling and RNA-sequencing column), and the SLAM-seq workbook (WT sheet 2,749 rows, RPL41-knockout sheet 2,664 rows; columns are eight counts-per-million values, two fit parameters, transcript ID, 'Half life', 'ORF length', gene symbol). Computed: half-life median 17.6 (wild type) and 18.3 (knockout) with maxima 203.7 and 232.3 and no unit given anywhere; 1,383 unique gene symbols among 2,749 wild-type rows; overlap of the two sheets on transcript ID = 1,108 (matches the paper's stated n = 1,108); Spearman correlation of half-life between genotypes 0.698; standard deviation of the log2 half-life ratio 0.70; Spearman of that ratio against ORF length only 0.12. Also checked the GEO sample list (74 samples) via NCBI esummary. Critically, the HEK (human embryonic kidney) counts table carries HUMAN transcript IDs (ENST...) but its 28 column headers are mouse sample names ('WT mouse brain Ribo-seq replicate 1' ...), i.e. the mouse header truncated to 28 fields, so no human column can be assigned to wild type, knockout or a harringtonine time point.",
+    "what_came_from_paper_text_only": "Everything about the proteomics and the per-gene statistics: the DIA-MS (data-independent acquisition mass spectrometry) differential expression table (Supplementary Table S3; 621 up, 790 down), pulse-SILAC protein half-lives (S12, n = 4,220), insoluble-to-soluble ratios (S13, n = 3,776), differential translation efficiency (S6, S14), polarity scores for 31,862 transcripts (S5), disome/monosome ratios (S8, S15), mouse tissue proteomes (S16), elongation rates of 3.92 vs 4.48 codons per second, and the cryo-electron microscopy models (PDB 9WW4-9WW7). Supplement not retrievable: the Europe PMC supplementaryFiles endpoint timed out twice, the PMC /bin/ supplement zip returns an empty challenge page, and the PMC open-access package service returns 404. Raw mass spectrometry sits in jPOST/PRIDE (PXD068398, PXD068399, PXD079032) as raw files, which policy excludes."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Three processed files (11.3 MB total) download anonymously from the GEO FTP site and I opened all three. Caveat: the per-gene and per-protein result tables are only in the journal supplement, which I could not retrieve after two attempts."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. No outcome column exists in any file I could open: the two GEO tables are raw integer count matrices, so every label the paper reports (differential translation efficiency, disome ratio, protein fold change, insoluble-to-soluble ratio, protein half-life) would have to be constructed with a count-based statistical model and then joined to sequences, and the authors' own versions sit in an unretrievable supplement. The only genuine label column present, SLAM-seq messenger RNA half-life, covers just 2,749 transcripts (1,383 genes) and is a side measurement the paper uses to rule a mechanism out."},
+    "a3_inputs_present": {"pass": true, "note": "Only Ensembl transcript identifiers are given, not sequences, but one bulk GENCODE FASTA download resolves all of them, so this is effort rather than a blocker."},
+    "a4_units_stated": {"pass": false, "note": "FAIL for the only label column: the SLAM-seq sheet's 'Half life' has no unit anywhere in the file (methods say an exponential-decay fit to counts-per-million, implying hours), values run to 203 and 232 with 946 of 2,749 above 24, and 'ORF length' (median 209) is ambiguous between nucleotides and codons. Raw read counts in the two count tables are unambiguous."},
+    "a5_enough_rows": {"pass": true, "n_rows": 2749, "note": "2,749 half-life rows (1,108 shared between genotypes) clears the 1,500 bar numerically, but the effective unit for the paper's question is the biological contrast, of which there are three: one HEK293T clone pair, mouse kidney, mouse brain."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.4 GB in memory for both count matrices plus the workbook", "note": "Verified by loading everything at once on this laptop; no GPU needed."},
+    "a7_counts_match_paper": {"pass": false, "note": "FAIL. The human HEK counts table's 28 column headers are mouse sample names (the mouse header copied and truncated), so the deposited human matrix cannot be matched to the 28 HEK samples listed in GEO; the paper, the GEO sample list and the download cannot be reconciled without asking the authors. The mouse table's 30 columns do match the 30 mouse samples, and the 1,108-transcript overlap I computed matches the paper's figure legend."},
+    "a8_label_provenance": {"pass": true, "note": "All quantities trace to physical measurements (sequencing read counts, metabolic labelling decay fits, mass spectrometry intensities); nothing is another model's prediction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Saluki (hybrid convolutional/recurrent network predicting messenger RNA half-life from sequence, Agarwal & Kelley, Genome Biology 2022)", "open_weights": true, "score_and_split": "Reported Pearson r = 0.77 on held-out human genes, trained on a consensus half-life built from a compendium of 39 human and 27 mouse transcriptome-wide decay datasets; code and weights on GitHub and Zenodo.", "authors_named_unsolved": "Technical noise and measurement bias across decay datasets, which they had to correct to get consistent half-lives.", "runnable_as_baseline": true},
+      {"name": "RiboNN (multitask convolutional network predicting translation efficiency from messenger RNA sequence, Nature Biotechnology 2025)", "open_weights": null, "score_and_split": "Search result describes it as state-of-the-art for predicting translation efficiency across hundreds of cell types from sequence; I did not retrieve the exact metric or split.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Translatomer (deep learning prediction of ribosome profiling from sequence plus transcription data, Nature Machine Intelligence 2024)", "open_weights": null, "score_and_split": "Search result describes tissue-level ribosome-profiling prediction and disease-variant interpretation; exact numbers and split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer or a Saluki-style sequence encoder for messenger RNA; ESM-2 (a protein language model) for the protein-level variant of the task", "freeze_and_head_viable": true, "hardware": "Laptop CPU would suffice for ~2,700 transcripts or ~4,000 proteins", "licence": "Nucleotide Transformer and ESM-2 weights are openly downloadable; Saluki code is open on GitHub/Zenodo."},
+  "integration": {"partner_dataset": "Saluki's compendium of 39 human and 27 mouse messenger RNA decay datasets, and Ensembl/UniProt annotation", "join_key": "Ensembl transcript or gene identifier", "bigger_question_one_sentence": "Do sequence features that set a transcript's baseline stability also set how its protein responds when ribosome dynamics are perturbed?"},
+  "controls": {"positive_control": "Recover the paper's own headline relationship, that longer coding sequences lose protein abundance on RPL41 loss, from features alone.", "negative_control": "Shuffle the fold-change labels and confirm performance collapses to the per-gene mean.", "external_validation": "Public ribosome-profiling and proteomics from other ribosomal-protein or elongation-factor knockouts; a temporal or cross-tissue split between mouse kidney and brain."},
+  "honest_claim_h3": "Among roughly 1,100 transcripts measured in both genotypes of a single HEK293T clone pair, sequence features explain some of the change in messenger RNA half-life after RPL41 loss, with no statement possible about proteins, other cell types or other perturbations.",
+  "plain_idea": {
+    "one_liner": "Use a gene's messenger RNA sequence to predict how its protein output changes when the smallest ribosomal protein is removed.",
+    "train_on": "One row per transcript: the messenger RNA sequence (fetched from GENCODE by Ensembl identifier) plus coding-sequence length and codon composition. Verified counts: 2,749 transcripts with a half-life value, 1,108 measured in both genotypes, 46,174 mouse transcripts with usable read depth.",
+    "predict": "The change in protein abundance, insolubility or translation efficiency between RPL41-knockout and wild type. The true answers come from mass spectrometry and ribosome profiling in this one paper; the proteomics numbers sit in a journal supplement I could not open, and the sequencing files hold only raw read counts.",
+    "why_worthwhile": "Translation and protein-quality-control labs would learn which messenger RNAs are vulnerable when elongation slows, and even a failed model would tell us whether anything beyond plain coding-sequence length predicts the response."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict each transcript's RPL41-knockout response (protein fold change, insoluble-to-soluble shift, or differential translation efficiency) from messenger RNA sequence with a frozen sequence backbone plus a small head, using mouse kidney versus brain as a held-out-tissue split. Blocked because no such label column exists in the data I can open.",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "working_set_gb": 0.4,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 2,
+    "cv_run_minutes": 10,
+    "compute_note": "Measured by actually loading both count matrices and the workbook in pandas on this laptop (seconds each, well under 1 GB); embedding time is an estimate for ~3,000 transcripts through a small sequence backbone on CPU, not timed.",
+    "cheapest_killing_check": "Open the three GEO files and ask two questions: does any per-gene outcome column exist (it does not, only raw counts plus a unit-less half-life), and can the human count columns be assigned to conditions (they cannot, the headers are mouse sample names). Both answers took one download."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2, A4 and A7 on files I opened. The three downloadable GEO files hold only raw read-count matrices plus a 2,749-row half-life sheet with no stated units; every outcome the paper actually reports (protein fold change, insoluble-to-soluble ratio, differential translation efficiency, protein half-life) would have to be constructed from counts or read out of a journal supplement that would not download after two attempts and a blocked PMC route. Worse, the human HEK count table's 28 column headers are mouse sample names, so the human half of the experiment cannot be mapped to wild type, knockout or time point at all. Even if the supplement were in hand, the effective sample size is three biological contrasts (one cell-line clone pair, mouse kidney, mouse brain), the headline effect is a single feature (coding-sequence length), and the one ready-made label - messenger RNA half-life - is a task already saturated by Saluki, which was trained on a 39-dataset human compendium and reports r = 0.77."
+}

@@ -1,0 +1,198 @@
+{
+  "paper_id": "natgen2026-02729-1",
+  "title": "Predictive design of tissue-specific mammalian enhancers that function in the mouse embryo.",
+  "doi": "10.1038/s41588-026-02729-1",
+  "journal": "Nature Genetics",
+  "data_url": "https://huggingface.co/datasets/Shenzhi-Chen/DeepSTARR-Mouse-dataset",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded from Hugging Face without login: the dataset README (licence CC-BY-4.0), the model card, and the enhancer-activity label files for all six tissues (heart, limb, midbrain(CNS), forebrain, hindbrain, neural tube) for fold01 plus heart/limb test files for folds 02 and 03, and one FASTA (DNA sequence file). Parsed them: labels are a 0/1 'score' column next to a 'class' column ('active'/'inactive') and an ID that encodes the VISTA element, strand and window offset. Counted 3,203 distinct tested DNA elements (2,070 human-origin 'hs', 1,133 mouse-origin 'mm'); 3,200 of them appear in all six tissue files with identical train/validation/test assignment, giving a clean 3,200 x 6 yes/no label matrix. Active elements per tissue: heart 311, limb 332, midbrain 432, forebrain 487, hindbrain 421, neural tube 297. Confirmed train/validation/test element sets are disjoint (0 shared elements) but that rows are heavily augmented (heart fold01 training: 40,757 rows from only 2,777 elements, median 9 windows each; test: 14,922 rows from 280 elements, median 32 windows each). Confirmed the three released test folds overlap by 126 elements (the fixed chromosome-18 shared test set), so pooled test positives are 58 (heart) and 62 (limb), not 3x per-fold. Also retrieved the live VISTA Enhancer Browser bulk download (8.4 MB, 3,407 elements, 2,001 human / 1,406 mouse, 1,749 positive / 1,658 negative, 22 anatomical structures each with k-of-n embryo counts such as 'neural tube[12/12]' and 'limb[3/12]', median element length 1,937 bp); 2,908 of the paper's elements match it directly and 499 VISTA elements are absent from the paper's set. Listed both Hugging Face repos via the API (dataset 390 files / 30.7 GB; models 359 files / 107.8 MB) and fetched the Zenodo code record 10.5281/zenodo.21488208.",
+    "what_came_from_paper_text_only": "The 20-fold genomic cross-validation scheme with a 1.5 kb minimum gap between folds, the mapping of human VISTA elements to mm10 orthologous coordinates before fold assignment, the exclusion of genomic bins within 1.5 kb of any VISTA sequence from the accessibility pre-training, the chromosome-18 holdout for the accessibility models (Pearson r >= 0.76), the reported maximum positive predictive values (71.5% heart, 70.6% limb, 80.2% midbrain), the statement that 15 of 15 designed synthetic enhancers were active in mouse embryos, and the ablation results (20.9-52.1% PPV without transfer learning). I did not load the released Keras model weights or re-run any of their numbers."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Opened the files myself: public Hugging Face repos, no login, no application. Dataset CC-BY-4.0, model weights Apache-2.0, code on Zenodo (DOI 10.5281/zenodo.21488208) and GitHub."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the files: the label is literally a 'score' column (0/1) with a matching 'class' column, keyed to the sequence by an exact ID string. Building the six-tissue version is a concatenation on that ID, which I ran: 3,200 of 3,203 elements present in all six files with identical split assignment."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: DNA sequences sit in FASTA files whose headers are the same ID strings as the label rows (e.g. '>hs10:+_50__inactive'). No accession lookups needed; full element sequences are also in the VISTA download I retrieved."},
+    "a4_units_stated": {"pass": true, "note": "Verified: the activity label is binary (active/inactive) so there is no unit ambiguity. The accessibility label, which I did not use, is log2(mean ATAC-seq signal + 1), stated in the methods. VISTA's extra annotations are counts of embryos out of n."},
+    "a5_enough_rows": {"pass": true, "n_rows": 3203, "note": "3,203 distinct tested elements, each with six yes/no labels (I counted them). Comfortably over the ~400 bar for classification, but the honest limiting number is positives per tissue: 297-487, and only 58 (heart) / 62 (limb) positive elements across the pooled released test folds."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.6 GB", "note": "Verified by file listing: the enhancer-activity dataset is 1.14 GB for all six tissues and three folds; fold01 across six tissues is ~380 MB, labels are a few MB, VISTA bulk is 8.4 MB, released weights 108 MB. The 27.5 GB accessibility dataset is avoidable because the pre-trained weights are released. CPU only."},
+    "a7_counts_match_paper": {"pass": true, "note": "Verified: the paper says VISTA n = 3,206 and 'between 311 and 432 per tissue'; I counted 3,203 distinct elements and exactly 311 heart, 332 limb, 432 midbrain active. A 3-element discrepancy, which is immaterial."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a physical measurement: a transgenic mouse reporter assay in which the fragment drives LacZ and a person scores which E11.5 tissues stain blue. I confirmed the same calls independently in the live VISTA download (324 heart-positive, 368 limb-positive, 459 midbrain-positive). Caveat I verified from the README: the K27Ac_K4me1, tissue_specific_ATAC and promoter_distal sub-datasets use chromatin-inferred labels instead, so those would fail A8 and must not be mixed into this task."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Six tissues x three folds x (labels + FASTA); I ran the join on the element ID and it is exact."},
+    "B2": {"score": 2, "why": "Tab-separated with header plus standard FASTA; parsed first try, only quirk is inconsistent quoting between files."},
+    "B3": {"score": 2, "why": "All labels from one assay (VISTA transgenic LacZ at E11.5), binary, already harmonised by the authors."},
+    "B4": {"score": 2, "why": "No censored or missing values in the activity labels I parsed; every row is 0 or 1."},
+    "B5": {"score": 1, "why": "Verified: 40,757 training rows from 2,777 elements (up to ~80 overlapping windows each); easy to dedupe on ID prefix but a real trap."},
+    "B6": {"score": 1, "why": "README documents folders and the model card gives metrics, but the window-offset encoding inside the ID is only in the paper's methods."},
+    "C1": {"score": 2, "why": "Framed as decay of accuracy across species of origin, tissue count and element-level evaluation, it is informative either way."},
+    "C2": {"score": 1, "why": "One open model on this exact task (this paper's, weights on Hugging Face, honest genomic folds) but its headline metric is test-set-maximised at the window level."},
+    "C3": {"score": 2, "why": "Better (element-level re-evaluation, pretrained DNA backbone) plus unique application (joint 6-to-22-tissue model the authors name as unaddressed)."},
+    "C4": {"score": 2, "why": "Each label is a transgenic mouse embryo experiment costing weeks and thousands of dollars; the paper says so explicitly."},
+    "C5": {"score": 2, "why": "Published PPV 71.5/70.6/80.2% on a released split, released weights to re-score, and a verified 9.7% heart prevalence dummy."},
+    "D1": {"score": 2, "why": "HyenaDNA and DNABERT-2 have open downloadable weights for 1 kb DNA; the paper's own accessibility CNN is also released."},
+    "D2": {"score": 2, "why": "Only 3,203 unique elements, so embeddings cache once on CPU; heads then train in minutes on cached vectors."},
+    "D3": {"score": 2, "why": "Dataset CC-BY-4.0, paper's weights Apache-2.0, HyenaDNA Apache-2.0; all read in the repo files themselves."},
+    "E1": {"ok": true, "why": "Authors' 20 genomic folds with 1.5 kb gaps; I confirmed train/val/test element sets are fully disjoint in the files."},
+    "E2": {"ok": true, "why": "Three released folds, six tissues, two species of origin (2,070 human / 1,133 mouse elements) as holdout groups."},
+    "E3": {"ok": true, "why": "Per-tissue prevalence computed from the files: heart 311/3,201 = 9.7%, limb 10.4%, midbrain 13.5%."},
+    "E4": {"ok": true, "why": "VISTA records how many of n embryos showed each tissue (verified: 'neural tube[12/12]', 'limb[3/12]'), a direct replicate noise estimate."},
+    "E5": {"ok": true, "why": "Paper names MEF2 (heart), TWIST1 (limb), SOX3 (CNS) motifs and 74.5% midbrain/other-CNS co-activity that a working model must recover."},
+    "E6": {"ok": true, "why": "Label shuffling is trivial, and 300,000 random plus 300,000 inaccessible control sequences are already released in the repo."},
+    "E7": {"ok": true, "why": "Verified 499 VISTA elements in the live download are absent from the paper's set, plus 16 unmodelled anatomical structures."},
+    "E8": {"ok": true, "why": "Model card reports PPV per tissue on the released folds and both weights and folds are downloadable."},
+    "G1": {"score": 2, "why": "Every row carries a VISTA element ID (hs####/mm####); the VISTA download adds hg38/mm10 coordinates. Both seen in files."},
+    "G2": {"score": 2, "why": "VISTA Enhancer Browser itself (3,407 elements, 22 structures, embryo counts) retrieved; also ENCODE/Gorkin E11.5 chromatin on mm10."},
+    "G3": {"score": 2, "why": "One-to-one on element ID by construction; I matched 2,908 of 3,201 directly, the rest need simple ID cleanup."},
+    "G4": {"score": 2, "why": "Asks which accessible regions actually fire in vivo, and whether 22-structure joint modelling beats six separate models."},
+    "H1": {"score": 2, "why": "Real tested negatives: 1,833 of 3,200 elements inactive in all six tissues; VISTA download has 1,658 negatives vs 1,749 positives."},
+    "H2": {"score": 1, "why": "One assay, one stage (E11.5), one consortium; breadth is two species of origin and 6 of 22 structures."},
+    "H3": {"score": 2, "why": "The claim is stateable in one sentence and the selection bias (VISTA chose which fragments to test) is explicit."},
+    "H4": {"score": 2, "why": "Discussion names stage, promoter context, single-element scope, low recall and multi-tissue patterns as the gaps."},
+    "I1": {"score": 2, "why": "The LBNL VISTA group (Pennacchio/Visel/Dickel), the Stark lab who wrote this, the Aerts lab, and AAV gene-therapy groups."},
+    "I2": {"score": 2, "why": "A calibrated element-level precision changes how many candidates a lab commits to transgenic testing at weeks and thousands each."},
+    "I3": {"score": 2, "why": "Precision among the top k elements is literally the decision: the paper tested 15 designs and reported 15 hits."},
+    "I4": {"score": 2, "why": "Simple rules help (ATAC-only model reaches 20.9-52.1% PPV) but the full model roughly doubles that, so the mapping is genuinely complex."},
+    "J1": {"score": 2, "why": "Frozen pretrained backbone plus head, grouped genomic splits, multi-label classification, calibration and precision@k."},
+    "J2": {"score": 2, "why": "Published positive controls (master-regulator motifs, pan-CNS co-activity) and VISTA embryo images make results checkable."},
+    "J3": {"score": 2, "why": "A clean 3,203 x 22 element-level label table joined to the released folds is useful even if no model improves."},
+    "J4": {"score": 2, "why": "Four weeks: one week to the feature/label table and baselines, two to modelling, one to write-up."},
+    "J5": {"score": 2, "why": "Stop at week two if element-level precision@15 loses to the released CNN in 5 of 6 tissues and no transfer gap appears."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepSTARR-Mouse (this paper's own model; a compact convolutional neural network, i.e. a small image-style network applied to DNA)",
+        "open_weights": true,
+        "score_and_split": "Maximum positive predictive value (PPV, the share of predicted-active sequences that really are active) of 71.5% heart, 70.6% limb, 80.2% midbrain, on genomic cross-validation folds with chromosome 18 held out; accessibility Pearson r 0.76-0.78. Crucially the threshold is chosen on the test set to maximise PPV, and the metric is computed over 31,636 overlapping 1,001-bp windows that I verified come from only ~280 distinct elements per fold (58 positive elements pooled across all three heart test folds).",
+        "authors_named_unsolved": "Their discussion names: defined enhancer strengths, arbitrary enhancer lengths, complex multi-tissue activity patterns, other developmental stages and cell types, native promoter and chromatin context, and 'a limited solution space at high specificity and low recall'.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CREsted (Aerts lab software for training enhancer models on single-cell chromatin accessibility data, Nature Methods 2026)",
+        "open_weights": true,
+        "score_and_split": "Open Python package demonstrated on mouse cortex and human blood cells; predicts accessibility per cell type from sequence, not in vivo whole-embryo reporter activity, so no number on this benchmark.",
+        "authors_named_unsolved": "Retrieved the abstract only; it frames cross-tissue and cross-species enhancer modelling and design as the open area.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepSTARR (de Almeida et al., Nature Genetics 2022) and the Drosophila synthetic-enhancer design work (Taskiran et al., Nature 2024; de Almeida et al., Nature 2024)",
+        "open_weights": true,
+        "score_and_split": "Fruit-fly STARR-seq enhancer activity, held-out chromosome splits. Different organism and a massively parallel in vitro assay, so not a baseline for in vivo mouse tissue activity; it is the architecture this paper adapted.",
+        "authors_named_unsolved": "Whether the approach transfers to the regulatory complexity of mammalian genomes in vivo, which is exactly what this paper set out to answer.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Enformer, Borzoi and AlphaGenome (large open sequence-to-function genome models)",
+        "open_weights": true,
+        "score_and_split": "Benchmarked on expression and CRISPR-interference enhancer screens (AlphaGenome Pearson r 0.67 on Fulco 2019, 0.45 on Gasperini 2019, per a 2026 re-benchmark I retrieved); I found no published evaluation of any of them on VISTA in vivo tissue-level activity.",
+        "authors_named_unsolved": "The re-benchmark reports that all four systematically underpredict knockdown magnitude and get worse with distance from the transcription start site.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "gkm-SVM / lsgkm (gapped k-mer support vector machine, Beer lab)",
+        "open_weights": true,
+        "score_and_split": "Classic open method reported to roughly double precision over plain k-mer models for tissue-specific enhancer prediction, including on VISTA-style data, evaluated with cross-validation rather than a genomic-fold split.",
+        "authors_named_unsolved": "Does not model motif grammar or long-range context.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Nucleotide Transformer, DNABERT-2, HyenaDNA (pretrained DNA language models)",
+        "open_weights": true,
+        "score_and_split": "Benchmarked on generic enhancer-identification tasks (HyenaDNA reported +20 accuracy points on an enhancer task in GenomicBenchmarks; Enformer best on enhancer prediction in the Nucleotide Transformer benchmark). None evaluated on in vivo mouse-embryo tissue-specific activity.",
+        "authors_named_unsolved": "Transfer to small, tissue-specific functional datasets is reported as mixed; parameter-efficient fine-tuning gives only ~3% over full fine-tuning on enhancer activity.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "HyenaDNA-small (Apache-2.0) or DNABERT-2 as the general DNA backbone, with this paper's own released sequence-to-accessibility convolutional network (Apache-2.0, 855 KB per model) as the domain-specific alternative trunk",
+    "freeze_and_head_viable": true,
+    "hardware": "16 GB laptop, CPU only. Embeddings for 3,203 elements (x 2 strands, optionally x ~11 windows) cache once in a few hours; the classification head then trains in minutes on cached vectors.",
+    "licence": "Apache-2.0 for HyenaDNA and for the paper's weights; dataset CC-BY-4.0. Avoid Nucleotide Transformer v2 if a permissive licence matters, since those checkpoints are non-commercial."
+  },
+  "integration": {
+    "partner_dataset": "The live VISTA Enhancer Browser bulk download, which I retrieved: 3,407 elements, 22 anatomical structures per element, per-structure counts of how many of n embryos showed activity, species, and hg38/mm10 coordinates. Secondarily the ENCODE / Gorkin et al. 2020 mouse E11.5 chromatin tracks that produced the pre-training data, and Enformer / AlphaGenome predictions on the same mm10 coordinates.",
+    "join_key": "VISTA element identifier (hs#### for human-origin, mm#### for mouse-origin), parsed straight from the ID column; genomic coordinates (mm10) as a secondary key. I matched 2,908 of the paper's 3,201 elements to the VISTA download on this key.",
+    "bigger_question_one_sentence": "Among the DNA regions that are open in a given E11.5 mouse tissue, which ones actually switch on a gene there in a living embryo, and does modelling all 22 anatomical structures jointly, weighted by how many embryos reproduced each call, predict single-tissue specificity better than six independent per-tissue models?"
+  },
+  "controls": {
+    "positive_control": "The model must recover the master-regulator motifs the paper names (MEF2 for heart, TWIST1 for limb, SOX3 for central nervous system) in its attribution scores, and must reproduce the published co-activity structure: 74.5% of VISTA elements active in midbrain are also active in another central-nervous-system region, so midbrain predictions must correlate strongly with forebrain, hindbrain and neural-tube predictions. A plumbing control is predicting GC content from the sequence, which must be near-perfect.",
+    "negative_control": "Shuffle the 0/1 labels within each fold and confirm element-level precision collapses to the verified per-tissue prevalence (9.7% heart). Score the 300,000 random and 300,000 inaccessible genomic sequences already released in the repo (testing_dataset/random_sequences_600k.fasta, 304 MB) and confirm they stay below the chosen threshold. Ablate to GC content and element length alone and report what that trivially achieves.",
+    "external_validation": "The 499 elements present in the live VISTA download but absent from the paper's 3,201-element set (verified by ID intersection); the 16 VISTA anatomical structures the paper never modelled; a temporal split on VISTA element number, which is assigned roughly in testing order (human 1-3,104, mouse 1-2,323, verified); and the paper's own 15 synthetic enhancers, all reported active in vivo."
+  },
+  "honest_claim_h3": "Given a 1,001-base-pair stretch of human or mouse DNA, the model ranks how likely that fragment is to switch on a reporter gene in a named E11.5 mouse embryonic tissue, among the kinds of fragment the VISTA project chose to test (mostly evolutionarily conserved or chromatin-accessible candidates) and in a standardised reporter-plus-minimal-promoter construct; it says nothing about how strongly the enhancer fires, about other developmental stages, or about how the same sequence behaves in its native genomic location.",
+  "plain_idea": {
+    "one_liner": "Use a thousand letters of DNA to predict which mouse-embryo tissues that DNA switches genes on in.",
+    "train_on": "Each example is a roughly 1,001-letter stretch of human or mouse DNA. I verified 3,203 distinct tested fragments in the files, and 3,200 of them carry a yes/no answer for all six tissues with the same train/test assignment, giving a clean 3,200-row by 6-column label table.",
+    "predict": "The output is a score per tissue for whether the fragment is active there. The true answer comes from the VISTA project's transgenic mouse experiment: the fragment is wired to a blue-staining reporter gene, put into a mouse embryo, and a person scores which body parts turn blue at embryonic day 11.5. I confirmed those same calls in VISTA's own public download.",
+    "why_worthwhile": "Each label costs a transgenic mouse experiment taking weeks and thousands of dollars, so a lab can only test a handful of candidates and badly needs to know what fraction of its top picks will work. Even if no model beats the published one, we learn how much of the reported 71% success rate survives counting each DNA fragment once instead of eighty times."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Not more elements: they used 3,203 of the 3,407 in the VISTA download I retrieved. But better labels on the same elements: VISTA annotates 22 anatomical structures where they modelled 6, and records how many of n embryos showed each one (e.g. 'limb[3/12]'), which they collapsed to a single yes/no. Plus 499 elements they never used."},
+    "confidence_score": {"answer": "yes", "why": "VISTA's k-of-n embryo counts, which I verified are present for every annotation in the bulk download, give a replicate-based reliability weight per label and a noise ceiling. The existing model reports one maximum positive predictive value per tissue with no interval, over what I counted as only ~30-58 independent positive elements."},
+    "models_beatable": {"answer": "partly", "why": "DeepSTARR-Mouse is a 2026 model with open weights, genuinely non-random genomic folds, ablations and 600,000 control sequences, so the evaluation is careful. But it is an ~800 KB convolutional network trained from scratch on 297-487 positives per tissue with no pretrained genomic backbone, and its headline number is a threshold maximised on the test set at the overlapping-window level. Beatable on evaluation rigour and probably on multi-tissue sharing; not obviously on raw single-tissue precision."},
+    "guaranteed_improvement": {"answer": "no", "why": "Their weights can be run as our baseline and our model can see everything theirs sees, but the extra data changes the label definition (16 more structures, graded embryo counts) rather than adding more of the same measurement, and bringing in the 499 newer VISTA elements changes the evaluation split. Two of the four conditions fail."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "The VISTA Enhancer Browser itself, which I downloaded in bulk (3,407 elements, 2,001 human / 1,406 mouse, 1,749 positive / 1,658 negative, 22 anatomical structures with per-structure embryo counts, plus hg38/mm10 coordinates and full element sequences). VISTA's front page reports 5,090 tested elements in total as of October 2026, including variant and synthetic experiments beyond this default view. The ENCODE / Gorkin et al. 2020 mouse E11.5 chromatin atlas carries a correlated but different label (accessibility, not in vivo activity).",
+    "approx_items": 3407,
+    "join_key": "VISTA element identifier (hs#### / mm####), with mm10 or hg38 genomic coordinates as a secondary key",
+    "why": "The same measurement exists publicly for 499 elements this paper never used and for 16 tissues it never modelled, so there is both a ready-made external test set and roughly four times as many labels per element as the paper exploited."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Each element appears as up to about eighty near-identical overlapping 1,001-bp windows (both strands, 50-bp stride): I verified 40,757 heart training rows come from just 2,777 elements, so any split made on rows rather than elements puts almost-identical sequences in both train and test.",
+      "Positives are augmented far more heavily than negatives (272 positive elements become 18,526 rows while 2,505 negative elements become 22,231), so a row-level metric is computed on a quietly re-weighted population and does not mean what it appears to mean.",
+      "VISTA contains human elements and their mouse orthologues; without orthology-aware grouping the same locus could sit on both sides of the split. The authors say they mapped human elements to mm10 coordinates before assigning folds, but I could not verify that mapping file.",
+      "126 elements appear in all three released test folds (the fixed chromosome-18 shared test set, verified), so averaging a metric across folds partly averages over the same elements and overstates how independent the folds are.",
+      "The accessibility backbone was pre-trained on genome-wide chromatin regions that overlap VISTA loci; the methods say bins within 1.5 kb of any VISTA sequence were removed, but I read that rather than checked it.",
+      "The K27Ac_K4me1, tissue_specific_ATAC and promoter_distal sub-folders use labels inferred from chromatin marks rather than in vivo activity; mixing them into the main task would make the label partly a function of the features."
+    ],
+    "split": "Use the authors' released genomic folds, but group strictly by VISTA element identifier parsed from the ID column, which I confirmed is in every row and already yields disjoint train/validation/test element sets. Add two further holdouts whose grouping columns I verified exist: species of origin (2,070 human-prefixed 'hs' versus 1,133 mouse-prefixed 'mm' elements) and a temporal split on VISTA element number (human 1-3,104, mouse 1-2,323, assigned roughly in order of testing). Dedupe augmented windows before computing any metric, and aggregate window predictions to one score per element.",
+    "checks": [
+      "Shuffle the 0/1 labels within each fold and confirm element-level precision collapses to the verified per-tissue prevalence of 9.7% (heart), 10.4% (limb), 13.5% (midbrain).",
+      "Compute maximum sequence identity between each test element and the training set with MMseqs2 or BLAST, then re-score after dropping test elements above 80% identity, to catch orthologue and repeat leakage.",
+      "Train on GC content and element length alone and report that precision, since the authors themselves had to balance CpG content to stop it confounding accessibility.",
+      "Shuffle labels within fold rather than globally, to confirm the grouping is really doing what it claims.",
+      "Score the released 300,000 random and 300,000 inaccessible sequences and confirm they stay below the operating threshold."
+    ],
+    "verdict": "Manageable: the authors already provide element-disjoint genomic folds and the grouping key sits in every row, so the only real discipline required is deduplicating augmented windows before any metric is computed, and never touching the chromatin-inferred label variants."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 15 ranked held-out elements, computed at the element level (one score per element, overlapping windows averaged) with a bootstrap 95% interval over elements. Fifteen is the number of sequences the paper actually put into mice, so this is exactly the decision a lab makes: how many of my top picks will work.",
+    "baselines": "Trivial: per-tissue prevalence, which I computed from the files as 9.7% heart (311/3,201), 10.4% limb, 13.5% midbrain. Published: the model card's maximum positive predictive value of 71.5% heart, 70.6% limb, 80.2% midbrain, computed at the overlapping-window level with the threshold chosen on the test set. Re-run: the released Apache-2.0 weights re-scored at the element level on the same folds with the threshold fixed on validation.",
+    "success": "Element-level precision among the top 15 of at least 0.70 in each of heart, limb and midbrain with the threshold fixed on validation data, and a single multi-tissue model that matches or beats the six separate single-tissue models on at least 4 of 6 tissues.",
+    "noise_ceiling": "Estimable but not yet computed. VISTA records how many of n embryos showed each tissue (verified in the download, e.g. 'neural tube[12/12]' versus 'limb[3/12]'), so the binary label is itself a thresholded noisy count; converting those counts into an upper bound on achievable accuracy is a one-line calculation on data I already have.",
+    "kill": "Stop at the end of week two if a frozen-backbone head loses to the released convolutional network on element-level precision among the top 15 in 5 of 6 tissues AND the human-versus-mouse transfer gap is no larger than the fold-to-fold variation, since then there is neither a better model nor a transfer story."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes genomics methods with a resource attached; it would take a joint 22-structure in vivo activity model that clearly beats the released per-tissue networks on element-level precision and holds up on the 499 newer VISTA elements."},
+    "realistic": {"journal": "Bioinformatics", "why": "Publishes careful re-evaluations and backbone comparisons on public benchmarks; the likely result is an element-level, confidence-interval'd precision estimate plus a frozen DNA-language-model comparison that is competitive rather than dominant."},
+    "fallback": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes negative and partial results with a reusable dataset; a 3,203-by-22 element-level VISTA label table joined to the authors' released folds is publishable there even if no model improves."}
+  },
+  "pitch": {
+    "headline": "3,203 DNA fragments, each tested in a living mouse embryo and scored yes/no across six tissues: in-vivo labels, not chromatin proxies.",
+    "what_makes_the_data_unusual": "The labels are whole-embryo reporter outcomes, and VISTA records how many of n embryos showed each tissue (verified, e.g. 'limb[3/12]'), a replicate-based noise estimate the paper threw away by going binary. CC-BY-4.0, no login.",
+    "the_win": "Element-level precision among the top 15 of at least 0.70 on held-out VISTA elements with the threshold fixed on validation, against the paper's window-level maximum of 71.5% computed over only ~30 independent positive elements.",
+    "even_if_it_fails": "We still produce the first element-level, interval'd precision estimate for in-vivo mammalian enhancer prediction and a reusable 3,203-by-22 label table. A frozen DNA backbone losing to an 800 KB network on 311 positives is itself worth reporting.",
+    "who_wants_it": "The LBNL VISTA group (Pennacchio, Visel, Dickel) choosing which candidates to put through transgenic testing, and gene-therapy groups needing tissue-restricted enhancers for viral vectors; both must decide how many top picks to commit to."
+  },
+  "ml_idea": "Build one multi-label classifier that takes a 1,001-base-pair DNA sequence and predicts in vivo reporter activity in all six tissues at once (and, by joining the live VISTA download, all 22 anatomical structures), replacing the paper's six independent single-tissue convolutional networks. Features come from a frozen pretrained DNA backbone (HyenaDNA-small or DNABERT-2, Apache-2.0) whose embeddings are cached once on CPU for the 3,203 unique elements, with the paper's own released accessibility network as a second, domain-specific trunk. Evaluate strictly at the element level: average the overlapping-window predictions into one score per element, fix the threshold on validation rather than maximising it on test, and report precision among the top 15 with bootstrap intervals, because I verified the pooled released test folds contain only 58 heart-positive and 62 limb-positive elements. Then run three transfer questions that are informative whichever way they resolve: train on mouse-origin elements and test on human-origin ones and vice versa (1,133 versus 2,070 elements); test on the 499 VISTA elements the paper never used; and ask whether joint multi-tissue training helps most for the 846 elements active in exactly one tissue, which are the ones a designer actually wants. Weight each label by VISTA's embryo count to give calibrated per-prediction confidence, which no existing model on this task provides.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.6,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 3,
+    "cv_run_minutes": 15,
+    "compute_note": "Estimated, not timed, but from file sizes and row counts I actually measured: the six tissue label files parse in seconds, fold01 FASTAs for six tissues are ~380 MB, and only 3,203 unique elements (x2 strands) need a backbone forward pass, which is a few CPU hours for a ~100M-parameter DNA transformer at 1 kb. Heads then train on cached vectors in minutes. The 27.5 GB accessibility dataset is deliberately avoided by using the released pre-trained weights.",
+    "cheapest_killing_check": "Count unique positive elements, not rows, in the pooled released test folds. I already ran it: 58 for heart and 62 for limb across all three folds (the folds share 126 chromosome-18 elements, so pooling is not 3x). Under about 20 the element-level precision estimate would have been unmeasurable and the project dead; at 58 it is workable but the intervals will be wide, which must be stated up front."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Part A passes with the files actually opened: labels are a 0/1 column from a physical in vivo mouse reporter assay (not another model's output), sequences sit beside them in FASTA, and the six tissue files join on the VISTA element ID into a clean 3,200 x 6 matrix with identical splits, all CC-BY-4.0 with no login. The working set is ~0.6 GB on CPU. The field has one open model on this exact task with its weights, code and folds all released, so it runs directly as a baseline, and its headline 71.5% positive predictive value is a threshold maximised on the test set over overlapping windows from only ~30-58 independent positive elements, which is a concrete and cheap thing to correct. The authors themselves name complex multi-tissue activity patterns as unaddressed, and the live VISTA download supplies 22 structures instead of 6, per-label embryo counts for calibration, and 499 unused elements for external validation. The honest weakness is small positive counts per tissue (297-487), so any improvement will carry wide intervals; the transfer and re-evaluation framing means the project still produces a useful answer if no model wins."
+}

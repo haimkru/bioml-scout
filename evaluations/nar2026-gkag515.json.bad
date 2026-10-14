@@ -1,0 +1,218 @@
+{
+  "paper_id": "nar2026-gkag515",
+  "title": "Microbe Decoder uncovers functional traits of microbes in microbiome datasets.",
+  "doi": "10.1093/nar/gkag515",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/thackmann/microbedecoder (mirrored at https://doi.org/10.5281/zenodo.18651323)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened from GitHub: database_clean.csv (27,010 rows x 55 columns, parsed first try in pandas), database.csv (same 27,010 rows, 97 columns, needs latin-1 encoding, carries pre-split LPSN_Phylum/Class/Order/Family/Genus columns), gene_functions_database.rds (read in R: 22,734,429 genome-to-KEGG-orthology-ID pairs, 15,100 genomes, 11,866 distinct KO IDs, median 1,474 KOs per genome), and 16S_ribosomal_sequences.zip (21,119 FASTA files named by LPSN ID, one sequence each, median length 1,461 bp in a 300-file sample). Verified the joins: 15,100 of 15,101 IMG genome IDs in the table match the KO table; 21,119 of 21,119 FASTA filenames match an LPSN ID row. Counted labels with features attached (oxygen tolerance 10,855; Gram stain 9,977; motility 9,318; spore formation 4,853; fermentation type 8,023; growth temperature 15,356), class balance, 0 duplicate LPSN IDs, 10 duplicate genus/species/strain tuples, 4,522 genera and 39 phyla. Opened the supplement (Supplementary Datasets.xlsx) and recomputed the paper's headline numbers from Dataset S3. Listed the GitHub tree: 30 pre-trained random forest .rds models ship with the repo. Checked the Zenodo record (CC-BY-4.0, software).",
+    "what_came_from_paper_text_only": "That BacDive, FAPROTAX and Fermentation Explorer trait values are literature-curated rather than machine-predicted; the exact procedure behind the 70/30 and rank-held-out evaluation splits; the claim of 38 reference metabolic networks (the shipped config file has ~42 rows); Supplementary Figure S5 (the accuracy-versus-taxonomic-rank decay curve), which I could not render because the supplement PDF needs poppler."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Fetched every file directly from raw.githubusercontent.com with no login, no access application, no dead links. Zenodo mirror is open, CC-BY-4.0."},
+    "a2_label_is_a_column": {"pass": true, "note": "Traits are literal columns in database_clean.csv ('Oxygen tolerance (BacDive)', 'Gram stain (BacDive)', 'Motility (BacDive)', 'Spore formation (BacDive)', 'Type of metabolism (Fermentation Explorer)'). Multi-value cells are semicolon-separated and split with one line of code; no cross-source inference needed."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are physically present, not accessions: 21,119 16S ribosomal RNA sequences as FASTA text, and 22.7 million organism-to-KEGG-orthology-ID pairs in the shipped .rds. No external lookups required."},
+    "a4_units_stated": {"pass": true, "note": "Categorical traits use a fixed controlled vocabulary (aerobe/anaerobe/facultative anaerobe; positive/negative/variable). The one continuous trait names its unit in the column header: 'Temperature for growth in degrees (BacDive)'. Sequence lengths are base pairs."},
+    "a5_enough_rows": {"pass": true, "n_rows": 21119, "note": "21,119 organisms carry a 16S sequence; of those, 8,581 have an unambiguous oxygen-tolerance call, 9,868 a Gram stain, 8,947 a motility call, 8,023 a fermentation type. Every target clears the 1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.4 GB", "note": "36 MB label table, 40 MB KO table, ~60 MB of FASTA, plus a cached embedding matrix of 21,119 x 768 floats (~65 MB). Peak memory under 4 GB; no GPU needed for a frozen-backbone baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Both database exports contain exactly 27,010 rows. The paper reports mean balanced accuracy of 0.81 / 0.86 / 0.88 for its three tools; recomputing from Supplementary Dataset S3 gives 0.811 (147 traits) / 0.855 (38) / 0.875 (30). The paper says 30 pre-trained machine-learning models and the repo ships exactly 30."},
+    "a8_label_provenance": {"pass": true, "note": "PASS ONLY FOR PART OF THE TABLE. BacDive and Fermentation Explorer columns are curated from published strain descriptions and Bergey's Manual (rule-based text extraction plus a manual label file) - real measurements. The 'Type of metabolism (FAPROTAX)' and '(FAPROTAX2)' columns are NOT: I read getFAPROTAXpredictions.R and they are produced by running the FAPROTAX tool on taxonomy strings, i.e. a rule-based tool propagating labels down the taxonomy. Those two columns must never be the prediction target; using them would be learning a lookup table from phylogeny."
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three files - one 27,010-row label table, one KO table, one FASTA folder - joined on LPSN ID and IMG genome ID; joins verified complete."},
+    "B2": {"score": 2, "why": "database_clean.csv parsed first try in pandas; .rds read first try in R; FASTA trivial. Only the raw export needs latin-1."},
+    "B3": {"score": 1, "why": "Labels come from three curation sources with different vocabularies; each is internally consistent but cross-source harmonisation is needed."},
+    "B4": {"score": 1, "why": "1,870 of 10,874 oxygen-tolerance cells hold conflicting multi-values; 372 motility cells say 'negative;positive'. Droppable, but a policy is required."},
+    "B5": {"score": 2, "why": "Zero duplicate LPSN IDs across 27,010 rows; only 10 duplicated genus/species/subspecies/strain tuples. Verified in the file."},
+    "B6": {"score": 1, "why": "Column names self-document their source database, and build scripts are public, but there is no data dictionary for the value vocabularies."},
+    "C1": {"score": 2, "why": "'How far from training clades can a trait still be called, and from which input?' is informative whichever way it resolves."},
+    "C2": {"score": 1, "why": "MICROPHERRET, BacDive-AI, phenotrex and this paper's own 30 models are open, but all take genome gene content, not 16S sequence."},
+    "C3": {"score": 2, "why": "Unique-application plus better-evaluation angle: no retrieved work predicts organism physiology directly from a 16S sequence with a DNA language model."},
+    "C4": {"score": 2, "why": "The alternative is culturing an isolate and running Gram stain, oxygen-tolerance and spore assays in a lab; most microbes cannot be cultured at all."},
+    "C5": {"score": 2, "why": "Supplementary Dataset S3 gives per-trait published balanced accuracies (aerobe 0.94, Gram-negative 0.974, motility 0.821); majority class is the dummy."},
+    "D1": {"score": 2, "why": "DNABERT-2 and HyenaDNA have open downloadable weights and handle 1.5 kb 16S sequences; Nucleotide Transformer v2 is a third option."},
+    "D2": {"score": 2, "why": "21,119 sequences embedded once on CPU and cached; the head is logistic regression or gradient boosting on a 768-dimension vector."},
+    "D3": {"score": 2, "why": "DNABERT-2 and HyenaDNA are Apache-2.0; the paper, its Zenodo record and the BacDive trait data are CC-BY-4.0. Verified the Zenodo licence field."},
+    "E1": {"ok": true, "why": "database.csv ships LPSN_Genus/Family/Order/Class/Phylum columns; I saw them, so clade-held-out splits need no extra work."},
+    "E2": {"ok": true, "why": "Among oxygen-labelled organisms: 2,597 genera; among genome-matched organisms: 4,522 genera and 39 phyla. Counted in the file."},
+    "E3": {"ok": true, "why": "Majority class (aerobe is 52% of unambiguous oxygen calls), per-genus mean, and nearest-16S-neighbour lookup are all computable."},
+    "E4": {"ok": true, "why": "Conflicting multi-value cells (1,870 oxygen, 372 motility) give an empirical curator-disagreement rate; overlapping traits across BacDive and Fermentation Explorer cross-check."},
+    "E5": {"ok": true, "why": "Gram stain should be near-perfectly recoverable (it tracks phylum), and the 131 methanogens are all Methanobacteriota - textbook signals the model must find."},
+    "E6": {"ok": true, "why": "Label shuffling and input-block ablation (16S only, KO only, taxonomy name only) are all cheap on a cached embedding matrix."},
+    "E7": {"ok": true, "why": "Full BacDive release (99,392 strains) extends beyond the 27,010 type strains here; the paper's own rumen isolates were measured independently in the authors' lab."},
+    "E8": {"ok": true, "why": "The 30 released random forest .rds models plus Supplementary Dataset S3's per-trait numbers mean the paper's own result can be reproduced."},
+    "G1": {"score": 2, "why": "Verified in the file: NCBI taxonomy ID (15,584), GTDB ID (15,584), IMG genome ID (15,101), BacDive ID (19,114), GOLD organism ID (15,588)."},
+    "G2": {"score": 2, "why": "GTDB (hundreds of thousands of genomes) and BacDive (99,392 strains) both join on identifiers already present in the table."},
+    "G3": {"score": 2, "why": "Organism-to-16S is one-to-one (21,119/21,119) and organism-to-genome is one-to-one by construction ('IMG Genome ID max quality', 15,101 unique)."},
+    "G4": {"score": 2, "why": "Combined question: can cultured type strains assign physiology to the uncultured majority in GTDB, and at what phylogenetic distance does it break?"},
+    "H1": {"score": 2, "why": "Negatives are systematically recorded: 5,334 motility-negative vs 3,613 positive; 3,199 spore-negative vs 1,578 positive. Counted in the file."},
+    "H2": {"score": 1, "why": "39 phyla, bacteria and archaea, but heavily skewed (5,639 Pseudomonadota of 15,100) and limited to cultured, validly published type strains."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one sentence, and it is about cultured type strains only."},
+    "H4": {"score": 2, "why": "The discussion states plainly that the database holds cultured prokaryotes only and that uncultured organisms and eukaryotes are future work."},
+    "I1": {"score": 2, "why": "Hackmann lab (UC Davis), the DSMZ BacDive/Koblitz group, the MICROPHERRET group in Padova, and JGI IMG/M (a co-author is there)."},
+    "I2": {"score": 2, "why": "A decay curve tells amplicon-based labs which clades a trait call can be trusted for, and which lineages are worth culturing."},
+    "I3": {"score": 2, "why": "Per-clade balanced accuracy and calibrated probability are exactly what a user deciding 'do I believe this trait call?' needs; the tools already output probabilities."},
+    "I4": {"score": 1, "why": "Nearest-16S-neighbour is a strong baseline for phylogenetically conserved traits and may win; that is the honest risk."},
+    "J1": {"score": 2, "why": "Frozen pretrained backbone, grouped cross-validation, calibration and a transfer question - real modelling, not just cleaning."},
+    "J2": {"score": 2, "why": "Sanity checks are textbook: Gram stain tracks phylum, methanogens are archaea, obligate aerobes carry cytochrome oxidase genes."},
+    "J3": {"score": 2, "why": "A cleaned 21,119-sequence 16S-plus-phenotype benchmark with clade-held-out splits is shareable even if no model beats the baseline."},
+    "J4": {"score": 2, "why": "Four weeks: one to build the table, one to cache embeddings, two to evaluate and write up."},
+    "J5": {"score": 1, "why": "Kill condition stated here (no gain over nearest-neighbour on held-out families by week two) but no calendar date committed in NOTES.md yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Microbe Decoder machine-learning tool (this paper, 2026) - random forests on KEGG orthology presence/absence",
+        "open_weights": true,
+        "score_and_split": "Mean balanced accuracy 0.875 across 30 traits (I recomputed this from Supplementary Dataset S3; the paper says 0.88), on a 30% held-out strain split where training and test could share a species. The paper also built genus/family/order/class/phylum-held-out versions and reports performance falls from high at species/genus to low at higher ranks (Supplementary Fig. S5, which I could not render).",
+        "authors_named_unsolved": "The discussion names three gaps: the database covers cultured prokaryotes only, so uncultured organisms and eukaryotes are unsupported; predictions treat organisms in isolation and ignore metabolite exchange between them; and predictions use all genes in a genome rather than the ones actually expressed.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MICROPHERRET (Bizzotto et al., Environmental Microbiome 2024) - 89 binary classifiers on KEGG orthology features",
+        "open_weights": true,
+        "score_and_split": "Code and models on GitHub (MetabioinfomicsLab/MICROPHERRET). Labels were taken from FAPROTAX, i.e. taxonomy-propagated rather than measured, and evaluation was by cross-validation on genomes plus tests on fragmented/incomplete genomes above 70% completeness. I could not retrieve the per-trait numbers or confirm the split was phylogeny-aware - the PMC page returned a CAPTCHA.",
+        "authors_named_unsolved": "Not retrieved (page blocked); the summary I obtained highlights breadth of traits as the contribution and genome completeness as the stress test.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BacDive-AI (Koblitz et al., Communications Biology 2025) - random forest on Pfam protein-family inventories",
+        "open_weights": true,
+        "score_and_split": "15,938 genomes, 8 physiological traits, random forest (200 trees, depth 10), 80/20 train-test with stratified 10-fold cross-validation - a RANDOM split, not phylogeny-aware. Reported F1 0.95 for Gram-positive, 0.95 for motility, 0.92 for aerobe. Code at LeibnizDSMZ/bacdive-AI, data on Zenodo, CC-BY-4.0.",
+        "authors_named_unsolved": "Archaeal predictions carry notably lower confidence; understudied phyla average only 44.8% annotation coverage; they state prediction 'could be improved significantly if the quality and quantity of genomic data were increased'.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "phenotrex / PhenDB (successor to PICA) - support vector models on protein-family inventories",
+        "open_weights": true,
+        "score_and_split": "Open on GitHub (univieCUBE/phenotrex) with pre-trained curated trait models and a web server for user-uploaded metagenomic bins. I did not retrieve per-trait scores or the split used.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Traitar (Weimann et al., mSystems 2016) - the original microbial trait analyser",
+        "open_weights": null,
+        "score_and_split": "Cited by this paper as prior art; search results report the web service is no longer online. No numbers retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Whole-genome phenotype prediction with machine learning: open problems in bacterial genomics (Bioinformatics 2025) - a review, not a model",
+        "open_weights": null,
+        "score_and_split": "No model. Included because it names the field's unsolved problem precisely: random cross-validation inflates performance by putting related strains on both sides, and models 'fail to reliably generalize to out-of-distribution examples'. It advocates holding out whole strains / genetic clusters.",
+        "authors_named_unsolved": "Whether the genotype-to-phenotype mapping can even be posed as a well-formed learning task, and what representations and splits are needed for it to be one.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 (a DNA language model, 117M parameters, Apache-2.0) on the 1.5 kb 16S ribosomal RNA sequence; HyenaDNA or Nucleotide Transformer v2 as alternatives",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU. Embed 21,119 sequences once, cache a 21,119 x 768 float matrix (~65 MB), then fit a logistic-regression or gradient-boosting head per trait in seconds.",
+    "licence": "DNABERT-2 and HyenaDNA are Apache-2.0 (permissive). Nucleotide Transformer checkpoints are partly non-commercial, so prefer the first two. Data is CC-BY-4.0."
+  },
+  "integration": {
+    "partner_dataset": "GTDB (the Genome Taxonomy Database, hundreds of thousands of bacterial and archaeal genomes, most from uncultured lineages) and the full BacDive release (99,392 strains with curated physiology)",
+    "join_key": "GTDB ID and NCBI taxonomy ID, both already columns in database_clean.csv for 15,584 organisms; BacDive ID for 19,114",
+    "bigger_question_one_sentence": "Can physiology measured on ~26,000 cultured type strains be extended to the uncultured majority of life, and at what phylogenetic distance from a cultured relative does that extension stop being trustworthy?"
+  },
+  "controls": {
+    "positive_control": "Two, chosen in advance: Gram stain must be recovered at high accuracy because it tracks phylum (6,034 negative vs 3,772 positive in the 16S subset), and all 131 methanogens must be called methanogenic - they are all Methanobacteriota. A plumbing check is predicting the 16S sequence's own GC content from its embedding, which must be near-perfect.",
+    "negative_control": "Shuffle trait labels within the clade-held-out folds and confirm balanced accuracy collapses to 0.5; replace embeddings with random vectors of the same shape; ablate input blocks (16S sequence only, KEGG orthology only, taxonomy name only) to see which block does the work.",
+    "external_validation": "Three levels: (1) the full BacDive release, which covers 99,392 strains versus the 27,010 LPSN type strains here; (2) the authors' own rumen isolates, characterised in their lab for anaerobic growth, aerobic respiration, nitrate respiration, Gram reaction, spore formation and motility (Supplementary Dataset S4), a genuinely independent measurement set though only tens of isolates; (3) the 6,215 organisms that have a 16S sequence but no genome, which the genome-based tools cannot touch at all."
+  },
+  "honest_claim_h3": "For a bacterium or archaeon whose 16S ribosomal RNA sequence we have, this model predicts laboratory-measured physiology - oxygen tolerance, Gram stain, motility, spore formation, fermentation type - at an accuracy that we quantify as a function of how far it sits from the nearest cultured, validly published type strain in the training set; it says nothing about organisms from lineages with no cultured relative at any rank, and nothing about eukaryotes.",
+  "plain_idea": {
+    "one_liner": "Use a microbe's 16S ribosomal RNA gene sequence to predict its laboratory-measured physiology, and measure how that fails for distant relatives.",
+    "train_on": "One 16S ribosomal RNA gene sequence per organism (median 1,461 base pairs), for 21,119 named bacteria and archaea - I counted the FASTA files and confirmed every one matches a row in the trait table.",
+    "predict": "Five or six physiological traits per organism: oxygen tolerance (8,581 unambiguous labels), Gram stain (9,868), motility (8,947), spore formation (4,777), fermentation type (8,023) and optimal growth temperature in degrees (15,356). The true answers come from BacDive and Bergey's Manual, which record what microbiologists measured when they cultured and described each strain.",
+    "why_worthwhile": "16S sequencing is the cheapest and most common way to survey a microbial community, but today it can only yield physiology by looking the organism's name up in a table - which fails for the many organisms that have no close cultured relative. A decay curve showing exactly where that failure begins tells every amplicon-based microbiome lab which of its trait calls to trust."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Our labelled set is comparable in size to BacDive-AI's (15,938 genomes) and this paper's own (15,100), not bigger. The genuine edge is modality coverage: 6,215 organisms have a 16S sequence but no genome, so no existing tool - all of which need genome gene content - can make any prediction for them."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The data supports a real uncertainty estimate: 1,870 of 10,874 oxygen-tolerance cells and 372 motility cells record curators disagreeing, giving an empirical noise floor, and clade-held-out folds give distance-conditioned error bars. But BacDive-AI already publishes a per-prediction confidence score, so this is not an unoccupied gap."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "BacDive-AI (2025) used a random 80/20 split with stratified 10-fold cross-validation - leakage-prone across related strains - so its F1 of 0.95 is almost certainly optimistic and is re-evaluable. But this paper (2026) already ran genus-to-phylum held-out splits on its own tool, so the honest-evaluation gap is half closed already."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Condition failed: our model does not see everything the baselines see. The 16S-only model sees strictly less than the genome-based random forests, so on organisms that have a genome it should lose. The gain is on the 6,215 genome-less organisms, where the baseline cannot run at all - which is a coverage win, not a head-to-head improvement."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "BacDive, the DSMZ strain-phenotype database, which the Koblitz et al. 2025 paper I retrieved states covers 99,392 strains of 21,578 species with over 1.2 million curated datapoints. Also known (not searched this session): the Madin et al. condensed bacterial and archaeal trait database in Scientific Data, and GTDB for the taxonomy backbone.",
+    "approx_items": 99392,
+    "join_key": "BacDive ID (present for 19,114 of 27,010 rows, verified), NCBI taxonomy ID (15,584), or genus-species name",
+    "why": "The same traits are measured for roughly four times as many strains outside this table, so a model trained here has a large ready-made external test set and could be retrained at larger scale if the approach works."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Close relatives on both sides of the split: the table holds 10,855 oxygen-labelled organisms across only 2,597 genera, so a random split puts congeners in train and test and inflates every number - exactly the failure the 2025 Bioinformatics review names as the field's main open problem.",
+      "Taxonomy-propagated labels masquerading as measurements: the 'Type of metabolism (FAPROTAX)' and '(FAPROTAX2)' columns are output from running the FAPROTAX tool on taxonomy strings (I read the script), so training on them means learning phylogeny from phylogeny.",
+      "Machine-predicted values leaking in from BacDive itself: BacDive now hosts 50,396 machine-learning predictions alongside curated values, so a newer export could contain another model's output as our label.",
+      "The 16S sequence is itself the basis of the taxonomy used to curate some trait assignments, so sequence and label are not fully independent for literature-propagated entries.",
+      "Phylum imbalance: 5,639 of 15,100 genome-matched organisms are Pseudomonadota, so a model can score well by learning two or three big clades."
+    ],
+    "split": "Nested clade-held-out cross-validation on the LPSN_Genus, LPSN_Family, LPSN_Order, LPSN_Class and LPSN_Phylum columns - I saw all five as real columns in database.csv, so no taxonomy parsing is needed. Report one accuracy per held-out rank, which is the headline result. Add a 16S sequence-identity split (cluster at 97% and 90% identity with MMseqs2 or VSEARCH) as an independent check that does not rely on taxonomic labels.",
+    "checks": [
+      "Shuffle labels within each held-out clade fold; balanced accuracy must fall to 0.5.",
+      "For every test organism, record the 16S identity to its nearest training sequence, and plot accuracy against that identity - the curve, not a single number, is the deliverable.",
+      "Train on the nearest-neighbour feature alone (predict the trait of the most similar training sequence) and report it as the baseline the model must beat.",
+      "Never use the FAPROTAX or FAPROTAX2 columns as a target; use them only as a comparison method.",
+      "Confirm the BacDive export used (advsearch_bacdive_2024-11-07.csv, dated before BacDive-AI's predictions were deposited) carries no predicted-value flag."
+    ],
+    "verdict": "Manageable. The split columns already exist in the file and the one label-provenance trap is identified and avoidable by dropping two named columns."
+  },
+  "success_criteria": {
+    "metric": "Balanced accuracy per trait at each held-out taxonomic rank (genus, family, order, class, phylum), because the decision a user makes is 'do I trust this trait call for an organism this far from anything cultured?', and because balanced accuracy is what the paper reports, so the comparison is direct.",
+    "baselines": "Three. (1) Majority class - aerobe is 52% of unambiguous oxygen calls, Gram-negative 61%, motility-negative 60%; counted in the file. (2) Nearest-16S-neighbour label transfer, the honest dummy for a phylogenetically conserved trait. (3) The paper's own published per-trait numbers from Supplementary Dataset S3: aerobe 0.94, anaerobe 0.858, Gram-negative 0.974, Gram-positive 0.973, motility 0.821, fermentation 0.896 - all at a split where species can be shared, so they are an upper bound rather than a fair target.",
+    "success": "A win is: the frozen DNA-language-model head beats nearest-16S-neighbour by at least 0.05 balanced accuracy on held-out FAMILIES for at least three of the five categorical traits, and produces the first published accuracy-versus-phylogenetic-distance curve for 16S-only trait prediction covering all 6,215 organisms that have no genome.",
+    "noise_ceiling": null,
+    "kill": "Stop if, after one week of modelling, the model is within 0.02 balanced accuracy of nearest-16S-neighbour at every held-out rank for every trait - that means the sequence model has learned nothing beyond similarity, and the honest output is a one-page note rather than a project. Also stop immediately if the BacDive export turns out to contain machine-predicted values."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology",
+      "why": "Publishes method papers that change how a common assay is analysed; it would take the 16S-only model clearly beating both nearest-neighbour and taxonomy lookup at family-and-above distance, with the gain demonstrated on organisms that have no sequenced genome."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "The likely result is a careful cross-tool benchmark with a phylogenetic-distance decay curve and a modest, honest gain over nearest-neighbour - exactly the applications-note-plus-benchmark format Bioinformatics runs."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Even the negative outcome - that a DNA language model adds nothing over 16S sequence identity, and that random-split numbers like BacDive-AI's 0.95 F1 drop sharply under clade-held-out evaluation - is a publishable re-evaluation there, with the cleaned 21,119-sequence benchmark as the deposited artefact."
+    }
+  },
+  "pitch": {
+    "headline": "21,119 microbes with a 16S sequence and lab-measured physiology in one joinable table, and 6,215 of them have no genome at all.",
+    "what_makes_the_data_unusual": "Every existing trait predictor - MICROPHERRET, BacDive-AI, phenotrex, this paper's own 30 models - needs genome gene content. This table pairs curated physiology with a raw 1.5 kb 16S sequence, the input most microbiome surveys actually produce. CC-BY-4.0, all verified by opening the files.",
+    "the_win": "A published accuracy-versus-phylogenetic-distance curve for 16S-only trait calling, plus beating nearest-16S-neighbour by 0.05 balanced accuracy on held-out families against the paper's 0.94 aerobe and 0.974 Gram-negative species-level numbers.",
+    "even_if_it_fails": "We learn that 16S trait prediction is nothing more than nearest-neighbour lookup, which is itself worth publishing because BacDive-AI's 0.95 F1 came from a random 80/20 split that never tested this, and we leave behind a clade-split benchmark anyone can reuse.",
+    "who_wants_it": "The Hackmann lab at UC Davis, the DSMZ BacDive team, and every amplicon-sequencing microbiome group deciding whether to trust a FAPROTAX trait call for an organism with no cultured relative."
+  },
+  "ml_idea": "Build a same-organisms, same-splits benchmark of microbial trait prediction across three input modalities, using the 27,010-row Microbe Decoder database. For each of six laboratory-measured traits (oxygen tolerance, Gram stain, motility, spore formation, fermentation type, optimal growth temperature), compare: (a) taxonomy-name lookup, the FAPROTAX approach; (b) KEGG-orthology presence/absence into a random forest, which reproduces this paper's and MICROPHERRET's approach and whose 30 trained models ship in the repo; and (c) the new piece - a frozen DNA language model (DNABERT-2 or HyenaDNA, Apache-2.0) embedding of the organism's 1.5 kb 16S ribosomal RNA sequence with a small classification head. Evaluate every method under nested clade-held-out cross-validation using the LPSN_Genus through LPSN_Phylum columns already in the file, and report accuracy as a function of phylogenetic distance from the training set rather than as a single number. The FAPROTAX and FAPROTAX2 columns are excluded as targets because they are tool output, not measurements. The headline deliverable is the decay curve plus coverage: method (c) is the only one that works for the 6,215 organisms with a 16S sequence and no sequenced genome.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.4,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 6,
+    "cv_run_minutes": 20,
+    "compute_note": "Estimated, not timed. The data sizes and joins are measured: I downloaded and parsed all four files and confirmed every join. Embedding time assumes ~1 second per 1.5 kb sequence for a ~100M-parameter DNA language model on an Apple Silicon CPU, over 21,119 sequences; this is the one number that could be off by a factor of three, and it is a one-time cost because embeddings are cached. The cross-validation estimate is for a linear or gradient-boosting head on a cached 21,119 x 768 matrix, six traits by five held-out ranks.",
+    "cheapest_killing_check": "Confirm the BacDive trait values in database_clean.csv are curated measurements and not BacDive's own machine-learning predictions. The export is dated 2024-11-07, before BacDive-AI's 50,396 predictions were deposited, and the oxygen_tolerance.csv header shows no predicted-value flag - but spot-check 20 organisms against the live BacDive record. If the labels are predictions, the whole project is distillation and dies on A8. Second cheapest: compute nearest-16S-neighbour accuracy at each held-out rank before building any model; if it is already near the paper's numbers, the modelling adds nothing."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer was checked by opening the files, not by reading the paper: 27,010 organisms in one clean table that parses first try, 21,119 16S sequences that join one-to-one on LPSN ID, 22.7 million genome-to-KEGG-orthology pairs, thousands of labels per trait, zero duplicate primary keys, and the split columns for clade-held-out evaluation already present as LPSN_Genus through LPSN_Phylum. I recomputed the paper's own headline accuracies from its supplement and they matched (0.811/0.855/0.875 versus the stated 0.81/0.86/0.88), which is the strongest A7 evidence available. The one real trap - that the FAPROTAX columns are a rule-based tool's taxonomy-propagated output rather than measurements - was found by reading the build script and is avoided by dropping two named columns; the BacDive and Fermentation Explorer labels behind them are genuine literature-curated phenotypes. The field is crowded with open models (MICROPHERRET, BacDive-AI, phenotrex, this paper's own 30 shipped random forests), but all of them require genome gene content, and 6,215 organisms here have a 16S sequence and no genome, which no existing tool can touch. The question - how far from a cultured relative can physiology still be called, and from which input - cannot produce a useless answer, a permissively licensed DNA language model fits the input exactly, and the whole thing runs on a laptop CPU in 0.4 GB."
+}

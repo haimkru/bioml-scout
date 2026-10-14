@@ -1,0 +1,96 @@
+{
+  "paper_id": "nar2026-gkag477",
+  "title": "ProteinNetworkSight: a user-friendly platform for transforming co-expression patterns into actionable therapeutic insights through interactive network visualization.",
+  "doi": "10.1093/nar/gkag477",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/cohenoa/ProteinNetworkSight (code; Zenodo mirror 10.5281/zenodo.19881700)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the whole GitHub repository tree (file names and byte sizes) and downloaded three files: the drug table backend/src/common/cancerdrugsdb.txt (138 KB, 313 drug rows, columns Product/EMA/FDA/Year/DrugBank ID/ATC/ChEMBL/Indications/Targets) and two development sample tables from the STRING copy (proteins dev_data.csv 37 KB with protein annotations; node_node_links dev_data.csv 14 KB with node_id_a, node_id_b, combined_score). Fetched the Zenodo record metadata: a single 10.3 MB zip that is just the source code, CC-BY-4.0. Unzipped the Europe PMC supplement (1.5 MB: two figures plus one .docx) and read the .docx text. Confirmed https://proteinnetworksight.jce.ac returns HTTP 200.",
+    "what_came_from_paper_text_only": "That the live server runs a full local copy of STRING version 12.0 in PostgreSQL (the repository ships only tiny development subsets, not the full interaction table), that the drug table was pulled from the Anticancer Fund Cancer Drugs Database on 16 Dec 2025, and that the demo input file holds 216 proteins across 17 score columns taken from a 2021 melanoma study (Vasudevan et al., npj Precision Oncology)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Code downloads freely from GitHub and Zenodo (CC-BY-4.0), no login; the web server is open with no registration. I opened the files. But what downloads is an application, not a research dataset."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. There is no outcome column anywhere in the repository. The files I opened contain only STRING interaction scores, protein annotations and a drug-to-target list. Any machine-learning target (drug response, synergy, whether a suggested combination actually works) would have to be built from scratch by joining to outside sources."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Protein identifiers (Ensembl protein IDs like 9606.ENSP00000179259), gene symbols and drug identifiers (DrugBank, ChEMBL) are present in the files I opened, so inputs would not need thousands of lookups."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "The only numeric column I saw is STRING's combined_score, an unitless confidence value 0-1000. The user-supplied 'pattern scores' the tool consumes have no defined unit at all: the paper says they can be any machine-learning weight, statistical loading, or a fold change."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 313,
+      "note": "FAIL. The largest curated table in the repository is the drug list: 313 drug rows (I counted them). The paper's one worked example is 216 proteins. Both are far under the ~1,500-row bar."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~10 MB of repository tables; a full STRING v12.0 human download would be ~1-2 GB",
+      "note": "Size is not the problem here. Everything I opened fits in memory easily."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No count conflict found, because the paper states almost no counts. The 216-protein demo figure and the drug table I counted (313 rows) are consistent with the text."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the obvious project. The tool's headline output, the composite perturbation 'final score', is computed deterministically from node degree in STRING times the user's own input score, so it is a function of the features. Predicting it would be learning arithmetic, not biology."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "",
+    "freeze_and_head_viable": null,
+    "hardware": "",
+    "licence": ""
+  },
+  "integration": {
+    "partner_dataset": "",
+    "join_key": "",
+    "bigger_question_one_sentence": ""
+  },
+  "controls": {
+    "positive_control": "",
+    "negative_control": "",
+    "external_validation": ""
+  },
+  "honest_claim_h3": "No honest claim is available: the paper ships a visualization web application, not a set of measurements with an outcome, so there is nothing a model could be trained to predict.",
+  "plain_idea": {
+    "one_liner": "Use protein interaction network shape to predict which drug combination helps a given tumour. Considered, then rejected.",
+    "train_on": "Would need tumour-by-tumour protein co-expression patterns paired with the drug combinations that actually worked. This paper supplies neither: the only example input is 216 proteins from one 2021 melanoma study, and no treatment outcomes are deposited.",
+    "predict": "Would predict a drug or drug pair's benefit. The paper's own output, a 'final score' per protein, is not a measurement: it is node degree in STRING (a database of known protein-protein interactions) multiplied by a user-supplied score.",
+    "why_worthwhile": "A validated network-to-combination predictor would matter to oncology labs designing personalised regimens, but this paper carries none of the labelled outcome data that would be needed to build or test one."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "None viable from this paper. The only machine-learning-shaped task on offer is predicting the tool's own composite perturbation score, which is arithmetic on the inputs (STRING node degree times the user's score), so it is leakage by construction. The genuinely interesting downstream question, whether network-derived target combinations predict real drug response, needs outcome data that lives in DepMap, GDSC or clinical trial records, not here; this paper would contribute only a visualization layer to that project.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: I downloaded and parsed the three largest data files in the repository (138 KB, 37 KB, 14 KB) in under a second each. Compute was never the limiting factor; the absence of a label was.",
+    "cheapest_killing_check": "List the repository tree and ask which column is the outcome. Done in two calls: the answer is that no file contains one. The 313-row drug table and the 216-protein demo input are the largest curated tables present."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A web server paper with no deposited dataset. Fails A2 (no outcome column exists anywhere; a label would have to be constructed from outside sources), A5 (largest table is 313 drugs, demo input is 216 proteins), A4 (the user-supplied 'pattern scores' have no defined unit) and A8 (the tool's own 'final score' is node degree multiplied by the user's input, so it is computed from the features). Both ingredient resources, STRING v12.0 and the Anticancer Fund Cancer Drugs Database, are public elsewhere and gain nothing from this paper."
+}

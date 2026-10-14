@@ -1,0 +1,108 @@
+{
+  "paper_id": "nature2026-10699-x",
+  "title": "Competing programs shape cortical sensorimotor-association axis development.",
+  "doi": "10.1038/s41586-026-10699-x",
+  "journal": "Nature",
+  "data_url": "https://github.com/sestanlab/MIND",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the one expression matrix that downloads freely: the Kang 2011 human brain exon microarray at hbatlas.org/files/nature105213.GENE1346_nosnp.txt (196,720,574 bytes, confirmed by HTTP HEAD). Read its header and first rows via a ranged GET: 1,360 tab-separated columns = 20 annotation columns + 1,340 sample columns; sample names encode donor, region and hemisphere (e.g. X92.A1C.R.CEL), giving 57 donors and 16 main brain regions, of which 904 samples fall in the 11 neocortical regions this paper analyses. Listed the whole sestanlab/MIND GitHub repository via the GitHub tree API: 82 KB total, 7 R scripts plus 3 small sample-metadata .rds files, and no expression data and no gene-module output tables. Confirmed the Supplementary Tables are not retrievable: Springer static-content returns HTTP 403 for MOESM1-6, the Europe PMC supplementaryFiles endpoint timed out on two attempts, and the PMC open-access package service returns 404. Probed the two PsychENCODE portals named in the data availability statement: they answer over http but the two processed count matrices named in the authors' own script (mRNA-seq_hg38...gene.count.txt and nhp_development_count_rmTechRep.txt) are not at any path I could reach. Read 01_get_GM_list.R in full, which is how I know how the gene-program labels are made.",
+    "what_came_from_paper_text_only": "All sample counts for the Li 2018 human RNA-seq and Zhu 2018 macaque RNA-seq datasets (I never obtained either matrix). The restriction to developmental periods 3-7 in human and 5-7 in macaque, and the 4 primary plus 7 association cortical areas. Everything about the MIND (multinodal induction-exclusion in network development) model itself, the PLXNC1/SEMA7A repulsion experiments, the knockout phenotypes, the diffusion-weighted imaging, and all image quantifications: none of these exist as data files I could open."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The paper's own new data is raw sequencing only (NCBI Sequence Read Archive BioProject PRJNA1391524), which this project does not download; the archival macaque histology is explicitly request-only from the Yale MacBrain-Resource; Supplementary Tables 1-24 (which hold the gene-program lists) returned 403 from Springer, timed out twice at Europe PMC and 404 from the PMC open-access service. Only one third-party 2011 microarray matrix downloaded cleanly."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL, and this is the decisive one. The quantity the paper is about, whether a gene belongs to the 'pericentral' or 'central' program, is not a column in anything I could download. It has to be constructed by re-running the authors' four-criterion differential-expression pipeline (GM.cal.func.R, RNentropy and limma) on three third-party matrices, two of which I could not obtain."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "For the one matrix I opened, the inputs are present as actual numbers: 1,340 columns of log2 microarray expression with gene symbol, RefSeq and genomic coordinates in the annotation columns. No identifier lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "The file served at hbatlas.org is named nature105213.GENE1346_nosnp.txt while the authors' script reads 'nature105213.GENE1346_nosnp_Log2-expression value.txt'. The served file has no units column and no header note, so whether the values are already log2-transformed is inferred from a filename in someone else's script, not stated in the data."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 904,
+      "note": "Counted in the file header: 904 samples in the 11 neocortical regions, across all 15 developmental periods, from 57 donors. The fetal window the paper actually uses (periods 3-7) is roughly a quarter of that, around 250 samples, and the unit that governs generalisation is the donor, of which there are 57 in total and about 23 prenatal. Below the ~1,500-row bar, and far below it once grouped by donor."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~200 MB download, ~0.2-1 GB in memory",
+      "note": "The 196 MB microarray matrix exceeds this project's 50 MB cap but is trivially small for a 16 GB laptop once loaded; roughly 17,000-20,000 gene rows by 1,340 samples. Size is not what kills this."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The 1,340 samples, 57 donors and 16 regions I counted in the header match the published description of the Kang 2011 resource. I could not cross-check the other two datasets because I never obtained them."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL. I read 01_get_GM_list.R: the program label is defined by four hand-set rules applied to the expression matrix itself ('significantly upregulated in at least one region', 'under-expressed in at least 30% of areas in the opposing group', and so on). Predicting that label from expression is leakage by construction, since the label is a thresholded function of the features. Predicting it from DNA sequence instead would mean learning someone's 2011 microarray contrast thresholds, not a physical measurement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Burt et al. 2018, 'Hierarchy of transcriptomic specialization across human cortex captured by structural neuroimaging topography' (Nature Neuroscience)",
+        "open_weights": false,
+        "score_and_split": "Not a released model with weights; reports that the dominant axis of cortical gene expression tracks the T1w/T2w (T1-weighted over T2-weighted magnetic resonance imaging ratio) hierarchy map. I retrieved the record via search, not the full paper, so I did not read a held-out split.",
+        "authors_named_unsolved": "Not read; I only retrieved the abstract-level summary.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Whole-cortex in situ sequencing reveals input-dependent area identity (Nature, 2024; PMC12589132)",
+        "open_weights": null,
+        "score_and_split": "Reports that the composition of transcriptomic cell types is 'highly predictive of cortical area identity' in mouse. I retrieved the record via search only and did not see a number or a split.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "PennLinc Sensorimotor-Association Archetypal Axis (a published rank of 360 cortical parcels) and the Allen Human Brain Atlas",
+    "join_key": "Cortical region abbreviation, which would need hand-mapping to parcel names; no standard identifier is shared",
+    "bigger_question_one_sentence": "Could in principle ask whether a fetal transcriptomic signature predicts an adult cortical region's position on the published sensorimotor-association ranking, but the join is free-text region names across different parcellation schemes, which is exactly the fragile mapping the checklist warns against."
+  },
+  "controls": {
+    "positive_control": "Would exist in principle: a classifier should separate primary visual cortex from prefrontal cortex easily, and should recover the known SEMA7A-high / PLXNC1-low signature of primary areas.",
+    "negative_control": "Shuffling region labels within donor would be runnable, and is the obvious check for donor-level leakage.",
+    "external_validation": "The macaque Zhu 2018 dataset and the Broad Single Cell Portal organoid study SCP1756 would be genuine external sets, but I could not obtain either, so this is unverified."
+  },
+  "honest_claim_h3": "The most a model built on what I could actually download would claim is: 'from log2 microarray expression of one 2011 post-mortem cohort of 57 donors, a classifier recovers which of 11 dissected neocortical regions a sample came from' - a statement about dissection labels in one cohort, not about the induction-exclusion mechanism the paper is actually about.",
+  "plain_idea": {
+    "one_liner": "Use a cortical sample's gene expression to predict where that area sits on the sensorimotor-to-association axis.",
+    "train_on": "Bulk gene expression for each dissected piece of developing cortex. In the one matrix I verified, that is 904 samples from 11 neocortical regions in 57 post-mortem donors; the two RNA-seq datasets the paper leans on more heavily could not be obtained, so their sizes are unknown.",
+    "predict": "Either the region a sample came from, or its position on the sensorimotor-to-association axis. The region label comes from the anatomist's dissection, which is a real observation; the axis position and the 'pericentral versus central' gene program label are both statistics the authors computed from the same expression values.",
+    "why_worthwhile": "Developmental neuroscientists would like a way to score how far an organoid or a mutant mouse cortex has moved along the sensorimotor-association axis, which is currently judged by eye from stained sections. The project fails here because that scoring target is not a measurement that exists in any file."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The idea considered was a transcriptome-to-cortical-position model: train on fetal human bulk expression to predict whether a cortical sample is a primary sensorimotor area or a higher-order association area, then test whether it transfers to macaque and to cortical organoids. It is a genuinely informative transfer question, but it cannot be built from this paper's data, because the only matrix that downloads is a 2011 microarray cohort of 57 donors and the two RNA-seq matrices and all 24 supplementary tables were unreachable.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 2.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed. The one file I verified is 196 MB of text, roughly 17,000-20,000 gene rows by 1,340 samples, so about 0.2 GB as a float matrix and comfortably under 2 GB peak with pandas overhead. Hours-to-table is null because two of the three required matrices could not be obtained at all.",
+    "cheapest_killing_check": "Already done, and it killed it: read 01_get_GM_list.R on GitHub and see that the pericentral/central program label is defined by four thresholds applied to the expression matrix itself. Thirty seconds, and it settles A8 before any download."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails three Part A killers. A2: the paper's target quantity, whether a gene belongs to the 'pericentral' or 'central' program, is not a column anywhere; it must be rebuilt by re-running the authors' R pipeline on third-party matrices. A8: I read that pipeline, and the label is a set of four hand-chosen thresholds applied to the same expression values that would be the model's features, so predicting it is leakage by construction. A1: the paper deposits no new processed table of its own, only raw sequencing (PRJNA1391524), request-only histology, and 24 supplementary tables that returned 403 from Springer, timed out twice at Europe PMC and 404 from the PMC open-access service. A5 and A4 also fail on the one matrix I did open: 904 neocortical samples from 57 donors, with the units of the values inferable only from a filename in someone else's script. This is a beautiful mechanistic neuroscience paper whose evidence is images, knockouts and reanalysis, not a modellable table."
+}

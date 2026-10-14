@@ -1,0 +1,121 @@
+{
+  "paper_id": "nar2026-gkag687",
+  "title": "SEM mapping of sequence-specific protein-DNA interactions on long DNA molecules.",
+  "doi": "10.1093/nar/gkag687",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/jolaboffice/SEM_DNA_Analysis (code + one example image); https://doi.org/10.5281/zenodo.20827106 (same code, 431 KB zip)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the Europe PMC supplement: it holds one Word file and three small figure-source spreadsheets (Contrast_SNR_measurements.xlsx, Position_analysis.xlsx, Protein_bound_width_analysis.xlsx), each with sheets of 4-39 rows of summary statistics, no per-example table. Fetched the Zenodo record (code only, 431 KB) and the full GitHub file tree: 7 Python scripts plus exactly one example scanning electron microscope (SEM) image (Alu4.tif, 463 KB) and one labelled spreadsheet. Opened that spreadsheet: sheet 'Profiles' has 1,043 rows (one per point along a single traced DNA molecule) x 41 intensity columns, of which 37 rows are highlighted yellow, i.e. hand-labelled as protein-bound.",
+    "what_came_from_paper_text_only": "The paper's methods state the classifier was trained on 13,147 profiles (3,551 positive, 9,596 negative) from 13 manually annotated images with leave-one-positive-image-out cross-validation and F1 = 0.97. None of those 13 annotated images or their profile tables are deposited anywhere I could find; the data availability statement says additional SEM/TEM images are 'available from the corresponding author upon reasonable request'."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified in the files. The training data behind the paper's machine-learning result (13 annotated SEM images / 13,147 labelled profiles) is not deposited: Zenodo holds only code, the supplement holds only figure summary statistics, and the repository ships exactly one example image. The paper itself says further images are 'available from the corresponding author upon reasonable request', which is the checklist's explicit fail condition."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "For the one public example the label is effectively a column: rows of the 'Profiles' sheet are hand-highlighted yellow (fill colour FFFF00) to mark protein-bound points, which the authors' script reads directly. Encoded as cell colour rather than a value, so it needs 3 lines of openpyxl, not a reconstruction."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are present for the one public example: 41 raw intensity values per trace point in the spreadsheet, plus the source Alu4.tif image itself. No identifier lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are stated: columns are labelled -20px..+20px (pixels from the DNA centre line), intensities are 8-bit grey levels, and the pixel scale (pixels per micrometre) is given in pxum_config.example.json so profiles convert to nanometres."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 1043,
+      "note": "FAIL, counted in the file. The only public labelled table has 1,043 rows with just 37 positives, all from a single DNA molecule in a single image, so there are no groups to hold out and the positive class is far under the ~400 needed for classification. The 13,147-profile set described in the paper is not available."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.7 MB public (one 463 KB TIFF image plus one 242 KB spreadsheet); the full 13-image set, if obtained, would still be tens of megabytes.",
+      "note": "Trivially laptop-sized; a random forest on 13k x 82 features trains in seconds on CPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "FAIL, cannot be reconciled. The paper reports 27% positive profiles (3,551 / 13,147) across 13 images; the one public example is 3.5% positive (37 / 1,043), and the repository README quotes cross-validated F1 about 0.93 on it versus 0.97 in the paper. With 12 of 13 images missing, there is no way to check the headline counts."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Label provenance is honest: a human highlighted rows in Excel after looking at the SEM image, so it is manual annotation, not another model's output. It is however subjective, drawn on the same images the model is scored on, and the person knew which molecules were dCas9-treated."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Calibrated random forest profile classifier of this paper (jolaboffice/SEM_DNA_Analysis, MIT licence)",
+        "open_weights": true,
+        "score_and_split": "F1 = 0.97 (precision 0.97, recall 0.98) out-of-fold under leave-one-positive-image-out cross-validation on 13,147 profiles from 13 images; the shipped example reproduces about F1 0.93 on its single image. Note the smoothing window, run-length filter and decision threshold were grid-searched on the same cross-validation probabilities, so 0.97 is optimistic.",
+        "authors_named_unsolved": "The methods and discussion flag that the detector works on localised dCas9 features and that localisation uncertainty depends on signal-to-noise; they do not claim transfer to other proteins, stains or microscopes.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None needed at this scale; if images were available, a small ImageNet-pretrained convolutional network (e.g. ResNet-18) or a 1D convolutional net on the 41-sample profile would be the natural comparison. No DNA language model applies, because the input is a grey-level image, not a sequence.",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop; profiles are 41 numbers each.",
+    "licence": "Code MIT; the paper is open access CC-BY, but the images themselves are not deposited."
+  },
+  "integration": {
+    "partner_dataset": "None usable. In principle the Alu-targeted dCas9 sites could be joined to the human reference genome (GRCh38 Alu annotations, HG002 benchmark) on genomic coordinates, but the public files carry no coordinates, only pixel positions along one trace.",
+    "join_key": "genomic coordinate (absent from the released data)",
+    "bigger_question_one_sentence": "Could not be written from the released data: without per-image genome coordinates there is nothing to join."
+  },
+  "controls": {
+    "positive_control": "Exists in the paper (densely dCas9-coated DNA molecules, SI Figure 10, where the detector should fire along most of the contour) but those images are not released.",
+    "negative_control": "Exists in the paper (untreated DNA, SI Figure 9) and label shuffling would be trivial, but again only one image is public.",
+    "external_validation": "None available: no second laboratory, microscope or deposited image set for this assay."
+  },
+  "honest_claim_h3": "With only one hand-labelled DNA molecule public, any model I trained could claim no more than 'it can reproduce one annotator's yellow highlights on one SEM image of Alu-targeted dCas9-bound human DNA', which is not a generalisable claim.",
+  "plain_idea": {
+    "one_liner": "Use brightness profiles measured across a DNA strand in electron microscope images to predict which points have a protein bound.",
+    "train_on": "For each point along a traced DNA molecule, the 41 grey-level values measured on a line perpendicular to the strand. Verified: 1,043 such points in the single public example; the paper describes 13,147 points from 13 images that are not released.",
+    "predict": "A yes/no call per point for 'a protein is bound here'. The truth comes from a human looking at the same scanning electron microscope image and highlighting rows in a spreadsheet, guided by which sample was treated with dCas9, a DNA-binding protein targeted to known sequences.",
+    "why_worthwhile": "Single-molecule imaging labs that count protein binding sites by eye would get an automatic, calibrated detector; even a failure would quantify how much of the apparent signal is annotator preference rather than image content."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The public release is 1 of the 13 images the authors used: 1,043 profiles with 37 positives versus their 13,147 profiles with 3,551 positives. We would have strictly less data than the existing model."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "The authors already output calibrated probabilities (sigmoid-calibrated random forest), and the public data has no replicate annotations or repeat imaging of the same molecule from which to estimate annotation noise."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "Their 2026 random forest on 82 hand-crafted features is a classical model and its post-processing was tuned on the same cross-validation folds, so an honestly evaluated convolutional model might beat it; but they used a sensible leave-one-image-out split and F1 0.97 leaves almost no headroom."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: we cannot even reproduce their baseline, because 12 of the 13 training images and all per-image profile tables are unavailable, and no other SEM DNA-protein image set measures the same thing the same way."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Per-point binary classification of protein occupancy along a traced DNA contour from perpendicular intensity profiles in SEM images; the authors already did this with a calibrated random forest, and the natural extension (a small convolutional network on raw image patches, evaluated leave-one-image-out) is blocked because only one annotated image is public.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, not timed: the entire public dataset is under 1 MB (one 463 KB TIFF plus a 242 KB spreadsheet) and a random forest on about 1,000 rows x 82 features trains in seconds on CPU. The bottleneck is data availability, not compute.",
+    "cheapest_killing_check": "Count the labelled profile tables in the public release. It is 1 image, 1,043 rows, 37 positives versus the 13 images and 13,147 profiles the paper trained on; that single count kills the project in five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A1, A5 and A7, all verified in the files. The machine-learning training set behind the paper's F1 = 0.97 (13 annotated SEM images, 13,147 labelled profiles) is not deposited: Zenodo and GitHub hold code plus exactly one example image, the supplement holds only figure summary statistics of 4-39 rows, and the paper routes further images through 'available from the corresponding author upon reasonable request'. The one public labelled table has 1,043 rows with 37 positives from a single DNA molecule, so there are no groups to hold out, and its 3.5% positive rate cannot be reconciled with the paper's 27%. Worth revisiting only if the authors deposit the 13 annotated images."
+}

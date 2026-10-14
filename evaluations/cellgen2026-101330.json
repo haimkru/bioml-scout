@@ -1,0 +1,43 @@
+{
+  "paper_id": "cellgen2026-101330",
+  "title": "Single-cell transcriptomics provides insights into the stress-immune interplay and informs disease risk.",
+  "doi": "10.1016/j.xgen.2026.101330",
+  "journal": "Cell Genomics",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE334nnn/GSE334840/suppl/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the GEO GSE334840 supplement: one 2.6 GB processed AnnData file (h5ad, a single-cell matrix format) plus a 12 KB sample sheet. Opened the sample sheet: 24 samples = 8 donors (4 female, 4 male, ages 19-28) x 3 treatments (DMSO control, cortisol, norepinephrine). Zenodo record 19787280 (CC-BY-4.0) holds two h5ad files of 2.8 GB each; I did not download them (over the 50 MB cap). The code record, Zenodo 21359854, exists.",
+    "what_came_from_paper_text_only": "Cell counts, cell-type annotations, the separate PBMC (peripheral blood mononuclear cell) and neutrophil runs, and the external cohorts (32 participants from the WIHS (Women's Interagency HIV Study) cohort in GSE205320; a rheumatoid arthritis cohort on CellxGene; a mouse bulk dataset GSE202662 with 4 controls and 12 stressed). The paper-cited Zenodo DOI 19787279 returns 410 Gone from the API, but doi.org redirects to record 19787280."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO FTP and Zenodo (CC-BY-4.0) are open with no login. Checked the listings and HEAD requests."},
+    "a2_label_is_a_column": {"pass": true, "note": "The treatment (DMSO, CORT = cortisol, NE = norepinephrine) is a column in the sample sheet I opened. It is presumably also in the h5ad cell metadata, which I did not open."},
+    "a3_inputs_present": {"pass": true, "note": "The paper describes the h5ad as processed expression with cell-type labels. Not opened."},
+    "a4_units_stated": {"pass": true, "note": "Hormone doses are stated (100 nM cortisol, 10 nM norepinephrine). Expression is counts or normalised values inside the h5ad; I did not verify which."},
+    "a5_enough_rows": {"pass": false, "n_rows": 24, "note": "The independent unit is the donor-treatment sample: 24 samples from 8 donors, verified in the sample sheet. Cells are many but are pseudo-replicates (repeated measurements that are not independent), so honest leave-one-donor-out evaluation has only 8 folds. The disease cohorts are tiny too (32 HIV participants, a small RA cohort)."},
+    "a6_fits_laptop": {"pass": false, "working_set": "2.6-2.8 GB h5ad, loadable only as one file", "note": "Each file is over the 50 MB cap and close to the 5 GB working-set limit once loaded densely. It could be subset in backed mode, but only after downloading the whole file."},
+    "a7_counts_match_paper": {"pass": true, "note": "The 8 donors in the sample sheet match the paper's 'four male and four female healthy donors'. Cell counts were not checked."},
+    "a8_label_provenance": {"pass": true, "note": "The label is an experimentally assigned treatment, not a model output. The disease-risk score (CytSIS) is derived from these same data, so using it as a label would be circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "scGPT / Geneformer (single-cell foundation models)", "freeze_and_head_viable": null, "hardware": "CPU possible on a cell subset", "licence": "Data CC-BY-4.0"},
+  "integration": {"partner_dataset": "GSE205320 (WIHS HIV/cardiovascular-disease PBMC single-cell data)", "join_key": "gene symbol and cell type", "bigger_question_one_sentence": "Does a cell-level stress-hormone response signature transfer to people with stress-linked disease? With 32 participants this is underpowered."},
+  "controls": {"positive_control": "Known glucocorticoid-response genes (for example TSC22D3, FKBP5) should be up in cortisol-treated cells.", "negative_control": "Shuffle the treatment labels within donor.", "external_validation": "GSE205320 and the CellxGene RA cohort, both small."},
+  "honest_claim_h3": "Among cells from 8 young healthy donors exposed ex vivo for 4-24 h, the model distinguishes cortisol-, norepinephrine- and vehicle-treated cells. Any disease claim rests on cohorts of tens of people.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression of blood immune cells to predict whether they were exposed to cortisol, norepinephrine or neither.",
+    "train_on": "Expression profiles of individual blood immune cells (cell count unknown; not opened) from 24 samples across 8 donors.",
+    "predict": "Treatment group, which the experimenters assigned in a culture dish at fixed hormone doses.",
+    "why_worthwhile": "A stress-exposure classifier could flag stress-hormone signatures in patient blood. With 8 donors, though, any generalisation claim is weak."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Cell-level classifier of hormone exposure, with leave-one-donor-out evaluation and transfer to disease cohorts. Rejected: 8 donors and a 2.6 GB working file.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 2.6, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not timed. The file sizes come from the GEO and Zenodo listings; the cell count is unknown, so RAM and runtime were not estimated.", "cheapest_killing_check": "Count the donors in the sample sheet: 8, already done, which kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 because the true sample size is 24 samples from 8 donors (verified in the GEO sample sheet), and the external disease cohorts have tens of people. The only processed data is a 2.6 GB h5ad, over the download cap."
+}

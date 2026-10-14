@@ -1,0 +1,321 @@
+{
+  "paper_id": "nature2026-10641-1",
+  "title": "Dual tumour-myeloid targeting of glioblastoma with GPNMB CAR-T cells.",
+  "doi": "10.1038/s41586-026-10641-1",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.6084/m9.figshare.31926300",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the myeloid meta-atlas cell metadata (207,997 rows x 153 columns), sample metadata (343 rows but only 279 unique sample_id values), features.tsv.gz (108,286 gene symbols) and barcodes.tsv.gz (207,997 barcodes); read the Matrix Market count-matrix header by a ranged byte request: 108,286 genes x 207,997 cells, 234,947,039 non-zero integer counts. Cross-tabulated study against diagnosis. Confirmed licence CC BY 4.0 and that figshare downloads need no login. Also checked GSE177549 (84 NanoString samples, one 9.7 KB raw CSV) and listed the GitHub repo (4 analysis scripts, no data).",
+    "what_came_from_paper_text_only": "All CAR-T cell efficacy results, the mass-spectrometry surface-protein screen (MassIVE MSV000087947 - raw files never downloaded), the multiplexed imaging, the non-negative matrix factorisation program interpretations, and the claim that GPNMB is largely absent from healthy adult brain. I did not open the 765 MB count matrix body, the 8.2 GB Seurat R object, or the 5.9 GB primary/recurrent Seurat object."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "figshare DOI 10.6084/m9.figshare.31926300, CC BY 4.0, no login. I downloaded four of its files successfully and byte-range-read a fifth."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "etiology_clean is a ready column with 0% missing and 11 classes (recurrent GBM 68,821 cells, primary GBM 37,502, development 29,484, brain metastasis 28,424, healthy 22,150, primary CNS lymphoma 9,001, Alzheimer 3,929, Parkinson 2,698, glioma 2,141, multiple sclerosis 2,006, medulloblastoma 1,841). The other candidate label, state_clean, is 99.4% missing and unusable."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Raw count matrix is in the same deposit as Matrix Market (matrix.mtx.gz, 765 MB); gene symbols in features.tsv.gz. No accession chasing needed - verified header and dimensions myself."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Matrix header reads 'coordinate integer general' = raw unique-molecule counts, and per-cell nCount_RNA / nFeature_RNA columns are present. Units unambiguous; comparability across the 21 source labs is the separate issue (see B3)."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 207997,
+      "note": "207,997 labelled cells, but the statistically independent unit is the donor sample: 279 unique samples across 21 studies. Passes at the cell level; flagged as the project's weakest point because 279 donors is close to the classification floor."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~2 GB after subsetting to ~2,000 highly variable genes",
+      "note": "234.9M non-zeros decompress to roughly 3.5 GB of text; a naive scipy mmread would exceed 16 GB, so one streaming pass that keeps only selected genes is required. After that a 207,997 x 2,000 float32 matrix is 1.7 GB. No GPU needed for a logistic-regression baseline."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "207,997 cells agrees exactly across the figshare description, the cell metadata row count, the barcode file and the matrix header; 108,286 genes agrees between features file and matrix. One wrinkle: the sample table has 343 rows but 279 distinct sample_id values, so sample_id is reused across studies and the real key is study + sample."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "etiology_clean is the donor's clinical diagnosis carried over from the 21 source studies - a pathology call, not a model output and not computed from the expression values. The cells were, however, selected as myeloid by the authors' own clustering of the same expression data, and state_clean / the NMF programs ARE derived from expression, so those must never be used as labels."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "Five files; barcode order matches cell_id order (checked), but sample_id repeats across studies - positional join."
+    },
+    "B2": {
+      "score": 2,
+      "why": "All four metadata/index files parsed first try with pandas; matrix is standard Matrix Market."
+    },
+    "B3": {
+      "score": 1,
+      "why": "Diagnosis labels harmonised by authors, but counts span 21 labs, single-cell and single-nucleus chemistries; needs normalisation."
+    },
+    "B4": {
+      "score": 2,
+      "why": "Diagnosis column 0% missing in the file; counts are integers with no censoring."
+    },
+    "B5": {
+      "score": 1,
+      "why": "All 207,997 cell_ids unique (checked); sample table has 343 rows for 279 distinct sample_ids."
+    },
+    "B6": {
+      "score": 1,
+      "why": "Five harmonised columns described on figshare; the other 148 inherited columns have no data dictionary."
+    },
+    "C1": {
+      "score": 1,
+      "why": "Transfer question is informative either way, but study-diagnosis confound makes a negative result hard to interpret."
+    },
+    "C2": {
+      "score": 1,
+      "why": "HuMicA atlas, a >1M-cell microglia taxonomy and a published cross-disease random forest all exist; splits are weak."
+    },
+    "C3": {
+      "score": 1,
+      "why": "Diversity angle: 145,589 CNS-cancer myeloid cells that the neurodegeneration atlases lack; otherwise well-trodden ground."
+    },
+    "C4": {
+      "score": 1,
+      "why": "Replaces manual cluster-and-inspect annotation, not a lab assay; diagnosis itself comes free from pathology."
+    },
+    "C5": {
+      "score": 2,
+      "why": "Published random forest reports 77.2% accuracy and AUC 0.90-0.99; majority class here is 33.1% of cells."
+    },
+    "D1": {
+      "score": 2,
+      "why": "scGPT and Geneformer are open-weight transcriptome backbones matching this exact data type."
+    },
+    "D2": {
+      "score": 1,
+      "why": "Embedding 207,997 cells on CPU is impractical; viable only on a 30-50k-cell subsample, so not a clean cache-once job."
+    },
+    "D3": {
+      "score": 2,
+      "why": "Data CC BY 4.0 (read from figshare record); scGPT is MIT, Geneformer Apache 2.0."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Leave-one-study-out and leave-one-donor-out both available from study_clean and sample_id columns."
+    },
+    "E2": {
+      "ok": true,
+      "why": "21 studies and 279 donors; but 6 of 11 diagnoses come from only one or two studies (cross-tab checked)."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Majority class (recurrent GBM) is 33.1% of cells; per-study prior is a stronger dummy."
+    },
+    "E4": {
+      "ok": false,
+      "why": "No sample measured twice and no technical replicates, so measurement noise floor cannot be estimated."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Homeostatic markers must peak in healthy/developmental cells and GPNMB/TREM2/SPP1 in tumour cells; both published."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Label shuffling within and across study, feature ablation and random-feature controls all runnable on this table."
+    },
+    "E7": {
+      "ok": true,
+      "why": "HuMicA (90,716 nuclei, 241 samples, Nature Communications 2025) is an independent public atlas with overlapping diagnoses."
+    },
+    "E8": {
+      "ok": false,
+      "why": "The published 77.2% accuracy was on different data and a different split; no number reproducible on this exact subset."
+    },
+    "G1": {
+      "score": 1,
+      "why": "Gene symbols only (some deprecated clone names like RP11-34P13.7); no Ensembl IDs, no ontology disease codes."
+    },
+    "G2": {
+      "score": 2,
+      "why": "HuMicA and the 21 source GEO series are specific, public, joinable partners on gene symbol plus diagnosis."
+    },
+    "G3": {
+      "score": 1,
+      "why": "Gene-symbol to gene-symbol join is mostly clean but aliases and retired clone names need a mapping pass."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Asks whether neurodegeneration-derived microglial programs also mark CNS cancer - neither atlas answers that alone."
+    },
+    "H1": {
+      "score": 2,
+      "why": "22,150 healthy/control and 29,484 developmental cells from multiple studies; negatives are systematically present."
+    },
+    "H2": {
+      "score": 1,
+      "why": "21 studies and 11 conditions, but 51% of cells are glioblastoma and diagnosis is confounded with study for 6 classes."
+    },
+    "H3": {
+      "score": 2,
+      "why": "Honest claim writable in one sentence, with the single-study conditions explicitly excluded (see honest_claim_h3)."
+    },
+    "H4": {
+      "score": 1,
+      "why": "study_clean column makes the confound discoverable, but neither the paper nor figshare flags it."
+    },
+    "I1": {
+      "score": 2,
+      "why": "Singh/Venugopal lab (McMaster), Mikolajewicz/Moffat (Toronto), and the HuMicA group would read it."
+    },
+    "I2": {
+      "score": 1,
+      "why": "Would shift how myeloid states are annotated, but CAR-T antigen choice rests on surface protein, not transcriptome class."
+    },
+    "I3": {
+      "score": 1,
+      "why": "Decision is a binary 'is this cell in the tumour-promoting GPNMB-high state'; multi-class accuracy only roughly matches."
+    },
+    "I4": {
+      "score": 1,
+      "why": "Benchmarks show logistic regression on variable genes matches foundation models; a 14-gene marker score may suffice."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Grouped cross-validation, batch confounding, transfer learning and frozen-backbone heads - all the skills in one project."
+    },
+    "J2": {
+      "score": 2,
+      "why": "Marker biology (GPNMB, TREM2, SPP1, P2RY12, CX3CR1) is well documented, so nonsense is easy to spot."
+    },
+    "J3": {
+      "score": 2,
+      "why": "The harmonised cell-by-gene table plus the study-confound audit is a shareable result even if no model works."
+    },
+    "J4": {
+      "score": 1,
+      "why": "No budget stated by the authors or me; realistic estimate is three to four weeks, not formally committed."
+    },
+    "J5": {
+      "score": 1,
+      "why": "Kill condition proposed below but not yet written into NOTES.md, so informal only."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "HuMicA, the Human Microglia Atlas (Nature Communications, 2025)",
+        "open_weights": true,
+        "score_and_split": "A clustering/integration resource rather than a scored classifier: 90,716 nuclei and cells from 241 samples across 19 datasets and six neurological conditions, reporting nine microglial populations. No held-out predictive accuracy reported.",
+        "authors_named_unsolved": "Reported (via search summary) that the disease-associated microglia signature is insufficient on its own and must be broken into finer subpopulations; also reported expansion of GPNMB-high microglia in multiple sclerosis and Alzheimer disease.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Cross-disease microglial random forest classifier (2026, PubMed 42011986 / PMC13097963)",
+        "open_weights": null,
+        "score_and_split": "77.2% overall accuracy on held-out cells, Cohen kappa 0.69, balanced accuracy 0.77-0.93 and area under the ROC curve 0.90-0.99 across conditions - but the split was held-out cells, not held-out studies or donors, so the number is very likely inflated by donor and batch leakage.",
+        "authors_named_unsolved": "Named SPP1 as a shared cross-disease marker and framed the shared program as incompletely resolved; did not test transfer to cancer.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Transcriptomic microglia taxonomy across mouse and human pathologies (2026, PubMed 41882205)",
+        "open_weights": null,
+        "score_and_split": "Descriptive taxonomy: over one million central nervous system cells from more than 30 conditions, yielding 27 superclusters and 192 clusters. No predictive score or split reported in the material I retrieved.",
+        "authors_named_unsolved": "Frames cross-species and cross-disease conservation of myeloid states as the open question.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "scGPT and Geneformer, single-cell transcriptome foundation models",
+        "open_weights": true,
+        "score_and_split": "Generic cell-annotation backbones. Independent benchmarks I retrieved report that logistic regression on highly variable genes matches or exceeds their embeddings on annotation tasks, and that no embedding method consistently beats that baseline.",
+        "authors_named_unsolved": "Benchmark authors name the lack of consistent advantage over simple baselines, and poor zero-shot behaviour, as unresolved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT (open-weight single-cell transcriptome model); Geneformer as the alternative",
+    "freeze_and_head_viable": true,
+    "hardware": "Frozen embeddings only, and only on a 30,000-50,000-cell stratified subsample on a 16 GB CPU laptop; embedding all 207,997 cells on CPU is not practical. The logistic-regression-on-variable-genes baseline runs fully on CPU.",
+    "licence": "Data CC BY 4.0 (verified on the figshare record); scGPT MIT; Geneformer Apache 2.0. No restriction on the work."
+  },
+  "integration": {
+    "partner_dataset": "HuMicA, the Human Microglia Atlas (90,716 nuclei/cells, 241 samples, Nature Communications 2025), plus the 21 source GEO series that feed this atlas",
+    "join_key": "Gene symbol for the features; harmonised diagnosis string (Alzheimer, multiple sclerosis, healthy) for the label",
+    "bigger_question_one_sentence": "Do the myeloid transcriptional programs that mark neurodegeneration also mark central-nervous-system cancer, so that the GPNMB-high state is a shared pan-disease program rather than a tumour-specific one?"
+  },
+  "controls": {
+    "positive_control": "Two, chosen in advance: (1) a trivially learnable target - predict each cell's total count depth from its own count vector, which must come out near-perfect; (2) the textbook marker gradient - homeostatic microglia genes P2RY12 and CX3CR1 must score highest in healthy and developmental cells, while GPNMB, TREM2, SPP1 and APOE must score highest in recurrent glioblastoma and brain-metastasis myeloid cells, as this paper and HuMicA both report.",
+    "negative_control": "Shuffle the diagnosis labels within each study and confirm collapse to the per-study prior; separately shuffle globally and check the model does NOT still score well - if it does, it is reading study batch rather than disease. Also ablate the 14 published lipid-associated-macrophage marker genes and see how much accuracy they carry.",
+    "external_validation": "HuMicA (independent, public, 241 samples) for the Alzheimer, multiple sclerosis and healthy classes; and leave-one-study-out across the 21 contributing studies for the five diagnoses that have two or more studies."
+  },
+  "honest_claim_h3": "From the transcriptome of a single central-nervous-system myeloid cell we can predict the donor's disease context at X balanced accuracy, but only for the five conditions contributed by two or more independent studies (primary and recurrent glioblastoma, healthy, development, brain metastasis) and only within the dissociation and sequencing chemistries used by those 21 labs; for the six conditions supplied by a single study, accuracy cannot be separated from that study's batch signature.",
+  "plain_idea": {
+    "one_liner": "Use a single immune cell's gene-activity profile to predict which brain disease the patient it came from had.",
+    "train_on": "One row per myeloid cell (macrophage or microglia) - its raw counts across 108,286 genes, reduced to a few thousand informative genes. I verified 207,997 such cells, from 279 donor samples pooled from 21 published studies.",
+    "predict": "One of 11 brain conditions (recurrent glioblastoma, primary glioblastoma, brain metastasis, healthy, fetal development, Alzheimer disease, Parkinson disease, multiple sclerosis, medulloblastoma, primary central nervous system lymphoma, other glioma). The true answer is the donor's clinical pathology diagnosis, recorded in the atlas as a column with no missing values.",
+    "why_worthwhile": "Immunology labs currently decide what an immune cell state 'means' by eyeballing marker genes after clustering; a tested classifier with an honest leave-one-study-out number would tell them how much of that call is disease biology and how much is the lab that generated the data. Even a failure is a useful warning about cross-study atlases."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "At 207,997 cells and 279 donors this is 2.3 times larger than HuMicA's 90,716 cells, but five times smaller than the 2026 taxonomy's one million-plus cells. The real edge is coverage: 145,589 of our cells come from brain cancer (recurrent glioblastoma 68,821, primary glioblastoma 37,502, metastasis 28,424, lymphoma 9,001, medulloblastoma 1,841), a compartment the neurodegeneration atlases do not contain at all."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No sample is measured twice and there are no technical replicates in the atlas (checked the sample table: 279 unique samples, one row of counts each), so there is no way to estimate measurement noise and therefore no principled per-prediction confidence beyond bootstrapping cells within a donor."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The 2026 cross-disease random forest reported 77.2% accuracy and area under the ROC curve 0.90-0.99 on a held-out-cell split, which almost certainly leaks donor and batch identity - that number is beatable in honesty but probably not in magnitude under leave-one-study-out. HuMicA and the million-cell taxonomy are descriptive atlases, not predictive models, so there is no strong honest number to beat."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails at least two conditions: the published random forest's weights and code were not confirmed available so it cannot be run as our baseline, and HuMicA was generated with different chemistries and a different cell-selection pipeline, so adding it changes the measurement rather than adding more of the same."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "HuMicA, the Human Microglia Atlas (Nature Communications 2025, 90,716 nuclei from 241 samples across six neurological conditions) and a 2026 transcriptomic microglia taxonomy spanning over one million central-nervous-system cells from more than 30 conditions - both found by search. Beyond those, CELLxGENE Census and the Gene Expression Omnibus carry donor disease annotations on millions of single cells (known resources, not counted by me).",
+    "approx_items": null,
+    "join_key": "Gene symbol for the expression features; harmonised disease name (or a MONDO disease ontology term, which would have to be added) for the label",
+    "why": "Because donor diagnosis is annotated on far more single cells than this atlas holds, a model trained here can be tested on a completely independent atlas rather than only on its own held-out studies."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology",
+      "why": "Publishes method-and-benchmark papers with a real biological payoff; would need a clean positive result that neurodegeneration-derived myeloid programs transfer to brain cancer and survive leave-one-study-out."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "The likely outcome is a careful re-evaluation showing cross-study myeloid disease classification degrades sharply under held-out-study splits, plus a harmonised feature table - exactly their applications-note and benchmark remit."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes negative and partial results and data-quality audits; the study-versus-diagnosis confound finding alone would qualify, as would a bioRxiv preprint plus a machine-learning-for-biology workshop paper."
+    }
+  },
+  "pitch": {
+    "headline": "207,997 brain immune cells from 279 donors and 21 studies, spanning 11 conditions from fetal development to recurrent glioblastoma, in one openly licensed table.",
+    "what_makes_the_data_unusual": "145,589 of the cells are from brain cancer (68,821 recurrent glioblastoma, 37,502 primary, 28,424 metastasis) - a compartment the neurodegeneration microglia atlases omit entirely. Counts are raw integers, CC BY 4.0, diagnosis 0% missing. All verified in the files.",
+    "the_win": "A leave-one-study-out balanced accuracy for brain-disease context from a single myeloid cell, set against the published 77.2% held-out-cell figure, showing how much of that number was batch.",
+    "even_if_it_fails": "You learn, with numbers, how badly diagnosis is confounded with study in pooled single-cell atlases - I already see 6 of 11 conditions coming from one or two studies, so that lesson is nearly guaranteed and is itself publishable.",
+    "who_wants_it": "The Singh/Venugopal glioblastoma group at McMaster and the HuMicA microglia-atlas group; it would change whether they trust a myeloid state label transferred from a neurodegeneration atlas into a tumour."
+  },
+  "ml_idea": "Stream the 234.9M-nonzero Matrix Market count matrix once to build a 207,997-cell by ~2,000-highly-variable-gene table, join the harmonised diagnosis column, and train a multi-class classifier for donor disease context under leave-one-study-out and leave-one-donor-out splits. Compare three tiers: a per-study prior dummy, logistic regression on variable genes, and a head on frozen scGPT embeddings of a 50,000-cell subsample. The headline experiment is restricted to the five diagnoses with two or more independent studies, and the second experiment asks whether a classifier trained only on the neurodegeneration arm (Alzheimer, Parkinson, multiple sclerosis) places brain-cancer myeloid cells into disease-associated states - testing whether GPNMB-high is a shared pan-disease program or tumour-specific.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 2.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 6.0,
+    "embedding_hours": 30.0,
+    "cv_run_minutes": 25,
+    "compute_note": "Estimated, not timed, except that I did time the metadata parse (seconds) and read the matrix header by ranged request. Peak RAM assumes a hand-written one-pass Matrix Market reader that keeps only selected gene rows; scipy's mmread on 234,947,039 entries would need well over 16 GB and must not be used. The 30 embedding hours are for scGPT on a 50,000-cell subsample on CPU and are a rough guess.",
+    "cheapest_killing_check": "Already half done: cross-tabulate study_clean against etiology_clean - 6 of the 11 conditions come from only one or two studies, so leave-one-study-out is impossible for them. The remaining half: on the five multi-study conditions, check whether a simple score over the 14 published lipid-associated-macrophage marker genes matches a full logistic regression under leave-one-study-out. If it does, this is a one-page note, not a project."
+  },
+  "verdict": "park",
+  "verdict_reason": "All eight Part A killers pass and I verified every count against the files (207,997 cells, 108,286 genes, 234,947,039 non-zeros, 279 donors, 21 studies, diagnosis 0% missing, CC BY 4.0). But the headline label is confounded with study for 6 of 11 conditions, so the transfer question the project exists to answer is only askable for five classes; the field already holds HuMicA, a million-cell microglia taxonomy and a published cross-disease classifier; and the honest unit of independence is 279 donors, not 208,000 cells. Model-readiness (8/12) and question value (6/10) both sit exactly on threshold. Park it, and revive it only as the specific neurodegeneration-to-cancer transfer study with HuMicA joined in, which is the one angle the existing atlases cannot cover."
+}

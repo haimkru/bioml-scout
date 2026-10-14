@@ -1,0 +1,156 @@
+{
+  "paper_id": "nar2026-gkag836",
+  "title": "The UVA-induced single-base mutational signature of CX-5461 in human cells.",
+  "doi": "10.1093/nar/gkag836",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://data.mendeley.com/datasets/z6t9zykcyz/1 (doi:10.17632/z6t9zykcyz.1); raw alignments at EGA EGAS50000001145 (controlled access)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the Mendeley Data deposit through its public API: two open tab-separated text files, 149,820,105 and 62,658,714 bytes, licence CC BY 4.0, no login. Pulled the header and first rows of each by ranged GET: 27 columns including Sample, CHROM, POS, REF, ALT, FILTER, DP, AF, mut, Treatment (values seen: CX5461, UVA, UVA+CX5461); the second file is the same format minus Treatment, with samples named RPE1_BRCA1_CX4 etc. Sampled the big file at five further byte offsets to confirm the Sample/Treatment columns stay populated throughout. Downloaded and opened the supplementary workbook (Zaikova_Supplementary_Tables.xlsx) and read all 8 sheets: Supplementary Table 2 lists 33 sequenced samples of which 27 carry mutation counts, and Supplementary Table 3 gives 96-context mutation profiles for 39 sample columns.",
+    "what_came_from_paper_text_only": "That mutations were called with Mutect2 2.2 in matched-normal mode against hg38 and filtered with FilterMutectCalls/FilterAlignmentArtifacts; that the deposited calls are not filtered on minimum variant allele fraction and recover about 95% of Koh et al.'s previously reported variants; sequencing depth targets (80x bulk, 40x clones). Exact total row counts were not counted because both files exceed the 50 MB download cap, so I estimated about 1,088,000 rows from 137.7 bytes per line measured over the first 2,179 lines. I did not attempt the EGA alignments, which need an access application."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The modelable part (every mutation call with coordinates and allele fraction) is openly downloadable from Mendeley Data under CC BY 4.0, verified by fetching the file listing and the first bytes of both files. Only the raw read alignments sit behind EGA controlled access."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "Partly. 'Treatment' is literally a column, but it is a property of the sample, not of the mutation (see A5). The only framing with genuinely many independent rows - predict which genomic positions get mutated - has no label column at all: the negative class (positions that were sequenced but not mutated) must be constructed by sampling the hg38 reference, and doing that correctly needs a per-sample coverage/callability mask that exists only in the EGA alignments."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Chromosome, position, reference and alternate alleles are present for every row, so sequence context is one lookup against a single hg38 reference file, not thousands of database queries. Verified in the file header and first rows."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "AF is an allele fraction between 0 and 1, DP a read count, and the quality columns are standard GATK Phred-scaled scores; Supplementary Table 2 gives coverage as mean fold-depth and mutations as integer counts. Units follow Mutect2 convention rather than being named in a column, so documented but by reference."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 27,
+      "note": "This is the killer. About 1,088,000 mutation rows (estimated from bytes per line; consistent with the ~1,095,000 total of Supplementary Table 2's per-sample counts) but every row inherits the treatment label of its sample, and there are only 27 treated samples - 2 genotypes x 4 arms x 3-5 replicates - plus 6 untreated controls with no calls. Counting 12 reprocessed samples from Koh et al. gives 39 labelled mutation profiles in total. Same structure as the rejected scCT-DB candidate: millions of sub-units, a few dozen label-bearing units."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.2 GB of mutation calls, plus ~1 GB for an hg38 2bit reference",
+      "note": "Both text files together are 212 MB and would subset to well under 1 GB; nothing here needs a GPU. Size was never the problem with this candidate."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "They match well. My byte-based estimate of ~1.088M rows in the main file sits within 1% of the ~1.095M single-base, double-base and indel calls summed across Supplementary Table 2, and the sample names in the file match the table exactly. The paper is also explicit that the deposited calls are a superset of its own high-stringency set because no minimum allele-fraction filter was applied."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The treatment label is the experimental design - a known dose of CX-5461 and/or a measured UVA dose - so it is a real intervention, not another model's output. The mutation calls come from Mutect2, a read-based variant caller, which is a measurement pipeline rather than a predictor of the label of interest."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "MuRaL (Mutation Rate Learner), a convolutional neural network that predicts per-base mutation rates from genomic sequence alone",
+        "open_weights": true,
+        "score_and_split": "Published rates benchmarked against observed rare-variant frequencies in held-out genomic regions; code and trained models are on GitHub (CaiLiLab/MuRaL) with documentation. Exact figures not retrieved.",
+        "authors_named_unsolved": "Extending base-resolution rate maps beyond germline variation; a companion paper (MuRaL-indel, 2025) was needed just to cover insertions and deletions.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Roulette, a basepair-resolution mutation rate model built as logistic regression over pentamer context with flanking-base interactions and strand information",
+        "open_weights": true,
+        "score_and_split": "Reported as more accurate than previous genome-wide rate models; evaluated on held-out human population variation. Code on GitHub (vseplyarskiy/Roulette).",
+        "authors_named_unsolved": "Local determinants beyond sequence context - they identified Polymerase III transcription as one previously missed driver, implying others remain.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Dig, a probabilistic deep neural network mapping cancer-specific somatic mutation rates genome-wide at kilobase scale from epigenomic features plus sequence context",
+        "open_weights": true,
+        "score_and_split": "Published in Nature Biotechnology (2022) for driver discovery; evaluated genome-wide on cancer cohorts. Exact figures not retrieved.",
+        "authors_named_unsolved": "Separating kilobase-scale repair-driven variation from base-pair-scale damage-driven variation remains the modelling tension they describe.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SigProfilerExtractor and SigProfilerMatrixGenerator, the standard non-negative matrix factorisation tools for extracting mutational signatures - used by this paper itself",
+        "open_weights": true,
+        "score_and_split": "Selected by stability versus mean cosine distance over 100 factorisation replicates; the paper's own de novo signatures were produced this way and compared to COSMIC v3.4 by cosine similarity.",
+        "authors_named_unsolved": "Attributing signatures confidently in samples with few mutations.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MuAt (Mutation-Attention), a transformer that embeds individual mutations (3-base motif, genomic position, annotation) and attends over them to classify tumours",
+        "open_weights": true,
+        "score_and_split": "89% accuracy across 24 tumour types on whole genomes, 64% across 20 types on whole exomes, 97% top-5; evaluated on PCAWG and independent cohorts (Genome Medicine 2023).",
+        "authors_named_unsolved": "Interpreting which individual mutations drive a classification, and transferring whole-genome-trained models to sparser exome data.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SigNet, a neural network for mutational signature decomposition that learns signature priors and correlations",
+        "open_weights": true,
+        "score_and_split": "Reported to outperform existing refitting methods and to stay accurate with few mutations; evaluated on simulated and real catalogues.",
+        "authors_named_unsolved": "Decomposition when mutation counts are very low.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 / Nucleotide Transformer / HyenaDNA (DNA language models) would embed the sequence window around each mutated position",
+    "freeze_and_head_viable": true,
+    "hardware": "Frozen embeddings for ~100k sequence windows are feasible on a laptop CPU over a few hours",
+    "licence": "Mostly permissive (Apache/MIT); the paper is CC BY-NC 4.0 but the Mendeley data deposit is CC BY 4.0, so data use is unrestricted"
+  },
+  "integration": {
+    "partner_dataset": "G-quadruplex maps from G4-seq, ENCODE chromatin and replication-timing tracks for RPE1-like cells, and COSMIC v3.4 signature definitions",
+    "join_key": "hg38 genomic coordinates (chromosome + position), which are present in every row",
+    "bigger_question_one_sentence": "Does drug-photosensitised DNA damage land preferentially at G-quadruplex sites and late-replicating chromatin, distinguishing it from canonical sunlight-induced ultraviolet damage? - a good question, but one answered by an enrichment statistic rather than by a trained model."
+  },
+  "controls": {
+    "positive_control": "The model must recover the T>A and T>C preference the paper reports for the combined exposure, and the transcriptional strand asymmetry expected of any ultraviolet-type lesion.",
+    "negative_control": "Shuffle treatment labels across samples and confirm collapse to the majority class; with 27 samples this test has very little power.",
+    "external_validation": "The 12 reprocessed samples from Koh et al. 2024 (Nature Genetics 56:23-6, 'The chemotherapeutic drug CX-5461 is a potent mutagen in cultured human cells') are included as a second, independently generated experiment - genuinely the strongest feature of this deposit."
+  },
+  "honest_claim_h3": "A model here could only claim: among immortalised human retinal pigment epithelial (RPE1) cells of two genotypes, exposed in one laboratory to one drug dose and one ultraviolet-A dose, a mutation's three-base sequence context indicates which of three exposures produced it - a claim a 96-entry frequency table already supports without any machine learning.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around each mutation to predict which drug or light exposure caused it.",
+    "train_on": "Roughly 1,088,000 mutation calls (estimated from file size; consistent with the paper's own per-sample counts) from 33 whole-genome-sequenced human retinal pigment epithelial cell samples, each row giving chromosome, position, reference and alternate base, read depth and allele fraction.",
+    "predict": "Which exposure arm the mutation came from - the drug CX-5461 alone, ultraviolet-A light alone, or both together. The true answer is the experimental treatment the dish received, so it is a real intervention rather than an inferred label.",
+    "why_worthwhile": "Cancer-genome analysts attribute mutations in patient tumours to past exposures, and a confirmed drug-plus-light signature would let them spot it in people treated with CX-5461. But the paper already establishes that signature by simple counting, so a model adds little."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "27 treated samples from one cell line in one laboratory, against mutation-rate models trained on human population-scale variation (Roulette, MuRaL) and signature models trained on thousands of tumour genomes (MuAt used PCAWG; SigNet used large catalogues). The only area we cover better - CX-5461 plus ultraviolet-A - is one drug-light combination."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Biological replicates do exist (3-5 clones per arm per genotype, plus matching bulk samples) so measurement spread is estimable, and SigProfilerExtractor already reports stability across 100 factorisation replicates. With 27 samples the confidence estimate would itself be very uncertain."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The relevant tools are current and open: Dig (2022, Nature Biotechnology), MuAt (2023, Genome Medicine, 89% on 24 tumour types), MuRaL-indel (2025), plus SigProfilerExtractor which this paper itself used. All ship code; none was evaluated on a trivially weak split."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first and third conditions: no existing model does this exact task, so there is nothing to run as our baseline and extend, and the joinable new data (G-quadruplex and chromatin tracks) measures a different quantity than the mutation calls rather than the same quantity the same way."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: classify each of ~1.09M mutations into its exposure arm (CX-5461, ultraviolet-A, or both) from the three-base sequence context plus Mutect2 quality features, with leave-one-sample-out cross-validation. Also considered a position-level model predicting where drug-photosensitised damage lands from DNA language model embeddings of the surrounding hg38 sequence; that framing has the large sample size but no negative class, and building one honestly needs the per-sample coverage mask that lives only in the EGA controlled-access alignments.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 1.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 4,
+    "cv_run_minutes": 10,
+    "compute_note": "Estimated, not timed: 212 MB of tab-separated text streams into pandas in chunks at well under 3 GB of memory, and a leave-one-sample-out run over 27 samples with 96 context features is minutes. The embedding figure assumes frozen DNA language model windows for ~100k positions on a laptop CPU. Compute was never the constraint here.",
+    "cheapest_killing_check": "Count the label-bearing units rather than the rows. Supplementary Table 2 gives it immediately: 33 samples, 27 with mutations, 4 treatment arms, 2 genotypes. That one table is the whole evaluation."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The data is exemplary - openly deposited under CC BY 4.0, parses on the first try, row count within 1% of the paper's own tables, treatment is a real intervention and an independent second experiment (Koh et al. 2024) is bundled in - but it is not a machine learning dataset. The ~1,088,000 mutation rows are not 1,088,000 observations: the treatment label belongs to the dish, giving 27 treated samples (39 labelled mutation profiles including the reprocessed Koh samples), which fails A5 in exactly the way the scCT-DB candidate did. The one framing with genuinely large sample size - predicting which genomic positions get mutated - fails A2 instead, because the negative class must be constructed from the reference genome and doing it without confounding by sequencing depth requires the per-sample coverage mask that exists only in the EGA controlled-access alignments. Even granting both, a 96-entry trinucleotide frequency table reproduces the paper's result, so machine learning adds nothing a lookup does not."
+}

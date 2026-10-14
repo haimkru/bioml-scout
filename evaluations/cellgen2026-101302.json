@@ -1,0 +1,60 @@
+{
+  "paper_id": "cellgen2026-101302",
+  "title": "Compound delivery of eVLPs enhances prime editing for targeted genome engineering and high-throughput screening.",
+  "doi": "10.1016/j.xgen.2026.101302",
+  "journal": "Cell Genomics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1294868",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Opened the Europe PMC full-text XML (247 KB) and read the data availability statement, the key resources table and every supplementary caption: Document S1 (Figures S1-S13), Tables S1-S8 and Document S2 are the complete supplement, and all eight tables are lists of cloning primers, (pe)gRNA oligos, plasmids, Sanger/NGS primers, sensor oligos and RT-qPCR primers - no results table. Queried NCBI for BioProject PRJNA1294868 and downloaded the full SRA run table: 423 runs, all LibraryStrategy=AMPLICON (399 PCR, 24 PolyA), 260.9 GB total, largest runs 7-8.5 GB, sample names are cryptic codes such as '100' and 'EVLP144b-26VLP-day-24'.",
+    "what_came_from_paper_text_only": "The screen scale (6,000-pegRNA TP53 library), the 1.5-2.9-fold and 2.8-fold editing improvements, the 181 significantly enriched pegRNAs, and the claim that the library was adapted from Gould et al. 2024. I could not open any processed per-pegRNA table because none is deposited. The Europe PMC supplementaryFiles endpoint timed out (killed at 135 s) on its one attempt, so file sizes for the supplement are unknown; the captions came from the article XML instead."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Raw reads are public in SRA (Sequence Read Archive) BioProject PRJNA1294868, no application needed - I pulled the run table. But the processed data is explicitly 'available from the lead contact upon request', so only raw data downloads."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. The label (per-pegRNA prime editing efficiency, or MAGeCK enrichment score under Nutlin-3) is a column in no deposited file. It would have to be built by running CRISPResso2 and MAGeCK over 423 raw amplicon runs; the paper states 'this paper does not report original code'."},
+    "a3_inputs_present": {"pass": false, "note": "FAIL for the screen. The 6,000-member TP53 pegRNA library design is listed in the key resources table as 'Homemade TP53 sensor library oligonucleotide pool, Twist Bioscience, N/A' - no sequence file. Supplementary Table S2 holds only the individual hand-cloned (pe)gRNAs used in the low-throughput figures."},
+    "a4_units_stated": {"pass": true, "note": "Methods state editing efficiency as percent of reads with the intended edit in an 11-bp window at the nick site. Units are clear in prose, but there is no table carrying them."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "FAIL on what is actually available. The ~6,000 pegRNA rows exist only inside unprocessed FASTQ; the pegRNAs with published efficiencies are figure points for roughly a few dozen targets. No row count could be verified."},
+    "a6_fits_laptop": {"pass": false, "working_set": "260.9 GB raw FASTQ (verified from the SRA run table)", "note": "FAIL. 423 raw amplicon runs totalling 261 GB, which also breaches the project rule against downloading raw sequencing data; individual screen runs are 7-8.5 GB each."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked. Sample names in SRA are undecodable codes ('100', '1-25-127-133-167-307') with no sample-to-condition mapping table in the supplement, so 423 runs cannot be matched to the paper's experiments."},
+    "a8_label_provenance": {"pass": true, "note": "Provenance is sound in principle: the efficiency label is a direct amplicon sequencing measurement, not another model's output. It is simply not released in processed form."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PRIDICT2.0 (recurrent neural network predicting prime editing guide RNA efficiency)", "open_weights": true, "score_and_split": "Per retrieved search results: trained on over 400,000 pegRNAs, correlation R=0.91 in HEK293T cells and R=0.81 in K562 cells; split details not read from the primary paper.", "authors_named_unsolved": "Not read from the primary paper; the retrieved summaries flag chromatin context as the gap addressed by a separate model (ePRIDICT).", "runnable_as_baseline": true},
+      {"name": "PRIDICT (first version)", "open_weights": true, "score_and_split": "Per retrieved search results: built from a screen of 92,423 pegRNAs over 13,349 pathogenic mutations, Spearman R=0.85 for intended edits and 0.78 for unintended.", "authors_named_unsolved": "Edits longer than a few base pairs and cell-type transfer, per the retrieved summaries.", "runnable_as_baseline": true},
+      {"name": "ePRIDICT (chromatin-context model)", "open_weights": null, "score_and_split": "Quantifies how local chromatin environment changes prime editing rates; no number retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DeepPrime", "open_weights": null, "score_and_split": "No number retrieved; summaries note it is limited to edits of 1-3 base pairs.", "authors_named_unsolved": "Longer edits.", "runnable_as_baseline": null},
+      {"name": "OptiPrime (mechanistic machine learning, Nature Biotechnology 2026)", "open_weights": null, "score_and_split": "Described in retrieved summaries as state-of-the-art for prime editing efficiency, extending to nicking-guide (PE3) and dual-pegRNA (twinPE) designs; no number retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DTMP-prime (transformer model for prime editing efficiency)", "open_weights": null, "score_and_split": "No number retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer or DNABERT-2 (DNA language models) on pegRNA plus target-site sequence", "freeze_and_head_viable": true, "hardware": "Laptop CPU would suffice for frozen embeddings of ~6,000 short sequences, if labels existed", "licence": "Backbone licences are permissive to non-commercial; moot here because no labelled table exists"},
+  "integration": {"partner_dataset": "Gould et al. 2024 prime editing sensor screen of TP53 variants, the published source of this library, plus PRIDICT2.0's ~400,000-pegRNA training set", "join_key": "pegRNA spacer plus 3-prime extension sequence, or TP53 variant in HGVS notation", "bigger_question_one_sentence": "Does a prime editing efficiency predictor trained on plasmid or lentiviral delivery still rank pegRNAs correctly when the editor arrives as a virus-like particle instead - but this paper deposits no per-pegRNA efficiencies to answer it with."},
+  "controls": {"positive_control": "Would have been the 62 TP53 hits this screen recovered from the earlier Gould et al. screen; not usable without the processed score table.", "negative_control": "Label shuffling, not reachable without labels.", "external_validation": "Gould et al. 2024 and the second published TP53 screen the authors benchmarked against would be genuine external validation, if this paper's own scores were released."},
+  "honest_claim_h3": "No claim is possible from the deposited data: the only public files are 261 GB of raw amplicon reads with undecodable sample names, so nothing can be stated about pegRNA efficiency without first reproducing the authors' entire unreleased analysis.",
+  "plain_idea": {
+    "one_liner": "Use pegRNA and target DNA sequence to predict how efficiently a virus-like-particle-delivered prime editor makes the intended edit.",
+    "train_on": "For each guide: the pegRNA spacer sequence, its 3-prime extension (the template for the new DNA), and the surrounding target site. The paper describes about 6,000 such guides against TP53, but I verified no file containing them.",
+    "predict": "The percentage of sequencing reads carrying the intended edit, measured by targeted amplicon sequencing and quantified in an 11-base-pair window at the nick site - and separately the guide's enrichment under Nutlin-3 drug selection.",
+    "why_worthwhile": "Labs running pooled prime editing screens pick guides with tools trained on plasmid or lentiviral delivery; knowing whether those rankings survive a switch to virus-like particles would change how screen libraries are designed."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "PRIDICT2.0 was trained on over 400,000 pegRNAs per the retrieved summaries; this paper's library is about 6,000 guides, and none of their measured efficiencies are deposited."},
+    "confidence_score": {"answer": "no", "why": "Replicates exist in the experimental design (lentiviral versus virus-like particle arms, multiple timepoints), but no per-guide values are released, so no noise estimate can be made."},
+    "models_beatable": {"answer": "no", "why": "The field now includes PRIDICT2.0 (2024) and OptiPrime (Nature Biotechnology 2026), a mechanistic model reported as state-of-the-art; beating them with 6,000 unreleased measurements is not plausible."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition outright - we cannot even build a label column from this paper, let alone give a model everything the baseline sees plus more."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The intended idea was a delivery-method transfer test: predict prime editing efficiency from pegRNA plus target-site sequence, trained on the paper's virus-like-particle screen, and ask whether PRIDICT2.0's rankings hold under a different delivery route. It dies because the per-pegRNA efficiencies and the 6,000-member library design are both unreleased.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 260.9, "needs_gpu": true,
+             "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null,
+             "compute_note": "Working set read directly from the SRA run table (sum of size_MB over 423 runs = 260.9 GB). No modelling estimates made because reaching a feature/label table would first require re-running CRISPResso2 and MAGeCK over all 423 raw runs, which is a server job, not a laptop one.",
+             "cheapest_killing_check": "List the supplementary file captions and the data availability statement - done in one call, and it shows all eight tables are primer and plasmid lists with zero per-pegRNA results."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2, A3, A5, A6 and A7. The paper deposits only 261 GB of raw amplicon reads (423 SRA runs, verified) with undecodable sample names; all eight supplementary tables are cloning primer and plasmid lists, the 6,000-member pegRNA library design file is not provided, no code is released, and processed data is 'available from the lead contact upon request'. The prediction target would have to be reconstructed from raw sequencing, which the project rules forbid, into a field already served by PRIDICT2.0 and OptiPrime."
+}

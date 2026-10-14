@@ -1,0 +1,52 @@
+{
+  "paper_id": "cell2026-06-016",
+  "title": "A complete diploid human genome benchmark for personalized genomics.",
+  "doi": "10.1016/j.cell.2026.06.016",
+  "journal": "Cell",
+  "data_url": "https://github.com/marbl/hg002",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the marbl/hg002 GitHub repo (3 markdown files only) and read its README (CC0 licence, release links). HEAD on hg002v1.2.fasta.gz: 1,769,811,265 bytes, over the 50 MB cap, not downloaded. Downloaded three assembly patch VCFs (version-to-version corrections) from marbl/HG002-issues: v0.9->v1.0 has 6,568 records, v1.0.1->v1.1 has 4,013, v1.1->v1.2 has 5,651. These are lists of edited positions (FILTER=AUTO, alignment-derived INFO fields), not a feature/label table.",
+    "what_came_from_paper_text_only": "99.4% near-perfect coverage, 19,956 maternal / 19,190 paternal protein-coding genes, 2-7% more sequence resolved by de novo assembly, and the claim that the v1.2 release patched 612 problematic regions (README). Supplement not retrievable (Europe PMC supplementaryFiles timed out)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public CC0 S3 and GitHub downloads, no login needed. The main FASTA (1.77 GB) is over the 50 MB cap, so only metadata was recorded for it."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in files. The resource is a reference genome sequence (an assembly). No outcome column exists. The closest thing to a label, 'assembly error here', would have to be built by turning patch VCF edits into positives and choosing every other position as a negative."},
+    "a3_inputs_present": {"pass": true, "note": "Sequence is present in the FASTA, but extracting context windows needs the 1.77 GB file."},
+    "a4_units_stated": {"pass": true, "note": "Not applicable: genomic coordinates and bases only."},
+    "a5_enough_rows": {"pass": true, "n_rows": 16232, "note": "Sum of the records in the three patch VCFs I counted (6,568 + 4,013 + 5,651). Not deduplicated, and versions use different coordinate systems."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.8 GB compressed FASTA plus <5 MB of VCFs", "note": "Feasible after streaming the windows out of the FASTA."},
+    "a7_counts_match_paper": {"pass": false, "note": "README says v1.2 patched 612 problematic regions, but the v1.1->v1.2 VCF has 5,651 records. These could be regions versus individual edits, but I couldn't confirm that."},
+    "a8_label_provenance": {"pass": false, "note": "Corrections came largely from automated polishing pipelines: variant callers such as DeepVariant run on aligned reads (FILTER=AUTO, AQ quality fields), plus manual curation. An 'error' label would partly distil those callers' outputs."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepPolisher (Google, encoder-only transformer for assembly polishing; Genome Research 2025)", "open_weights": true, "score_and_split": "Trained on HG002 Q100 v0.9 truth, chromosomes 1-19, held-out chromosomes. Cut assembly errors 43% (8.14 to 4.72 per Mb).", "authors_named_unsolved": "Not retrieved beyond the search summary.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer / DNABERT-2 (DNA language models) would be the only fit", "freeze_and_head_viable": null, "hardware": "CPU possible for short windows", "licence": "Data CC0"},
+  "integration": {"partner_dataset": "GIAB (Genome in a Bottle) HG002 variant benchmarks", "join_key": "genomic coordinates (HG002 v1.x haplotype coordinates)", "bigger_question_one_sentence": "Which sequence contexts stay hard to assemble even with the best long reads? That is already the subject of tools like DeepPolisher."},
+  "controls": {"positive_control": "Homopolymer runs and tandem repeats should be enriched for corrections.", "negative_control": "Shuffle the error labels across positions.", "external_validation": "Patches from a later assembly release (temporal split by version)."},
+  "honest_claim_h3": "At best: it would predict where automated polishers plus curators chose to edit one individual's assembly, not where assembly errors really are.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around a position to predict whether the best human genome assembly needed a correction there.",
+    "train_on": "Short DNA windows from one person's (HG002) complete genome. About 16,232 edited positions across three releases, plus sampled unedited positions as negatives.",
+    "predict": "Whether a position was corrected between assembly releases, taken from the project's patch files (VCF lists of edits) that polishing software and curators produced.",
+    "why_worthwhile": "Genome assemblers would learn which DNA contexts are still error-prone. But read-based polishers already target this better."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "DeepPolisher already trains directly on this HG002 Q100 truth assembly and uses read alignments, which carry more information than sequence alone."},
+    "confidence_score": {"answer": "no", "why": "There's one individual and no replicate assemblies, so per-prediction noise can't be estimated."},
+    "models_beatable": {"answer": "no", "why": "DeepPolisher (2024-2025 transformer) is evaluated on held-out chromosomes and uses read evidence we wouldn't have."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new data measures the same quantity the same way. A sequence-only model would see less than the baseline, not more."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify the sequence context of assembly-correction sites from the HG002 patch VCFs against sampled unedited positions. The labels are constructed and partly come from polishing software.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 1.8, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only. Nothing was timed, and the FASTA was not downloaded.", "cheapest_killing_check": "Lift all patch VCFs onto one coordinate system and count unique non-telomere edits. Done, it still lacks a label column (A2)."},
+  "verdict": "reject",
+  "verdict_reason": "This is a reference genome assembly, not a labelled table (A2). The only usable label, assembly-correction sites, would have to be built from patch VCFs that polishing software partly produced (A8). DeepPolisher already trains on this same truth set."
+}

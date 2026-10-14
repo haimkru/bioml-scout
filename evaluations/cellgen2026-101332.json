@@ -1,0 +1,49 @@
+{
+  "paper_id": "cellgen2026-101332",
+  "title": "PUS7 mRNA pseudouridylation is driven by RNA sequence; structure; and cell-type-specific features.",
+  "doi": "10.1016/j.xgen.2026.101332",
+  "journal": "Cell Genomics",
+  "data_url": "https://www.biorxiv.org/content/10.1101/2025.10.30.685621v1 (preprint supplement media-2.xlsx, 35 MB)",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Cell Genomics version has no PMCID or full text in Europe PMC; no NCBI links from PMID 42532042; GEO search 'PUS7 AND nanopore' returned 0. Read the full text of the bioRxiv preprint (PMC12636312, CC BY). Its supplement listing shows one PDF and one 35,132,633-byte xlsx (media-2.xlsx). A HEAD request on the bioRxiv copy returned 200, but both GET attempts returned HTTP 429 (too many requests), and the Europe PMC supplementaryFiles endpoint timed out at 120 s. So the tables were not opened.",
+    "what_came_from_paper_text_only": "All counts come from the preprint text: 101 candidate PUS7 sites from direct RNA nanopore sequencing (50 within the UNUAR motif); a 130-nucleotide MPRA (massively parallel reporter assay) pool built from these plus previously reported sites; 250 sites modified in vitro; 178 PUS7-dependent sites in cells (HepG2 and HEK293T); 49 sites that differ between the two cell types. The total number of sequences in the MPRA pool is not stated in the text I read. No raw-data accession appears in the preprint text."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "No login needed: the preprint supplement xlsx exists (HEAD 200), but downloads were rate-limited (429), so it was not opened. No GEO/SRA accession was found for the raw data."},
+    "a2_label_is_a_column": {"pass": true, "note": "Per the paper only: Tables S4/S5 likely list per-site deletion rates (bisulfite-induced deletions, a readout of pseudouridine) and PUS7-dependence calls. Not verified in the file."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are 130-nt genomic windows from GRCh38 (human reference genome). Unclear whether the sequences themselves are in the xlsx or only their coordinates; not verified."},
+    "a4_units_stated": {"pass": true, "note": "Deletion rate is a fraction (0–1), so the units are self-describing; not verified in the file."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Positive labels per the paper text: 250 modified in vitro, 178 PUS7-dependent in cells, 101 from direct RNA sequencing. The MPRA pool size (and so the number of negatives) is not stated, and it is built from about 100–300 known sites. Well below 1,500 for regression, and at best borderline for classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<50 MB (one 35 MB xlsx)", "note": "Tiny tabular working set if the file opens."},
+    "a7_counts_match_paper": {"pass": true, "note": "Could not check, because the file was not opened."},
+    "a8_label_provenance": {"pass": true, "note": "Per the paper, labels are measured: bisulfite-induced deletion rates from targeted nanopore amplicon sequencing, with knockdown and overexpression contrasts. They are not another model's predictions."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PULSE (CNN, convolutional neural network, for pseudouridylation sites, including PUS7-type sequence context)", "open_weights": null, "score_and_split": "Not retrieved in detail; trained on transcriptome-wide pseudouridine profiling data.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "MU-PseUDeep (CNN using sequence plus predicted secondary structure)", "open_weights": null, "score_and_split": "Not retrieved in detail; evaluated on benchmark pseudouridine site sets.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "iPseU-CNN, PseUdeep, Definer (general pseudouridine site classifiers)", "open_weights": null, "score_and_split": "Not retrieved; typically random-split cross-validation on small benchmark sets (human, yeast, mouse).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (an RNA language model)", "freeze_and_head_viable": true, "hardware": "CPU laptop", "licence": "MIT"},
+  "integration": {"partner_dataset": "Transcriptome-wide pseudouridine maps (BID-seq, PRAISE, nanopore direct RNA studies)", "join_key": "GRCh38 genomic coordinates", "bigger_question_one_sentence": "Does experimentally probed structure (SHAPE) explain which UNUAR motifs PUS7 modifies across the transcriptome better than sequence alone?"},
+  "controls": {"positive_control": "Recover the UGUAG > UNUAG motif preference reported in the paper.", "negative_control": "Label shuffling.", "external_validation": "Transcriptome-wide PUS7-knockdown pseudouridine maps from other labs."},
+  "honest_claim_h3": "Among about 100–300 previously known PUS7 candidate sites, tested as 130-nt reporters in two human cell lines, the model would predict which ones are modified and by how much.",
+  "plain_idea": {
+    "one_liner": "Use a short RNA sequence and its measured folding to predict how strongly the enzyme PUS7 adds pseudouridine at a target site.",
+    "train_on": "130-nucleotide RNA windows centred on candidate sites, with chemical structure-probing reactivities; the number of sequences is unknown (the paper reports 250 and 178 modified sites).",
+    "predict": "The pseudouridine level at each site, measured as the bisulfite-induced deletion rate in targeted nanopore sequencing, in vitro and in two cell lines.",
+    "why_worthwhile": "RNA-modification labs could use it to design or block PUS7 sites, but a few hundred examples from one lab support motif analysis, not a trained model."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict PUS7 stoichiometry from sequence plus SHAPE (a chemical probe of RNA structure) reactivity with an RNA-FM embedding and a regression head. Too few labelled sites to be credible.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.04, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 0.1, "cv_run_minutes": 1, "compute_note": "Estimated only: a few hundred 130-nt sequences embed in minutes on CPU.", "cheapest_killing_check": "Open media-2.xlsx and count the MPRA sequences that have a measured deletion rate; under ~400 confirms the rejection."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on the paper's own counts: only 101–250 modified sites from one lab and two cell lines, with an MPRA pool size that is never stated. The supplement xlsx exists but could not be opened (HTTP 429), and the field already has several general pseudouridine-site predictors."
+}

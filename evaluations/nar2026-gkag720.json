@@ -1,0 +1,128 @@
+{
+  "paper_id": "nar2026-gkag720",
+  "title": "Pol γ possesses separate metal binding sites for polymerase and strand displacement functions.",
+  "doi": "10.1093/nar/gkag720",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.rcsb.org/structure/9Y4C (plus 9Y4D, 9Y4E, 9Y4F; EMDB maps EMD-72478 to EMD-72481)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Pulled the RCSB (Protein Data Bank) metadata for all four deposited structures 9Y4C/9Y4D/9Y4E/9Y4F: each is the same human Pol gamma (mitochondrial DNA polymerase) complex in a different conformational state, 2.62-3.23 Angstrom, ~15,300 atoms, 3 polymer chains, 2 small-molecule instances each (calcium ion and dATP). Confirmed the structure file (9Y4C.cif) downloads, HTTP 200. Also checked the one Zenodo link in the paper (record 4469899): it is a 2021 software release, 'CisnerosResearch/AMBER-EDA', not data for this paper.",
+    "what_came_from_paper_text_only": "Everything quantitative in the biochemistry: the gel-based strand-displacement, exonuclease and metal-titration assays, and the contents of Supplementary Tables S1 (calculated DNA melting temperatures at various magnesium concentrations), S2 (computational metal-binding-site prediction scores) and S3 (cryo-EM data collection statistics). Europe PMC's supplementaryFiles endpoint timed out on one attempt at 120 s, so the supplement itself was not retrievable."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The four structures and four density maps are openly deposited and the structure files download without login; I fetched metadata for all four and one .cif file."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. There is no prediction-target column anywhere in the deposited data. Any label (strand-displacement efficiency, metal affinity, unwinding versus synthesis) exists only as band intensities inside gel figures and would have to be constructed by digitising images."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Moot but true: the oligonucleotide sequences are written out literally in the methods, and the protein coordinates are in the structure files. There is no input table because there are no rows."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "From the paper text only: metal concentrations are given in mM (millimolar) and temperatures in degrees Celsius on figure axes and in the methods."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 4,
+      "note": "FAIL. The deposited dataset is 4 structures of one protein complex. The biochemistry amounts to a few dozen gel lanes across a handful of metal conditions. The bar is ~1,500 labelled rows, or ~400 for classification."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~5 MB for four mmCIF coordinate files; the four cryo-EM density maps would add a few hundred MB if needed",
+      "note": "Trivially small, but there is nothing to model."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The paper says four conformers were resolved at 2.62-3.23 Angstrom; the Protein Data Bank entries confirm exactly four states at exactly those resolutions."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the one table-like quantity in the paper: Supplementary Table S2 holds metal-binding-site scores from a computational predictor, which the authors then compare to their structures. Training on those scores would distil another model, not learn biology."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Metal3D, a 3D convolutional neural network that predicts where metal ions sit in a protein structure (Nature Communications 2023)",
+        "open_weights": true,
+        "score_and_split": "From the search snippet of the paper: predicts zinc positions to within 0.70 +/- 0.64 Angstrom of the experimental location, and at a 0.75 probability cutoff finds 85 sites with 9 false positives versus MIB's 78 sites with 180 false positives. Split details not retrieved.",
+        "authors_named_unsolved": "Not retrieved; I only read search snippets, not the full paper.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MIB2, a metal ion-binding site prediction server using a weighted BLOSUM62 substitution matrix plus contact numbers, covering 18 metal types (Bioinformatics 2022)",
+        "open_weights": null,
+        "score_and_split": "From the search snippet: reported as producing many more false positives than Metal3D (162 versus 9 at the stated cutoff). Own reported numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model) or a structure-based graph network would be the natural fit for a metal-site task",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU would suffice, but there are only 4 structures to fit a head on",
+    "licence": "ESM-2 is MIT-licensed; irrelevant here"
+  },
+  "integration": {
+    "partner_dataset": "Protein Data Bank metal-site annotations, or MetalPDB, joinable on PDB ID plus residue number",
+    "join_key": "PDB ID + chain + residue number",
+    "bigger_question_one_sentence": "Cannot be written usefully from this paper: four structures of one enzyme add four data points to a resource that already holds tens of thousands of metal sites, so the join would be decoration."
+  },
+  "controls": {
+    "positive_control": "None available at dataset scale; the paper's own internal control is that the known catalytic aspartates D890/D1135 score highest in the metal-site prediction.",
+    "negative_control": "Not runnable - there is no model to shuffle labels for.",
+    "external_validation": "None; the measurements exist only in this paper's gel figures."
+  },
+  "honest_claim_h3": "No honest machine-learning claim is possible from this paper's data: with four structures of a single protein complex and no numeric measurement table, any model would be fitting four points.",
+  "plain_idea": {
+    "one_liner": "Use protein structure around each candidate site to predict whether a bound metal ion helps or blocks DNA unwinding.",
+    "train_on": "The project I considered would show a model the local structural environment of each metal-binding pocket in a DNA polymerase. This paper provides 4 structures of one enzyme, which is 4 examples, not the thousands such a model needs.",
+    "predict": "Whether a divalent metal at that site supports DNA synthesis and unwinding (high-affinity class) or suppresses unwinding only (low-affinity class). The true answer comes from gel-based strand-displacement assays at varying metal concentrations, which appear only as band images in this paper's figures.",
+    "why_worthwhile": "Mitochondrial DNA replication researchers and groups engineering polymerases for isothermal amplification would want to know which metal sites tune unwinding. But this paper cannot supply the training data for it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Four structures of one complex, against the tens of thousands of metal sites in the Protein Data Bank that Metal3D and MIB2 were trained and tested on."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements in any machine-readable form here, so per-prediction uncertainty cannot be estimated from this data."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Metal3D is a 2023 deep network with open weights reporting sub-Angstrom localisation and far fewer false positives than earlier servers; with four examples there is no route to beating it."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on the most basic condition: our model would not see everything the baseline sees plus new data, because this paper contributes no usable training rows at all."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and abandoned: predict from local protein structure whether a metal-binding site in a replicative DNA polymerase belongs to the high-affinity class (supports synthesis and unwinding) or the low-affinity class (suppresses unwinding only). The paper offers 4 structures of a single complex and no numeric measurement table, so there is nothing to train on. The adjacent general task - locating metal ions in protein structures - is already served by Metal3D with open weights.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.005,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes read directly from the Protein Data Bank metadata (four files, ~15,300 atoms each); nothing was timed because there is no task to run.",
+    "cheapest_killing_check": "Count the deposited data objects: the data availability statement lists four structures and four density maps, and no numeric table. That is a one-minute check and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A structural and biochemical mechanism paper. The only deposited data is four cryo-EM structures of one protein complex (verified in the Protein Data Bank), with no numeric measurement table. A2 fails (any label would have to be digitised from gel images), A5 fails (4 rows versus the ~1,500 needed), and the one table-like quantity in the paper, Supplementary Table S2, is another predictor's output, which fails A8."
+}

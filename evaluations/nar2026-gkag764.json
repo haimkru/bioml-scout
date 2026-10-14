@@ -1,0 +1,55 @@
+{
+  "paper_id": "nar2026-gkag764",
+  "title": "miRNA-mediated cell-to-cell communications boost DNA repair during the radioadaptive response.",
+  "doi": "10.1093/nar/gkag764",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE293nnn/GSE293977/suppl/GSE293977_RAW.tar",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the whole GEO (Gene Expression Omnibus) deposit GSE293977_RAW.tar (490 KB) and unpacked it: exactly 6 gzipped CSV files, one per sample (3 'minus' = non-primed, 3 'plus' = radiation-primed), each with 25,702 lines and only two columns ('Geneid' as an NCBI Entrez numeric gene ID, and raw aligned read counts). Confirmed 6 samples and one platform via NCBI esummary. Confirmed the proteomics deposit PXD063287 exists in PRIDE (PRoteomics IDEntifications database) and read its metadata; its file list endpoint returned an empty body. Read the full open-access text including the data availability statement and methods.",
+    "what_came_from_paper_text_only": "That the microRNA (miRNA) comparison used limma with p < 0.05 and fold change beyond +/-2, that only a few RNAs and exactly three proteins differed between primed and non-primed vesicles, and that all imaging phenotypes (RPA and gammaH2AX focus counts, DNA end resection kinetics) were measured with roughly three biological replicates per condition. The Europe PMC supplementaryFiles endpoint timed out twice (supplement not retrievable), so Supplementary Table S1 (the differential RNA list) and Supplementary Dataset 1 (the proteomics table) were not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO tar downloads with no login (verified, 490 KB); PRIDE project PXD063287 is public. But the data availability statement says 'Raw data will be provided upon request' for everything else, so the phenotype measurements that the paper's conclusions rest on are request-only."},
+    "a2_label_is_a_column": {"pass": false, "note": "Verified in the files: the 6 CSVs contain only a gene ID and a raw read count. There is no outcome column anywhere. Any label (differential vesicle loading, or DNA repair speed) would have to be constructed by running a differential-expression test or by extracting numbers from figure panels."},
+    "a3_inputs_present": {"pass": false, "note": "Inputs are bare NCBI Entrez numeric gene IDs (e.g. 653635); no sequences, no miRNA names, no annotation. Any sequence-based model would need a full identifier-to-sequence mapping built first."},
+    "a4_units_stated": {"pass": true, "note": "The single data column is explicitly headed 'HISAT2 <sample>: aligned reads (BAM)', i.e. raw integer read counts; verified in the file header. No library-size normalisation is supplied."},
+    "a5_enough_rows": {"pass": false, "n_rows": 6, "note": "Verified: the experimental unit is the sample and there are 6 of them (3 primed vs 3 non-primed small-extracellular-vesicle RNA libraries). The 25,702 gene rows are the features of those 6 samples, not independent labelled examples. All phenotype assays are n~3. Far under the ~1,500-row (or ~400 for classification) floor."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.5 MB compressed, ~3 MB as a 25,702 x 6 count matrix", "note": "Trivially laptop-sized; verified by downloading and parsing."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO sample count (6) matches the paper's design of three independent experiments per condition; the differential-RNA counts in Supplementary Table S1 could not be cross-checked because the supplement would not download."},
+    "a8_label_provenance": {"pass": false, "note": "The only candidate label — 'this RNA is differentially loaded into vesicles from primed cells' — is computed from the very count columns that would be the features (a limma test on them). That is leakage by construction, the textbook A8 failure."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ExoMiRPred-style exosomal miRNA classifiers (Scientific Reports 2025, 'Prediction of exosomal miRNA-based biomarkers for liquid biopsy')", "open_weights": null, "score_and_split": "Reported AUC (area under the ROC curve) up to 0.73 and MCC (Matthews correlation coefficient) 0.35 on an independent test set, trained on 956 exosomal vs 956 non-exosomal miRNA sequences; found via web search, abstract-level only, not retrieved in full.", "authors_named_unsolved": "Not read — only the search snippet was seen, so no claim is made about their stated open problems.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM or a small nucleotide language model would fit miRNA sequences in principle", "freeze_and_head_viable": false, "hardware": "CPU is ample for a few thousand ~22-nucleotide sequences", "licence": "n/a — not reached, since there is no label to fit a head to"},
+  "integration": {"partner_dataset": "miRBase (miRNA sequences) plus Vesiclepedia/ExoCarta (catalogues of molecules reported in extracellular vesicles)", "join_key": "NCBI Entrez gene ID -> miRBase miRNA identifier", "bigger_question_one_sentence": "Which sequence features decide whether a miRNA is exported in small extracellular vesicles rather than kept in the cell — a question this 6-sample deposit is far too small to answer on its own."},
+  "controls": {"positive_control": "The paper's own hits, miR-126-3p and miR-451a, should come out as the top differential RNAs; checkable in the count matrix but that is a sanity check on the authors' statistics, not an ML control.", "negative_control": "Label shuffling is meaningless with 3 samples per group.", "external_validation": "No second independent dataset of primed-vs-non-primed vesicle cargo was found."},
+  "honest_claim_h3": "With 3 primed and 3 non-primed vesicle RNA libraries and no outcome column, the most any model could honestly claim is a re-description of the authors' own differential-expression list for one immortalised human fibroblast line in one lab.",
+  "plain_idea": {
+    "one_liner": "Use a microRNA's sequence to predict whether radiation-primed cells export it in small membrane vesicles.",
+    "train_on": "The project considered would train on the small RNAs quantified in vesicles released by primed versus non-primed fibroblasts. Verified example count: 6 libraries (25,702 gene rows each), and only a handful of RNAs were called differential, so the usable labelled set is single digits.",
+    "predict": "Output would be whether a given small RNA is enriched in vesicles after a low radiation dose; the true answer comes from a limma differential-expression test run on the same six RNA-sequencing libraries that supply the features.",
+    "why_worthwhile": "Radiation biologists and radiotherapy groups would like a way to guess which vesicle-carried microRNAs transmit radiation adaptation between cells; as framed here, nothing is learned because the label is derived from the features and there are only six samples."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The one related model found was trained on 956 exosomal plus 956 non-exosomal miRNA sequences; this paper supplies 6 libraries and a handful of differential RNAs."},
+    "confidence_score": {"answer": "no", "why": "Three biological replicates per condition cannot support calibrated per-prediction uncertainty."},
+    "models_beatable": {"answer": "no", "why": "Not applicable — there is no label here on which to run any comparison, so no existing model can be beaten or even scored."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model can be run as a baseline on this data because the data has no outcome column; the 'same quantity, same assay, same split' conditions all fail."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predicting vesicle-loading of small RNAs during the radioadaptive response from sequence. The deposit is a 6-sample (3 primed vs 3 non-primed) total-RNA count matrix of small extracellular vesicle cargo with no outcome column, so the label would be a differential-expression statistic computed from the features themselves.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.003, "needs_gpu": false, "peak_ram_gb": 0.2, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Measured, not estimated, for size: the entire deposit is a 490 KB tar that unpacks to six 25,702-line CSVs; building a count matrix is minutes. No model timing is given because there is nothing to fit.", "cheapest_killing_check": "Count the samples in the GEO deposit — esummary reports n_samples = 6, which kills the project in one request."},
+  "verdict": "reject",
+  "verdict_reason": "Mechanistic cell-biology paper: the public data is six RNA-sequencing libraries (3 radiation-primed vs 3 non-primed vesicle preparations) of raw gene counts with no outcome column, so A5 fails on sample size, A2 fails because any label must be constructed, A8 fails because the only candidate label (differential loading) is computed from the same counts that would be the features, and A3 fails because inputs are bare Entrez gene IDs with no sequences. The phenotype measurements the paper's claims rest on are 'available upon request' and confined to figure panels at n~3."
+}

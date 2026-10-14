@@ -1,0 +1,51 @@
+{
+  "paper_id": "nature2026-11029-x",
+  "title": "Lsp2 links mTORC1 to TOP mRNA translation and lifespan in Drosophila.",
+  "doi": "10.1038/s41586-026-11029-x",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE297586",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Paper is paywalled with no PMCID (no full text, no supplement). The PubMed-to-GEO link was empty, but a GEO search found two series titled after the paper. GSE297586 (72 libraries: total RNA, monosome and polysome RNA-seq, meaning RNA bound to one ribosome vs many) has 3 raw-count CSVs: Samples1 23,932 genes x 18 columns (W/L/R = control, Lsp2 and Rheb overexpression in fat, 2 replicates x R/M/P fractions); Samples2 13,925 x 36 (Lsp2[A10], Lsp2[B14], Thor[2];Lsp2 double mutants, 3 replicates x 3 fractions); Samples3 13,925 x 18 (AY/BY groups). All keyed by FlyBase gene ID (FBgn), 0 duplicate IDs, 0 nulls. GSE295794 has 3 transcriptome tables keyed by gene symbol: 11,923 x 6 (normalized values, OR_3 vs OR_50, probably ages), 12,222 x 9 raw counts (diet groups), 12,325 x 12 raw counts (ctrl/lsp2/rheb); two are UTF-16 encoded. 18+36+18 = 72 libraries matches the GEO design text.",
+    "what_came_from_paper_text_only": "That loss of Lsp2 selectively lowers TOP mRNA (mRNAs starting with a run of pyrimidines, mostly ribosomal-protein genes) translation in a 4E-BP-dependent way, and that TOP motifs are present in nearly all Drosophila ribosomal-protein mRNAs: abstract only. Which of A10 and B14 is a null allele and which a control, and what the AY/BY and OR_3/OR_50 codes mean, is not documented in the files I saw."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: six count files, all under 1 MB, open on GEO FTP (GSE297586, GSE295794), no login."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked files: they hold only raw counts per gene per library. The natural label (per-gene change in translation efficiency, i.e. polysome/total ratio, between Lsp2 mutant and control) would have to be built with a differential-expression model across fractions, genotypes and replicates. Several sample codes (A10/B14, AY/BY) are also undocumented."},
+    "a3_inputs_present": {"pass": false, "note": "Checked: no sequences in the files, only FBgn IDs or gene symbols. The 5' UTR sequences (the untranslated start of each mRNA) would need a FlyBase download and a choice of transcript start site per gene, which matters a lot for TOP motifs."},
+    "a4_units_stated": {"pass": true, "note": "Checked: integer raw read counts, which are unitless and self-evident; one GSE295794 table holds unexplained normalized decimals."},
+    "a5_enough_rows": {"pass": true, "n_rows": 13925, "note": "Checked: 13,925 genes in the main mutant translatome tables. But the paper's signal is concentrated in roughly 80-100 ribosomal-protein mRNAs (from the abstract), and each per-gene label rests on 2-3 replicates."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 3 MB compressed across six files", "note": "Checked: tiny tables."},
+    "a7_counts_match_paper": {"pass": true, "note": "Checked: 72 count columns across GSE297586 match the stated 72 libraries. I could not compare against the paper body (paywalled)."},
+    "a8_label_provenance": {"pass": true, "note": "Any label would be a statistic computed from measured read counts, not another model's prediction. But it would be a derived contrast, not a direct measurement."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "RiboNN (Nature Biotechnology 2025), a convolutional network predicting translation efficiency from mRNA sequence", "open_weights": null, "score_and_split": "r = 0.79 (human) and 0.78 (mouse) for mean translation efficiency across cell types, per the search snippet; split not checked", "authors_named_unsolved": "Not retrieved", "runnable_as_baseline": null},
+      {"name": "Optimus 5-Prime, a convolutional network predicting ribosome load from 5' UTR sequence (reporter libraries)", "open_weights": null, "score_and_split": "Not retrieved", "authors_named_unsolved": "Not retrieved", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (RNA language model) on 5' UTRs would be the candidate", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "not checked"},
+  "integration": {"partner_dataset": "FlyBase transcript annotations (5' UTR sequences)", "join_key": "FBgn gene ID", "bigger_question_one_sentence": "Whether 5' UTR sequence beyond the classic TOP motif predicts which fly mRNAs depend on Lsp2/mTORC1 for translation; with the signal concentrated in about 100 ribosomal-protein genes, a simple motif rule likely answers it."},
+  "controls": {"positive_control": "Ribosomal-protein mRNAs carrying TOP motifs should come out as the most Lsp2-sensitive.", "negative_control": "Shuffle per-gene labels.", "external_validation": "Mammalian mTOR-inhibition translatome studies (Torin1 ribosome profiling), but those are a different species and a different perturbation."},
+  "honest_claim_h3": "At best, a model would rank fly mRNAs by how much their polysome loading drops in Lsp2 mutants of one lab's whole-body samples, and the signal is mostly the known TOP-motif ribosomal-protein class.",
+  "plain_idea": {
+    "one_liner": "Use each fly gene's mRNA start sequence to predict how much its translation drops when the fat-body protein Lsp2 is removed.",
+    "train_on": "5' UTR sequence of each gene (to be pulled from FlyBase) for about 13,925 genes with polysome counts.",
+    "predict": "Change in the polysome-to-total RNA ratio between Lsp2 mutant and control flies. This has to be computed from raw sequencing counts with 2-3 replicates.",
+    "why_worthwhile": "Would show whether fly mTORC1-dependent translation extends beyond classic TOP motifs. But the label must be built and the signal is a roughly 100-gene class a motif rule already captures."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict per-gene Lsp2/4E-BP-dependent change in translation efficiency from 5' UTR sequence (TOP motif and beyond) using fly polysome-seq. Rejected because the label must be built by differential analysis of raw counts with undocumented sample codes, and the inputs are absent.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only. Data is tiny; the cost is decoding sample codes, running a differential translation-efficiency analysis, and choosing a 5' UTR per gene from FlyBase.", "cheapest_killing_check": "Compute the polysome/total change for Lsp2 mutant vs control and count genes outside the ribosomal-protein set with a significant drop. If it is near zero, there is nothing for a model to learn beyond a TOP-motif rule."},
+  "verdict": "reject",
+  "verdict_reason": "A2 fails: the GEO files (GSE297586, GSE295794, opened) hold only raw RNA-seq counts per gene. Any label (change in translation efficiency) must be built by differential analysis, with undocumented sample codes. Inputs (5' UTR sequences) are absent, and the biological signal is a roughly 100-gene ribosomal-protein class that a simple motif rule already describes."
+}

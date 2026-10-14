@@ -1,0 +1,210 @@
+{
+  "paper_id": "nar2026-gkag668",
+  "title": "Conformational analysis of nucleic acids for optimizing DNA and RNA topological models.",
+  "doi": "10.1093/nar/gkag668",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://zenodo.org/records/20469706 (DOI 10.5281/zenodo.20469706, CC-BY-4.0)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record is open CC-BY-4.0 with two files: data_FULL.csv.xz (330,086,080 bytes) and README.txt (4,074 bytes). README read in full. The .xz is over the 50 MB download cap, so I pulled the first 8,388,608 bytes with a ranged request and decompressed the partial stream: 30.7 MB of CSV, 107,729 complete rows parsed by pandas on the first try. Verified: 34 columns; header ends with 'ndb_category' (NOT 'Helix' as the README's field list says); torsion values all inside the documented [-180,180] degree range; missingness alpha 7.1%, beta 6.3%, epsilon 7.1%, zeta 7.2%, eta/theta ~14%, delta 0.01%; Experiment = X-RAY DIFFRACTION 58,801 / SOLUTION NMR 48,895 / NEUTRON DIFFRACTION 33; 9 sugar-pucker classes; 1,826 distinct PDB_ID; ndb_category takes exactly one value per structure in all 1,826 (A 16,859 / B 90,870 rows), confirming it is a structure-level annotation broadcast to every nucleotide; 97% of rows are standard residues (DA/DC/DG/DT/A/C/G/U) with 190 distinct non-standard residue names including 'FRU' (fructose); 4,633 chains collapse to 2,108 unique residue strings and 75.1% of chains share their sequence with another chain (CGCGAATTCGCG appears in 100 chains); NMR ensembles give up to 40 models per structure, median within-site standard deviation 2.35 deg (delta), 3.11 deg (chi), 4.50 deg (pseudorotation) over 3,561 sites, and identical pucker class across ensemble models at the median site (5,721 sites); 83.2% of D-Ribose rows are C3'-endo vs 49.4% C2'-endo for deoxyribose; 1,016 of 1,826 structures are protein/ligand complexes; PDB_Release_Date spans 1981-2022 in this slice.",
+    "what_came_from_paper_text_only": "Total of 4,184,581 nucleotide entries from 9,923 structures (paper, README and Zenodo description all agree) - I could only count the 107,729 rows in my 8 MB slice, which is alphabetically biased toward early PDB IDs and therefore DNA-heavy, whereas the paper states the full set is RNA-dominated. The journal Supporting Data (data_xray.csv, 9,102 entries; data_nmr.csv, 1,849 entries) is described in the README but not retrievable: the Europe PMC supplementaryFiles endpoint timed out twice. Helix grouping into A / B / Z(R) / Z(Y) comes from NDB external reference annotation files; filtering used SMARTS patterns on backbone atoms (Supplementary Tables S3-S5, not seen). NDB snapshot date 2025-05-25."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo, open access, CC-BY-4.0, no login. README fetched whole; data file fetched as an 8 MB ranged slice because 330 MB exceeds the project download cap."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the header: alpha, beta, gamma, delta, epsilon, zeta, chi, nu0-nu4, pseudorotation, amplitude, puckering are each already columns, in degrees. Only the sequence-context feature needs building (sort by PDB_ID/Model/Chain/UID and shift), which is a feature, not the label."},
+    "a3_inputs_present": {"pass": true, "note": "Residue letter is a column for every row, so local sequence is reconstructable inside the same file; 92.2% of rows have their 5-prime neighbour at UID-1. No external accession lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "README states degrees, range [-180,+180] except pseudorotation and amplitude [0,360], and that missing angles are blank for terminal or unresolved residues. Verified observed minima/maxima match."},
+    "a5_enough_rows": {"pass": true, "n_rows": 4184581, "note": "4,184,581 nucleotide rows claimed (107,729 verified in my slice). Caveat: the independent unit is the structure/sequence - 9,923 structures, and 75% of chains in my slice duplicate another chain's sequence."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.2 GB uncompressed CSV; ~0.3 GB after keeping standard residues and one NMR model per site", "note": "Measured decompression ratio 3.66x on the slice, so the full CSV is about 1.2 GB - chunked pandas reads on 16 GB RAM, CPU only. No GPU needed for the baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper, README and Zenodo all say 4,184,581 entries / 34 fields; the header does have 34 fields. One documentation mismatch: README lists the last field as 'Helix' with values A/B/Z_R/Z_Y, but the file's last column is 'ndb_category' (A and B only in my slice). Total row count not verified (file over the download cap)."},
+    "a8_label_provenance": {"pass": true, "note": "Angles are computed geometrically from deposited atomic coordinates of experimental structures - not another ML model's output. Two honest caveats: (i) deposited coordinates, especially NMR, are refined under force-field restraints, so the label is partly model-influenced (the paper's own point); (ii) pseudorotation, amplitude and puckering are deterministic functions of nu0-nu4, so they must never be features for one another - leakage by construction inside this one table."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One CSV with 34 columns holds everything; verified header and 107,729 rows."},
+    "B2": {"score": 2, "why": "Partial xz slice parsed by pandas first try, correct dtypes, no fixing needed."},
+    "B3": {"score": 1, "why": "X-ray (0.74-9.0 Angstrom), NMR and neutron pooled; paper itself says these spaces differ. Stratifiable."},
+    "B4": {"score": 1, "why": "No censoring, but 6-14% blank angles at terminal/unresolved residues; easy to drop."},
+    "B5": {"score": 1, "why": "Verified: 40 NMR models per site, 100 copies of one dodecamer, 75% of chains sequence-duplicated."},
+    "B6": {"score": 1, "why": "README documents all fields and units, but names 'Helix' where the file has undocumented 'ndb_category'."},
+    "C1": {"score": 2, "why": "'How much conformation is sequence-predictable, and does crystal transfer to NMR' informs either way."},
+    "C2": {"score": 1, "why": "Three open recent RNA torsion models plus Deep DNAshape exist; experimental-label DNA niche uncovered."},
+    "C3": {"score": 1, "why": "Real but narrow angle: experimental labels vs MD-trained Deep DNAshape; RNA side already saturated."},
+    "C4": {"score": 1, "why": "Crystallography/NMR and microsecond MD are expensive, but cheap k-mer predictors already exist."},
+    "C5": {"score": 2, "why": "Paper's Table 1 circular means are a published dummy; SPOT-RNA-1D reports 14-44 degree MAE."},
+    "D1": {"score": 2, "why": "RNA-FM, DNABERT-2, Nucleotide Transformer all open-weight; fit to 12-nt oligos is imperfect."},
+    "D2": {"score": 2, "why": "Only a few thousand unique short chains (2,108 per 1,826 structures), so embeddings cache once on CPU."},
+    "D3": {"score": 2, "why": "Data CC-BY-4.0 (seen in Zenodo metadata); RNA-FM and DNABERT-2 released under permissive open licences."},
+    "E1": {"ok": true, "why": "Group by clustered chain sequence and PDB_ID; both buildable from columns I saw."},
+    "E2": {"ok": true, "why": "9,923 structures, 2,108 unique sequences in my 18% slice alone - far more than 5 groups."},
+    "E3": {"ok": true, "why": "Per-residue-type and per-helix-class circular mean; the paper publishes exactly this table."},
+    "E4": {"ok": true, "why": "Measured it: median within-site SD across NMR ensemble models 2.35 deg (delta), 3,561 sites."},
+    "E5": {"ok": true, "why": "Verified textbook signal present: ribose 83.2% C3'-endo vs deoxyribose 49.4% C2'-endo."},
+    "E6": {"ok": true, "why": "Label shuffling within structure and feature-block ablation both trivial on a tabular file."},
+    "E7": {"ok": true, "why": "PDB_Release_Date column verified (1981-2022 in slice); post-2025-05-25 depositions give a fresh set."},
+    "E8": {"ok": true, "why": "Paper's Table 1/2 circular means recomputable; SPOT-RNA-1D code and test sets are public."},
+    "G1": {"score": 2, "why": "PDB_ID in every row - a standard identifier - plus residue number and release date."},
+    "G2": {"score": 2, "why": "PDB/NDB entries themselves and DNATCO v5.0 NtC assignments both join on PDB_ID."},
+    "G3": {"score": 1, "why": "Structure-level join is clean, but 'Chain' is an integer index, not the author chain ID."},
+    "G4": {"score": 1, "why": "Combination separates sequence from binding partner and refinement era; useful but incremental."},
+    "H1": {"score": 2, "why": "All nucleotides kept regardless of conformation: 9 pucker classes, syn and anti both present."},
+    "H2": {"score": 2, "why": "9,923 structures, 50 years, X-ray/NMR/neutron, DNA+RNA+hybrids+190 modified residues."},
+    "H3": {"score": 2, "why": "Claim writeable in one sentence; the free-versus-bound confound is explicit in the data."},
+    "H4": {"score": 1, "why": "Paper flags X-ray/NMR and non-natural-base issues; sequence redundancy and broadcast helix label are not flagged."},
+    "I1": {"score": 2, "why": "Named users: the paper's Chemical Computing Group authors, AMBER/OL parameter developers, DNATCO group."},
+    "I2": {"score": 1, "why": "A context-aware prior could enter refinement restraints, but adoption is indirect and slow."},
+    "I3": {"score": 1, "why": "Circular MAE in degrees matches a restraint user's need; calibrated intervals would match better."},
+    "I4": {"score": 1, "why": "A trimer/pentamer lookup table may capture nearly all sequence-explainable variance - the real risk."},
+    "J1": {"score": 2, "why": "Grouped splits, circular/angular losses, frozen-backbone transfer, domain shift - all real ML work."},
+    "J2": {"score": 1, "why": "Pucker and torsion plausibility is checkable against textbook rules, but needs structural-biology reading."},
+    "J3": {"score": 2, "why": "The deduplicated, sequence-clustered benchmark plus its measured noise floor is shareable alone."},
+    "J4": {"score": 1, "why": "I would budget 3-4 weeks, but no budget is committed anywhere yet."},
+    "J5": {"score": 1, "why": "Kill condition stated here (trimer table within 10%), not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SPOT-RNA-1D (Singh et al., J Chem Inf Model 2021) - dilated convolutional network predicting RNA backbone torsion and pseudotorsion angles from sequence alone",
+        "open_weights": true,
+        "score_and_split": "Mean absolute error 14-44 degrees depending on the angle, on three independent non-redundant high-resolution RNA test sets; random prediction 17-62 degrees, helix-value prediction 14-58 degrees.",
+        "authors_named_unsolved": "Accuracy is still close to a fixed helical-value predictor for several angles; they position the output as a model-quality indicator or restraint rather than a solved prediction.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RNA-TorsionBERT (Bioinformatics 2025) - language-model predictor of RNA torsion and pseudo-torsion angles from sequence",
+        "open_weights": true,
+        "score_and_split": "Reported improvements over SPOT-RNA-1D on non-redundant RNA benchmarks including CASP-RNA; exact numbers not retrieved (abstract only).",
+        "authors_named_unsolved": "Not retrieved - I only read the abstract listing, so I am not quoting a discussion sentence.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepRNA-Twist (Briefings in Bioinformatics 2025) - attention-inception network with a language-model front end for RNA torsion angles",
+        "open_weights": null,
+        "score_and_split": "Claims state-of-the-art on RNA-Puzzles, CASP-RNA and the SPOT-RNA-1D benchmarks; numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Deep DNAshape (Li et al., Nature Communications 2024; webserver in NAR 2024) - deep network predicting DNA shape features, including backbone torsion features, from sequence with up to 7 bp of flanking context",
+        "open_weights": true,
+        "score_and_split": "Trained and evaluated on molecular-dynamics simulation data of free DNA, not on experimental structures; its headline claim is that extended flanks beat k-mer lookup tables. Code and pretrained models at github.com/JinsenLi/deepDNAshape.",
+        "authors_named_unsolved": "Predictions are only as good as the underlying simulations, and the method is trained on limited simulation data for free DNA - experimental and protein-bound geometry is outside its training distribution.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DNATCO v3.0/v5.0 (NAR 2016, NAR 2026) - modified k-nearest-neighbour assignment of dinucleotide conformer classes (NtC) in torsion space, plus the CANA/NtA structural alphabet",
+        "open_weights": false,
+        "score_and_split": "Assignment, not prediction: compares nine backbone torsions of a query step against ~4,439 manually curated 'golden set' steps across 57 (now 96) conformer classes. No held-out predictive benchmark; it is a web service.",
+        "authors_named_unsolved": "They frame A/B/Z as too coarse a description of local conformation - the motivation for a finer structural alphabet.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model) for RNA chains; DNABERT-2 or Nucleotide Transformer v2 (DNA language models) for DNA chains; a per-residue regression/classification head on frozen embeddings",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU. Unique chains are few thousand and mostly 2-30 nucleotides, so the whole embedding pass is well under an hour; the head trains in minutes.",
+    "licence": "Data CC-BY-4.0 (verified in Zenodo metadata). RNA-FM and DNABERT-2 code and weights are openly downloadable; licence terms not re-checked in this evaluation."
+  },
+  "integration": {
+    "partner_dataset": "The PDB/NDB entries themselves (protein-bound versus free status, ligands, B-factors, refinement software) and DNATCO v5.0 NtC conformer assignments; plus simulated torsions for the same sequence steps from microsecond-MD resources (microsecond-ABC / BIGNASim)",
+    "join_key": "PDB_ID, present in every row, for structure-level metadata; residue-level joins additionally need a chain mapping, because the 'Chain' column is an integer index rather than the author chain identifier",
+    "bigger_question_one_sentence": "Is the conformational spread of nucleotides in solved structures set by sequence, by the bound partner, or by the refinement protocol and era - and do simulations reproduce the experimental spread?"
+  },
+  "controls": {
+    "positive_control": "Ribose nucleotides must be predicted C3'-endo and deoxyribose C2'-endo (verified present: 83.2% vs 49.4% in my slice); and as a plumbing check, delta must be near-perfectly recoverable from pseudorotation, which is a deterministic relation.",
+    "negative_control": "Shuffle torsion labels within each structure and confirm collapse to the per-residue-type circular mean; ablate the feature blocks separately (residue identity, flanking sequence, experiment type, resolution); replace embeddings with random vectors of the same shape.",
+    "external_validation": "Temporal split on PDB_Release_Date (column verified); nucleic-acid structures deposited after the NDB snapshot of 2025-05-25; the paper's own filtered X-ray and NMR Supporting Data subsets; and microsecond-MD tetranucleotide torsions as an independently produced measurement of the same quantity."
+  },
+  "honest_claim_h3": "Given a nucleotide's residue type and immediate flanking sequence, the model predicts the backbone torsion angles and sugar pucker typical of that nucleotide as deposited in solved structures - a mixture of free and protein-bound DNA and RNA, crystal and NMR geometry, refined under force-field restraints - not its conformation in solution, and not its conformation when bound to a partner the model never sees.",
+  "plain_idea": {
+    "one_liner": "Use a nucleotide's neighbouring sequence to predict the measured twist and sugar shape of its DNA or RNA backbone.",
+    "train_on": "Each example is one nucleotide: its residue letter, the letters of its neighbours in the same chain, and experiment metadata (crystallography versus solution NMR, resolution, release year). The file claims 4,184,581 nucleotides from 9,923 structures; I verified 107,729 rows, 1,826 structures and 2,108 unique chain sequences in the 8 MB slice I decompressed.",
+    "predict": "Seven backbone torsion angles in degrees plus a nine-class sugar-pucker label. The true answer is computed geometrically from the atomic coordinates of experimentally solved structures (X-ray crystallography, solution NMR, a little neutron diffraction) deposited in the PDB and curated by the Nucleic Acid Database.",
+    "why_worthwhile": "Groups who build DNA/RNA force fields and modelling tools (including this paper's authors at Chemical Computing Group) currently use one average angle per helix family; knowing whether sequence context beats that average, and whether crystal-derived averages transfer to solution NMR geometry, changes which numbers they put in their models. Either outcome is informative."
+  },
+  "paper_type": "resource",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "4,184,581 experimental nucleotides from 9,923 structures is far more raw label than Deep DNAshape's molecular-dynamics training set of free-DNA fragments or SPOT-RNA-1D's few hundred non-redundant RNA chains, and the labels are measured rather than simulated. But effective diversity is much smaller than the row count: 75.1% of chains in my slice share a sequence with another chain and one dodecamer appears 100 times."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "NMR ensembles give a real per-site noise estimate (median within-site standard deviation 2.35 degrees for delta over 3,561 sites I measured) and repeated structures of the same oligonucleotide give between-lab spread, so calibrated intervals are supportable. But Deep DNAshape already outputs shape fluctuations alongside means, so this is not a clean gap."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "SPOT-RNA-1D is a 2021 dilated convolutional net on single sequences with 14-44 degree mean absolute error, and barely beats a fixed-helix predictor on some angles - beatable. RNA-TorsionBERT (2025) and DeepRNA-Twist (2025) are current language-model methods evaluated on non-redundant CASP-RNA-style benchmarks, and are not."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Two conditions fail: our experimental angles are not the same quantity Deep DNAshape was trained to predict (simulated free-DNA shape), and the published RNA models' non-redundancy splits cannot be reproduced on this table without rebuilding their filters, so our model would not be a strict superset of any baseline on the same split."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "The PDB/NDB itself - every nucleic-acid structure deposited after this dataset's 2025-05-25 snapshot carries the same computable angles (known resource); DNATCO v5.0 provides independent conformer-class annotations for PDB nucleic-acid structures (found by search); BIGNASim and the microsecond-ABC/hexABC consortium datasets hold the same torsions computed from molecular-dynamics simulations of all 136 unique tetranucleotide steps (found by search).",
+    "approx_items": null,
+    "join_key": "PDB identifier plus chain and residue number for the structural resources; the k-mer sequence string for the simulation tables",
+    "why": "New depositions give a free, genuinely external test set, and the simulation resources let us ask whether a model fit on experimental geometry agrees with the simulations that current sequence-to-shape predictors were trained on."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The same short oligonucleotide appears in many structures - 75.1% of chains in my slice share a sequence with another chain, and CGCGAATTCGCG appears in 100 of them - so a random split puts near-identical items on both sides.",
+      "Solution-NMR entries contain up to 40 models of the very same nucleotide, agreeing to about 2 degrees, so splitting rows at random leaks the answer almost exactly.",
+      "Sugar pucker, pseudorotation and amplitude are deterministic functions of nu0-nu4 and track delta closely, so using any of them as a feature for another is leakage by construction.",
+      "The ndb_category (helix family) label is a single Nucleic Acid Database annotation copied onto every nucleotide of a structure - I verified one value per structure in all 1,826 - so predicting it from one nucleotide's geometry mostly amounts to identifying the structure.",
+      "Release date, resolution and R-factor correlate with the depositing lab and refinement software, so those features can act as a proxy for structure identity rather than biology."
+    ],
+    "split": "Hold out whole sequence clusters: build the residue string per (PDB_ID, Chain) by sorting on UID, cluster identical and near-identical strings, and assign whole clusters (and therefore whole structures) to one fold. I built these sequences myself from the PDB_ID, Chain, UID and Residue columns in the file, so the grouping key is verified to exist. Keep one NMR model per site for training. Add two further evaluations: a temporal split on PDB_Release_Date (column verified, 1981-2022 in my slice) and a crystal-to-NMR transfer split on Experiment.",
+    "checks": [
+      "Shuffle torsion labels within each structure and confirm performance collapses to the per-residue-type circular mean.",
+      "Report, for every test chain, the sequence identity to its nearest training chain, and show accuracy as a function of it.",
+      "Train on delta alone, and on nu0-nu4 alone, to quantify how much of any pucker prediction is tautological.",
+      "Assert that no PDB_ID and no sequence cluster appears in two folds, and that no NMR site is split across folds."
+    ],
+    "verdict": "Manageable, but only with sequence-cluster grouping - a random row split on this file would produce a spectacular number that means nothing, because of the NMR ensembles and the repeated dodecamers."
+  },
+  "success_criteria": {
+    "metric": "Circular mean absolute error in degrees for delta and chi, plus macro-F1 for the nine-class sugar pucker, on held-out sequence clusters. Degrees are the right unit because the intended user puts these numbers into a conformational prior or refinement restraint, where the error in degrees is exactly what matters.",
+    "baselines": "Trivial: the per-residue-type and per-helix-family circular means, which the paper itself publishes as its Table 1 result. Stronger dummy: a per-trimer (and per-pentamer) circular-mean lookup table fit on the training folds. Published: SPOT-RNA-1D's 14-44 degree mean absolute error on its non-redundant RNA test sets, against 14-58 degrees for a fixed-helix predictor.",
+    "success": "At least 20% lower circular mean absolute error for delta and chi than the best trimer lookup table on held-out sequence clusters, and a crystal-trained model that loses under 5 degrees of mean absolute error when tested on solution-NMR sites.",
+    "noise_ceiling": 2.35,
+    "kill": "If after one week a trimer lookup table is within 10% of the model's circular mean absolute error, stop - that table is the paper's own published result and no model is needed."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nucleic Acids Research",
+      "why": "NAR publishes nucleic-acid structure resources and prediction servers; it would take a sequence-context model that clearly beats k-mer tables on experimental angles for both DNA and RNA, plus a usable predictor others can run."
+    },
+    "realistic": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "It publishes careful benchmarks and modest method papers; the likely result - a deduplicated experimental-conformation benchmark with a measured noise floor, a language-model head that beats a trimer table by a little, and a crystal-to-NMR transfer number - fits exactly."
+    },
+    "fallback": {
+      "journal": "Bioinformatics (application note) or a bioRxiv preprint with the released benchmark",
+      "why": "Even the negative outcome - sequence context adds nothing beyond a trimer average, and crystal-fit priors do not transfer to NMR geometry - is a publishable cautionary note for anyone fitting nucleic-acid force fields to PDB geometry."
+    }
+  },
+  "pitch": {
+    "headline": "4.18 million nucleotides from 9,923 structures in one CC-BY table: backbone angles in degrees, sugar pucker class, experiment type and release date.",
+    "what_makes_the_data_unusual": "Labels are experimental geometry, not simulation - every angle computed from deposited coordinates. NMR ensembles give a measured noise floor of 2.35 degrees for delta (3,561 sites), which I verified in the 107,729 rows I decompressed.",
+    "the_win": "Cut circular error for delta and chi by 20% below a trimer lookup table on held-out sequence clusters, and measure whether a crystal-trained conformational prior survives transfer to solution NMR geometry.",
+    "even_if_it_fails": "We learn that the paper's per-class average angles are already at the sequence-only ceiling, and we still release the first deduplicated, sequence-clustered experimental conformation benchmark with its noise floor measured.",
+    "who_wants_it": "Nucleic-acid force-field and modelling groups: this paper's own Chemical Computing Group authors, AMBER/OL parameter developers, and the DNATCO validation group deciding whether crystal and NMR geometry can be pooled."
+  },
+  "ml_idea": "Primary task: per-nucleotide prediction of experimental backbone torsions (alpha-zeta, chi) and nine-class sugar pucker from residue identity plus flanking sequence, using frozen RNA-FM embeddings for RNA chains and frozen DNABERT-2 / Nucleotide Transformer embeddings for DNA chains with a small per-residue head, evaluated on held-out sequence clusters against a per-trimer circular-mean lookup table. Two headline experiments that cannot produce a useless answer: (1) does sequence context beyond the trimer add anything on experimental labels, where Deep DNAshape answered yes only on molecular-dynamics data; (2) does a model fit on X-ray geometry transfer to solution-NMR geometry, which is the paper's own open observation. Alternative framings considered: predicting per-site conformational spread across NMR ensemble models as a flexibility label (label would have to be aggregated, and ensemble spread reflects restraint density more than real dynamics); and classifying the helix family, which is dead because ndb_category is a single structure-level annotation copied onto every nucleotide.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 1.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 3.0,
+    "embedding_hours": 1.0,
+    "cv_run_minutes": 30,
+    "compute_note": "Measured: 8,388,608 compressed bytes gave 30,725,006 CSV bytes (3.66x), so the full file is about 1.2 GB uncompressed; pandas parsed 107,729 rows in seconds. RAM and CV times are estimates for chunked reads plus a gradient-boosting or small-head baseline on roughly 1 million subset rows; embedding hours assumes a few thousand unique short chains, estimated, not timed.",
+    "cheapest_killing_check": "On the full CSV, fit per-residue and per-trimer circular-mean lookup tables for delta and chi on 80% of sequence clusters and score them on the held-out 20%. If the trimer table gains under about 0.02 in explained variance over the per-residue mean, sequence context carries nothing for a language model to exploit; if it is already near the 2.35-degree NMR noise floor, there is no headroom either way. Two hours of work."
+  },
+  "verdict": "park",
+  "verdict_reason": "Every Part A killer passes on the files, not just the paper: open CC-BY Zenodo deposit, labels already columns in stated degrees, units and missing-value encoding documented, 4.18 million rows, about 1.2 GB uncompressed, and a measured noise floor from NMR ensembles. It is genuinely model-ready and the evaluation story is unusually complete (temporal column, textbook positive control, crystal-to-NMR transfer). What holds it back is the ceiling rather than the data: RNA torsion prediction from sequence already has three recent open models (SPOT-RNA-1D, RNA-TorsionBERT, DeepRNA-Twist) with honest non-redundant benchmarks, DNA shape-from-sequence has Deep DNAshape, and the strongest plain-language risk is that the paper's own per-class average angles plus a trimer lookup table capture nearly all of the sequence-explainable variance - a third of these nucleotides sit in protein complexes whose conformation the sequence cannot determine. Park it as a well-scoped fallback project, and if it is picked up, run the trimer-table check first."
+}

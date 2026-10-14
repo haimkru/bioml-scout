@@ -1,0 +1,57 @@
+{
+  "paper_id": "nar2026-gkag817",
+  "title": "Imaging and mechanism of DNA-DNA recognition mediated by divalent ions.",
+  "doi": "10.1093/nar/gkag817",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://pure.york.ac.uk/portal/en/datasets/imaging-and-mechanism-of-dna-dna-recognition-mediated-by-divalent (DOI 10.15124/803e24ad-328f-4df8-8885-4736192bfc85)",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Opened the York Research Database landing page and read its file manifest: one deposit, one file, Velasco_Catley_data.tar.gz, 1.12 GB, licence CC BY, released 31 Jul 2026. Tried to fetch the archive (HEAD and a byte-range request): both returned HTTP 403 from a Cloudflare bot challenge ('cf-mitigated: challenge'), so no bytes of the archive were retrieved. Read the full open-access text, methods and data-availability statement from Europe PMC.",
+    "what_came_from_paper_text_only": "Everything about the contents: that the data are liquid atomic force microscopy (AFM, a scanning-probe technique that images single molecules on a surface) images of 339 bp linear DNA and DNA minicircles in NiCl2, CaCl2 or MgCl2, processed with TopoStats, plus all-atom molecular dynamics (MD) trajectories of DNA duplex pairs. Also from the text only: 'N = 3 independent replicates' per ion condition, four hand-defined pairing classes (mid-symmetric, mid-asymmetric, end-to-end, mid-to-end), and MD on a handful of duplex pairs (labelled pairs 1-2, 3-4 etc., two replicas each, averaged over the last 100 ns). Europe PMC reported the supplementary file package as too large to retrieve, so supplementary tables were never seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Single 1.12 GB tar.gz, CC BY, no login or application required, but every automated request returned HTTP 403 behind a Cloudflare bot challenge, so I could not open it; it also exceeds the 50 MB cap, so only metadata would have been recorded anyway. Marginal rather than a hard access failure."},
+    "a2_label_is_a_column": {"pass": false, "note": "No label column exists anywhere I could see. The prediction target (pairing / groove-to-groove alignment class) is a hand-assigned category drawn on figures from traced AFM images; it would have to be constructed from raw image stacks and MD trajectories. This is the decisive failure."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs would be raw AFM height images and MD coordinate files, which the archive is said to contain; the DNA sequence (339 bp fragment) is described in the paper, not verified in a file."},
+    "a4_units_stated": {"pass": true, "note": "Paper states units clearly throughout (nm for inter-groove distance, degrees for angle, mM for ion concentration, ns for simulation time); not verified in files."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "The modelling unit is tiny: N = 3 independent AFM replicates per each of 3 ion conditions, and roughly 8-10 MD simulations of duplex pairs. Even counting individual traced molecules the total is plausibly a few hundred images, far under the ~1,500-row bar, and no count was verified."},
+    "a6_fits_laptop": {"pass": true, "working_set": "1.12 GB compressed archive; AFM images subsettable to well under 5 GB", "note": "Size itself is laptop-feasible, though training an image model on it would want a GPU."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked at all: no file listing, no row counts, and the supplementary tables were not retrievable from Europe PMC."},
+    "a8_label_provenance": {"pass": false, "note": "The pairing label is a human visual categorisation of AFM images (and, for MD, a geometric quantity computed directly from the same coordinates that would be the features), so the label is either subjective or computable from the features - both A8 failure modes."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "TopoStats (open-source Python pipeline for automated AFM image processing and tracing, used by this paper)", "open_weights": true, "score_and_split": "Not a predictive model and reports no held-out score; it is the classical image-processing pipeline the authors ran.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "SimuScan (synthetic-data-driven deep-learning segmentation for AFM, Nature Communications)", "open_weights": null, "score_and_split": "Only the title and abstract-level description were seen in search results; no number or split retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DNAsight (machine-learning segmentation framework for AFM imaging of chromatin organisation, PMC13284722)", "open_weights": null, "score_and_split": "Search result only; no score or split retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "None appropriate; a DNA language model such as DNABERT-2 would see only one 339 bp sequence, and image backbones would see a few hundred AFM frames", "freeze_and_head_viable": false, "hardware": "CPU laptop could hold the data but there is nothing to fit", "licence": "Data CC BY, so licence is not the problem"},
+  "integration": {"partner_dataset": "None identified; the data carry no standard identifier (no UniProt, Ensembl, PDB or coordinate key) to join on", "join_key": "none", "bigger_question_one_sentence": "Cannot be written: there is no identifier in this dataset that links it to a large public resource."},
+  "controls": {"positive_control": "Would exist in principle (the model should recover the known ~6 nm AFM tip-convolution DNA width, and the known ranking Mg2+ > Ca2+ ~ Ni2+ for pairing), but with three replicates per condition it cannot be tested meaningfully.", "negative_control": "Label shuffling is runnable in principle but uninformative at this sample size.", "external_validation": "No second independent dataset of ion-mediated DNA-DNA pairing images was found."},
+  "honest_claim_h3": "At best: 'in 339 bp DNA fragments imaged by one pair of labs on mica under three divalent-ion buffers, a classifier can reproduce the authors' own hand-assigned pairing categories' - a claim about reproducing one lab's annotation of a few hundred images, not about DNA recognition.",
+  "plain_idea": {
+    "one_liner": "Use atomic force microscope images of touching DNA molecules to predict how two DNA duplexes pair under different salts.",
+    "train_on": "Height images of short DNA fragments lying on a mineral surface in magnesium, calcium or nickel buffer, plus simulated atom coordinates of two DNA helices side by side; the paper reports only 3 independent replicates per salt and roughly 8-10 simulations, and no verified image or molecule count.",
+    "predict": "Which of four hand-drawn pairing shapes a DNA pair shows (middle-symmetric, middle-asymmetric, end-to-end, middle-to-end), or the distance and angle between the two helices' minor grooves. The true answer comes from a human looking at the traced image, or from geometry computed on the same simulation coordinates.",
+    "why_worthwhile": "Biophysicists studying how chromosomes find their matching partner would want a way to score pairing automatically instead of by eye; if it failed, we would at least learn that this image set is too small and too hand-labelled to support it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The deposit is one 1.12 GB archive from two labs with 3 replicates per ion condition; deep-learning AFM segmentation work such as SimuScan already trains on large synthetic image sets."},
+    "confidence_score": {"answer": "no", "why": "Three replicates per condition cannot support a calibrated per-prediction confidence, and no replicate-level measurement table was verified."},
+    "models_beatable": {"answer": "partly", "why": "TopoStats is classical image processing with no learned model, so it would be beatable in principle - but the task here (classify pairing shape) has too few labelled examples to beat anything convincingly."},
+    "guaranteed_improvement": {"answer": "no", "why": "There is no baseline model for this exact task to run as ours, no shared join key to bring in extra data, and no common evaluation split; several conditions fail at once."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: classify or regress ion-mediated DNA-DNA pairing geometry (pairing class, inter-groove distance and angle) from AFM height images and MD coordinates, with ion type as a covariate. The target is a human-assigned category or a geometric quantity derived from the same coordinates, there are only 3 replicates per ion condition and about 8-10 simulations, and the deposit is a single 1.12 GB archive with no tabular feature/label file.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 1.12, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "No estimate possible: the archive could not be opened (Cloudflare 403), so file types, image dimensions and frame counts are unknown; GPU flagged because any image model on AFM frames would want one.", "cheapest_killing_check": "Count the individually traced DNA pairing events with a pairing-class label in the deposit. The paper reports N = 3 replicates per ion condition, so if that count is under ~1,500 the project is dead - and it almost certainly is."},
+  "verdict": "reject",
+  "verdict_reason": "No label column: the pairing class is a hand-drawn category on traced AFM images, and the geometric labels are computed from the very coordinates that would be features (A2 and A8 both fail). Sample size is the deeper problem - 3 replicates per ion condition and about 8-10 molecular dynamics runs, orders of magnitude under the row bar (A5). The 1.12 GB archive is also blocked by a Cloudflare challenge and exceeds the download cap, so nothing could be verified in the files. Excellent biophysics, not an ML dataset."
+}

@@ -1,0 +1,179 @@
+{
+  "paper_id": "cell2026-06-027",
+  "title": "Whole-transcriptome-scale isoform-resolved spatial imaging of single cells in tissues.",
+  "doi": "10.1016/j.cell.2026.06.027",
+  "journal": "Cell",
+  "data_url": "https://zenodo.org/records/20682863",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Read the Zenodo record (CC-BY-4.0, 8 files, 1.5-4.4 GB each) and its README. Opened cellxgene_ISO_labels.h5ad and cellxgene_WT_labels.h5ad directly over HTTP range requests with h5py (no full download): ISO = 129,563 cells x 32,684 features, 84,362,332 non-zero counts, of which 9,754 features are Ensembl mouse transcript IDs (ENSMUST, contiguous columns 0-9753) and 22,930 are gene symbols; WT = 146,863 cells x 22,930 genes with a logNormCounts layer; binned_ISO = 161,751 spatial bins x 32,684 features. Verified cell metadata: 36 cell-type labels with counts, 3 samples (5,6,7), 197 distinct numeric Allen CCF region codes (1.1% zero), no missing CCF coordinates, median cell volume 1,087 cubic micrometres. Resolved all 9,754 transcript IDs through the Ensembl REST API: 9,751 map to 4,304 genes, 3,892 genes have 2 or more measured isoforms (9,339 transcripts); biotypes 5,097 protein-coding, 2,983 retained-intron, 398 nonsense-mediated-decay, 303 long non-coding. Read the actual count matrix for 7,200 cells (49 MB of range reads): median 630 counts per cell, 23% of counts fall on isoform features, median 142 isoform counts per cell. Downloaded the paper's bulk RNA-seq transcript table from GEO (GSM9797113, 140,992 transcripts with TPM and length); 9,752 of the 9,754 imaged transcripts are present. Computed MERFISH-vs-bulk agreement myself on 7,538 transcripts in 3,060 genes: Spearman 0.66 for within-gene isoform fraction, 0.646 for log abundance. Measured how much isoform fraction varies across cell types: for 1,045 genes with 5+ cell types at 20+ counts, median standard deviation 0.069, with 26% of genes above 0.1 and 3.7% above 0.2.",
+    "what_came_from_paper_text_only": "The Cell version is paywalled with no PubMed Central copy and no retrievable supplement, so the probe-design details come from the open bioRxiv preprint (2025.08.27.672533): 6 encoding probes per isoform targeting isoform-unique sequence, male C57BL/6J mice at 14 weeks, and a stated 'high correlation' with bulk RNA-seq shown only as a figure panel rather than a number. The oligonucleotide probe sequences (Tables S1, S2) and the rule used to pick which 9,754 transcripts to image are behind the paywall and I did not see them. I did not open cell_boundaries.parquet (4.4 GB) or the two raw barcode parquet files (1.9-2.5 GB), so their row counts come from the README only."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 20682863, CC-BY-4.0, no login. I read real bytes out of two of the h5ad files and fully downloaded the GEO bulk table, so this is verified, not assumed."},
+    "a2_label_is_a_column": {"pass": true, "note": "Per-transcript molecule counts are literally feature columns (9,754 of them). The modelling target, the fraction of a gene's molecules coming from each isoform, is a group-by of those columns plus one standard Ensembl transcript-to-gene map (9,751/9,754 resolved, verified). This is the weakest killer here: it is a normalisation step, not a raw column."},
+    "a3_inputs_present": {"pass": true, "note": "Cell-context inputs (22,930 gene counts, cell type, Allen coordinates) are all in the same file. Sequence inputs are accessions, but one bulk Ensembl mouse cDNA FASTA covers all 9,754, and I already resolved every one in 11 batched API calls - not thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "README states units for every field: X = raw molecule counts, volume in cubic micrometres, coordinates in micrometres, Allen CCF coordinates; bulk table is TPM with transcript length. Verified against the file contents."},
+    "a5_enough_rows": {"pass": true, "n_rows": 129563, "note": "129,563 cells verified. The label table at (gene x cell type) level is ~2,948 genes x 36 cell types once a 20-count floor is applied (extrapolated from my 7,200-cell read); at (gene x cell type x region) level there are 522 groups with 50+ cells. Well over the 1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "392 MB download, ~1.5 GB in RAM as float32 sparse", "note": "Only cellxgene_ISO_labels.h5ad (392 MB, 84.4M non-zeros) is needed. I read it successfully in 1 MB chunks, so even streaming is an option. The 4.4 GB boundaries file is not needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Every headline number matches the file: paper's ~130,000 isoform-imaged cells = 129,563; ~150,000 gene-only cells = 146,863; ~23,000 genes = 22,930; ~33,000 RNAs = 32,684; ~10,000 isoforms for ~4,000 genes = 9,754 transcripts across 4,304 genes. Best count agreement I have seen in this queue."},
+    "a8_label_provenance": {"pass": true, "note": "Isoform counts are decoded fluorescent-spot measurements, not another model's output. Caveats to state: cell boundaries come from image segmentation, the 36 cell-type labels come from clustering (used as a grouping variable, not the label), and region codes come from computational registration to Allen CCF. Leakage trap: isoform columns 0-9753 and the host gene must be removed from the feature side, which is easy because those columns are contiguous (verified)."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "One h5ad holds counts, cell type, region and coordinates, but the label needs an external Ensembl transcript-to-gene map; verified both."},
+    "B2": {"score": 2, "why": "Standard AnnData h5ad; opened first try with h5py, even over HTTP range reads. Bulk CSV parsed first try."},
+    "B3": {"score": 2, "why": "Single assay, single lab, one codebook set; within-gene isoform fractions are self-normalising. Verified in the file."},
+    "B4": {"score": 1, "why": "No censored values, but low-count groups need a minimum-count policy: median 142 isoform counts per cell (measured)."},
+    "B5": {"score": 2, "why": "Cell IDs unique, features unique, no duplicate rows; only 202 of 9,754 transcripts were zero in my 4,000-cell sample."},
+    "B6": {"score": 1, "why": "README documents every column, but the 197 numeric Allen region codes are unexplained and probe tables are paywalled."},
+    "C1": {"score": 2, "why": "Informative either way: a negative means isoform usage is a fixed per-gene property, which is itself a result."},
+    "C2": {"score": 1, "why": "Open sequence-to-splicing models exist (Pangolin, SpliceTransformer, TrASPr, Isoformer, Borzoi) but none trained on in-situ single-cell isoform fractions."},
+    "C3": {"score": 2, "why": "Clear diversity plus unique-application angle: first measured spatial, cell-type-resolved isoform fractions; existing models are human bulk tissue."},
+    "C4": {"score": 2, "why": "The assay is bespoke and costly: custom 33,000-RNA probe libraries, one lab, 3 sections from 2 mice."},
+    "C5": {"score": 2, "why": "Dummy baselines are obvious (per-gene mean fraction, per-cell-type mean) and I already measured a 0.66 cross-assay ceiling."},
+    "D1": {"score": 2, "why": "Open-weight backbones match both input types: Nucleotide Transformer / HyenaDNA for transcript sequence, scGPT / Geneformer for cell profiles."},
+    "D2": {"score": 2, "why": "9,339 transcript embeddings computed once on CPU and cached, then a ridge or small head; no GPU needed."},
+    "D3": {"score": 2, "why": "Data is CC-BY-4.0 (verified on the Zenodo record); permissive backbone options exist (HyenaDNA, DNABERT-2) if a non-commercial model is unwanted."},
+    "E1": {"ok": true, "why": "Hold out whole genes (sequence-similarity clusters), the second mouse (sample 7), whole cell types, or whole Allen regions."},
+    "E2": {"ok": true, "why": "36 cell types, 184 regions with 50+ cells, 3,892 multi-isoform genes, 3 sections from 2 mice - verified counts."},
+    "E3": {"ok": true, "why": "Per-gene global isoform fraction and per-cell-type mean are both computable in one line; this is the real bar to beat."},
+    "E4": {"ok": true, "why": "I measured the noise floor: Spearman 0.66 MERFISH vs bulk isoform fraction, plus counting noise from per-group molecule counts."},
+    "E5": {"ok": true, "why": "Transcript length is in the bulk table (verified), so a length-from-sequence control is free; known brain isoform switches (Snap25, Bin1) are nameable in advance."},
+    "E6": {"ok": true, "why": "Shuffle isoform assignment within each gene; ablate sequence versus cell-context feature blocks; random-vector embeddings."},
+    "E7": {"ok": true, "why": "Bulk transcript TPM from the same paper (downloaded), plus published long-read mouse-brain isoform atlases and spatial isoform data (SiT)."},
+    "E8": {"ok": true, "why": "Preprint claims high MERFISH-vs-bulk isoform correlation as a figure; I reproduced it (Spearman 0.646 log abundance) on 7,200 cells."},
+    "G1": {"score": 2, "why": "Ensembl transcript IDs, gene symbols, Allen CCF coordinates and region codes all present in the file - verified."},
+    "G2": {"score": 2, "why": "Allen Brain Cell Atlas whole-mouse-brain MERFISH (9.3M cells, 1,122-gene panel) uses the same Allen CCF and gene symbols."},
+    "G3": {"score": 1, "why": "Transcript-to-gene is clean one-to-many (sum within gene); harmonising 36 cell-type labels to Allen taxonomy is fuzzier."},
+    "G4": {"score": 2, "why": "Answerable only jointly: can isoform usage be imputed brain-wide into a 9.3-million-cell gene-level atlas?"},
+    "H1": {"score": 2, "why": "Both outcomes recorded: high and near-zero isoform fractions, including 202 transcripts with zero counts - this is not a successes-only table."},
+    "H2": {"score": 1, "why": "36 cell types and 184 regions, but one lab, one assay, one species, 2 male 14-week mice, 3 coronal sections."},
+    "H3": {"score": 2, "why": "Honest claim writable in one sentence, with the 0.66 cross-assay ceiling and the multi-isoform-gene restriction both measured."},
+    "H4": {"score": 1, "why": "Preprint states the sectioning and unmeasured-isoform limits; the biotype skew (31% retained-intron) is only visible after mapping IDs yourself."},
+    "I1": {"score": 2, "why": "Named users: the Zhuang lab, Allen Institute / BICCN atlas teams, and the Pangolin and TrASPr splicing-code groups."},
+    "I2": {"score": 2, "why": "Either result redirects work: imputing isoform usage into existing atlases, or dropping isoform probes from panel budgets."},
+    "I3": {"score": 1, "why": "Users want 'which isoform dominates in this cell type'; fraction correlation is close but not identical to that yes/no call."},
+    "I4": {"score": 1, "why": "Honest risk: my probe shows the per-gene mean already explains most of the variation, so the dumb lookup is strong."},
+    "J1": {"score": 2, "why": "Frozen-backbone embeddings, grouped splits by gene and by animal, noise modelling, transfer test of published models."},
+    "J2": {"score": 1, "why": "Known marker isoforms give sanity checks, but judging brain-region isoform biology needs a neuroscience reader."},
+    "J3": {"score": 2, "why": "The cleaned cell-type-by-region isoform-fraction table is a useful resource even if every model fails."},
+    "J4": {"score": 2, "why": "Bounded at five weeks: one week to the label table (10 hours measured-ish), two weeks modelling, two weeks validation."},
+    "J5": {"score": 1, "why": "Kill condition is concrete (fewer than 300 genes passing the noise test) but not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Pangolin (Zeng & Li, Genome Biology 2022) - predicts splice-site usage per tissue from DNA sequence",
+        "open_weights": true,
+        "score_and_split": "Trained on four species including mouse, four tissues each; reported as improving on SpliceAI for tissue-specific splicing. In a later head-to-head its tissue-specific version reached correlation ~0.59 on changing splicing events.",
+        "authors_named_unsolved": "Tissue-level resolution only; no cell-type or spatial resolution, and limited ability to call which direction splicing changes between conditions.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TrASPr (eLife 2025) - transformer ensemble predicting tissue-specific percent-spliced-in from sequence",
+        "open_weights": true,
+        "score_and_split": "Trained on cassette exons across six human tissues from GTEx v8; reported correlation 0.83 for absolute splicing level and 0.68 for between-tissue change on changing events, beating SpliceAI, Pangolin and SpliceTransformer.",
+        "authors_named_unsolved": "Generalisation to unseen cellular conditions and to non-cassette-exon event types is named as the open frontier - exactly what cell-type-resolved in-situ data could test.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "SpliceTransformer (Nature Communications 2024) - tissue-specific splicing prediction from sequence",
+        "open_weights": true,
+        "score_and_split": "Human tissue-level splicing, evaluated on disease-linked variants; outperformed by TrASPr in the published comparison.",
+        "authors_named_unsolved": "Human-only, tissue-level; cell-type specificity not addressed.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Isoformer (NeurIPS 2024) - multi-modal DNA/RNA/protein encoders predicting transcript isoform expression across human tissues",
+        "open_weights": true,
+        "score_and_split": "Reported to predict differential transcript expression across human tissues better than prior methods; weights on HuggingFace. Split details not retrieved.",
+        "authors_named_unsolved": "Human bulk tissues only; no single-cell or spatial evaluation.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Borzoi (Nature Genetics 2024) - predicts RNA-seq coverage, including tissue/cell-type specificity, from DNA sequence",
+        "open_weights": true,
+        "score_and_split": "Trained on large human and mouse RNA-seq compendia; evaluated on held-out sequence regions. Not evaluated on in-situ isoform fractions.",
+        "authors_named_unsolved": "Cell-type resolution beyond bulk tissue tracks, and fine-grained isoform-level readout.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "SPLISOSM (Nature Biotechnology 2025) - statistical method for mapping spatially variable isoform usage in spatial transcriptomics",
+        "open_weights": null,
+        "score_and_split": "A detection/statistical-testing method rather than a predictive model; no predictive accuracy number applies.",
+        "authors_named_unsolved": "Detects where isoform usage varies in space but does not predict it from sequence or cell context - it is the tool a competitor would point at this dataset.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Spatial gene-imputation methods (Tangram, SpaGE, gimVI, stPlus, ENVI, SpaIM)",
+        "open_weights": true,
+        "score_and_split": "Benchmarked on small panels, typically 70/30 random gene splits on panels such as the 254-gene mouse motor cortex MERFISH set; Tangram reported with the worst mean squared error in one comparison.",
+        "authors_named_unsolved": "All are gene-level; none imputes isoform usage, and all were validated against panels of hundreds of genes rather than a measured whole transcriptome.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer v2-50M or HyenaDNA-small for transcript sequence (frozen embeddings of the isoform-unique region); optionally scGPT or Geneformer for the cell's 22,930-gene profile",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM; 9,339 transcript embeddings cached once (estimated 4-8 hours), then ridge or a small multilayer head in minutes",
+    "licence": "Data CC-BY-4.0 (verified on the Zenodo record). HyenaDNA and DNABERT-2 are permissively licensed; some Nucleotide Transformer checkpoints are non-commercial, so check the model card before any commercial use."
+  },
+  "integration": {
+    "partner_dataset": "Allen Brain Cell Atlas whole-mouse-brain MERFISH (Zhuang-ABCA-1 to -4): ~9.3 million cells, 1,122-gene panel, registered to Allen Mouse Brain Common Coordinate Framework v3",
+    "join_key": "Allen CCF coordinates / region identifier plus gene symbol (both present and verified in this dataset's cell metadata)",
+    "bigger_question_one_sentence": "Can a model trained on 129,563 isoform-resolved cells annotate which isoform each gene uses across a 9.3-million-cell, gene-level-only whole-brain atlas, giving the first brain-wide isoform-usage map without re-running the assay?"
+  },
+  "controls": {
+    "positive_control": "Two, both named in advance: (1) predict transcript length from the sequence embedding - the length column is in the bulk GEO table I downloaded, and this must come out near-perfect or the plumbing is broken; (2) recover textbook brain isoform switches such as Snap25 and Bin1 variants between neuronal and glial populations.",
+    "negative_control": "Shuffle which isoform a count belongs to within each gene (performance must fall to the per-gene mean); ablate the sequence block versus the cell-context block; replace embeddings with random vectors of the same shape; shuffle within cell type to confirm grouped cross-validation is really grouping.",
+    "external_validation": "Three levels: the paper's own bulk RNA-seq transcript table (GEO GSM9797113, 140,992 transcripts, downloaded - I measured Spearman 0.66 agreement on within-gene isoform fractions); published single-cell long-read mouse-brain isoform atlases (Joglekar et al., Booeshaghi et al. mouse motor cortex); and spatial isoform transcriptomics data from a different technology (SiT, Nucleic Acids Research 2023, mouse coronal sections)."
+  },
+  "honest_claim_h3": "Among the 3,892 adult mouse brain genes for which this assay imaged two or more isoforms, we can predict which isoform a given cell type or Allen brain region prefers - but only for the minority of genes whose usage varies beyond counting noise, only in 14-week-old male C57BL/6J brain from one lab's probe panel, and only up to the roughly 0.66 agreement ceiling I measured between this imaging assay and bulk RNA sequencing of the same tissue.",
+  "plain_idea": {
+    "one_liner": "Use an RNA's own sequence and a cell's gene-expression profile to predict which version of a gene that brain cell uses.",
+    "train_on": "129,563 single cells from three mouse brain sections (two animals), each with molecule counts for 22,930 genes plus 9,754 specific transcript versions; 3,892 genes have at least two versions measured, so a usage split is definable for them.",
+    "predict": "The fraction of a gene's molecules that come from each of its versions, in a given cell type or brain region. The true answer is counted fluorescent spots from imaging individual RNA molecules in intact tissue (MERFISH)."
+    ,
+    "why_worthwhile": "Groups building brain atlases measure genes but not gene versions; a working model would annotate version usage in millions of cells already collected, and a failure would establish that version usage is a near-fixed property of each gene rather than a cell-type decision."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "yes", "why": "Existing models were trained on bulk tissue: TrASPr on six human GTEx tissues, Pangolin on four tissues in four species. Ours is 9,339 transcripts measured in 129,563 individual cells across 36 cell types and 184 brain regions - a resolution no published splicing model has ever seen."},
+    "confidence_score": {"answer": "partly", "why": "Molecule counts per group give a direct beta-binomial noise model (I used it: median across-cell-type standard deviation 0.069 against a binomial floor of ~0.11 at 20 counts), and three sections from two mice give replicate agreement. But two animals is thin for calibrating between-animal uncertainty, and I could not confirm whether Pangolin or TrASPr report per-event confidence."},
+    "models_beatable": {"answer": "partly", "why": "Pangolin (2022, SpliceAI-style convolutional network, four bulk tissues) is old and coarse enough to beat at cell-type resolution. TrASPr (2025, BERT ensemble, correlation 0.83 across tissues) is strong on its own task - but none of these models has been evaluated at cell-type or spatial resolution, which is the gap rather than the contest."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the 'same quantity, same way' condition: Pangolin and TrASPr predict splice-site percent-spliced-in from DNA in human bulk tissue, while our label is imaged transcript counts in mouse single cells. Running them as our baseline requires constructing a mapping between the two quantities, so no improvement is guaranteed by construction."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Verified by download: the paper's own bulk RNA-seq transcript quantification (GEO GSM9797113, 140,992 transcripts with TPM, 9,752 of the 9,754 imaged transcripts present). Found by search, not downloaded: single-cell long-read mouse-brain isoform atlases (Joglekar et al. 2021/2024; Booeshaghi et al. 2021 mouse primary motor cortex), spatial isoform transcriptomics from Visium plus Nanopore (SiT, Nucleic Acids Research 2023), and Ensembl transcript annotation.",
+    "approx_items": 140992,
+    "join_key": "Ensembl mouse transcript identifier (ENSMUST), already the column name in the imaging data",
+    "why": "Transcript abundance is measured for essentially every mouse transcript by other assays, so the model can be trained here, checked against an independent measurement of the same quantity, and tested for whether in-situ imaging and sequencing agree about which isoform wins."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Nature Methods", "why": "Publishes methods that extract a new measurement layer from existing data; would need the model to impute isoform usage into the 9.3-million-cell Allen whole-brain atlas and hold up against long-read validation."},
+    "realistic": {"journal": "Genome Biology", "why": "Publishes computational analyses of new genomics resources; a quantitative map of where isoform usage varies across mouse brain cell types and regions, plus a sequence model that beats the per-gene mean on held-out genes, fits well."},
+    "fallback": {"journal": "Bioinformatics", "why": "Takes short benchmark and application notes; even the negative result - that published sequence-to-splicing models do not transfer to in-situ cell-type isoform fractions, with the 0.66 assay-agreement ceiling documented - is publishable there."}
+  },
+  "pitch": {
+    "headline": "129,563 single cells with 9,754 named transcript versions counted one molecule at a time in intact mouse brain, all registered to Allen coordinates.",
+    "what_makes_the_data_unusual": "Verified in the file: 32,684 features per cell, 9,754 of them Ensembl transcript IDs spanning 4,304 genes, CC-BY-4.0, with 84.4 million counted molecules. No other assay counts isoform usage in place at this scale.",
+    "the_win": "Beat the per-gene mean isoform fraction on held-out genes and a held-out mouse, approaching the Spearman 0.66 imaging-versus-sequencing ceiling I measured on 7,538 transcripts.",
+    "even_if_it_fails": "We learn that isoform usage in adult mouse brain is a near-fixed per-gene property, and we publish the named minority of genes that genuinely switch - my 7,200-cell probe already puts that at roughly a quarter.",
+    "who_wants_it": "The Zhuang lab and Allen Institute/BICCN atlas teams, plus the splicing-code groups behind Pangolin and TrASPr; it decides whether isoform probes are worth the panel budget in future atlases."
+  },
+  "ml_idea": "Build a cell-type-by-region isoform-usage table from cellxgene_ISO_labels.h5ad: for each of the 3,892 genes with two or more imaged isoforms, the fraction of that gene's molecules on each isoform, in each of 36 cell types and 184 Allen regions (522 sample-by-cell-type-by-region groups have 50+ cells). Predict those fractions from (a) frozen sequence embeddings of the isoform-unique region using Nucleotide Transformer or HyenaDNA and (b) the cell group's expression of RNA-binding proteins and splicing factors, taken from the same 22,930 gene columns with the isoform columns and the host gene removed to avoid leakage. Evaluate against the per-gene mean fraction (the real bar) under splits that hold out gene clusters, the second mouse, and whole cell types; then test whether published sequence-to-splicing models transfer, and whether the model's predictions can be pushed onto the Allen 9.3-million-cell gene-level atlas.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 6,
+    "cv_run_minutes": 20,
+    "compute_note": "Grounded in measurements I made: the needed file is 392 MB with 84,362,332 non-zeros (about 1 GB as float32 sparse), and I read 49 MB of it for 7,200 cells in roughly three minutes over HTTP range requests. Embedding hours are an estimate only (9,339 transcripts through a small nucleotide language model on CPU); cross-validation minutes are an estimate for ridge or gradient boosting on ~100,000 rows of cached embeddings.",
+    "cheapest_killing_check": "On the full 129,563 cells, count how many of the 3,892 multi-isoform genes vary in isoform fraction across the 36 cell types by more than a beta-binomial counting-noise model allows. My 7,200-cell probe gave a median across-cell-type standard deviation of 0.069 with only 26% of genes above 0.1 - at that sampling depth the binomial noise floor alone is about 0.11, so the signal is not yet separable. If fewer than about 300 genes survive the noise test on the full data, there is nothing to predict and the project dies in a day."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "Everything structural is excellent and verified by opening the files: CC-BY-4.0 Zenodo download, one 392 MB AnnData file with 129,563 cells by 32,684 features, every paper headline count matching the data exactly (129,563 cells, 22,930 genes, 9,754 transcripts across 4,304 genes), 3,892 genes with two or more imaged isoforms, a documented README, standard Ensembl and Allen identifiers, an independent bulk RNA-seq measurement of the same quantity in GEO against which I already measured Spearman 0.66, and no existing model trained on in-situ cell-type-resolved isoform usage. The one real doubt is signal size, not data quality: on a 7,200-cell subset the across-cell-type standard deviation of isoform fraction was a median 0.069 with just 26% of genes above 0.1, which at that depth is below the counting-noise floor. Download the 392 MB file, run the beta-binomial overdispersion test on all 129,563 cells, and if 300 or more genes show cell-type isoform switching beyond noise, start immediately; if not, publish the negative table and stop."
+}

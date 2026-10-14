@@ -1,0 +1,104 @@
+{
+  "paper_id": "cellgen2026-101367",
+  "title": "Single-cell multiomics across nine mammals reveals cell-type-specific regulatory conservation in the brain.",
+  "doi": "10.1016/j.xgen.2026.101367",
+  "journal": "Cell Genomics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE303045",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found GEO SuperSeries GSE303045 by GEO search (paper has no PMC full text). Downloaded and parsed the three MPRA (massively parallel reporter assay) result tables from GSE303114 (HEK293FT 17,287 rows; NPC 16,972; Neuron 17,495; 9 columns, no missing values). Non-control tiles: 14,683 / 14,411 / 14,872; 14,371 shared by all three; ~2,600 scrambled controls per cell type. Tiles are labelled only by hg38 start coordinate, spaced 90 bp apart, and group into 768 regions (median 19 tiles each). 2,206 NPC tiles have pval.mad<0.05; 696 of 768 regions have at least one such tile. Spearman correlation of activity between NPC and neuron is 0.26, and between NPC and HEK 0.22. GEO sample records say MPRAflow + MPRAnalyze, hg38, 3 DNA and 3 RNA replicates per cell type. Opened the 289,266-nucleus metadata CSV (9 species, 8 broad classes, 22 subclasses). Listed file sizes: multiome RAW tar 27 GB (per-sample h5 files 50–150 MB, fragment files 0.8–3.5 GB); bulk NeuN ATAC narrowPeak files 6–7 MB.",
+    "what_came_from_paper_text_only": "From the bioRxiv preprint (2025.08.06.668931): 750 tested cCREs (candidate cis-regulatory elements), 725,776 peaks across species, 213,367 human peaks, per-species nucleus counts, and ChromBPNet used for motif discovery. I did not see the MPRA tile length; it is not in the result files, so it has to come from the paper or the 86 MB barcode-association file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: the GEO GSE303114 MPRA tables (~1 MB each) downloaded with no login."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: the 'statistic' column (MPRAnalyze's estimate of reporter RNA over DNA, i.e. activity) plus empirical p-values per tile. No construction needed for activity regression."},
+    "a3_inputs_present": {"pass": true, "note": "Partly: no sequences in the files, only hg38 start coordinates. One-time extraction from the hg38 genome is easy, but the tile length must be taken from the paper or the association file."},
+    "a4_units_stated": {"pass": true, "note": "Activity is a unitless MPRAnalyze RNA/DNA ratio; GEO names the method and assembly (hg38). The columns have no data dictionary."},
+    "a5_enough_rows": {"pass": true, "n_rows": 14411, "note": "Checked: 14,411 labelled NPC tiles, but only 768 independent regions. The effective sample size for generalisation is closer to 768."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~3 MB of tables plus ~1 GB hg38 FASTA for sequence extraction", "note": "The MPRA project is tiny. The cross-species atlas itself (27 GB raw) is not part of the proposed task."},
+    "a7_counts_match_paper": {"pass": true, "note": "Checked: 768 tiled regions in the files versus about 750 cCREs in the preprint. That is close enough given control and edge regions."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a wet-lab reporter measurement (barcode RNA and DNA counts), not a model output, and it is independent of the sequence features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three per-cell-type tables join on the coordinate label; sequences need a separate hg38 extraction step (seen in files)."},
+    "B2": {"score": 2, "why": "Gzipped TSVs parsed first try with pandas; no missing values (checked)."},
+    "B3": {"score": 1, "why": "One assay and one pipeline, but activity scales differ by cell type (neuron max 121 vs NPC 10.6); needs per-cell z-scoring."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; every tile has a numeric statistic (checked)."},
+    "B5": {"score": 1, "why": "No duplicate labels, but tiles overlap at 90 bp steps, so neighbouring rows share sequence. Must group by region."},
+    "B6": {"score": 1, "why": "Column names are self-explanatory MPRAnalyze outputs; there is no data dictionary and tile length is missing from files."},
+    "C1": {"score": 1, "why": "A transfer test of existing cortex MPRA models on these held-out neural tiles is informative either way; a new model alone isn't."},
+    "C2": {"score": 0, "why": "Open MPRA activity models exist (MPRALegNet; developing-cortex lentiMPRA models; DNA language-model benchmarks on NPC data)."},
+    "C3": {"score": 1, "why": "Weak 'unique application': a tiled, conservation-stratified neural MPRA set used as external test, plus within-element tile peak localisation."},
+    "C4": {"score": 2, "why": "MPRA in iPSC-derived neurons is costly wet-lab work; the predictions would prioritise which elements to test."},
+    "C5": {"score": 1, "why": "The preprint reports no prediction number. The baselines are obvious ones: a per-region mean, plus zero-shot scores from published models."},
+    "D1": {"score": 2, "why": "Open DNA backbones fit: Nucleotide Transformer, DNABERT-2, HyenaDNA; Borzoi or Enformer as zero-shot scorers."},
+    "D2": {"score": 2, "why": "~14.4k short tiles; caching small-checkpoint embeddings once on CPU is feasible."},
+    "D3": {"score": 1, "why": "Mixed licences: DNABERT-2 is Apache; Nucleotide Transformer is CC BY-NC-SA. GEO data has no use restrictions."},
+    "E1": {"ok": true, "why": "Group split by region (768 tiled regions) or by chromosome prevents overlapping-tile leakage."},
+    "E2": {"ok": true, "why": "768 regions across 20+ chromosomes allow many held-out groups."},
+    "E3": {"ok": true, "why": "Per-region mean and global mean are computable from the tables."},
+    "E4": {"ok": false, "why": "Processed tables hold no per-replicate values; replicates exist only as raw reads in SRA."},
+    "E5": {"ok": true, "why": "~2,600 scrambled controls per cell type should score inactive; HEK vs neuron cell-type specificity is a known effect."},
+    "E6": {"ok": true, "why": "Label shuffling within and across regions is straightforward."},
+    "E7": {"ok": true, "why": "Independent neural MPRA sets exist (developing-cortex lentiMPRA, Science 2024; human-accelerated-region MPRAs in NPCs)."},
+    "E8": {"ok": false, "why": "The paper publishes no prediction metric to reproduce, only activity calls."},
+    "G1": {"score": 2, "why": "hg38 genomic coordinates for every tile (seen in files)."},
+    "G2": {"score": 2, "why": "ENCODE cCREs and the developing-cortex lentiMPRA dataset, joinable on hg38 coordinates; Zoonomia alignments for conservation."},
+    "G3": {"score": 1, "why": "Interval overlaps are manageable but one-to-many (tiles to peaks)."},
+    "G4": {"score": 1, "why": "Combined question: do sequence models trained on cortex accessibility/MPRA transfer to conserved versus human-specific elements equally? Marginal novelty."},
+    "H1": {"score": 2, "why": "Inactive tiles and scrambled controls are both reported (checked: most tiles are not significant)."},
+    "H2": {"score": 1, "why": "One lab, one iPSC line (KOLF2.1J) plus HEK293FT; elements preselected from snATAC peaks."},
+    "H3": {"score": 2, "why": "The claim can be stated in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 1, "why": "The element selection by conservation class is described in the preprint; replicate noise is not."},
+    "I1": {"score": 1, "why": "Neural MPRA and enhancer-evolution groups (HudsonAlpha Cooper/Cochran labs; Pollard and Ahituv labs); no one has a specific stated need."},
+    "I2": {"score": 1, "why": "Could guide which conserved or human-specific elements to test next; marginal."},
+    "I3": {"score": 1, "why": "Spearman correlation and active-tile AUROC roughly match the 'which element to test' decision."},
+    "I4": {"score": 1, "why": "The sequence-to-activity mapping is genuinely complex, but this small, noisy set may not support more than linear probes."},
+    "J1": {"score": 2, "why": "Real modelling: DNA embeddings, grouped splits, zero-shot transfer evaluation."},
+    "J2": {"score": 1, "why": "Scrambled controls give a sanity check; judging biological plausibility needs regulatory-genomics input."},
+    "J3": {"score": 2, "why": "A zero-shot benchmark of existing models is shareable on its own."},
+    "J4": {"score": 1, "why": "Roughly 1–2 weeks; not yet written down."},
+    "J5": {"score": 0, "why": "No kill date set yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "MPRALegNet (Agarwal et al., Nature 2025)", "open_weights": true, "score_and_split": "Trained on ~680,000 lentiMPRA sequences in HepG2, K562 and WTC11 cells; I did not retrieve the exact per-cell scores.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Developing-cortex lentiMPRA deep learning model (Science 2024, 'Massively parallel characterization of regulatory elements in the developing human cortex')", "open_weights": null, "score_and_split": ">100,000 elements in mid-gestation cortical cells and organoids; I did not retrieve the score or split.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DNA language models (HyenaDNA, DNABERT-2, Nucleotide Transformer, GENA-LM) benchmarked on NPC lentiMPRA activity (from search summary)", "open_weights": true, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 or Nucleotide Transformer (small checkpoint), frozen embeddings plus ridge head; Borzoi/Enformer zero-shot", "freeze_and_head_viable": true, "hardware": "Laptop CPU", "licence": "DNABERT-2 Apache-2.0; Nucleotide Transformer CC BY-NC-SA"},
+  "integration": {"partner_dataset": "Developing-cortex lentiMPRA (Science 2024) and ENCODE cCRE registry", "join_key": "hg38 genomic coordinates", "bigger_question_one_sentence": "Do sequence-to-activity models trained on large neural MPRA libraries predict activity equally well for deeply conserved and human-specific brain enhancers?"},
+  "controls": {"positive_control": "~2,600 scrambled sequences per cell type must score at the bottom; HEK293FT versus neuron cell-type differences should be partly recovered.", "negative_control": "Shuffle activity labels within and across regions; random-noise embeddings.", "external_validation": "Developing-cortex lentiMPRA (Science 2024) and NPC MPRA of human accelerated regions, joined on hg38 coordinates."},
+  "honest_claim_h3": "Predicts reporter activity, in one iPSC-derived NPC/neuron line, of 90-bp-stepped tiles from ~768 snATAC-selected cortex elements chosen to span conservation classes, not activity in native chromatin.",
+  "plain_idea": {
+    "one_liner": "Use short human DNA pieces from brain regulatory regions to predict how strongly each switches on a reporter gene in lab-grown neurons.",
+    "train_on": "DNA sequence of each tile (extracted from the human genome by coordinate); 14,411 tiles from 768 regions in NPCs (neural progenitor cells), verified.",
+    "predict": "Reporter activity (RNA barcode counts over DNA counts) measured by massively parallel reporter assay in NPCs, neurons and HEK293FT kidney cells.",
+    "why_worthwhile": "It tests whether existing activity models generalise to conserved versus human-specific brain enhancers. Even a failure shows where those models are blind."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "14,411 tiles from 768 regions, versus ~680,000 sequences (Agarwal 2025) and >100,000 elements (cortex lentiMPRA 2024)."},
+    "confidence_score": {"answer": "no", "why": "Processed tables have no per-replicate values, so a noise model needs SRA reads reprocessed."},
+    "models_beatable": {"answer": "no", "why": "MPRALegNet (2025) and the cortex lentiMPRA model (2024) are recent CNNs trained on far more data; training on 768 regions won't beat them."},
+    "guaranteed_improvement": {"answer": "no", "why": "The new data is a different MPRA library in different cells, so the same-quantity, same-split condition fails."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Neural MPRA activity from the developing-cortex lentiMPRA (Science 2024) and from NPC MPRAs of human accelerated regions (Neuron 2023); ENCODE lentiMPRA for non-neural lines (Agarwal 2025, Zenodo 13908857). All known from search results; not opened.", "approx_items": null, "join_key": "hg38 genomic coordinates (interval overlap)", "why": "Other neural MPRA sets allow training on large data and testing on this one, or the reverse, but different libraries and constructs make the values only roughly comparable."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "It publishes benchmarks. It would take a clear, reproducible gap in transfer performance between conserved and human-specific elements across several models."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "It publishes evaluation notes on regulatory models, and it ran 'Challenges in predicting chromatin accessibility differences between species' (2026)."},
+    "fallback": {"journal": "bioRxiv preprint plus MLCB (Machine Learning in Computational Biology) workshop", "why": "A negative transfer result on a small held-out neural MPRA set still makes a benchmark note."}
+  },
+  "pitch": {
+    "headline": "A clean, open neural reporter-assay test set: 14,371 tiles measured in neural progenitors, neurons and kidney cells, labelled by conservation class.",
+    "what_makes_the_data_unusual": "Each of 768 elements is tiled at 90 bp steps and tested in three cell types with ~2,600 scrambled controls each. Elements were picked to span conservation across nine mammals (selection per preprint).",
+    "the_win": "Show that published activity models rank conserved elements well but score human-specific ones near chance (Spearman correlation, region-grouped). No published number exists to beat.",
+    "even_if_it_fails": "We learn whether NPC and neuron activity, which correlate only 0.26 with each other in these files, are predictable from sequence at all at this scale.",
+    "who_wants_it": "Enhancer-evolution and neural MPRA groups (Cooper/Cochran at HudsonAlpha, Pollard and Ahituv labs) choosing which human-specific elements to test next."
+  },
+  "ml_idea": "Zero-shot transfer benchmark: score the 14.4k hg38 tiles with open models (MPRALegNet, Borzoi, DNABERT-2 embeddings plus ridge) and report region-grouped Spearman correlation per cell type, stratified by conservation class. Also test whether the models localise the peak-activity tile within each element.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 1.5, "cv_run_minutes": 2, "compute_note": "Estimated only: 14.4k tiles of a few hundred bp through a ~100M-parameter DNA model at a few tiles per second on CPU; ridge cross-validation is trivial.", "cheapest_killing_check": "Get the conservation-class label for each of the 768 regions (needed for the main stratified question; it is not in the GEO tables). If it is not in the supplement, the core question can't be asked."},
+  "verdict": "park",
+  "verdict_reason": "Data are open, clean and small. But the field is crowded with open MPRA models trained on 10–50× more data, there are only 768 independent regions, and the conservation-class labels needed for the interesting question are not in the GEO files. Best used as an external test set for another project."
+}

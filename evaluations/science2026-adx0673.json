@@ -1,0 +1,54 @@
+{
+  "paper_id": "science2026-adx0673",
+  "title": "Human body single-cell atlas of three-dimensional genome organization and DNA methylation.",
+  "doi": "10.1126/science.adx0673",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE326618",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "GEO GSE326618 series and sample records plus the full filelist.txt: 512 files, one ALLC (per-base methylation table, ~4.3 GB) and one chromatin-contact tarball (~0.9 GB) per sequencing plate. Total 1.43 TB, in a single 1.3 TB RAW.tar. No cell metadata table, cell-type annotation file or processed cell-by-feature matrix is in GEO. Sample metadata gives tissue only. Zenodo 10.5281/zenodo.19394035 is the code record (CC-BY-4.0) and lists no files. The Arc portal (humancellepigenomeatlas.arcinstitute.org) is an interactive Dash browser with no download links visible in the HTML.",
+    "what_came_from_paper_text_only": "86,689 nuclei, 16 tissues, 2 donors per organ, 35 major and 206 cell subtypes: taken from the abstract and the GEO summary. Full text was not retrievable (Europe PMC returned HTTP 500) and the supplement was not retrievable."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public GEO, no login needed. But the only files are per-plate raw-level ALLC and contact files, 1.43 TB in total (checked in filelist.txt)."},
+    "a2_label_is_a_column": {"pass": false, "note": "No per-cell cell-type annotation table in GEO (checked the filelist). The files are pooled per plate, so cells would first have to be demultiplexed and clustered, meaning the label would have to be built from scratch."},
+    "a3_inputs_present": {"pass": true, "note": "Methylation calls and contacts are present at base-pair resolution on hg38 (the human reference genome), per the GEO sample record."},
+    "a4_units_stated": {"pass": true, "note": "The ALLC columns (methylated calls, total calls) and the contact-file columns are documented in the GEO data-processing field."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "86,689 nuclei according to the paper. Not counted, because the files are too large to open."},
+    "a6_fits_laptop": {"pass": false, "working_set": "1.43 TB raw; no processed matrix available", "note": "Each plate's ALLC file alone is ~4.3 GB. Building a cell-by-region matrix means streaming about 1.4 TB, which is far beyond the 50 MB download cap and the ~5 GB working-set limit."},
+    "a7_counts_match_paper": {"pass": true, "note": "256 plates across 16 tissue groups are consistent with the design. Cell counts could not be checked."},
+    "a8_label_provenance": {"pass": false, "note": "The cell-type labels come from clustering the same methylation and contact data, so predicting them from those features would be circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Higashi (hypergraph model for single-cell Hi-C, a method that maps chromatin contacts in individual cells)", "open_weights": true, "score_and_split": "Embeds and imputes single-cell Hi-C. Already applied to snm3C-seq (joint methylation and chromatin-contact sequencing) from human prefrontal cortex. Scores not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "scHiClassifier (deep-learning cell-type classifier for single-cell Hi-C)", "open_weights": null, "score_and_split": "Cell-type prediction from single-cell Hi-C features. Only the abstract listing was seen.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DeepCpG (neural network that imputes single-cell methylation)", "open_weights": true, "score_and_split": "Imputes single-cell CpG methylation (methylation at cytosines followed by guanine) across five cell types (2017).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "none suitable (no open single-cell methylation or contact foundation model that fits a laptop)", "freeze_and_head_viable": false, "hardware": "Cluster-scale preprocessing of 1.4 TB", "licence": "GEO public; code CC-BY-4.0"},
+  "integration": {"partner_dataset": "ENCODE/EN-TEx bulk epigenomes from the same donors (the Salk portal is named human_entex)", "join_key": "donor ID + tissue + hg38 coordinates", "bigger_question_one_sentence": "Do cell-type-specific methylation and 3D contacts explain the tissue-level signals measured in bulk on the same donors?"},
+  "controls": {"positive_control": "Neuron versus non-neuron separation from non-CG methylation (methylation at cytosines not followed by guanine) in motor cortex.", "negative_control": "Shuffle cell labels.", "external_validation": "Human brain snm3C-seq atlas (Science 2023, adf5357)"},
+  "honest_claim_h3": "Any model would recover cell clusters defined from the same 2-donor-per-tissue methylation and contact data, not an independent biological label.",
+  "plain_idea": {
+    "one_liner": "Use single-cell DNA methylation and 3D chromatin contacts across 16 human tissues to predict each cell's type.",
+    "train_on": "Per-cell methylation levels and contact maps for about 86,689 nuclei (paper's count; unverified). These are stored as 1.4 TB of per-plate raw files.",
+    "predict": "Cell type, which the authors assigned by clustering the same methylation and contact data. That makes the label circular.",
+    "why_worthwhile": "It would give a body-wide reference classifier for epigenomes. But without released per-cell labels and matrices, the work is preprocessing a terabyte of data, not modelling."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "16 tissues versus the brain-only snm3C-seq data used with Higashi. But it is only 2 donors per tissue, and none of it is in model-ready form."},
+    "confidence_score": {"answer": "no", "why": "With 2 donors per tissue, there is too little donor-level replication to calibrate confidence."},
+    "models_beatable": {"answer": "partly", "why": "DeepCpG (2017) is old. Higashi (2021) is open and is the standard tool. No honest held-out-tissue benchmark was found."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model was trained on a matched task with the same split, and the labels are derived from the features."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify cell types or impute contacts from single-cell methylation across 16 tissues. Blocked by the 1.4 TB raw-only release and labels derived from clustering.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 1430, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from the GEO filelist sizes only; nothing was timed.", "cheapest_killing_check": "Check whether the Salk or Arc portals offer a per-cell metadata table with cell-type labels plus a cell-by-region methylation matrix under 5 GB. If not, the project is dead."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A6, A2 and A8. GEO holds only 1.43 TB of per-plate raw ALLC and contact files, with no per-cell label table or processed matrix. The cell-type labels come from clustering the same features."
+}

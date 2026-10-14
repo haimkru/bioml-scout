@@ -1,0 +1,104 @@
+{
+  "paper_id": "gb2026-04124-9",
+  "title": "Interpretable distillation reveals that deep learning splicing models suffer from pervasive confounders and blind spots.",
+  "doi": "10.1186/s13059-026-04124-9",
+  "journal": "Genome Biology",
+  "data_url": "https://github.com/regev-lab/splicing-interpretable-distillation (data/ folder; Zenodo 10.5281/zenodo.20303018, 587 MB zip)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 4 GitHub LFS (large file storage) files. Liao_2023_SplicingPredictions.csv.gz (42 MB): 239,772 rows, 37 columns, unique 70-nt exon sequences, measured PSI (fraction of reads including the exon) with raw read counts (median 168 reads), no missing values; PSI is bimodal (16% exactly 0, 6% exactly 1, median 0.90). Same table holds SpliceAI, Pangolin and AlphaGenome scores; I computed their Pearson correlation with PSI as 0.846, 0.805 and 0.841. Chong_2019 (MFASS, 31,031 rows: 27,733 mutant, 2,339 natural, 959 control; hg19/hg38 coordinates and Ensembl exon IDs). Baeza_Centurion_2025: 5,976 indel/substitution variants with psi on a 0–100 scale. Zenodo listing: one 587 MB zip.",
+    "what_came_from_paper_text_only": "That PSI in the Liao library was measured by RNA-seq in a reporter with fixed flanking context; that MFASS inclusion comes from fluorescence sorting; the published per-assay correlations (Liao 0.83–0.86, FAS exon 6 0.81–0.88, MFASS 0.37–0.44). I did not open the GEO raw data or the FAS exon 6 table (not in repo listing), and did not check the Liao 2023 PNAS model's reported score."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public GitHub LFS files and Zenodo, no login; verified by download."},
+    "a2_label_is_a_column": {"pass": true, "note": "Measured PSI is a column ('PSI' in Liao table, 'psi' in Baeza-Centurion, 'v2_index'/'v1_index' in MFASS); verified in files."},
+    "a3_inputs_present": {"pass": true, "note": "Full exon sequences present as strings in every table; flanking reporter context is in Lib2.gbk in the repo (not opened)."},
+    "a4_units_stated": {"pass": true, "note": "PSI is a fraction 0–1 in Liao/MFASS and a percentage 0–100 in Baeza-Centurion (seen in files); the scale differs across tables and must be rescaled."},
+    "a5_enough_rows": {"pass": true, "n_rows": 239772, "note": "239,772 labelled synthetic exons, plus 31,031 MFASS and 5,976 indel rows for transfer tests; counted in files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~60 MB compressed, a few hundred MB in pandas", "note": "Loaded all three tables in pandas on the laptop without trouble."},
+    "a7_counts_match_paper": {"pass": true, "note": "MFASS 27,733 variants matches the Chong 2018 abstract; paper's '16,469 MFASS sequences' is a filtered subset of the 31,031-row file, not checked exactly. Liao count not stated in the text I read."},
+    "a8_label_provenance": {"pass": true, "note": "PSI comes from RNA-seq read counts in a reporter assay (counts present as columns), not from a model. The deep-model score columns and distillation_test.csv are model outputs and must be used only as features/baselines, never as labels."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One 239,772-row table with sequence, label and three baseline-model scores; seen in file."},
+    "B2": {"score": 2, "why": "gzip CSV parsed with pandas on first try, zero missing values in Liao table."},
+    "B3": {"score": 1, "why": "Within Liao one assay; across tables PSI scales differ (0–1 vs 0–100) and MFASS uses fluorescence."},
+    "B4": {"score": 1, "why": "No censoring markers, but 22% of PSI sits exactly at 0 or 1 (floor/ceiling), seen in file."},
+    "B5": {"score": 2, "why": "Zero duplicate exon sequences in Liao table, checked."},
+    "B6": {"score": 1, "why": "data/README cites sources; column meanings mostly self-explanatory but no data dictionary."},
+    "C1": {"score": 1, "why": "Transfer synthetic→natural exons is informative either way; in-library accuracy alone needs to beat Liao 2023."},
+    "C2": {"score": 0, "why": "Liao 2023 PNAS open interpretable model on same library, plus this paper's open distilled models and SpliceAI/Pangolin/AlphaGenome."},
+    "C3": {"score": 1, "why": "Weak 'better' angle: deep models miss RNA structure and CpG confounders named here; fixing them is the hook."},
+    "C4": {"score": 1, "why": "Splicing reporter assays are lab-based, but deep-model predictions are already cheap."},
+    "C5": {"score": 2, "why": "Published correlations 0.83–0.86 (Liao) and 0.37–0.44 (MFASS); score columns already in files."},
+    "D1": {"score": 2, "why": "RNA-FM and Nucleotide Transformer are open-weight; SpliceAI/Pangolin open too."},
+    "D2": {"score": 2, "why": "70-nt exons plus flanks: embeddings for 240k sequences cacheable on CPU in hours."},
+    "D3": {"score": 1, "why": "Repo GPLv3; SpliceAI scores under its own licence and AlphaGenome outputs non-commercial terms."},
+    "E1": {"ok": true, "why": "Hold out whole assays (train Liao, test MFASS/Baeza-Centurion), or sequence-cluster splits within Liao."},
+    "E2": {"ok": true, "why": "Three independent assays plus 2,198 MFASS exon backgrounds as groups."},
+    "E3": {"ok": true, "why": "Global mean PSI and existing deep-model scores are ready-made baselines."},
+    "E4": {"ok": true, "why": "Read counts per exon give binomial noise; MFASS has R1/R2 replicate columns."},
+    "E5": {"ok": true, "why": "Splice-site strength (MaxEnt-style scores) and GC/hexamer effects known to drive inclusion must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation (sequence vs structure vs model scores) straightforward."},
+    "E7": {"ok": true, "why": "MFASS (Chong 2018) and Baeza-Centurion 2025 indels are independent labs and assays, in repo."},
+    "E8": {"ok": true, "why": "Paper's per-assay correlations recomputable from provided columns; I got 0.846 for SpliceAI on Liao."},
+    "G1": {"score": 2, "why": "MFASS has Ensembl exon IDs and hg38 coordinates; Liao library is synthetic (no IDs)."},
+    "G2": {"score": 1, "why": "Vex-seq/MaPSy splicing MPRAs and SpliceVarDB plausible, joinable only via coordinates for natural exons."},
+    "G3": {"score": 1, "why": "Coordinate joins workable for MFASS; synthetic exons do not join to anything."},
+    "G4": {"score": 1, "why": "Combining MPRAs asks whether synthetic-exon training improves natural-variant prediction; modest beyond what exists."},
+    "H1": {"score": 2, "why": "Full PSI range including 16% fully skipped exons; negatives systematically measured."},
+    "H2": {"score": 1, "why": "Three assays, but each one cell line and one reporter context; Liao exons are random synthetic."},
+    "H3": {"score": 2, "why": "Claim stated precisely below: inclusion of short exons in fixed reporter context, in one cell type."},
+    "H4": {"score": 1, "why": "Paper discusses non-reference blind spots; reporter-context limits only partly explicit."},
+    "I1": {"score": 1, "why": "Splicing-model developers and clinical variant-interpretation groups; no specific adopter named."},
+    "I2": {"score": 1, "why": "Could change which splicing score is trusted for exonic variants; marginal unless transfer gain large."},
+    "I3": {"score": 1, "why": "Correlation with PSI roughly matches; clinical use needs a splice-disrupting yes/no threshold."},
+    "I4": {"score": 2, "why": "Paper shows additive motif models explain much, but structure interactions are genuinely nonlinear."},
+    "J1": {"score": 2, "why": "Real modelling: embeddings, cross-assay transfer, ablations, calibration."},
+    "J2": {"score": 1, "why": "PSI and splice-site logic are interpretable, but MPRA artifacts need domain judgement."},
+    "J3": {"score": 2, "why": "A cross-assay benchmark of existing scores is shareable even before any new model."},
+    "J4": {"score": 1, "why": "Plausibly 3–4 weeks, not yet committed."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Liao, Sudarshan & Regev 2023 PNAS interpretable-by-design splicing network", "open_weights": true, "score_and_split": "Trained and tested on this same synthetic exon library (GSE200096); exact held-out score not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Interpretable distillation models (this paper; SpliceAI/Pangolin/AlphaGenome distilled)", "open_weights": true, "score_and_split": "Distil deep-model predictions, not measured PSI; deep models score Pearson 0.83–0.86 on Liao, 0.37–0.44 on MFASS.", "authors_named_unsolved": "Deep models exploit CpG and stop-codon confounders and are blind to RNA structure, failing on non-reference sequences.", "runnable_as_baseline": true},
+      {"name": "SpliceAI, Pangolin, AlphaGenome (genome-trained deep models)", "open_weights": true, "score_and_split": "Scores precomputed in the files; my recomputed Pearson with Liao PSI: 0.846, 0.805, 0.841 (zero-shot).", "authors_named_unsolved": "Per this paper: RNA structure and genomic confounders.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (RNA language model) or Nucleotide Transformer embeddings, plus precomputed SpliceAI/Pangolin scores as features", "freeze_and_head_viable": true, "hardware": "Laptop CPU", "licence": "RNA-FM open code/weights; repo GPLv3; AlphaGenome outputs non-commercial terms"},
+  "integration": {"partner_dataset": "MFASS (Chong 2018) and Baeza-Centurion 2025 indel MPRA, both in repo; Vex-seq/MaPSy as further MPRAs", "join_key": "hg38 coordinates / Ensembl exon ID (natural exons only)", "bigger_question_one_sentence": "Does training on 240k measured synthetic exons fix the structure blind spots of genome-trained splicing models well enough to improve prediction on natural human exon variants?"},
+  "controls": {"positive_control": "Recover splice-site strength and known exonic splicing enhancer/silencer hexamer effects; reproduce SpliceAI Pearson 0.846 on Liao from provided columns.", "negative_control": "Shuffle PSI labels (must collapse to mean); ablate structure features; random-noise features.", "external_validation": "Train on Liao synthetic library, test on MFASS natural exons and Baeza-Centurion indels (different labs and assays)."},
+  "honest_claim_h3": "Predicts inclusion of short (70-nt) exons in a fixed reporter context in one cell line, and tests whether that transfers to other reporter assays of natural exons — not endogenous, tissue-specific splicing.",
+  "plain_idea": {
+    "one_liner": "Use exon DNA sequence, its predicted RNA folding and existing splicing-model scores to predict how often the exon is kept in mRNA.",
+    "train_on": "239,772 synthetic 70-letter exon sequences (verified), each with folding energy and three existing models' scores.",
+    "predict": "The fraction of RNA molecules that include the exon (PSI), measured by sequencing a reporter construct in cells; tested on two other labs' reporter assays.",
+    "why_worthwhile": "Groups interpreting splicing variants would learn whether lab-measured synthetic data fixes known blind spots of genome-trained models; a failure to transfer is itself a useful benchmark result."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Same 239,772-exon library Liao 2023 already trained on, so not more data for that model; but SpliceAI/Pangolin never saw measured PSI on non-reference sequences."},
+    "confidence_score": {"answer": "partly", "why": "Per-exon read counts (median 168) allow binomial uncertainty, and MFASS has replicates; SpliceAI/Pangolin give no calibrated PSI uncertainty, Liao 2023 not checked."},
+    "models_beatable": {"answer": "partly", "why": "Genome-trained models reach only 0.37–0.44 on MFASS (paper); Liao 2023 is a recent purpose-built model on this exact library, likely hard to beat in-library."},
+    "guaranteed_improvement": {"answer": "no", "why": "MFASS and Baeza-Centurion measure inclusion with different reporters and readouts (fluorescence vs RNA-seq), so the same-quantity-same-way condition fails."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Other splicing MPRAs (MFASS, Baeza-Centurion in repo; Vex-seq, MaPSy known resources); endogenous PSI in GTEx/VastDB (known resources, different context)", "approx_items": null, "join_key": "hg38 coordinates / Ensembl exon ID", "why": "Several independent reporter assays allow cross-assay external validation, though labels are not directly comparable."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes splicing-model benchmarks; would need a structure-aware model that clearly lifts MFASS correlation over SpliceAI's ~0.4."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Fits a cross-assay benchmark showing how far synthetic-MPRA training transfers to natural exons."},
+    "fallback": {"journal": "bioRxiv preprint plus MLCB workshop", "why": "A negative transfer result with honest ablations is still a publishable benchmark note."}
+  },
+  "pitch": {
+    "headline": "239,772 measured synthetic exons in one 42 MB table, with SpliceAI, Pangolin and AlphaGenome scores already alongside every row.",
+    "what_makes_the_data_unusual": "Random non-genomic exons, so no genomic confounders; zero duplicates, zero missing values, read counts per exon (median 168) for noise estimates; two independent assays (31,031 and 5,976 rows) ship in the same repo.",
+    "the_win": "A model trained on synthetic exons that beats the genome-trained models' 0.37–0.44 Pearson on MFASS natural exons.",
+    "even_if_it_fails": "Quantifies how much synthetic-library training transfers across reporter assays, and whether structure features add anything beyond existing scores.",
+    "who_wants_it": "Splicing-model developers (Regev lab, Pangolin/SpliceAI authors) and clinical variant-interpretation groups choosing splice scores for exonic variants."
+  },
+  "ml_idea": "Train a head on frozen RNA-FM embeddings + RNA folding features + existing deep-model scores to predict measured PSI on the Liao synthetic library, then evaluate zero-shot on MFASS and Baeza-Centurion to test whether measured synthetic data corrects the structure/confounder blind spots named in this paper.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.3, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 2, "cv_run_minutes": 20, "compute_note": "Estimated: 240k short sequences at roughly 30–50 per second for RNA-FM on CPU; loading timed informally (seconds).", "cheapest_killing_check": "Retrieve Liao 2023 PNAS's held-out score and whether it was already tested on MFASS; if it already transfers well, the project is a re-run."},
+  "verdict": "verify_first",
+  "verdict_reason": "Model-ready 240k-row measured PSI table, but Liao 2023 PNAS already modelled this exact library; only the cross-assay transfer angle is open, so check what Liao 2023 reported first."
+}

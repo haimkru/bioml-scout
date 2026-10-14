@@ -1,0 +1,48 @@
+{
+  "paper_id": "natgen2026-02728-2",
+  "title": "Improved spike-in normalization clarifies the relationship between active histone modifications and transcription.",
+  "doi": "10.1038/s41588-026-02728-2",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE286875",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the GEO (Gene Expression Omnibus) supplementary file list for GSE286875 (245 files, 31 GB RAW.tar) and the directory listing for GSE273915 (4.5 GB RAW.tar). In GSE286875, every processed file is a genome-wide signal track: 194 UCSC bigWig files, about 48 spike-in-normalised .bw files from a HeLa-S3 TSA (a deacetylase inhibitor) titration, and 2 bedGraph files. Individual HCT116 H3K27ac bigWigs are 139–315 MB. I found no peak table, count matrix or differential-binding table. I also listed the ChIP-wrangler GitHub repo (Goren-Lab-at-UC-San-Diego): it has pipeline scripts, notebooks and small example_data files (sample metadata, GC (guanine-cytosine content) stats), but no per-peak results table.",
+    "what_came_from_paper_text_only": "The 31,075 merged H3K27ac peaks, the 1,840 decreasing and 110 increasing peaks, the 82% distal share, the cell systems (HCT116 RPB1 auxin degron, HeLa-S3 triptolide, mouse ES cells with Rbbp5/Dpy30 degrons) and the marks profiled (H3K27ac, H3K4me3, H3K4me1, H3K36me3, H3K9ac). All of these come from the bioRxiv preprint text (10.1101/2025.11.25.690627). The Nature Genetics full text is paywalled and not in Europe PMC."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO series are public, with no login. Checked the file lists."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked the files: no per-peak table of H3K27ac change after RNAPII (RNA polymerase II) depletion exists in GEO or GitHub. To get the label you would have to call peaks, count reads, apply the dual spike-in normalisation and run DESeq2 (a differential-count tool) yourself, starting from bigWig tracks or raw reads."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs (DNA sequence around each peak) could be pulled from hg38 once peak coordinates exist. But the peak coordinates themselves are not deposited."},
+    "a4_units_stated": {"pass": false, "note": "The bigWigs are HOMER tag-directory or spike-in-normalised coverage tracks, and the normalisation scale differs between file families. No unit is documented per file."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "The paper reports 31,075 peaks, but no peak file exists to count, so n is unverified. Only 1,840 change significantly."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~2–3 GB (about 10 HCT116 H3K27ac bigWigs)", "note": "Subsetting to the HCT116 H3K27ac tracks is feasible. The full set is around 30 GB."},
+    "a7_counts_match_paper": {"pass": false, "note": "Can't check: no processed peak or count file to compare with the paper's 31,075 peaks."},
+    "a8_label_provenance": {"pass": true, "note": "The label would trace back to a physical measurement (ChIP-seq read counts), but only after a normalisation pipeline you would have to rerun yourself."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "AlphaGenome or Enformer-style DNA sequence models (not evaluated further)", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "ENCODE H3K27ac / RNAPII ChIP-seq for HCT116", "join_key": "hg38 genomic coordinates", "bigger_question_one_sentence": "Which enhancers depend on ongoing transcription to keep their acetylation? Not pursued, because the label isn't deposited."},
+  "controls": {"positive_control": "Promoter-distal peaks with enhancer motifs should be enriched among decreasing peaks (paper's 82% figure).", "negative_control": "Shuffle peak labels.", "external_validation": "None found deposited."},
+  "honest_claim_h3": "At best: predicts which H3K27ac peaks in one human cancer cell line (HCT116) lose acetylation within 1–4 hours of RNAPII degradation. Only about 1,840 positives, and the labels come from our own re-run of the normalisation.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence and promoter/enhancer context of each acetylated region to predict whether its acetylation drops when transcription is stopped.",
+    "train_on": "DNA sequence and location of each H3K27ac peak (a histone mark of active regulatory DNA): about 31,075 peaks according to the paper. That count is unverified because no peak file is deposited.",
+    "predict": "Whether the peak's acetylation drops after RNA polymerase II is degraded, measured by spike-in-normalised ChIP-seq read counts. That label would have to be computed by us from the coverage tracks.",
+    "why_worthwhile": "Chromatin biologists would learn which sequence features make an enhancer's acetylation depend on transcription. But the task rests on one cell line and labels we would have to build ourselves."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 0, "sources": "No public resource holds per-peak acetylation change after RNAPII depletion (known resources: ENCODE has only steady-state ChIP-seq).", "approx_items": null, "join_key": "hg38 coordinates", "why": "The label exists only in this paper's experiments, so there is no outside data to train on or test against."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify H3K27ac peaks as RNAPII-dependent or not from their sequence (frozen DNA-model embeddings plus a logistic head). Blocked because the per-peak label isn't deposited.",
+  "effort": {"hours_to_feature_table": 24, "working_set_gb": 2.5, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only: you would rebuild peaks and counts from bigWigs (or the 31 GB of raw reads) with the authors' HOMER/DESeq2 pipeline. Nothing was timed.", "cheapest_killing_check": "Look for a processed peak or differential-count table. None exists in GEO GSE286875, GSE273915 or the GitHub repo, so the check already fails."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A4. The deposited data are only genome-wide coverage tracks (194 bigWigs, 31 GB raw tar), with no peak, count or differential table. So the label (per-peak acetylation change after RNA polymerase II loss) must be built by re-running the authors' normalisation pipeline. It also comes from one or two cell lines with about 1,840 positives."
+}

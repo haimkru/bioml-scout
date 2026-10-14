@@ -1,0 +1,135 @@
+{
+  "paper_id": "nature2026-11118-x",
+  "title": "Highly efficient base editing at PCSK9 and normal human embryo development.",
+  "doi": "10.1038/s41586-026-11118-x",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE315671 and https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE290961",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Queried NCBI for both linked GEO (Gene Expression Omnibus) series and found GSE315671 (103 samples) and GSE290961 (158 samples), both on GPL28377, the Affymetrix/Thermo Axiom UK Biobank genotyping array. Read the full FTP file listings: the only content is GSE315671_RAW.tar (2,916,167,680 bytes) and GSE290961_RAW.tar (4,348,026,880 bytes), containing per-sample .CEL.gz (~11 MB each) and .CEL.probes.txt.gz (~15 MB each) raw probe-intensity files, plus the platform's CDF and annotation files. HEAD requests on both tars returned HTTP 200 with those exact sizes. Read the full GEO metadata for series GSE315671 and for sample GSM9434340: the only structured annotation is 'cell type: Preimplantation embryo', with treatment described in a free-text description line. NCBI elink from PubMed 42742174 returned no SRA, no BioSample and no dbGaP records, so the targeted amplicon sequencing that measures editing efficiency is not in a linked public repository. Confirmed the Nature article redirects to an authentication page (no PubMed Central copy, Europe PMC flags isOpenAccess=N, hasSuppl=N), so supplementary tables and source data are not retrievable.",
+    "what_came_from_paper_text_only": "Everything about the biology (editing at all PCSK9 alleles, absence of insertions/deletions, mosaic bystander and off-target editing, mRNA-delivered editor causing embryo arrest, rare on-target chromosome breakage) comes from the abstract alone. I did not open a single CEL file (each tar is far over the 50 MB download cap) and never saw a per-embryo ploidy call or a per-site editing percentage in any machine-readable file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The two GEO series are public and download without a login (verified HTTP 200 on both tar archives). But the labelled results live in the paywalled Nature paper's supplementary tables, which redirect to an authentication page and have no PubMed Central copy."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FIRST KILLER. Nothing that could be a prediction target exists as a column anywhere in the public data. GEO holds only raw array probe intensities; sample metadata carries just 'cell type: Preimplantation embryo' plus a free-text sentence. Any label (aneuploid vs euploid, chromosome breakage, percent editing) would have to be constructed by running the Axiom genotyping and copy-number pipeline and then hand-matching samples to figures in a paywalled paper."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Raw probe intensities are physically present as .CEL.gz and .CEL.probes.txt.gz files, and the platform CDF (chip definition file) and annotation CSV are posted alongside, so no external lookup is needed to map probes to genome positions."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "CEL files hold arbitrary fluorescence intensity units with no stated normalisation, and no label with units exists at all. Any derived quantity (log2 copy-number ratio, B-allele frequency) would be produced by me, not supplied."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 261,
+      "note": "103 + 158 = 261 array samples total (verified from NCBI esummary sample lists), and the biological unit is an embryo or a single cell from one, so distinct embryos number fewer still. The checklist needs ~1,500 labelled rows, or ~400 for classification. Also only a handful of guide RNAs and target loci (PCSK9, HBG) were used, so a sequence-to-outcome model would have well under ten distinct inputs."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "7.3 GB of tar archives (2.9 GB + 4.4 GB) plus a 185 MB platform annotation file",
+      "note": "Over the ~5 GB working-set limit and far over this project's 50 MB download cap. Processing Axiom CEL files also needs Affymetrix Power Tools or the Windows-only Axiom Analysis Suite, which is an external toolchain, not a pandas read."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO's own numbers are internally consistent (esummary n_samples 103 and 158 match the FTP file listings). I could not compare against the paper because its full text is paywalled, so this check is only half-done."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Leakage by construction. The only available labels would be chromosome copy-number and genotype calls that the authors' software derives from the very same probe intensities that would be the model's features, so a model would be re-learning the calling algorithm, not biology."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "BE-Hive (base editing outcome predictor, Arbab et al., Cell 2020)",
+        "open_weights": true,
+        "score_and_split": "Search results report roughly R ~0.9 for genotypic outcome and ~0.7 for efficiency; I did not retrieve the paper itself to confirm the split.",
+        "authors_named_unsolved": "Not retrieved — I only read search-result summaries, not the discussion.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BE-DICT (attention-based base editing outcome predictor, Marquart et al., Nature Communications 2021)",
+        "open_weights": true,
+        "score_and_split": "Not retrieved; the paper exists at https://www.nature.com/articles/s41467-021-25375-z but I did not open it.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepBE / DeepBaseEditor (convolutional networks for base editor efficiency and outcome)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable — raw genotyping-array intensities are not a data type any listed pretrained backbone (ESM-2, DNABERT-2, scGPT, ChemBERTa) consumes.",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "None usable. The array is the UK Biobank Axiom chip, so probe sets are nominally joinable to UK Biobank genotype data on rsID, but 261 embryo arrays with no phenotype column answer no question jointly with it.",
+    "join_key": "rsID / probe set ID",
+    "bigger_question_one_sentence": "Cannot be written: there is no outcome variable on the embryo side to relate to anything external."
+  },
+  "controls": {
+    "positive_control": "In principle, a copy-number pipeline should recover the known sex-chromosome dosage difference between male and female embryos — but this requires building the pipeline first, which is the problem.",
+    "negative_control": "Not reached; no feature/label table exists to shuffle.",
+    "external_validation": "Other public preimplantation genetic testing SNP-array datasets exist in principle, but none was identified as linked to this paper."
+  },
+  "honest_claim_h3": "No honest claim is available: with 261 raw arrays, no label column, and the outcome measurements locked in a paywalled supplement, any model here would be claiming to reproduce the authors' own copy-number calling software from the intensities it was run on.",
+  "plain_idea": {
+    "one_liner": "Use raw genotyping-chip signals from single human embryos to predict whether gene editing caused a chromosome abnormality.",
+    "train_on": "Each example would be one human embryo or single cell assayed on an Affymetrix Axiom genotyping chip, represented by genome-wide probe intensities. I verified there are 261 such samples across the two GEO series, which is far too few.",
+    "predict": "Whether the embryo carries a whole-chromosome or segmental abnormality after base editing or Cas9 cutting. The true answer comes from the authors' own copy-number and genotype calls on the same chip intensities, reported only in the paper's figures.",
+    "why_worthwhile": "Reproductive genetics labs and the base-editing safety community would want to know whether editor-induced chromosome damage is detectable automatically; but here the answer is derived from the same measurement as the input, so nothing is learned about biology."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "261 raw arrays with no outcome column is far smaller than the target-library screens behind base editing predictors like BE-Hive, which were trained on thousands of integrated target sites."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No replicate structure is visible in the public metadata and no measured quantity with error is released, so per-prediction uncertainty could not be calibrated against anything."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The relevant existing models (BE-Hive 2020, BE-DICT 2021, DeepBE) are trained on orders of magnitude more target sites than the handful of guide RNAs used here; there is no basis to compete."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on the first condition: there is no feature/label table to run a baseline on, and the editing-efficiency measurements that those models predict were never deposited for this paper."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The two projects I considered were (a) predict base-editing outcome — on-target, bystander and off-target editing rates — from guide RNA and protospacer sequence, and (b) classify embryos as chromosomally normal or abnormal from genome-wide array intensities. Project (a) dies because the amplicon sequencing that measures editing was never deposited (no SRA, BioSample or dbGaP link from PubMed 42742174) and only a few guide RNAs were used. Project (b) dies because the label is the output of the same copy-number calling software that reads the input features, and there are only 261 arrays.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 7.3,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working set measured directly from HTTP HEAD on the two GEO tar archives (2,916,167,680 and 4,348,026,880 bytes). The other figures are null because no feature/label table can be built, so there is nothing to time.",
+    "cheapest_killing_check": "Read the GEO sample metadata for one sample and ask whether a ploidy or editing-rate field exists. It does not — only 'cell type: Preimplantation embryo'. That took one request and killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A at A2, A4, A5, A6 and A8. The only public data is 261 raw Affymetrix Axiom genotyping arrays (7.3 GB of CEL files across GSE315671 and GSE290961) with no processed table and no outcome column of any kind — GEO sample annotation is literally just 'cell type: Preimplantation embryo'. The measurements that make the paper interesting (percent editing at on-target, bystander and off-target sites; per-embryo chromosome calls) were not deposited: NCBI elink from the PubMed record returns no SRA, no BioSample and no dbGaP entry, and the Nature article plus its supplementary tables sit behind an authentication redirect with no PubMed Central copy. Even if the labels were obtainable, 261 samples from one lab, a handful of guide RNAs, and labels produced by the authors' own copy-number caller running on the same probe intensities that would serve as features make this unmodellable. The underlying biology is important and the experiment is remarkable; the released artefact is not a machine-learning dataset."
+}

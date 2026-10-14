@@ -1,0 +1,211 @@
+{
+  "paper_id": "natgen2026-02751-3",
+  "title": "Type 1 interferon perturbates clonal competition by reshaping human blood development.",
+  "doi": "10.1038/s41588-026-02751-3",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE215140",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 20+ files from GEO series GSE215140 (public since 2026-07-07, no login). Parsed one full expression matrix (GSM8386213, IFN07: 36,627 features x 1,496 cells, 5,408,536 non-zero entries, cellranger-7.1.0, integer UMI counts) and confirmed 36,601 genes + 26 antibody-derived tags (surface proteins CD38, CD90, CD45RA, CD117 ...) + 2 hashtag oligos. Downloaded all 10 CD34+ cell-barcode lists and all per-cell CALR genotype files, and ran the join myself: 44,101 cells have BOTH a transcriptome and a genotype call (22,315 mutant / 21,786 wild-type) across 9 of 10 patients; the 10th (IFN09) joins at 0% because its genotype file uses a merged-object barcode format from a different 10x whitelist. Verified the external validation set is real and joins: GSE117825/GSE117824 (Nam et al., Nature 2019), sample ET01 gives 6,104 cells with matched CALR amplicon counts and transcriptomes. Confirmed total series size 11.87 GB over 156 files from filelist.txt, and that the chromatin-accessibility genotype files (GotChA) label ~3,000 of 76,866 nuclei per sample. Retrieved and read the freely-served supplementary methods PDF (545 KB, 19 pages).",
+    "what_came_from_paper_text_only": "The main article is paywalled (Europe PMC: not open access, no PubMed Central copy), so I never read the main text, the results, or the formal Data Availability statement; I used the abstract, the GEO series record, and the free supplementary methods PDF. Patient count (~13-16), disease subtype breakdown, the authors' exact genotype-calling threshold, and which hashtag corresponds to baseline versus treated are not in the files I opened; the supplement confirms only that hashtag data were centered-log-ratio normalized and used for time-point assignment. I did not confirm whether a code repository exists."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GSE215140 is fully public on the NCBI FTP site; I downloaded 20+ files directly with no login and no access application. Licence is standard GEO public-domain deposition."},
+    "a2_label_is_a_column": {"pass": true, "note": "For 2 of 10 patients the file has a literal Genotype column with values MUT/WT/NA. For the other 8, each row is one cell barcode with WT.calls and MUT.calls (counts of wild-type and mutant molecules), so the binary label is a one-line rule on two columns in the same file, not a construction across sources. I applied it and it worked."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are actual measured values, not references: gene counts and surface-protein counts sit in MatrixMarket files I parsed. No identifier resolution is needed to build features."},
+    "a4_units_stated": {"pass": true, "note": "All values are integer molecule (UMI) counts; the MatrixMarket header declares 'coordinate integer general' and names cellranger-7.1.0. Surface-protein tags are TotalSeq-A antibody counts, flagged 'Antibody Capture' in the features file. Genotype files are mutant/wild-type molecule counts."},
+    "a5_enough_rows": {"pass": true, "n_rows": 44101, "note": "44,101 cells with both a transcriptome and a genotype label, verified by my own join: 22,315 mutant, 21,786 wild-type, across 9 patients (per-patient range 890 to 11,910). Far above the 1,500-row bar. Independent groups = 9-10 patients, enough for leave-one-patient-out."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.8 GB compressed (the 10 CD34+ expression matrices) plus ~5 MB of genotype files; ~2-3 GB in memory as sparse matrices, ~0.5 GB after subsetting to highly variable genes.", "note": "Skip the 11.87 GB raw archive and the 0.3-2.0 GB chromatin fragment files. Per-sample streaming keeps peak memory near 6 GB. No GPU needed for a logistic or small neural head on cached embeddings."},
+    "a7_counts_match_paper": {"pass": true, "note": "Reconcilable, not contradictory. GEO lists 58 samples; I count 79,488 raw barcodes across the 10 CD34+ lanes, consistent with the ~65,000 CD34+ cells the preprint reports after quality filtering (supplement confirms filtering on UMI count and mitochondrial fraction). The one discrepancy is IFN09, whose genotype barcodes do not match its own expression barcodes."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a physical measurement: targeted PCR amplification and sequencing of the CALR transcript, reported as mutant and wild-type molecule counts per cell. It is not any model's output. The features are the separate whole-transcriptome library. One caveat handled in the leakage plan: CALR's own expression is a feature and also gates whether a cell can be genotyped at all, so CALR must be ablated."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three files per patient plus a genotype file; join on cell barcode works, verified at 27-86% per patient."},
+    "B2": {"score": 1, "why": "MatrixMarket and tsv parsed first try with scipy; genotype files come in three different schemas needing a format sniff."},
+    "B3": {"score": 2, "why": "All labels from one lab, one amplicon assay, one pipeline; binary mutant/wild-type so CALR variant type does not break comparability."},
+    "B4": {"score": 1, "why": "Many unlabelled cells (2,137 of 8,989 NA in IFN01; 73,864 of 76,866 in the chromatin file) but dropping them is the obvious policy."},
+    "B5": {"score": 2, "why": "Verified barcodes unique within every genotype file I opened (rows equal unique barcodes in all five raw files)."},
+    "B6": {"score": 1, "why": "Column names self-describing and feature types flagged, but no data dictionary for the calling threshold or hashtag-to-timepoint mapping."},
+    "C1": {"score": 2, "why": "Low accuracy means mutant stem cells are transcriptionally cryptic; high accuracy defines a signature. Both are publishable findings."},
+    "C2": {"score": 2, "why": "No open model predicts single-cell genotype from phenotype here; cardelino and CloneTracer read the variant itself. See audit."},
+    "C3": {"score": 2, "why": "Novel plus unique-application: this data has never been modelled, and the paper used it for differential expression, not prediction."},
+    "C4": {"score": 2, "why": "Amplicon genotyping needs custom library prep and still leaves 25-70% of cells unlabelled, as I measured in the join."},
+    "C5": {"score": 2, "why": "Obvious dummy exists: per-patient majority class, plus a CALR-expression-only logistic regression as the trivial-feature baseline."},
+    "D1": {"score": 2, "why": "scGPT and Geneformer, single-cell foundation models with open downloadable weights trained on 30+ million human cells."},
+    "D2": {"score": 2, "why": "44,101 cells is small enough to embed once on CPU, cache the vectors, and train a head in minutes."},
+    "D3": {"score": 2, "why": "scGPT is MIT-licensed, Geneformer Apache-2.0; GEO data is public domain. No restriction on any intended use."},
+    "E1": {"score": 0, "ok": true, "why": "Leave-one-patient-out; patient identity is the file/sample name, which I saw directly in the GEO file listing."},
+    "E2": {"score": 0, "ok": true, "why": "9 usable patients with 890-11,910 labelled cells each, plus 3 chromatin-genotyped patients and 2 drug controls."},
+    "E3": {"score": 0, "ok": true, "why": "Per-patient majority class is computable; class ratios vary widely (IFN02 82% mutant, IFN04 85% wild-type), so this is a real baseline."},
+    "E4": {"score": 0, "ok": true, "why": "Per-cell mutant and wild-type molecule counts (e.g. 15,195 vs 9) let you grade label confidence and set a ceiling on high-depth cells."},
+    "E5": {"score": 0, "ok": true, "why": "Known CALR-mutant unfolded-protein-response and NF-kappaB signature from Nam 2019 must be recovered; plus a trivially learnable swapped label."},
+    "E6": {"score": 0, "ok": true, "why": "Shuffle genotype within patient, ablate CALR and interferon-response genes, replace features with noise. All cheap on cached embeddings."},
+    "E7": {"score": 0, "ok": true, "why": "GSE117824/GSE117825 (Nam 2019) verified downloadable and joining: 6,104 labelled cells in sample ET01 alone, different patients."},
+    "E8": {"score": 0, "ok": false, "why": "No published cell-level classification number on this task to reproduce; the closest numbers are patient-level histology conference abstracts."},
+    "G1": {"score": 2, "why": "Gene symbols and Ensembl IDs in the features files; GRCh38 coordinates in chromatin peaks and CUT&RUN files, confirmed in the supplement."},
+    "G2": {"score": 2, "why": "This series' own chromatin data (3 genotyped patients, GRCh38) plus the PU.1 CUT&RUN peaks; and the 2019 GoT cohort for transfer."},
+    "G3": {"score": 2, "why": "Cell barcode to cell is one-to-one within a sample (verified unique); gene symbol to Ensembl is cleanly one-to-many."},
+    "G4": {"score": 2, "why": "Combination asks whether the mutant signature is driven by accessibility at PU.1-bound enhancers, which neither modality answers alone."},
+    "H1": {"score": 2, "why": "21,786 wild-type cells sit beside 22,315 mutant ones from the same patients and lanes; drug and untreated controls also present."},
+    "H2": {"score": 1, "why": "One centre, one disease family (mostly CALR-mutant essential thrombocythemia), ~13 patients; two assay modalities and a second drug soften it."},
+    "H3": {"score": 2, "why": "Honest claim written out in one sentence, bounded to CALR-expressing CD34+ cells from one centre's patients."},
+    "H4": {"score": 1, "why": "Unlabelled-cell fraction and assay types visible in the files; the main text documenting cohort gaps is paywalled and I could not read it."},
+    "I1": {"score": 2, "why": "Nam and Landau labs (Weill Cornell), Velten lab (CloneTracer), Mead lab (TARGET-seq), MPN Research Consortium."},
+    "I2": {"score": 2, "why": "A working predictor recovers the 25-70% of cells their assay fails to genotype; a failure tells them imputation is not an option."},
+    "I3": {"score": 2, "why": "Decision is 'can I trust this imputed genotype', so precision at a high-confidence threshold and per-patient AUC are exactly right."},
+    "I4": {"score": 2, "why": "Copy-number-neutral heterozygous mutation, so single-gene and copy-number rules provably fail; effect is cell-identity dependent."},
+    "J1": {"score": 2, "why": "Grouped cross-validation, frozen foundation-model embeddings with a head, calibration, and transfer to an independent cohort."},
+    "J2": {"score": 2, "why": "Literature-anchored positive controls (unfolded protein response, megakaryocyte bias) make a nonsense result easy to spot."},
+    "J3": {"score": 2, "why": "The cleaned 44,101-cell feature/label table and the join audit (including the IFN09 barcode mismatch) are useful even if the model is mediocre."},
+    "J4": {"score": 2, "why": "Stated budget: 5 weeks, roughly 2 days to the feature table, 1 week for baselines, 2 weeks for embeddings and transfer."},
+    "J5": {"score": 2, "why": "Written kill condition: stop at end of week 2 if leave-one-patient-out AUC is below 0.60 and CALR-ablation changes nothing."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "cardelino (McCarthy et al., Nature Methods 2020) - assigns single cells to clones",
+        "open_weights": true,
+        "score_and_split": "Precision-recall AUC 0.947; at a 0.5 posterior threshold, 79% of cells assigned with 89.0% accuracy. Benchmarked on human fibroblast lines, not a held-out-donor split.",
+        "authors_named_unsolved": "Sparse and uneven coverage of expressed variants in single-cell RNA data, so many cells cannot be assigned at all.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "CloneTracer (Velten lab, Cell Stem Cell 2023) - healthy versus malignant cell calling",
+        "open_weights": true,
+        "score_and_split": "Reported as unambiguously separating healthy from leukaemic cells in 14 acute myeloid leukaemia patients; no held-out-patient accuracy number for a phenotype-only predictor.",
+        "authors_named_unsolved": "Cases with no copy-number change and no informative mitochondrial variant, which is exactly the copy-number-neutral CALR setting here.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "inferCNV / copyKAT - malignant cell calling from inferred copy-number changes",
+        "open_weights": true,
+        "score_and_split": "Widely used, but no applicable number: CALR-mutant myeloproliferative neoplasm cells are copy-number neutral, so these tools have no signal to find.",
+        "authors_named_unsolved": "Both toolsets state they require copy-number-altered genomes.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Deep learning on myelofibrosis single-cell maps (American Society of Hematology 2025 abstract, Blood supplement)",
+        "open_weights": false,
+        "score_and_split": "No accuracy number published; a framework over ~150,000 cells from 50 myelofibrosis patients aimed at finding drug targets in mutant progenitors, not at honest held-out genotype prediction.",
+        "authors_named_unsolved": "Not stated in the abstract.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Deep learning predicting JAK2/CALR/TET2/ASXL1 from bone-marrow slide images (American Society of Hematology 2024 abstract)",
+        "open_weights": false,
+        "score_and_split": "CALR: precision 0.88, recall 0.98, F1 0.86. Unit is the patient's whole slide image, not the single cell, and the split is not described in the abstract.",
+        "authors_named_unsolved": "Not stated in the abstract.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT (single-cell foundation model, 33 million cells, MIT licence); Geneformer (30 million cells, Apache-2.0) as the alternative",
+    "freeze_and_head_viable": true,
+    "hardware": "Apple Silicon laptop CPU, 16 GB RAM. Embed 44,101 cells once (estimated 4-8 hours), cache the vectors, then train a logistic or small neural head in minutes.",
+    "licence": "Permissive: scGPT MIT, Geneformer Apache-2.0, GEO data public domain. No restriction on any intended use."
+  },
+  "integration": {
+    "partner_dataset": "This series' own single-nucleus chromatin data with per-cell genotype (3 patients, GSM8766925-GSM8892514) plus the 8 PU.1 CUT&RUN peak files, both on genome build GRCh38; and GSE117824/GSE117825 (Nam 2019 GoT cohort) as the independent transfer set.",
+    "join_key": "GRCh38 genomic coordinates for peaks-to-peaks, gene symbol / Ensembl ID for genes-to-accessibility, and cell barcode within sample for cell-level joins.",
+    "bigger_question_one_sentence": "Is the transcriptional difference between a mutant stem cell and its wild-type neighbour explained by chromatin accessibility changes at PU.1-bound enhancers, and does that explanation still hold in patients who never received interferon?"
+  },
+  "controls": {
+    "positive_control": "Two: (1) the model must recover the published CALR-mutant unfolded-protein-response and NF-kappaB signature (Nam et al., Nature 2019) as its top features in uncommitted stem cells, and accuracy must be highest in megakaryocytic progenitors where the mutant fitness advantage is largest; (2) swap the genotype label for something derivable from the features (total molecule count, or the CD34 surface-protein level) and the head must predict it near-perfectly, proving the plumbing works.",
+    "negative_control": "Shuffle genotype labels within each patient and confirm collapse to the per-patient majority baseline; ablate CALR itself plus all interferon-response genes; replace the feature matrix with same-shaped noise; shuffle within patient rather than globally to prove the grouping is real.",
+    "external_validation": "GSE117824 + GSE117825 (Nam et al., Nature 2019): independent CALR-mutant myeloproliferative-neoplasm patients, 2018 chemistry, verified downloadable and joining (6,104 labelled cells in sample ET01 alone). Features there are genes only, with no surface-protein panel, which makes it a genuinely harder transfer test."
+  },
+  "honest_claim_h3": "Among bone-marrow CD34+ cells from nine CALR-mutant myeloproliferative-neoplasm patients at one centre that expressed enough CALR messenger RNA to be genotyped by targeted amplicon sequencing, we can state how accurately a cell's mutation status is predictable from its transcriptome and 26 surface-protein markers, and how that accuracy varies by progenitor type and by interferon-alpha exposure.",
+  "plain_idea": {
+    "one_liner": "Use a single blood stem cell's gene activity and surface markers to predict whether it carries the disease-causing mutation.",
+    "train_on": "Each example is one bone-marrow blood stem or progenitor cell: counts for 36,601 genes plus 26 antibody-measured surface proteins (CD38, CD90, CD45RA and others). I verified 44,101 such cells carry a genotype label, spread across nine patients.",
+    "predict": "A yes/no answer: does this cell carry the mutated CALR (calreticulin) gene? The true answer comes from a separate targeted PCR of the CALR transcript in the very same cell, reported as counts of mutant and wild-type molecules.",
+    "why_worthwhile": "Labs running this costly genotyping assay lose 25-70% of their cells to failed capture, as I measured in the files; a working predictor would recover them. If it fails, that is direct evidence that mutant stem cells are transcriptionally near-invisible until they commit to a lineage."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "44,101 cells with a directly measured per-cell genotype, nearly balanced (22,315 mutant, 21,786 wild-type), in a copy-number-neutral disease. cardelino was benchmarked on human fibroblast cell lines; CloneTracer on acute myeloid leukaemia where copy-number and mitochondrial variants carry most of the signal. Neither has a balanced panel in this setting, and none has the interferon-alpha perturbation arm."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The genotype files give per-cell mutant and wild-type molecule counts (one barcode had 15,195 wild-type versus 9 mutant molecules), so label confidence is directly quantifiable and the predictor can be calibrated against it. But cardelino already reports a posterior probability per cell, so confidence itself is not new; calibration against measured label noise is."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "cardelino is a 2020 Bayesian model over variant read counts evaluated on cell lines; CloneTracer (2023) needs copy-number or mitochondrial signal that is absent in CALR-mutant essential thrombocythemia; copy-number tools have no signal at all here. None is a phenotype-only predictor, so there is no incumbent number on this task - which is the opening, not a performance gap to close."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The strict test fails at the first condition: cardelino and CloneTracer cannot be run as our baseline because their input is the variant reads, which are our label. Running them would be circular. The honest baselines are a per-patient majority class and a CALR-expression-only model, not an existing published predictor."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "GSE117824 + GSE117825 (Nam et al., Nature 2019, GoT in CALR-mutant myeloproliferative neoplasm) - I downloaded sample ET01 and verified 6,104 cells with matched genotype and transcriptome. GSE204845 (splicing-factor single-cell multi-omics, 39 samples) and GSE182685 (mitochondrial-variant clonal resolution, 22 samples) found in my GEO search and likely to carry comparable labels. TARGET-seq datasets from the Mead lab are a further known source I did not open.",
+    "approx_items": null,
+    "join_key": "Cell barcode within a sample for cell-level labels; gene symbol / Ensembl ID for features across studies.",
+    "why": "Enough independent labelled cells exist outside this paper to run a real transfer test - I verified 6,104 of them - but there is no single large public resource of genotyped single cells to train on, so this paper remains the main training set."
+  },
+  "leakage_plan": {
+    "risks": [
+      "CALR's own expression level sits in the feature matrix, and the amplicon assay can only genotype cells that express CALR, so total CALR counts could separate the classes for a technical reason rather than a biological one.",
+      "Cells from one patient share a clone, a library prep and a sequencing lane, so random splitting would let the model memorise a patient instead of learning biology.",
+      "Per-patient class balance swings wildly (IFN02 is 82% mutant, IFN04 is 85% wild-type), so any feature correlating with patient identity leaks the prior.",
+      "Hashtag oligo and antibody-tag counts differ between lanes (26 tags in IFN07 versus 37 in IFN10), so panel composition is a lane fingerprint.",
+      "Genotyped cells are a biased subset of all cells - only 27-86% of each lane joins - so the model learns about CALR-expressing cells, not all stem cells."
+    ],
+    "split": "Leave-one-patient-out across the 9 patients with usable joins, with per-patient normalisation applied inside each fold. The grouping column is the patient identifier, which is the sample name in every file name (IFN01 through IFN10) - I saw it directly in the GEO file listing, so no construction is needed. Features restricted to the intersection of surface-protein tags present in all lanes.",
+    "checks": [
+      "Shuffle genotype labels within each patient and confirm the leave-one-patient-out AUC collapses to the per-patient majority baseline.",
+      "Train on CALR expression alone; if that single feature matches the full model, the result is a capture artefact, not biology.",
+      "Drop all interferon-response genes and re-run, to confirm the model is not reading treatment state instead of genotype.",
+      "Report per-patient AUC separately, not pooled, so one large patient (IFN10 contributes 11,910 cells) cannot carry the headline number.",
+      "Transfer to the 2019 cohort (GSE117824/5) with genes only, which removes the antibody-panel fingerprint entirely."
+    ],
+    "verdict": "Manageable. The crucial advantage is that mutant and wild-type cells come from the same patient, the same lane and the same library prep, so the usual batch confound between classes simply does not exist here; the real work is ablating CALR and respecting patient grouping."
+  },
+  "success_criteria": {
+    "metric": "Area under the receiver-operating curve computed per held-out patient and then averaged, plus precision among the top 10% most confident predictions - because the user's decision is 'should I trust an imputed genotype for this cell', which is a thresholded yes/no, not a ranking.",
+    "baselines": "Three, all computable on day one: (1) per-patient majority class, which given the skew (IFN04 is 85% wild-type) already gives high accuracy and so forces the use of AUC; (2) logistic regression on CALR expression alone, the technical-artefact baseline; (3) logistic regression on 2,000 highly variable genes. No published number exists on this task - the closest, an F1 of 0.86 for CALR from bone-marrow slide images, is a conference abstract at the patient level, not the cell level.",
+    "success": "Mean per-patient leave-one-patient-out AUC at or above 0.75 with CALR ablated, and at or above 0.65 when transferred to the independent 2019 cohort (GSE117824/5, genes only).",
+    "noise_ceiling": null,
+    "kill": "Stop at the end of week 2 if mean leave-one-patient-out AUC is below 0.60, or if removing CALR expression leaves performance unchanged at chance level - either means there is no phenotype signal to find and the project becomes a short negative-result note."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Cell Genomics",
+      "why": "Publishes biology-first computational work on human clonal haematopoiesis; it would take a clearly positive result - per-patient AUC above 0.75 that transfers to the 2019 cohort - plus an interpretable mutant signature that lines up with the known unfolded-protein-response biology."
+    },
+    "realistic": {
+      "journal": "Genome Biology",
+      "why": "Publishes methods and benchmarks built on public genomics data; the most likely outcome - a moderate, strongly cell-type-dependent accuracy plus a usable genotype-imputation tool and an honest held-out-patient evaluation - is exactly its register."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes resources and negative or partial results; even 'single-cell genotype is largely unpredictable from the transcriptome of uncommitted stem cells', released with the cleaned 44,101-cell benchmark table and the barcode-join audit, is a complete paper there."
+    }
+  },
+  "pitch": {
+    "headline": "44,101 single blood stem cells with a directly measured mutation label - mutant and wild-type side by side in the same patient, same experiment.",
+    "what_makes_the_data_unusual": "The 22,315 mutant and 21,786 wild-type cells share patient, lane and library prep, so no batch effect separates the classes. I verified this by joining the files myself. The disease is copy-number neutral, so the standard copy-number-based tools cannot work here at all.",
+    "the_win": "Mean per-patient held-out area under the curve at or above 0.75 after ablating CALR expression, still at or above 0.65 on the independent 2019 cohort where I verified 6,104 labelled cells in one sample alone.",
+    "even_if_it_fails": "A failure is direct evidence that mutant stem cells are transcriptionally indistinguishable from their neighbours until they commit - the field's core hypothesis, tested head-on - and leaves behind a reusable 44,101-cell benchmark table.",
+    "who_wants_it": "The Nam and Landau labs at Weill Cornell who made this data, the Velten lab behind CloneTracer, and the Mead lab behind TARGET-seq; all three would decide whether to impute genotypes for the 25-70% of cells their assay fails to call."
+  },
+  "ml_idea": "Binary classification of single-cell somatic genotype from phenotype. Input per cell: 36,601 gene counts plus 26 surface-protein tag counts from the paired CITE-seq library. Output: mutant versus wild-type CALR, with the truth coming from targeted amplicon sequencing of the same cell. Baselines: per-patient majority class, CALR-expression-only logistic regression, and highly-variable-gene logistic regression. Main model: frozen scGPT or Geneformer embeddings with a trained head, evaluated leave-one-patient-out over 9 patients and transferred to the independent 2019 GoT cohort (GSE117824/5). The two secondary readouts are what make it interesting regardless of headline accuracy: how predictability varies across the haematopoietic hierarchy (the paper's claim is that mutant cells resist becoming inflammatory granulocytic progenitors, so separability should spike there), and whether interferon-alpha exposure increases or decreases separability.",
+  "effort": {
+    "hours_to_feature_table": 14,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 8,
+    "embedding_hours": 6,
+    "cv_run_minutes": 15,
+    "compute_note": "I timed only the parse of one 19.9 MB matrix (instant, 5.4 million non-zero entries) and the full barcode join across all ten patients (under a minute). The 14 hours to a feature table covers three different genotype file schemas, barcode-suffix handling, the IFN09 whitelist mismatch, hashtag demultiplexing, and intersecting the antibody panels (26 tags in IFN07 versus 37 in IFN10). Embedding and cross-validation times are estimates from cell counts and typical CPU throughput, not timed.",
+    "cheapest_killing_check": "Already done, and it passed: joining genotype barcodes to transcriptome barcodes gives 44,101 labelled cells (22,315 mutant / 21,786 wild-type) across 9 of 10 patients. The next cheapest check, before any modelling, is to fit logistic regression on CALR expression alone - if that single feature already reaches the full model's AUC, the signal is a capture artefact and the project is over."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes on files I actually opened, and the killing check came out better than expected: 44,101 single cells with a directly measured, nearly balanced mutant/wild-type label, where the two classes share patient, lane and library prep so no batch effect separates them. The label is amplicon sequencing of the gene itself, not any model's output. The question cannot produce a useless answer - low accuracy means mutant stem cells are transcriptionally cryptic, high accuracy gives a usable genotype-imputation tool for the 25-70% of cells the assay fails to call. No open model does this task: cardelino and CloneTracer read the variant reads that are our label, and copy-number tools have no signal in this copy-number-neutral disease. An independent 2019 cohort is verified downloadable and joining for external validation, open-weight single-cell foundation models fit the data type on a laptop CPU, and the whole working set is about 1 GB. Main caveats: one centre and ~13 patients, one patient's genotype file needs manual barcode resolution, and CALR expression must be ablated to rule out a capture artefact."
+}

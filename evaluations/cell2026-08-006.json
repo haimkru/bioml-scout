@@ -1,0 +1,124 @@
+{
+  "paper_id": "cell2026-08-006",
+  "title": "Cross-species single-cell atlas of the striatum defines cell-type and subregion disease vulnerabilities.",
+  "doi": "10.1016/j.cell.2026.08.006",
+  "journal": "Cell 189(20), Oct 2026 (PMID 42679819; no PMCID). Europe PMC: isOpenAccess=N, inEPMC=N, so no full text. Used the abstract, Europe PMC text-mined annotations (key-resources snippets), NeMO and GEO metadata. NCBI elink from PubMed to gds/bioproject/sra/biosample returned no links; GEO series were found by esearch on contributor names.",
+  "data_url": "GEO GSE327439 (per-cell HTT CAG sizing csv.gz 1.6 MB + 46 per-library reads csv.gz, 26 MB tar); GEO GSE327450 (HD/PN caudate+NAc multiome snRNA: 36 raw_feature_bc_matrix.h5 18-113 MB, 2.33 GB tar; Allcells.rds 3.8 GB; MSN.rds 1.5 GB); GEO GSE344678 (17 PN putamen h5, 916 MB tar); GEO GSE294239 (mouse DS/VS vehicle vs clozapine, 26 h5, 2.5 GB tar; annotation.h5ad 114 MB); NeMO nemo:col-aa012a9 (access 'restricted', human atlas via dbGaP phs004675, manifest empty, status 'ongoing')",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I downloaded and parsed GSE327439_percell_repeat_sizing.csv.gz (sha256 3dd28315...): 26,468 nuclei x 28 cols, no duplicate cell_id, from 5 donors (HD BG4/BG7/BG13 in Cd+NAc; PN BG9/BG11 in Cd only) and 26 snRNA libraries. Celltype is NaN for 12,687 rows. expansion_index equals cag_repeats_mean_exp minus the donor's modal expanded CAG exactly (I recomputed it: r=1.0, max diff 0). Counts: 1,470 HD MSNs have >=3 expanded-allele reads, and 95 of them have mean CAG >150 (114 at >=1 read; 192 of all HD nuclei, 72 of those with NaN Celltype). I opened one reads.csv.gz (35,644 PacBio CCS HTT inserts with barcodes) and the smallest snRNA h5 (GSM9657516, 18.8 MB): 10x raw matrix, 36,601 Ensembl IDs on GRCh38, int32 UMIs, and all 133 sizing barcodes for that library are present. I also read the GEO SOFT and filelists for all 4 series, the NeMO collection JSON (restricted, dbGaP phs004675), and the HD-Phase-Model full text (PMC13478745) plus its GitHub tree (Phase_model.rds, CAG_sizing_model.rds). Handsaker NeMO dat-ztfn3cc reports access 'open', and its processed directory returns HTTP 200.",
+    "what_came_from_paper_text_only": "From the abstract only: 109 human and 22 mouse samples, dorsolateral-ventromedial gradients, GWAS/opioid/antipsychotic integration, and the HD subregion vulnerability. I did not open the other 25 HD snRNA h5 files (20 are over the 50 MB cap, 1.72 GB total) or the Seurat RDS files, so the barcode join is verified for 1 of 26 libraries. I also did not open the mouse h5ad (114 MB) or the putamen h5s. How the norm/exp allele split and Celltype (CellTypist is listed in the key resources) were derived is undocumented in the files and was not read in the paywalled methods. The dbGaP phs004675 esearch returned 0 hits (not released or not indexed)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass for the HD subset (checked): GEO files return HTTP 200 anonymously. FLAG: the headline human atlas (109 samples, SCORCH/HIV consortium) is controlled access, NeMO 'restricted' with dbGaP phs004675 (not yet found in dbGaP). Only 53 human libraries are public in GEO (36 HD-study + 17 putamen)."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass (checked). Per-nucleus measured CAG length (cag_repeats_mean/median/mode/max_exp) and expansion_index are columns, and a >150-CAG class is a one-line threshold. The features (snRNA counts) sit in a separate per-library h5, joined on snRNA_library + rna_barcode; 133/133 matched for the one library tested. This is a feature join, not label construction."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass (checked on 1 library). The h5 holds full UMI count matrices with Ensembl gene IDs (GRCh38) and needs no identifier lookups. Raw matrices include empty droplets, which the barcode join filters out."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked). Values are CAG repeat counts (integers per read, with mean/median/mode per nucleus), and the column names state the unit. expansion_index is in repeat units relative to the donor's inherited (modal) allele. I inferred this definition by recomputation because no README documents it."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 1470,
+      "note": "Weak pass (checked). 1,470 HD MSNs have >=3 expanded-allele reads (classification threshold 400), but only 95 are >150 CAG, and they come from 3 HD donors (BG13 contributes 62). As a stand-alone training set this fails in spirit (donor is the unit). It is adequate only as an external test set for a model trained on Handsaker's 6,611 sized SPNs."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "Sizing CSV 1.7 MB. The 26 needed HD snRNA h5 files are 1.72 GB on disk (20 over the 50 MB cap). Subset to the 26,468 sized barcodes, the sparse matrix should be well under 1 GB (estimate, not loaded). The Handsaker processed-data size was not checked.",
+      "note": "CPU-only. Geneformer embedding of about 10-30k SPN nuclei is feasible on a laptop in hours (not timed)."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass for the chosen subset; the paper is paywalled, so only the GEO design could be checked. 3 HD + 3 PN donors in Cd/NAc match the GEO overall design, but the sizing table lacks BG10 and PN NAc. Unrelated mismatches: the abstract's 22 mouse samples vs 26 mouse GEO libraries (13 mice), and the 109 human samples vs 53 public GEO libraries. Neither can be resolved without the full text."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass (checked). The CAG length comes from PacBio long-read sizing of HTT molecules captured from the same nucleus's ATAC library: a physical measurement, independent of the RNA features. Flags: Celltype (incl. 'De-repressed MSN') is a transcriptome-derived annotation and must not be used as a feature. Single-read nuclei give noisy labels, and capture/PCR may under-sample very long alleles."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 9,
+    "c_worth_asking": 9,
+    "d_backbone_fit": 6,
+    "g_integration": 7,
+    "h_missing_data": 6,
+    "i_does_anyone_care": 6,
+    "j_fit_finishability": 6
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "HD-Phase-Model (Maestri et al., J Huntington's Dis 2026, PMID 42007924, PMC13478745; github.com/MaestSi/ELongATE_CAG_sizing, GPL-3.0)",
+        "open_weights": true,
+        "score_and_split": "glmnet logistic on Phase C/D genes, trained on Handsaker caudate (6,611 sized SPNs, 747 >150 CAG), leave-one-donor-out. It got 94% of test SPNs into the correct phase, and the across-donor fraction correlation was r=0.75. The >150 CAG regression scored Spearman 0.75 on one held-out donor (n=72). The other external sets had no CAG sizing, so only qualitative checks were possible.",
+        "authors_named_unsolved": "They name the limited availability of sized SPNs, 'all from a single study'. Their NAc/putamen claims rest on datasets without CAG measurements, so the cross-region and cross-lab accuracy is untested.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Handsaker et al., Cell 2025 (PMID 39824182): ELongATE phase framework, not an ML model",
+        "open_weights": null,
+        "score_and_split": "Descriptive: SPNs with >150 CAG lose identity genes and de-repress Phase D genes. Data on NeMO dat-ztfn3cc (access 'open'; processed dir returns HTTP 200).",
+        "authors_named_unsolved": "Not read beyond the search summary.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Geneformer (ctheodoris/Geneformer) or scGPT (whole-human/brain checkpoint), frozen, with a logistic/ridge head on SPN nuclei",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: cache embeddings once for about 2k sized MSNs here plus about 7k Handsaker SPNs (hours, not timed). The baselines (glmnet on Phase genes, released RDS) need R only.",
+    "licence": "Geneformer Apache-2.0 (HF API checked); scGPT MIT (GitHub API checked); HD-Phase-Model GPL-3.0. GEO data has no licence statement, and the NeMO human atlas is restricted."
+  },
+  "integration": {
+    "partner_dataset": "Handsaker et al. 2025 Broad HD caudate snRNA + per-nucleus CAG (NeMO dat-ztfn3cc, open) as the training set. GSE344678's 17 PN putamen donors and the Maestri model's unsized targets serve as application and negative sets.",
+    "join_key": "Ensembl gene ID (feature-space alignment, GRCh38; strip version suffixes). Within this dataset: snRNA_library + rna_barcode, one-to-one (133/133 on the tested library). Collapse rule: sum duplicate symbols, and keep a nucleus's merged PacBio libraries as one row (gsm_ids already merged).",
+    "bigger_question_one_sentence": "Is the transcriptional signature of HTT CAG super-expansion invariant across labs, sizing assays (10x+PCR vs multiome-ATAC+PacBio capture) and striatal subregions (caudate to NAc)? If so, super-expanded SPN fractions can be estimated in the many unsized HD snRNA atlases."
+  },
+  "controls": {
+    "positive_control": "MSNs vs glia/interneurons: verified D1/D2 matrix MSN median expansion index 10-14 vs about 0 in astrocytes/oligos/OPC/microglia. 'De-repressed MSN' median is 193. A trivial target is predicting MSN vs glia from the transcriptome. Also reproduce Maestri's LODO 94% phase accuracy on Handsaker data with their released RDS.",
+    "negative_control": "PN donors BG9/BG11 (2,709 nuclei, measured expansion index max 3.3) and the 17 PN putamen donors must be called non-super-expanded. Run label shuffles within donor, and a library/batch-only model to expose batch leakage.",
+    "external_validation": "Train on Handsaker (Broad lab, caudate) and test on this dataset (Heiman/Kellis lab, different assay). Test caudate-to-NAc on 49 NAc >150 nuclei (>=1 read). No year column; the donor is the grouping unit."
+  },
+  "honest_claim_h3": "Claim: a transcriptome-only classifier trained on Broad caudate SPNs does or does not flag nuclei with >150 HTT CAG repeats, as measured by an independent multiome+PacBio assay. Scope: 3 early-grade (Vonsattel 0/1) HD donors in caudate and NAc, about 95 positives among 1,470 MSNs, and only nuclei that survived RNA QC with >=3 expanded-allele reads.",
+  "pitch": {
+    "headline": "Per-nucleus HTT CAG repeat lengths, measured by PacBio, sit in one 1.7 MB table — an independent test set for an open published model.",
+    "what_makes_the_data_unusual": "The label is a physical measurement independent of the features: PacBio sizing of HTT molecules from the same nucleus's ATAC library, giving 26,468 sized nuclei with no duplicate cell_id, of which 1,470 are HD MSNs with >=3 expanded-allele reads and 95 exceed 150 CAG. The only other sized SPN set is Handsaker's, which the HD-Phase-Model authors themselves call 'all from a single study'; this adds a second lab, a different sizing assay and the first sized nucleus accumbens (49 NAc nuclei >150 CAG at >=1 read) — though the feature join is verified on only 1 of 26 libraries so far.",
+    "the_win": "A first measured-CAG external benchmark for HD-Phase-Model: PR-AUC and precision at its published 0.86 threshold on the 95 >150-CAG nuclei among 1,470 MSNs, reported separately for caudate and NAc, plus a CAG-length Spearman to set against the published 0.75 (n=72, one held-out donor).",
+    "even_if_it_fails": "You still own the first measured-CAG external numbers for an open model and the PN negative-control result (2,709 nuclei, measured expansion index max 3.3). But a negative result would be ambiguous rather than clean: with 3 HD donors, 62 of 95 positives from BG13, and 72 of the >150 HD nuclei carrying no Celltype call, failure can't be cleanly attributed to non-transferability versus QC selection bias.",
+    "who_wants_it": "Maestri et al., who named single-study sized data as their model's limitation and left cross-lab and cross-region accuracy untested, plus the Handsaker/Broad group and HD labs holding unsized snRNA atlases. The decision it changes: whether super-expanded SPN fractions can be estimated in those unsized atlases, and whether the model may be applied outside the caudate — the paper's own subregion-vulnerability claims rest on the abstract alone, since the full text is paywalled."
+  },
+  "plain_idea": {
+    "one_liner": "Use gene activity in single brain-cell nuclei to predict whether that cell's Huntington's disease gene repeat has grown beyond 150 copies.",
+    "train_on": "Each example is one cell nucleus from the striatum, a deep brain region, described by counts of RNA molecules for every gene, measured by single-nucleus RNA sequencing. The model is trained on a separate lab's dataset of about 6,611 striatal nerve-cell nuclei whose repeats were sized (Handsaker et al. 2025, caudate). This paper's data is the test set. It has 1,470 nerve-cell nuclei from 3 early-stage Huntington's disease donors, with at least 3 sequencing reads of the expanded gene copy each, from the caudate and the nucleus accumbens. About 95 of them are above 150 repeats, and 62 of those come from one donor. Data from donors without the disease, 2,709 nuclei, serves as a negative check.",
+    "predict": "A yes/no call on whether that nucleus's Huntington's disease gene (HTT) carries more than 150 copies of its three-letter CAG DNA repeat, and optionally the repeat length itself. The true answer is a physical measurement made independently of the RNA. Long-read DNA sequencing sized the HTT gene molecules captured from the same nucleus's DNA library, which was prepared alongside its RNA.",
+    "why_worthwhile": "This would be the first independent test of an openly released published model against measured repeat lengths, and the first in a second brain region (the nucleus accumbens). Either outcome tells Huntington's disease researchers whether the gene-activity signature of extreme repeat growth holds across labs, measurement methods and brain regions. If it holds, the share of such cells could be estimated in the many existing Huntington's datasets that never measured repeat length."
+  },
+  "ml_idea": "(1) Run the released HD-Phase-Model RDS on the GSE327450 counts joined to GSE327439 sizing. This is the first external test against measured CAG, reported as PR-AUC and precision at its 0.86 threshold, split by caudate vs NAc. (2) Fit frozen Geneformer/scGPT embeddings plus a logistic head on Handsaker SPNs and test here. Compare against glmnet on Phase genes and a one-gene-set Phase-D score threshold. (3) Regress CAG length on the >150 nuclei and compare with the published Spearman of 0.75.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "cheapest_killing_check": "Partly done: 95 HD MSNs >150 CAG with >=3 reads (62 from BG13). Next, download the 26 HD h5 files (1.72 GB), subset to the 1,470 sized MSNs, check UMI QC and that the HD-Phase-Model Phase C/D genes are present, and run Phase_model.rds. Kill if fewer than about 50 positives survive RNA QC, or if the >150 nuclei are mostly the 72 with NaN Celltype (QC selection bias).",
+    "working_set_gb": null,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Numbers come from file sizes on disk/GEO listings (1.7 MB sizing CSV, 26 HD snRNA h5 files totalling 1.72 GB) plus an unloaded estimate that the barcode-subset sparse matrix is 'well under 1 GB'; nothing was timed, and Geneformer embedding of ~10-30k nuclei is only described as 'hours, not timed'."
+  },
+  "roi": 14,
+  "verdict": "verify_first",
+  "verdict_reason": "The label is a measured column, the sizing table is small and clean, the join works on the tested library, and there is a strong informative-either-way angle: the first independent, measured-CAG validation of an open published model, including the first sized NAc. Risks: only 3 HD donors and about 95 positives, feature files mostly over the 50 MB cap (join verified on 1 of 26 libraries), possible QC dropout of super-expanded nuclei, and a headline 109-sample atlas that is controlled access (dbGaP phs004675).",
+  "c2_backfill": {
+    "score": 1,
+    "why": "Only HD-Phase-Model exists: open, leave-one-donor-out, but trained on one study; never tested externally against measured CAG."
+  }
+}

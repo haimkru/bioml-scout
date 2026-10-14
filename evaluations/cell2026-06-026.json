@@ -1,0 +1,48 @@
+{
+  "paper_id": "cell2026-06-026",
+  "title": "Multimodal evidence for bone lymphatics in skeletal health and repair.",
+  "doi": "10.1016/j.cell.2026.06.026",
+  "journal": "Cell 189(17), Aug 2026 (PMID 42624078, PMC13502997, cc by). This is a Matters Arising Response to Meng et al. 2026 (PMID 42624077), published in the same issue.",
+  "data_url": null,
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I read the Europe PMC full-text XML. The Data and code availability section says only 'All codes ... are provided in Methods S1'. The methods sentence reads 'obtained from GEO under accession number.' with no accession given. The supplement holds three PDFs (figures, Methods S1 code, article reprint) and no tables. Europe PMC accession annotations return only antibody RRIDs. NCBI elink from the PMID returns no GEO, SRA or BioProject links. The GitHub repo (sunny-yangyang/Multimodal) holds one 27.9 KB docx of R code. It names GSE190965, GSE190966 and GSE190967, and marks the last two '# Placeholder'. On GEO, GSE190966 is beef RRBS and GSE190967 is bulk RNA-seq from 113 HCC tumours, so both are unrelated. GSE190965 is human BM CD45-CD235a- scRNA-seq (PMID 36876630). Its barcodes file has 58,197 cells and its features file 60,662 Ensembl genes. Its spliced and unspliced mtx files are 149 MB and 109 MB, so I did not download them. The barcodes carry only a sample ID, with no cell-type or LEC column.",
+    "what_came_from_paper_text_only": "The paper reanalyses public scRNA-seq datasets (Li, Baryawno, Hanai, mandible, Wang embryonic mandible, Bandyopadhyay femoral head, iliac crest aspirates, soft-tissue EC atlases, periosteum) and Visium datasets (Mathavan, Rios, human femoral head), identified by citation only. The light-sheet and confocal imaging of mouse bones and human mandibles is new but not deposited. Prox1hi LEC counts per dataset appear only in the Figure 3A image, which I did not inspect."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Fail for the paper's own data (checked). It deposits no data: new imaging is not released, no accession list is given, and two of the three accessions in the released code are unrelated placeholders. The reanalysed GEO sets are public, but recovering them means resolving about 15 datasets from citations by hand."},
+    "a2_label_is_a_column": {"pass": false, "note": "Fail (checked in GSE190965). No released table assigns cells to LEC or non-LEC. The label would have to be built per dataset by rerunning Seurat (QC, Harmony, clustering, manual EC annotation, EC subclustering) and then thresholding Prox1."},
+    "a3_inputs_present": {"pass": true, "note": "Weak pass. Count matrices with Ensembl IDs exist in GEO (checked for GSE190965). The other source datasets are not enumerated, so I checked only one."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI counts (mtx). Units are implicit but standard. This is not the binding problem."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Not verified. GSE190965 has 58,197 cells, but the target class (Prox1hi ECs) is described as sparse, and per-dataset counts exist only in a figure. The independent unit is the donor or dataset (about 12 human femoral-head samples, a handful of mouse datasets), not the cell."},
+    "a6_fits_laptop": {"pass": true, "working_set": "About 260 MB of mtx for GSE190965 alone. Roughly 1 to 5 GB across all reanalysed scRNA-seq and Visium sets (estimated, not checked).", "note": "Plausible on 16 GB for EC-subset work. It is unverified because the dataset list is not given."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot check. The text gives no per-dataset cell or LEC counts, and the released code's accessions do not match the cited datasets."},
+    "a8_label_provenance": {"pass": false, "note": "Fail: leakage by construction. A LEC is defined as an EC with Prox1 above mean+2SD of all ECs, gated on Cdh5/Pecam1/Ptprc/Flt4 expression, so the label is computed from the features. The label is also the disputed claim itself, since Meng et al. argue these cells are absent or contaminants, so no physical ground truth exists."}
+  },
+  "part_a_verdict": "reject",
+  "scores": {
+    "b_model_readiness": null,
+    "c_worth_asking": null,
+    "d_backbone_fit": null,
+    "g_integration": null,
+    "h_missing_data": null,
+    "i_does_anyone_care": null,
+    "j_fit_finishability": null
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scGPT (Cui et al., Nat Methods 2024, PMID 38409223)", "open_weights": null, "score_and_split": "Not read. I know it only from a search-result snippet describing cell-type annotation transfer.", "authors_named_unsolved": "Not read.", "runnable_as_baseline": null},
+      {"name": "FiRE, Finder of Rare Entities (Nat Commun 2018)", "open_weights": null, "score_and_split": "Not read. I know it only from a search-result snippet: a sketching-based rareness score for scRNA-seq.", "authors_named_unsolved": "Not read.", "runnable_as_baseline": null}
+    ],
+    "note": "Three web searches. No ML model for detecting bone or marrow LECs was found, so the task is likely novel as ML, but evaluation stopped at Part A. The field question is a marker-based biological dispute, not a modelling gap."
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell). Not assessed further.", "freeze_and_head_viable": null, "hardware": "not assessed", "licence": "Paper cc by. GEO source data public (GSE190965 notes reads withheld under Swedish law, but processed matrices are open)."},
+  "integration": {"partner_dataset": "Not assessed. A soft-tissue EC atlas such as the Kalucka 2020 murine EC atlas would be the natural partner.", "join_key": "Ensembl gene / gene symbol (feature space only, no row-level key)", "bigger_question_one_sentence": "Not assessed: stopped at Part A."},
+  "controls": {"positive_control": "not assessed", "negative_control": "not assessed", "external_validation": "not assessed"},
+  "honest_claim_h3": "Not reachable. Any model would only reproduce the authors' rule (Prox1 above mean+2SD among Cdh5+Pecam1+Ptprc- cells) on datasets they selected, and would say nothing about whether bone LECs exist.",
+  "ml_idea": "Unscored. Train an LEC-vs-BEC classifier on soft-tissue EC atlases with Prox1, Flt4, Lyve1 and Pdpn masked, then score bone ECs to arbitrate the dispute. Labels would still be marker-derived and the positive class tiny, so it inherits the A8 problem.",
+  "effort": {"hours_to_feature_table": null, "cheapest_killing_check": "Already failed. No data or accession list is released, and the only label is Prox1 above mean+2SD computed from the expression matrix. Check: open the GitHub docx and see that GSE190966/7 are 'Placeholder' and unrelated on GEO."},
+  "roi": null,
+  "verdict": "reject",
+  "verdict_reason": "This is a Matters Arising response with no deposited data and no label column. Its accessions are placeholders, two of them unrelated on GEO, and 'LEC' is a Prox1 expression threshold computed from the features (A1/A2/A8)."
+}

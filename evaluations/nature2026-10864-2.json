@@ -1,0 +1,136 @@
+{
+  "paper_id": "nature2026-10864-2",
+  "title": "FNIP1 variants are associated with favourable metabolism in 1 million humans.",
+  "doi": "10.1038/s41586-026-10864-2",
+  "journal": "Nature",
+  "data_url": "https://rgc-community.regeneron.com/summaries/genetic-associations-with-tg-hdl-ratio.html",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed Hindy_et_al_TGHDLratio_Rare_Variant_Gene_Level_Results.tsv.gz (1.1 MB) from the Regeneron Genetics Center (RGC) portal: 19,467 rows x 11 columns, 0 missing values, 0 duplicate genes, Ensembl IDs embedded in the Name column, 60 genes at P < 1.04e-7 and 140 at P < 1e-4; APOC3, APOB, ANGPTL3, LPL, ANGPTL4 rank at the top and FNIP1 has P = 2.9e-10, effect -0.48 SD. Read the README (every column documented, units = SD of rank-normalised TG:HDL ratio, GRCh38). The download sits behind a click-through licence page (JavaScript button, no login); the files are fetched directly. HEAD only on the common-variant file (207 MB, not downloaded). Opened GEO GSE330407 counts: 32,422 mouse genes x 20 samples (liver Flcn knockout).",
+    "what_came_from_paper_text_only": "That individual-level data from UK Biobank, MCPS, GHS and other cohorts need access applications; the 1,032,116 sample size and ancestry mix; that 59 genes are 'independent' (the file has 60 at the threshold before conditioning); the hepatocyte and mouse experiments. Supplementary tables were not retrievable (Europe PMC supplementaryFiles timed out)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Gene-level burden results download directly after a click-through licence page, no account (checked). The individual-level cohort data are controlled access (UK Biobank, GHS, MCPS etc.), so only summary statistics are usable."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is already a column: PValue_Cauchy (gene-level p-value combined across 24 burden masks) and Effect (beta in SD units for the best mask). Seen in the file."},
+    "a3_inputs_present": {"pass": true, "note": "The table holds no gene features; inputs must come from one bulk join on the Ensembl gene ID (protein sequences, GTEx expression, constraint). It's a single bulk download, not thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "README states effects are in SD units of inverse-rank-normalised TG:HDL (triglyceride to HDL cholesterol) ratio, GRCh38 coordinates."},
+    "a5_enough_rows": {"pass": true, "n_rows": 19467, "note": "19,467 labelled genes (counted), but only 60 pass exome-wide significance and 140 pass P < 1e-4, so the effective number of positives is tiny."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1 MB label table plus ~1-2 GB of protein embeddings/expression features", "note": "Gene-level table is trivial; ESM-2 embeddings of ~19k proteins are a one-off CPU job."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper reports 59 independent genes; the file has 60 at P < 1.04e-7 before independence filtering, which is consistent."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a regression association statistic from measured blood lipids in ~1M people, not a model prediction. Caveat: which variants enter each mask was chosen using ESM1v and SIFT/PolyPhen predictions, so protein-language-model features share a little information with the label."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "One clean label table (checked), but every feature must be joined in from GTEx/UniProt on Ensembl ID."},
+    "B2": {"score": 2, "why": "TSV parsed first try with pandas, 0 missing values across 11 columns (checked)."},
+    "B3": {"score": 1, "why": "Single meta-analysis, but Effect comes from a different 'best mask' per gene, so betas aren't strictly comparable."},
+    "B4": {"score": 1, "why": "P-values underflow to 0 for APOB/APOC3; log10 column partly rescues it. No other censoring (checked)."},
+    "B5": {"score": 2, "why": "0 duplicate gene symbols or names in 19,467 rows (checked)."},
+    "B6": {"score": 2, "why": "README documents every column, mask code, units and genome build (read)."},
+    "C1": {"score": 1, "why": "Transfer from smaller UK Biobank burden results to 1M discoveries is informative, but positives are ~60 genes."},
+    "C2": {"score": 1, "why": "PoPS and similar gene-prioritisation models are open, but trained on common-variant GWAS, not rare-variant burden labels."},
+    "C3": {"score": 1, "why": "Weak unique-application angle: new 1M-exome TG:HDL burden labels for an existing gene-prioritisation task."},
+    "C4": {"score": 1, "why": "Exome sequencing of 1M people is very costly; prioritising genes in advance helps only somewhat."},
+    "C5": {"score": 2, "why": "Obvious dummies (gene constraint, coding length, liver expression) plus PoPS runnable as a baseline."},
+    "D1": {"score": 2, "why": "ESM-2 protein language model, open weights, joinable via Ensembl to UniProt canonical sequences."},
+    "D2": {"score": 2, "why": "Mean-pooled ESM-2 embeddings for ~19k proteins cached once on CPU, then a logistic/ridge head."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT-licensed; RGC data under its own terms-of-use licence (not read in full)."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes (Chromosome column present, checked) to stop neighbouring-gene leakage."},
+    "E2": {"ok": true, "why": "23 chromosomes present in the file (checked), enough to hold out groups."},
+    "E3": {"ok": true, "why": "Per-gene constraint or liver-expression ranking gives a meaningful dummy baseline."},
+    "E4": {"ok": true, "why": "95% confidence intervals per gene (checked) give per-gene noise; no replicates."},
+    "E5": {"ok": true, "why": "Textbook lipid genes (APOC3, ANGPTL3, LPL, APOB) top the file and must rank highest."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation are trivially runnable on a 19k-row table."},
+    "E7": {"ok": true, "why": "Genebass UK Biobank exome burden results for TG and HDL are public, though samples overlap."},
+    "E8": {"ok": false, "why": "No published ML number exists on this specific gene-level table."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs and GRCh38 positions embedded in every row (checked)."},
+    "G2": {"score": 2, "why": "GTEx expression, Genebass burden results, Open Targets, all keyed on Ensembl gene."},
+    "G3": {"score": 2, "why": "One row per gene; collapse to canonical transcript for protein features."},
+    "G4": {"score": 1, "why": "Combined question (do gene features anticipate which genes 1M exomes reveal?) is only modestly bigger."},
+    "H1": {"score": 2, "why": "All 19,467 genes reported including nulls (checked), not just hits."},
+    "H2": {"score": 1, "why": "Multi-ancestry cohorts per paper, but analysis pooled; ancestry proportions not checked."},
+    "H3": {"score": 2, "why": "Claim stated precisely in honest_claim_h3."},
+    "H4": {"score": 1, "why": "Paper documents cohorts and masks; power limits for short or rare-variant-poor genes are implicit."},
+    "I1": {"score": 1, "why": "Human-genetics drug-target groups (e.g. Regeneron Genetics Center) - a community, not a committed user."},
+    "I2": {"score": 1, "why": "Could marginally reorder candidate genes for follow-up; unlikely to redirect experiments alone."},
+    "I3": {"score": 1, "why": "Precision among top-ranked genes roughly matches a follow-up shortlist decision."},
+    "I4": {"score": 1, "why": "Liver expression plus constraint may do nearly as well as any model; ML helps somewhat."},
+    "J1": {"score": 2, "why": "Imbalanced classification, grouped splits, frozen embeddings and transfer evaluation."},
+    "J2": {"score": 1, "why": "Lipid genetics is well known, so known genes give a sanity check."},
+    "J3": {"score": 2, "why": "Feature table plus baseline ranking is shareable even if the model adds nothing."},
+    "J4": {"score": 1, "why": "No time budget set yet; roughly one to two weekends."},
+    "J5": {"score": 1, "why": "Kill condition proposed below but not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PoPS (Polygenic Priority Score), Weeks et al., Nature Genetics 2023", "open_weights": true, "score_and_split": "Prioritises genes from 57,543 gene features fitted to GWAS summary statistics; paper reports ~74% expected precision for PoPS+local on fine-mapped loci across 113 traits. Not evaluated on rare-variant burden labels at 1M scale.", "authors_named_unsolved": "Not retrieved in detail.", "runnable_as_baseline": true},
+      {"name": "DeepRVAT (Nature Genetics 2024), deep set network for rare-variant association", "open_weights": true, "score_and_split": "More gene discoveries than burden tests on 34 quantitative and 63 binary UK Biobank traits; it is an association test on individual-level data, not a gene-feature predictor.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "FuncRVP (bioRxiv 2024), Bayesian rare-variant risk model using functional gene embeddings", "open_weights": null, "score_and_split": "Uses gene embeddings as priors for rare-variant effects in UK Biobank; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model, 35M or 150M checkpoint)", "freeze_and_head_viable": true, "hardware": "Laptop CPU, ~1-3 h one-off for ~19k canonical proteins", "licence": "MIT"},
+  "integration": {"partner_dataset": "Genebass (UK Biobank exome burden results, ~394k people) for TG and HDL; GTEx median tissue expression", "join_key": "Ensembl gene ID (in the Name column)", "bigger_question_one_sentence": "Do gene features plus smaller-cohort burden results predict which genes only become significant once exome sample size reaches 1 million?"},
+  "controls": {"positive_control": "APOC3, ANGPTL3, LPL, APOB, ANGPTL4 must rank in the top 1% of predictions; liver expression should be enriched among hits.", "negative_control": "Shuffle gene labels within chromosome and confirm precision-at-k collapses to the base rate (60/19,467).", "external_validation": "Genebass UK Biobank burden results for triglycerides and HDL (overlapping samples, so not fully independent)."},
+  "honest_claim_h3": "Among ~19,500 protein-coding genes, the model ranks which ones carry detectable rare coding-variant association with TG:HDL ratio in a pooled 1M-exome meta-analysis, where detectability also depends on gene length and how many rare damaging variants exist.",
+  "plain_idea": {
+    "one_liner": "Use gene properties (protein sequence, tissue expression, intolerance to mutation) to predict which genes' rare damaging variants shift the blood triglyceride-to-HDL ratio.",
+    "train_on": "One row per human gene with features joined from protein sequence and expression atlases; 19,467 genes in the verified table.",
+    "predict": "Whether the gene has a significant rare-variant association (and its direction and size) with TG:HDL ratio, measured by regression of blood lipid levels on carrier status in ~1M sequenced people.",
+    "why_worthwhile": "Tells target-discovery groups whether a cheap gene-level model could have flagged genes like FNIP1 before a million exomes were sequenced; a failure shows rare-variant hits aren't predictable from gene annotation."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Labels come from 1,032,116 exomes versus ~394k in Genebass UK Biobank, but PoPS-style models train on GWAS signals across many traits, so ours is one trait with only 60 significant genes."},
+    "confidence_score": {"answer": "partly", "why": "Per-gene 95% confidence intervals allow weighting labels by certainty; whether PoPS reports per-gene calibrated confidence was not checked."},
+    "models_beatable": {"answer": "partly", "why": "PoPS (2023) is a linear model on hand-built features without a pretrained protein backbone, but it is open and well evaluated; beating it on 60 positives would be statistically shaky."},
+    "guaranteed_improvement": {"answer": "no", "why": "Genebass burden results overlap the same UK Biobank samples and use different masks, so the new data does not measure the same quantity the same way on an independent split."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "Genebass (UK Biobank exome burden results across thousands of phenotypes including lipids) and the AstraZeneca PheWAS portal - known resources, not opened here.", "approx_items": null, "join_key": "Ensembl gene ID", "why": "Gene-level burden labels for many related traits would allow multi-trait pretraining and an external check, though cohorts overlap with this meta-analysis."},
+  "leakage_plan": {
+    "risks": [
+      "Neighbouring genes in the same locus (e.g. APOA1/APOC3/APOA5 cluster) share signal, so splitting genes randomly leaks locus information.",
+      "Masks were defined using ESM1v deleteriousness, so ESM-based features partly encode which variants were counted.",
+      "Gene length and number of rare variants drive statistical power, so a model may learn power, not biology.",
+      "Genebass validation labels come from UK Biobank, which is also inside the 1M meta-analysis."
+    ],
+    "split": "Hold out whole chromosomes using the Chromosome column (seen in the file, 23 values), with paralog families kept on one side.",
+    "checks": [
+      "Shuffle labels within chromosome and confirm precision-at-100 drops to the 0.3% base rate.",
+      "Train on coding length and variant count alone to measure how much is statistical power.",
+      "Compare ESM-2 features with and without the ESM1v-defined masks' genes to check mask leakage."
+    ],
+    "verdict": "Manageable: chromosome hold-out handles locus leakage, but the power confound needs an explicit length/variant-count baseline."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 100 ranked genes on held-out chromosomes, because a follow-up team would examine a short list.",
+    "baselines": "Base rate 60/19,467 = 0.31% (computed); liver-expression and gene-constraint rankings (not yet computed); PoPS scores for lipid traits if available.",
+    "success": "Top-100 precision at least twice that of the best single-feature baseline on held-out chromosomes; exact numbers unknown until baselines are computed.",
+    "noise_ceiling": null,
+    "kill": "If the model adds under 0.05 PR-AUC (precision-recall area under the curve) over a coding-length plus liver-expression logistic regression after one weekend, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "American Journal of Human Genetics", "why": "Publishes rare-variant gene discovery methods; would need the model to anticipate new 1M-scale hits across several traits, not just TG:HDL."},
+    "realistic": {"journal": "Bioinformatics", "why": "A short benchmark of gene-feature models against rare-variant burden labels fits its application notes."},
+    "fallback": {"journal": "bioRxiv preprint", "why": "A negative result that rare-variant hits are explained by power plus liver expression is still a citable note."}
+  },
+  "pitch": {
+    "headline": "A clean 19,467-gene table of rare-variant TG:HDL associations from 1,032,116 exomes, downloadable without login.",
+    "what_makes_the_data_unusual": "Gene-level burden results at 1M-exome scale with 0 missing values, Ensembl IDs, confidence intervals and 60 exome-wide-significant genes including new hits like FNIP1 (P = 2.9e-10).",
+    "the_win": "A frozen protein-embedding model ranking known plus newly discovered TG:HDL genes in the top 100 on held-out chromosomes at clearly above length/expression baselines.",
+    "even_if_it_fails": "We learn whether rare-variant discoveries are just statistical power plus liver expression, which says gene-level ML adds little to target discovery.",
+    "who_wants_it": "Human-genetics target-discovery groups such as the Regeneron Genetics Center, deciding which genes to prioritise before the next sequencing round."
+  },
+  "ml_idea": "Join the RGC gene-level burden table to ESM-2 protein embeddings, GTEx expression and constraint by Ensembl ID; train a class-weighted logistic/ridge head to rank genes by TG:HDL burden signal with chromosome hold-out, benchmarked against coding-length, expression and PoPS baselines, and test transfer from Genebass UK Biobank lipid burden labels.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 2,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated: ~19k proteins through ESM-2 35M on CPU at a few proteins per second; a logistic head on 19k x 480 features cross-validates in minutes. Nothing timed.",
+    "cheapest_killing_check": "Fit logistic regression on coding length plus liver expression alone and see how many of the 60 significant genes land in its top 100; if most do, the ML project is a one-page note."
+  },
+  "verdict": "park",
+  "verdict_reason": "The open gene-level table is clean and model-ready (19,467 genes, checked), but it has only ~60 positive genes for one trait, and gene-prioritisation models like PoPS already exist, so the likely result is a marginal benchmark. Individual-level data are controlled access."
+}

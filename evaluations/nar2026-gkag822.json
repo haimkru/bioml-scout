@@ -1,0 +1,211 @@
+{
+  "paper_id": "nar2026-gkag822",
+  "title": "MOSAIC enables selective transfer and fairness-aware generalization in cross-species DNA methylation prediction.",
+  "doi": "10.1093/nar/gkag822",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://zenodo.org/records/19690524 and https://github.com/Cpillar/MOSAIC",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded MOSAIC-main.zip (15.46 MB, CC-BY-4.0) from Zenodo and opened all 40 dataset CSVs (20 tasks x train/test, 39 MB). Counted 518,934 train + 129,728 test = 648,662 rows, matching datasets/summary.csv and the paper's Supplementary Table S9 exactly. Verified every row is a 41-base DNA sequence over A/C/G/T with a 0/1 'label' column, and that the centre base is C for all 4mC/5hmC rows and A for all 6mA rows. Found that only 404,076 of the 648,662 (dataset, sequence, label) triples are unique, and that 78,057 of 129,728 test rows (60.2%) are exact sequence+label copies of a row in the same dataset's training set; 15 of 20 tasks exceed 50% (all eleven 6mA tasks are 78-83%). Traced the mechanism: in 6mA/H.sapiens and 6mA/Xoc_BLS256 exactly half the rows carry one repeated placeholder id ('AZIN2_1:33545693-33546733;+/-') and that half's (sequence,label) set is byte-for-byte identical to the other half, so each file is a doubled copy split 80:20 after doubling. Also found 4mC/A.thaliana and 4mC/C.elegans train.csv and test.csv are md5-identical (one task is a copy of another), 151 sequences carrying both labels, and that the split ratio is 4:1, not the stated 7:1. Read the supplementary tables (S01 negative provenance, S02 similarity audit, S09 per-dataset results for 7 methods, S15 out-of-distribution results) and the released data loader data/MOSAIC_data.py, which applies no deduplication.",
+    "what_came_from_paper_text_only": "That positives come from SMRT sequencing and sequencing-based assays deposited in GEO, MethSMRT, MDR and NCBI, and that CD-HIT was run at 80% identity (the released files contradict this). The six external out-of-distribution test sets (E. coli n=252 and n=776, G. pickeringii n=1,138, O. sativa n=1,760 and n=307,236, human 5mC promoters n=178,665) were read from Supplementary Table S15 and the GitHub file listing; those CSVs are not in the Zenodo archive and I did not open them. I did not run the 1.4 GB released model checkpoint."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified: downloaded the 15.46 MB Zenodo archive (CC-BY-4.0) with no login, and listed the GitHub tree. Model checkpoint is a separate 1.41 GB file."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the files: a 'label' column holds 0/1 in every one of the 40 CSVs. Nothing has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: the actual 41-base DNA sequence is in a 'sequence' column for all 648,662 rows. No accession lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Binary label, so no units. Class meaning is documented in Supplementary Table S1: 1 = reported methylated site, 0 = site 'unreported for methylation' with the same centre base (I confirmed the centre-base matching in the files)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 404076, "note": "Verified: 648,662 rows, of which 404,076 are unique (dataset, sequence, label) triples. Far above the 1,500-row bar even after deduplication."},
+    "a6_fits_laptop": {"pass": true, "working_set": "39 MB of CSV text; ~1.2 GB if all 404,076 unique sequences are held as 768-dimension embeddings", "note": "Verified sizes on disk. A frozen-backbone-plus-head baseline runs on CPU; only retraining the paper's own model would need a GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Row counts agree across my count, the repo's summary.csv and Supplementary Table S9. Two method claims disagree with the files (CD-HIT deduplication, and 7:1 vs the actual 4:1 split) but the counts themselves are unambiguous."},
+    "a8_label_provenance": {"pass": true, "note": "Positives are experimentally reported methylation sites from GEO/MethSMRT/MDR, not another model's output. Negatives are pseudo-negatives (sites merely unreported), which is a class-definition weakness, not circularity; I verified the centre base is matched between classes so the label is not trivially readable off the features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "40 clean 3-column CSVs in a group/dataset/split tree with an index file; concatenating them is five lines."},
+    "B2": {"score": 2, "why": "Every CSV parsed on the first try with pandas; three columns, no quoting or encoding problems."},
+    "B3": {"score": 1, "why": "Binary and consistent within a task, but positives come from different assays and labs across the 20 tasks."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; verified labels are strictly 0/1 and sequences strictly A/C/G/T."},
+    "B5": {"score": 1, "why": "38% of rows are exact duplicates and 151 sequences carry both labels; removable in two lines but forces a re-split."},
+    "B6": {"score": 1, "why": "Sequence and label documented; the 'id' column is undocumented and partly a repeated placeholder string."},
+    "C1": {"score": 2, "why": "'How much of reported accuracy is memorised duplicates?' is informative whichever number comes out."},
+    "C2": {"score": 1, "why": "Seven-plus open models exist, but I verified their shared test split has 60.2% exact train/test duplication."},
+    "C3": {"score": 2, "why": "Clear 'better' angle with hard evidence counted in the files, not inferred from the paper."},
+    "C4": {"score": 2, "why": "Ground truth needs SMRT or bisulfite sequencing of a whole genome; expensive per species."},
+    "C5": {"score": 2, "why": "Supplementary Table S9 gives per-dataset accuracy/MCC/AUROC for 7 methods; released checkpoint re-runnable."},
+    "D1": {"score": 2, "why": "DNABERT-2-117M, a DNA language model, is bundled in the repo and public on HuggingFace."},
+    "D2": {"score": 2, "why": "41-base inputs; embeddings for 404,076 unique sequences cache once on CPU, then linear heads."},
+    "D3": {"score": 2, "why": "Data is CC-BY-4.0 (verified via the Zenodo API); DNABERT-2 weights are publicly redistributable."},
+    "E1": {"ok": true, "why": "Exact-sequence deduplication plus re-split, and held-out species and held-out modification type are both available."},
+    "E2": {"ok": true, "why": "19 unique component datasets spanning 12+ species and 3 modification types; many are over 5,000 rows."},
+    "E3": {"ok": true, "why": "Every task is 1:1 balanced, so majority class gives accuracy 0.5 and MCC 0; a 4-mer count model is the next dummy."},
+    "E4": {"ok": false, "why": "No replicate measurements. Only 151 of 404,076 sequences disagree on label, too few to set a noise ceiling."},
+    "E5": {"ok": true, "why": "Bacterial 6mA (Xoc_BLS256) should show a strong recognition motif; predicting the centre base is trivially learnable."},
+    "E6": {"ok": true, "why": "Label shuffling, feature ablation and random-sequence features are all cheap on 41-base inputs."},
+    "E7": {"ok": true, "why": "Six released external sets (E. coli, G. pickeringii, rice, human 5mC) from other studies; counts read from Table S15."},
+    "E8": {"ok": true, "why": "MOSAIC's overall MCC 0.8045 and worst-task MCC 0.5527 are tabulated, and the checkpoint plus evaluation script are released."},
+    "G1": {"score": 1, "why": "Only species names as folder names and a mostly placeholder id column; no genomic coordinates in the files."},
+    "G2": {"score": 1, "why": "MethSMRT and reference genomes are namable partners, but joining needs 41-mers remapped to coordinates first."},
+    "G3": {"score": 1, "why": "Mapping 41-base sequences back to a genome will multi-hit in repeats; a collapse rule would be needed."},
+    "G4": {"score": 1, "why": "Genomic-context generalisation is a real question, but the coordinate reconstruction is most of the work."},
+    "H1": {"score": 1, "why": "Negatives are 50% of rows by construction but are 'unreported', not measured unmethylated sites."},
+    "H2": {"score": 2, "why": "Plants, animals, fungi, bacteria and protists across 12+ species and three modification types."},
+    "H3": {"score": 2, "why": "The honest claim can be written in one sentence; see honest_claim_h3."},
+    "H4": {"score": 1, "why": "Paper is explicit about pseudo-negatives and does a cross-component audit, but never checks train/test duplication."},
+    "I1": {"score": 2, "why": "The groups behind MOSAIC, UniMethylNet, Methyl-GP and iDNA-ABF, plus reviewers of this sub-literature."},
+    "I2": {"score": 2, "why": "A documented inflation would force re-benchmarking of a whole lineage of published predictors."},
+    "I3": {"score": 2, "why": "The metric is exactly the decision: is a published benchmark number trustworthy or memorised?"},
+    "I4": {"score": 1, "why": "The audit itself is counting plus re-running; a motif or k-mer model may explain much of the real signal."},
+    "J1": {"score": 2, "why": "Frozen DNA language model plus heads, grouped splits, leakage analysis and multi-task evaluation."},
+    "J2": {"score": 2, "why": "Bacterial recognition motifs and the centre-base constraint give hard sanity checks on any output."},
+    "J3": {"score": 2, "why": "The duplication tally alone is shareable; the cleaned benchmark is useful even with no model."},
+    "J4": {"score": 2, "why": "Four weeks: one week to audit and clean, two to train baselines, one to write up."},
+    "J5": {"score": 2, "why": "Kill at week two if the leaked-vs-clean MCC gap is under 0.03 and upstream benchmarks are clean."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "MOSAIC (this paper; DNABERT-2 backbone with prompt-routed sparse mixture-of-experts)",
+        "open_weights": true,
+        "score_and_split": "Accuracy 0.9022, Matthews correlation coefficient (MCC, a balanced accuracy score from -1 to 1) 0.8045, worst-task MCC 0.5527 on the 129,728-row 'independent test set'. I verified 60.2% of those test rows are exact copies of training rows.",
+        "authors_named_unsolved": "They name the pseudo-negative class ('unreported', not measured unmethylated) and poor behaviour under class imbalance as open problems, and report zero-shot MCC on unseen species falling to 0.24-0.55.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "UniMethylNet (J Chem Inf Model 2025; the benchmark's originator, a bidirectional LSTM with dual attention)",
+        "open_weights": null,
+        "score_and_split": "Mean accuracy 87.78%, mean AUROC 93.01% across the same 20 datasets per its abstract; MOSAIC's re-run gives accuracy 0.8320 and MCC 0.6696 on the same leaky split.",
+        "authors_named_unsolved": "Cross-species and cross-modification generalisation; the abstract frames limited training-set scale and diversity as the obstacle.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Methyl-GP (Nucleic Acids Research 2025; DNA language model plus a fusion module)",
+        "open_weights": null,
+        "score_and_split": "Accuracy 0.8296, MCC 0.6603 on this 20-task split as re-run by the MOSAIC authors; originally reported on 17 benchmark datasets of the same lineage.",
+        "authors_named_unsolved": "Generalising across species whose sequence patterns are not conserved with the training species.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "iDNA-ABF (Genome Biology 2022; multi-scale DNA language model with adversarial training)",
+        "open_weights": true,
+        "score_and_split": "Beat iDNA-ABT, iDNA-MS, BERT6mA and Deep6mA on 15 of 17 datasets, average accuracy +1.34% over iDNA-ABT, on the same lineage of train/independent-test splits.",
+        "authors_named_unsolved": "Interpretability and transfer to low-resource species.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Others re-run in Supplementary Table S9: E-Net, SNNRice6mA, MSNet, iDNA-OpenPrompt",
+        "open_weights": null,
+        "score_and_split": "MCC from 0.205 (E-Net) to 0.751 (MSNet) on the same 129,728-row leaky test set; all per-dataset numbers are tabulated.",
+        "authors_named_unsolved": "Not retrieved individually.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2-117M (a 117-million-parameter DNA language model), bundled in the repo under hf_models/",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop: embed 404,076 unique 41-base sequences once (~2-4 h estimated), then train linear or small multilayer-perceptron heads per task in minutes. Nucleotide Transformer or HyenaDNA are drop-in alternatives.",
+    "licence": "Data CC-BY-4.0 (verified via the Zenodo API). DNABERT-2 weights are publicly downloadable and a LICENSE file ships in the repo; I did not read its text."
+  },
+  "integration": {
+    "partner_dataset": "MethSMRT (single-molecule real-time sequencing methylomes for ~150 prokaryotic genomes) and REBASE (restriction-modification enzyme recognition motifs), plus the six released external out-of-distribution sets",
+    "join_key": "Species name mapped to NCBI taxonomy ID is immediate; joining to genome annotation needs the 41-base sequences remapped to reference-genome coordinates, which the files do not carry.",
+    "bigger_question_one_sentence": "Do these predictors learn the recognition motifs of the methyltransferases actually present in each species, or only the artefacts of how non-methylated sites were sampled?"
+  },
+  "controls": {
+    "positive_control": "Two: (1) predict the centre base from the sequence, which must be near-perfect; (2) the bacterial 6mA set (Xanthomonas oryzae Xoc_BLS256) must show a strong recognition motif that a simple position-weight-matrix model already captures, since bacterial adenine methyltransferases have fixed target motifs.",
+    "negative_control": "Shuffle labels within each task and confirm MCC collapses to 0; replace sequences with random 41-mers of matched base composition; ablate to GC-content-only and centre-base-only features.",
+    "external_validation": "The six released external sets: Escherichia coli 4mC (n=252 and n=776), Geobacter pickeringii 4mC (n=1,138), Oryza sativa 6mA (n=1,760 and n=307,236) and human 5mC promoters (n=178,665). Counts from Supplementary Table S15; the CSVs sit in the GitHub repo, which I listed but did not open."
+  },
+  "honest_claim_h3": "On the 20-task cross-species DNA methylation benchmark as it is actually distributed, 60.2% of the 'independent test' rows are exact duplicates of training rows and two of the twenty tasks are the same file, so published task-level accuracy partly measures memorisation; after removing duplicates and re-splitting, performance falls by X MCC, and the remaining signal is what these models genuinely learn about reported-versus-unreported methylation sites in 12 species.",
+  "plain_idea": {
+    "one_liner": "Use 41-base DNA sequence windows to predict whether the centre base is a methylated site, after removing duplicated test examples.",
+    "train_on": "41-base DNA sequences centred on a candidate cytosine or adenine, from 19 unique datasets covering plants, animals, fungi, bacteria and protists. 648,662 rows as distributed, 404,076 unique after removing exact duplicates, all counted in the files.",
+    "predict": "A yes/no call on whether the centre base is a methylation site of one of three chemical types. The 'yes' answers come from published sequencing experiments (single-molecule real-time sequencing and related assays) deposited in GEO, MethSMRT and MDR; the 'no' answers are sites merely never reported as methylated, which is an assumption rather than a measurement.",
+    "why_worthwhile": "At least seven published predictors are ranked on this exact benchmark, and 60% of its test rows are memorisable, so the field's leaderboard may be largely measuring duplication; a cleaned benchmark plus honest numbers would tell every group building these tools what their models really achieve."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "It is the same data the existing models used; our edge is removing 244,586 duplicate rows from it and re-splitting, not adding anything. The six external sets are also the paper's own release."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Per-task sample sizes span 1,098 to 215,200, so honest per-task uncertainty intervals are computable and most existing papers report point estimates only; but there are no replicate measurements, so a per-prediction confidence cannot be calibrated against measurement noise."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "MOSAIC (2026) reports MCC 0.8045 on a split where I counted 60.2% exact train/test duplication, and its own zero-shot MCC on unseen species drops to 0.24-0.55. The comparison methods include 2019-2022 convolutional networks (SNNRice6mA, E-Net) at MCC 0.21-0.63. None was evaluated on a duplicate-free split."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The project's point is to make the published numbers go down, not up. The released MOSAIC checkpoint can be our baseline and we see the same inputs, but after deduplication the evaluation split is deliberately different, so the fourth condition fails by design."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "MethSMRT (single-molecule real-time methylomes for roughly 150 prokaryotic genomes) and REBASE (methyltransferase recognition motifs) are known resources that carry the same kind of label; the iDNA-MS and iDNA-ABF benchmarks (open on GitHub, found by search) hold 17 more datasets in the same 41-base format; this paper's own six external out-of-distribution sets add ~490,000 more labelled rows in an identical format.",
+    "approx_items": null,
+    "join_key": "Species plus genomic coordinates with a stated genome build for MethSMRT; for the other benchmark releases, no key is needed because the sequence and label are already in the same column layout.",
+    "why": "Extra same-format labelled sets from other groups give a ready-made external test of whether a model cleaned of duplication still transfers, without having to build any identifier mapping."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Verified and severe: 78,057 of 129,728 test rows (60.2%) are exact sequence-and-label copies of training rows in the same task, because each affected file was doubled before the 80:20 split.",
+      "Verified: 4mC/A.thaliana and 4mC/C.elegans are md5-identical files, so a model trained on one is tested on the other and the benchmark has 19 unique tasks, not 20.",
+      "Near-duplicate rather than exact overlap: 41-base windows from overlapping genomic positions will differ by a few bases and survive exact deduplication.",
+      "Verified: 151 sequences appear with both labels, so any split that keeps them guarantees some irreducible error and some free credit.",
+      "The negative class is 'unreported' sites, so a model can score well by learning how non-methylated sites were sampled (base composition, source contig) rather than any methylation biology.",
+      "The 'id' column leaks the label outright in the 5hmC tasks, where every positive id is '+sample' and every negative is '-sample'."
+    ],
+    "split": "Collapse to unique (sequence, label) within each task, drop the 151 conflicting sequences, then cluster the remaining 41-mers by Hamming distance (or CD-HIT-EST with -n 5 -c 0.8, which must be checked to actually run on 41-base input) and hold out whole clusters. Add two group splits on columns that exist as directory names: leave-one-species-out and leave-one-modification-type-out. Never use the 'id' column as a feature.",
+    "checks": [
+      "Run the released 1.41 GB MOSAIC checkpoint once and report MCC separately on the 78,057 leaked and 51,671 clean test rows; the gap is the inflation.",
+      "Shuffle labels within each task and confirm MCC collapses to 0.",
+      "Train on the centre base alone and on GC content alone, to see how much of the task is sampling artefact.",
+      "Report nearest-neighbour Hamming distance from every test sequence to its closest training sequence, before and after cleaning."
+    ],
+    "verdict": "Manageable, and unusually well defined: the leakage is already measured exactly, and fixing it is deduplication plus a group re-split; the subtler residual risk is near-duplicate windows from overlapping genomic positions."
+  },
+  "success_criteria": {
+    "metric": "The drop in Matthews correlation coefficient (MCC) between the published leaky split and a duplicate-free re-split, per task, for the released MOSAIC checkpoint and for a frozen DNABERT-2 plus linear head trained both ways. MCC is the metric the paper's own fairness claims rest on, so the comparison is like-for-like.",
+    "baselines": "Published and verified in Supplementary Table S9: MOSAIC overall MCC 0.8045 (accuracy 0.9022, worst-task MCC 0.5527); MSNet 0.7507; iDNA-OpenPrompt 0.7413; UniMethylNet 0.6696; Methyl-GP 0.6603; SNNRice6mA 0.6329; E-Net 0.2053. Trivial baselines: majority class gives MCC 0 on these 1:1 balanced tasks, and a 4-mer count logistic regression is the next floor.",
+    "success": "A drop of at least 0.10 MCC on the 15 affected tasks after deduplication, documented per task with confidence intervals, plus a frozen-backbone baseline whose clean-split MCC is reported alongside. A smaller drop is also a result, provided the cleaned benchmark is released.",
+    "noise_ceiling": null,
+    "kill": "If the leaked-versus-clean MCC gap is under 0.03 and the upstream UniMethylNet and iDNA-ABF benchmark files turn out to be duplicate-free, stop after a two-page data note about the released packaging."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology (Correspondence or Method)",
+      "why": "It published iDNA-ABF and runs correspondence on reproducibility; it would take showing that the duplication runs through the upstream benchmark and that several published predictors drop materially on a clean split."
+    },
+    "realistic": {
+      "journal": "Briefings in Bioinformatics",
+      "why": "It regularly publishes comparative re-benchmarks of exactly these DNA methylation site predictors; a per-task clean-split re-evaluation of 5-7 open models plus a released deduplicated benchmark fits its scope directly."
+    },
+    "fallback": {
+      "journal": "Bioinformatics (Application Note or Letter), or NAR Genomics and Bioinformatics",
+      "why": "Even if the performance drop is modest, the verified duplication counts plus a cleaned, versioned benchmark on Zenodo is a publishable resource note."
+    }
+  },
+  "pitch": {
+    "headline": "A 2026 benchmark that ranks seven published methylation predictors has 60.2% of its test rows copied verbatim from training, counted in the files.",
+    "what_makes_the_data_unusual": "39 MB of clean 41-base sequence CSVs spanning 12+ species and three modification types, CC-BY-4.0, shipped with a released checkpoint and per-task numbers for 7 methods, and with the leakage mechanism visible: half of each affected file carries one repeated placeholder id.",
+    "the_win": "Report per-task MCC for the released MOSAIC checkpoint on the 78,057 leaked versus 51,671 clean test rows, and show the headline 0.8045 MCC falls once duplicates are removed.",
+    "even_if_it_fails": "If the gap is small, we have shown that this lineage of predictors is robust to a 60% duplication rate, which is itself a surprising and useful statement about how little the benchmark discriminates.",
+    "who_wants_it": "The groups publishing on this exact benchmark (Chiang and Lee at CUHK-Shenzhen, the UniMethylNet, Methyl-GP and iDNA-ABF authors) and their reviewers, who would need to re-run or re-report their comparisons."
+  },
+  "ml_idea": "Rebuild the 20-task cross-species DNA methylation benchmark honestly and re-measure the field on it. Step 1 (an afternoon): deduplicate to 404,076 unique (task, sequence, label) triples, drop the 151 label-conflicting sequences, merge the two identical 4mC tasks, and run the released 1.41 GB MOSAIC checkpoint once to report MCC separately on leaked and clean test rows. Step 2: re-split by Hamming-distance clusters and train a frozen DNABERT-2-117M plus linear head per task from cached CPU embeddings, reporting the clean-split MCC against the published Table S9 numbers for seven methods. Step 3: add leave-one-species-out and leave-one-modification-type-out splits and check transfer on the six released external sets (E. coli, G. pickeringii, rice, human 5mC), then ablate to centre-base-only and GC-content-only features to measure how much of the task is pseudo-negative sampling artefact. Ship the cleaned benchmark as a versioned Zenodo release.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.04,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 4,
+    "cv_run_minutes": 15,
+    "compute_note": "Estimated, not timed: 404,076 unique 41-base sequences through DNABERT-2-117M on an Apple Silicon CPU at a guessed 30-60 sequences per second gives 2-4 hours; the cached 404,076 x 768 float32 matrix is 1.24 GB, so peak memory sits near 3 GB with pandas alongside. Head training on cached embeddings is minutes. Retraining MOSAIC itself would need a GPU and is out of scope.",
+    "cheapest_killing_check": "Download the UniMethylNet and iDNA-ABF benchmark files (both public) and count exact train/test sequence overlap in each. If they are clean, the duplication is only in this paper's released packaging and the story shrinks from a field-wide re-benchmark to a one-page data note."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A check passes on the actual files, and the files contain a verified, quantified flaw that nobody has reported: 78,057 of 129,728 'independent test' rows (60.2%) are exact sequence-and-label duplicates of training rows, 15 of 20 tasks exceed 50% leakage, two tasks are md5-identical files, and the released data loader does no deduplication. The paper's own method section claims CD-HIT deduplication at 80% identity and a 7:1 split; the files are duplicated and split 4:1. That turns a saturated subfield into an opening, because the condition that normally kills such a project (open reproducible models already honestly evaluated) is exactly what fails here. The project is cheap (39 MB, laptop CPU, frozen DNABERT-2 plus heads), has published per-task numbers for seven methods and a released checkpoint to re-run, has real external validation sets, and produces something useful whichever way it resolves. Main caveats: this is an audit-and-rebuild rather than a new-biology project, so the ceiling is a benchmark paper; the negatives are pseudo-negatives throughout, limiting what any model can claim; and the duplication may originate upstream in the UniMethylNet benchmark, which should be checked first since it decides whether the finding implicates one paper or a lineage."
+}

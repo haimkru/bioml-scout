@@ -1,0 +1,65 @@
+{
+  "paper_id": "nar2026-gkag757",
+  "title": "Comprehensive post-transcriptional modification profiles in individual Staphylococcus aureus tRNA species.",
+  "doi": "10.1093/nar/gkag757",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/pride/archive/projects/PXD071470",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed Saureus_tRNA_UPLCMSMS.xlsx (295 KB) from PRIDE (PRoteomics IDEntifications database) project PXD071470: 18 sheets, 4,485 non-blank data rows, 12 columns (Sample, RNase, Cyanoethylation, LC-MSMS file, Scans, m/z, z, m, Sequence, Neutral loss, tRNA, Notes). Counted: 3,652 rows carry a fragment sequence, 1,630 carry at least one bracketed modification code, 3,226 have a tRNA assignment, 136 distinct free-text tRNA names, 91 distinct modification codes. Listed all files in PRIDE PXD071097 (nucleoside quantification: ~100 tiny AUC summary CSVs plus multi-MB raw .d archives) and PXD071060 (proteomics: all files 10 MB-2.4 GB, raw/mzIdentML only). Read the paper's data availability and methods sections in full.",
+    "what_came_from_paper_text_only": "That the genome has 61 tRNA genes giving 37 unique mature sequences and 30 analysed proteogenic species; that the final per-position modification map is presented in Figure 2; that ENA (European Nucleotide Archive) projects PRJEB102829 and PRJEB103068 hold the RiboMethSeq/HydraPsiSeq/BID-seq, ribosome profiling and Nanopore reads. Supplementary Data S1-S5 could not be retrieved: the Europe PMC supplementaryFiles endpoint timed out on three separate attempts (135 s, 60 s HEAD, 300 s GET), so their contents are known only from the in-text captions."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "PRIDE xlsx downloaded without login (295,483 bytes, opened in openpyxl). ENA raw reads are public. Only the journal's Supplementary Data S1-S5 were unreachable (Europe PMC endpoint timeouts)."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. There is no position-by-modification column anywhere in the files. The label would have to be built by aligning 3,652 free-text fragment sequences (e.g. 'G[m5U][ceU]CGp') onto 37 reference tRNAs, resolving 311 rows flagged 'Not unique', merging 136 inconsistent tRNA names ('Tyr' vs 'TyrGUA' vs 'All Gly'), and stripping cyanoethyl ('ce-') adducts that the protocol adds rather than the cell. The finished map exists only as Figure 2."},
+    "a3_inputs_present": {"pass": true, "note": "tRNA reference sequences are not in the file but are a one-click download from GtRNAdb/RefSeq GCF_001900185.1 for 61 genes; that part is cheap."},
+    "a4_units_stated": {"pass": true, "note": "Mass spectrometry columns (m/z, charge z, neutral mass m, neutral loss in Da) are labelled with units; but there is no stoichiometry or occupancy value anywhere, so there is no quantitative label at all."},
+    "a5_enough_rows": {"pass": false, "n_rows": 4485, "note": "FAIL on biological units. The 4,485 rows are spectra, not independent examples: they collapse to 30-37 tRNA species, roughly 2,800 nucleotide positions, in one strain of one organism measured by one lab. Far too few groups for a held-out evaluation."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.3 MB spreadsheet plus ~5 KB of reference sequences", "note": "Trivially small; the processed data is far under any laptop limit. The raw depositions (72 GB MS zip, multi-GB proteomics) are off-limits and unnecessary."},
+    "a7_counts_match_paper": {"pass": true, "note": "Spreadsheet tRNA names cover the species the paper describes, including the unusual non-proteogenic tRNA-Gly entries (GlyNP3, 'GlyUCC NP1 NP2'); no count in the paper contradicts the file."},
+    "a8_label_provenance": {"pass": true, "note": "Labels trace to real mass spectra interpreted by expert curation, not to another model's output. But the m/z and mass columns are deterministic functions of the sequence column, so any model using them to predict the modification would be reading the answer off the features."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "tRNAmodpred (Machnicka et al., Methods 2016; PMC5014562)", "open_weights": true, "score_and_split": "Found via web search; it maps modification-enzyme homologs in a proteome onto MODOMICS pathways rather than reporting a held-out accuracy number. I did not retrieve a benchmark figure.", "authors_named_unsolved": "Not retrieved (abstract-level information only).", "runnable_as_baseline": null},
+      {"name": "SVM (support vector machine) predictor of uridine modifications in tRNA (Panwar & Raghava, BMC Bioinformatics 2014; PMC4287530)", "open_weights": null, "score_and_split": "Reported AUC (area under the ROC curve) 0.936 overall and 0.919 for bacterial tRNA uridines, by five-fold cross-validation on MODOMICS data; the split is random, not organism-held-out, which is the weak point.", "authors_named_unsolved": "Not retrieved (abstract-level information only).", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (an RNA language model) or a small nucleotide transformer", "freeze_and_head_viable": true, "hardware": "CPU; ~2,800 positions of embedding is minutes of work", "licence": "RNA-FM is MIT-licensed, so no obstacle"},
+  "integration": {"partner_dataset": "MODOMICS (a curated database of RNA modification pathways and per-position tRNA modification maps across many organisms)", "join_key": "organism taxonomy identifier plus standard tRNA position number (Sprinzl numbering)", "bigger_question_one_sentence": "Does a sequence model trained on MODOMICS tRNA modification maps from many bacteria correctly predict the surprises this paper found in Staphylococcus aureus, such as the missing m2A37?"},
+  "controls": {"positive_control": "The model must recover the near-universal modifications m5U54 and the dihydrouridines in the D-loop, which are textbook and present in this data.", "negative_control": "Shuffle modification labels across positions and confirm the score drops to the per-position base-frequency baseline.", "external_validation": "MODOMICS maps for Bacillus subtilis and other Gram-positive bacteria, held out as whole organisms."},
+  "honest_claim_h3": "A model built from this paper alone could only claim: for one laboratory strain of Staphylococcus aureus, it reproduces modification calls that the same lab's mass spectrometry and sequencing already made, with no independent measurement to check it against.",
+  "plain_idea": {
+    "one_liner": "Use a transfer RNA's sequence to predict which of its positions carry which chemical modification.",
+    "train_on": "Each example would be one nucleotide position in a mature transfer RNA, described by its base, its structural location (acceptor stem, D-loop, anticodon loop, T-loop) and its sequence neighbourhood. From this paper that is roughly 2,800 positions across 30-37 tRNA species, a count I derived from the paper's stated gene inventory, not from a table I opened.",
+    "predict": "The chemical modification at that position, if any (for example dihydrouridine, 5-methyluridine, pseudouridine). The truth comes from this lab's liquid-chromatography tandem mass spectrometry of digested tRNA fragments, backed by several chemical-probing sequencing assays.",
+    "why_worthwhile": "Groups studying antibiotic tolerance and stress adaptation in Staphylococcus aureus want to know which modification enzymes matter; a sequence model that predicted modification sites across bacteria would save months of mass spectrometry per species."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "MODOMICS, which the two existing predictors already trained on, holds tRNA modification maps for many organisms; this paper adds one bacterium's 30-37 tRNAs. That is an addition of maybe 1-2% of examples, in a lineage already represented by Bacillus subtilis."},
+    "confidence_score": {"answer": "no", "why": "The spreadsheet records spectrum identifications, not occupancy or stoichiometry, and no replicate-level quantitative values per position, so there is nothing to estimate per-prediction uncertainty from."},
+    "models_beatable": {"answer": "partly", "why": "The 2014 support vector machine used random five-fold cross-validation, which almost certainly leaks between homologous tRNAs, so an honest organism-held-out re-evaluation would be a legitimate project — but that project uses MODOMICS, not this paper."},
+    "guaranteed_improvement": {"answer": "no", "why": "The existing models cannot be run as a baseline on this data without first constructing the label table that does not exist, and this paper's modification calls come from a different assay mix than the MODOMICS entries the models were trained on."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: predict, from a bacterial transfer RNA's sequence and structural position, which chemical modification sits at each nucleotide, using a frozen RNA language model plus a small classifier head, trained across bacteria and tested on held-out organisms. This paper's Staphylococcus aureus map would be one held-out organism, not the training set. The training data for that project would have to come from MODOMICS, not from here.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": 2,
+    "compute_note": "Compute is negligible — the whole processed dataset is 295 KB. The 40 hours is all human work: aligning 3,652 bracketed fragment sequences to 37 reference tRNAs, disambiguating 311 'Not unique' rows and 136 inconsistent tRNA names, and separating 91 modification codes into real modifications versus cyanoethyl reaction products. Estimated from inspecting the parsed sheets, not timed.",
+    "cheapest_killing_check": "Count the independent units before anything else: 30-37 tRNA species in one strain. Done in five minutes from the methods section, and it kills the project on its own."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A5. The published data is a 4,485-row table of mass-spectrometry fragment identifications, not a position-by-modification label table; the actual map exists only as Figure 2, and reconstructing it means aligning free-text modified sequences to reference tRNAs while resolving 311 ambiguous assignments and stripping protocol-induced cyanoethyl adducts. Even if rebuilt perfectly it yields roughly 2,800 nucleotide positions across 30-37 tRNA species from one strain, one lab, with no occupancy values and no independent replicate measurement. This is an excellent piece of RNA biology and a useful future test case for a MODOMICS-trained model, but it is not a training set."
+}

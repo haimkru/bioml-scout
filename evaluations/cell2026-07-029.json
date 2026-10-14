@@ -1,0 +1,43 @@
+{
+  "paper_id": "cell2026-07-029",
+  "title": "Convergent evolution of metabolic regulation governs redox adaptation in Toxoplasma.",
+  "doi": "10.1016/j.cell.2026.07.029",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327264",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded both GEO processed files. GSE329845_Processed_Data.csv.gz: 8,635 gene rows (TGGT1 gene IDs) x 12 raw-count columns (wild-type vs mutant TgPRO, vehicle vs actinomycin D, 3 replicates each). GSE327264_Processed_RIP-Seq_Reads.csv.gz: 8,636 gene rows x 10 raw-count columns (input vs RIP pull-down, 5 pairs, uneven replication). Neither file has a label, enrichment or p-value column. PRIDE PXD077563 (TMT-16plex, tandem mass tag, whole-proteome mass spectrometry) exists publicly; raw files not opened.",
+    "what_came_from_paper_text_only": "Abstract only; the full text returned HTTP 500 and the supplement (where the genome-wide CRISPR screen fitness table would be) was not retrievable. Screen size, scoring and hit lists unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Two GEO count tables downloaded openly; PRIDE project public. CRISPR screen table not retrievable (supplement endpoint failed)."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in files: only raw read counts. Any label (TgPRO-bound transcript, TgPRO-regulated gene) must be constructed by running differential enrichment on 2-3 replicates per arm."},
+    "a3_inputs_present": {"pass": false, "note": "Only TGGT1 gene IDs; 3' UTR (untranslated region) sequences would have to be pulled from ToxoDB, the Toxoplasma genome database, and UTR boundaries are poorly annotated."},
+    "a4_units_stated": {"pass": true, "note": "Raw integer read counts, self-evident."},
+    "a5_enough_rows": {"pass": false, "n_rows": 8636, "note": "8,636 genes, but the real unit is the experiment (5 RIP/input pairs, 12 RNA-seq libraries); bound-transcript positives likely tens to low hundreds, count not verified."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<1 MB", "note": "Two ~170 KB gzipped CSVs."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checkable without full text; gene counts consistent with the ~8,600-gene T. gondii GT1 annotation."},
+    "a8_label_provenance": {"pass": true, "note": "Counts are physical measurements (RIP-seq, RNA-seq); no circularity, but the label is not yet derived."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "RNA-FM (RNA language model) on 3' UTR sequences, hypothetically", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "ToxoDB genome-wide CRISPR fitness scores (Sidik et al. 2016) and UTR annotations", "join_key": "TGGT1 gene ID", "bigger_question_one_sentence": "Do 3' UTR sequence motifs predict which Toxoplasma transcripts a parasite-specific RNA-binding protein controls?"},
+  "controls": {"positive_control": "ISCU transcript, shown in the paper to be bound via its 3' UTR, should rank as a bound target.", "negative_control": "Shuffle bound/unbound labels; UTR-length-only model.", "external_validation": "None found; no independent TgPRO binding dataset."},
+  "honest_claim_h3": "At best: a sequence model separates transcripts enriched in one RIP-seq experiment from unenriched ones, among ~8,600 genes of one parasite strain, with a handful of noisy replicates.",
+  "plain_idea": {
+    "one_liner": "Use the 3' end sequences of parasite messenger RNAs to predict which ones a new parasite RNA-binding protein grabs.",
+    "train_on": "One example per Toxoplasma gene (8,636 in the file): its 3' untranslated sequence, fetched separately from the genome database.",
+    "predict": "Whether the gene's transcript is enriched in the protein pull-down versus input, a label we would have to compute from 5 noisy input/pull-down count pairs.",
+    "why_worthwhile": "Parasite biologists would get a motif-level guess at other targets of TgPRO, but the label set is tiny and self-constructed."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 0, "sources": "No other TgPRO binding data known; label exists only in this paper.", "approx_items": null, "join_key": "TGGT1 gene ID", "why": "Not filled in depth because the verdict is reject."},
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict TgPRO-bound transcripts from 3' UTR sequence using RIP-seq enrichment as label; rejected because the label must be built from a few replicates and positives are few.",
+  "effort": {"hours_to_feature_table": 12, "working_set_gb": 0.001, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only; files are tiny, cost is in UTR retrieval and label construction.", "cheapest_killing_check": "Run DESeq2-style enrichment on the RIP counts and count significant bound transcripts; under ~200 kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2/A3/A5 (checked in files): GEO data are two small gene-by-sample raw count matrices (12 and 10 libraries) with no label column, gene IDs only, and few experimental units; the CRISPR screen table was not retrievable. Existing-models search skipped after Part A failure."
+}

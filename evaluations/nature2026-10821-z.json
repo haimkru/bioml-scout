@@ -1,0 +1,125 @@
+{
+  "paper_id": "nature2026-10821-z",
+  "title": "Genetic background sets the trajectory of experimental cancer evolution.",
+  "doi": "10.1038/s41586-026-10821-z",
+  "journal": "Nature",
+  "data_url": "https://git.ecdf.ed.ac.uk/taylor-lab/lceGeneticBackground (per-tumour table data/mu/lceSAS.tab); slides at BioImage Archive S-BSST383 + S-BSST384; expression/mutation tarballs at https://doi.org/10.7488/ds/8129",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed lceSAS.tab (430 KB CSV, 696 rows x 89 columns, 0 duplicate tumour IDs) and its column documentation. Filtered to cause=DEN and analysisSD=1: 581 tumours; 370 C3H / 55 BL6 / 84 CAST / 72 CAROLI; 215 animals (104/12/54/45), 110 mothers; 386 with RNA-seq passing quality control. Driver columns are 0/1: Braf 253, Hras 231, Egfr 104 (my grouping). WGD (whole-genome duplication) = 27, all CAROLI. Listed both BioImage Archive studies via API: 680 SVS slides, 16.07 + 20.57 GB, median ~40-47 MB each; all 581 analysis tumours map to a slide by sample name or WGS code. RNA-seq ArrayExpress E-MTAB-16391 holds only metadata plus raw FASTQ (SDRF 9,352 rows). Edinburgh DataShare page lists expression.tar.gz (904.75 MB) and nodules.tar.gz (5.18 GB). Computed strain-only baseline AUCs: Egfr 0.667, Hras 0.632, Braf 0.562.",
+    "what_came_from_paper_text_only": "Assay details (WGS, total RNA-seq, H&E). The kallisto TPM format (taken from the doc file only; tarball not downloaded because it is over the 50 MB cap). Slide contents and quality (no SVS opened). The existing model's numbers come from the bioRxiv preprint page (Connelly, Hernando, Aitken et al. 2026), which I read through WebFetch; the full text was not read beyond its first 100k characters."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: the git repo table downloads without login; the BioImage Archive slide listing is public with per-file sizes; the DataShare tarballs are listed publicly (not downloaded, over the cap)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: driver mutations are 0/1 columns per tumour (e.g. 'Braf.6:39627783_A/T', 'Egfr.Other'), plus WGD, strain and clonalClass. Grouping hotspot columns into gene-level labels is one line, not construction."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: inputs are the H&E whole-slide images themselves (680 SVS files listed with md5s), joinable on Sample_Name/Code = nodId/wgsId. Slide pixels were not opened."},
+    "a4_units_stated": {"pass": true, "note": "Checked the doc file: labels are binary; continuous columns documented (diameter in mm, nuclear area from H&E). Treatment dose unit 'ug/g body weight' is in the slide metadata."},
+    "a5_enough_rows": {"pass": true, "n_rows": 581, "note": "581 labelled tumours for a classification task (over the ~400 bar), but they come from only 215 animals and 4 strains, which is the real unit for grouped splits. The RNA-seq route alone has 386, just under the bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "36.6 GB of slides streamed one at a time (~45 MB each), reduced to ~0.5 GB of cached tile embeddings", "note": "Raw slides exceed 5 GB, but slide-by-slide tiling and embedding is a simple streaming route. Needs openslide plus a CPU-sized ViT (vision transformer); a ViT-g backbone would be impractical on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Checked: 581 analysis tumours, the per-strain counts 370/55/84/72, the animal counts 104/12/54/45 and 386 RNA-seq tumours all match the paper exactly."},
+    "a8_label_provenance": {"pass": true, "note": "Driver labels are somatic variant calls from tumour whole-genome sequencing, a physical measurement independent of the histology input. Caveat: low-purity tumours may have missed calls."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Labels in one 581-row table; slides are 680 separate SVS files joined via nodId or wgsId (100% match checked)."},
+    "B2": {"score": 1, "why": "Label CSV parsed first try; slides need tiling and tissue detection before modelling."},
+    "B3": {"score": 2, "why": "All labels from one lab's single variant-calling pipeline; all slides from one H&E protocol (paper)."},
+    "B4": {"score": 2, "why": "No censored values; driver columns are clean 0/1 or 0-3 impact codes (checked)."},
+    "B5": {"score": 1, "why": "excludeDuplicate and analysisSD flags mark replicate slices; filtering on them gives 0 duplicate IDs (checked)."},
+    "B6": {"score": 2, "why": "Every lceSAS column is documented in doc/lceSAS.fileFormat.csv (read it)."},
+    "C1": {"score": 1, "why": "Leave-one-strain-out transfer is informative either way, but the preprint already reports a decline across strains."},
+    "C2": {"score": 1, "why": "Same group's 2026 preprint does histology-to-driver with ImageNet CNNs on a 70/30 split; code release not stated."},
+    "C3": {"score": 1, "why": "'Better' angle: frozen pathology foundation models, animal-grouped and leave-one-strain-out splits, strain-confound control."},
+    "C4": {"score": 1, "why": "Genotyping by WGS is costly versus routine H&E, but in mouse models sequencing is routine anyway."},
+    "C5": {"score": 2, "why": "Published AUCs (Egfr 0.93, Hras 0.75, Braf 0.74) plus my strain-only baselines 0.667/0.632/0.562."},
+    "D1": {"score": 2, "why": "Open-weight pathology backbones exist (e.g. Phikon, H-optimus-0); none trained on mouse tissue."},
+    "D2": {"score": 1, "why": "~164k tiles (preprint count): CPU embedding is feasible with ViT-B in hours; larger backbones need a GPU."},
+    "D3": {"score": 1, "why": "Backbone licences vary (some non-commercial); data repo licensed for reuse per README; DataShare has an end-user licence."},
+    "E1": {"ok": true, "why": "animalId, motherId and strain columns present (checked), enabling grouped and leave-one-strain-out splits."},
+    "E2": {"ok": true, "why": "215 animals, 110 mothers, 4 strains in the analysis set (checked)."},
+    "E3": {"ok": true, "why": "Majority class and strain-only predictor computed: Egfr AUC 0.667 from strain alone."},
+    "E4": {"ok": false, "why": "Only 31 replicate or excluded samples flagged; no systematic replicate slides verified for a noise ceiling."},
+    "E5": {"ok": true, "why": "Strain from histology (preprint AUC 0.94-1.00) and enlarged CAROLI WGD nuclei are known signals."},
+    "E6": {"ok": true, "why": "Label shuffling and within-strain shuffling are straightforward on the 581-row table."},
+    "E7": {"ok": false, "why": "No independent mouse cohort with slides plus drivers found; all strains come from one lab."},
+    "E8": {"ok": true, "why": "Preprint reports per-driver AUCs on the same slides; their exact split may be hard to reproduce without code."},
+    "G1": {"score": 1, "why": "Gene symbols and mouse genomic coordinates (GRCm38) present; Ensembl IDs only in expression tarball (doc file)."},
+    "G2": {"score": 1, "why": "TCGA liver slides with mutation calls are plausible, but human HCC rarely carries BRAF/HRAS drivers."},
+    "G3": {"score": 2, "why": "One slide per tumour after filtering; 680 unique sample names, clean join (checked)."},
+    "G4": {"score": 0, "why": "Cannot write a convincing combined question; the human join adds little for mouse MAPK drivers."},
+    "H1": {"score": 2, "why": "Every sequenced tumour has a driver call, so negatives for each gene are present (checked)."},
+    "H2": {"score": 1, "why": "4 strains but one lab, one carcinogen, males only, C3H is 64% of tumours (checked)."},
+    "H3": {"score": 2, "why": "Claim can be stated precisely: driver identity from H&E in DEN-induced male mouse liver tumours."},
+    "H4": {"score": 2, "why": "Paper and preprint state males-only and the genetic-background limits explicitly."},
+    "I1": {"score": 1, "why": "Aitken/Taylor/Odom labs and the mouse cancer-model pathology community; no external user named."},
+    "I2": {"score": 1, "why": "Could triage which mouse tumours to sequence; marginal, since sequencing is already done."},
+    "I3": {"score": 1, "why": "AUC (area under the ROC curve) per driver roughly matches a triage decision; no stated threshold."},
+    "I4": {"score": 2, "why": "Image-to-genotype mapping is genuinely complex; strain alone gives only 0.56-0.67 AUC (computed)."},
+    "J1": {"score": 2, "why": "Real transfer learning: frozen backbones, multiple-instance pooling, grouped splits, cross-strain transfer."},
+    "J2": {"score": 1, "why": "Histology intuition is needed to catch tiling artefacts; published AUCs give sanity anchors."},
+    "J3": {"score": 2, "why": "Strain-confound re-analysis of the published AUCs is shareable before any slide is embedded."},
+    "J4": {"score": 1, "why": "Roughly 2-3 weeks estimated; not committed."},
+    "J5": {"score": 1, "why": "Kill condition proposed below; not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Connelly, Hernando, Aitken et al. 2026, bioRxiv 10.64898/2026.08.03.742582 ('Explainable machine learning relates histological to genomic pathology'): ImageNet-pretrained CNNs (ResNet50 best) plus StarDist nuclear-feature classifiers on these same slides (597 tumours, 163,835 tiles)", "open_weights": null, "score_and_split": "Strain AUC 0.94-1.00; Egfr median AUC 0.93, Hras 0.75, Braf 0.74; 70/30 train/test split at slide or batch level; trained on C3H and tested on other strains gave mean AUC 0.77 dropping to 0.74.", "authors_named_unsolved": "Performance declines on tumours from genetic backgrounds absent from training ('genetic horizon'); males only; multinuclear WGD detection reliability unknown.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "Phikon (ViT-B pathology foundation model, Owkin) for CPU; H-optimus-0 (ViT-g, Bioptimus) only with a GPU", "freeze_and_head_viable": true, "hardware": "Laptop CPU for ViT-B tile embeddings (several hours); GPU advisable for ViT-L/ViT-g", "licence": "Varies by backbone (some non-commercial); not checked on the model cards"},
+  "integration": {"partner_dataset": "TCGA-LIHC (human liver cancer) H&E slides with somatic mutation calls", "join_key": "Gene symbol (mouse to human orthologue) for driver labels; no sample-level join", "bigger_question_one_sentence": "Do histological signatures of MAPK driver identity learned in mouse transfer to human liver tumours? Weak, because human HCC rarely carries BRAF/HRAS mutations."},
+  "controls": {"positive_control": "Predict strain from frozen tile embeddings (preprint AUC 0.94-1.00); recover enlarged nuclei in the 27 CAROLI WGD tumours.", "negative_control": "Shuffle driver labels within strain; a strain-only predictor (computed AUC Egfr 0.667, Hras 0.632, Braf 0.562) as the floor.", "external_validation": "None independent; leave-one-strain-out (4 folds) is the only transfer test."},
+  "honest_claim_h3": "Among male DEN-induced (diethylnitrosamine) liver tumours from four inbred mouse strains in one lab, a frozen human-pathology foundation model can (or cannot) predict which MAPK driver gene is mutated from H&E beyond what strain alone explains, and this does (or does not) hold for a held-out strain.",
+  "plain_idea": {
+    "one_liner": "Use stained tissue-slide images of mouse liver tumours to predict which cancer-driving gene mutation each tumour carries, testing on mouse strains never seen in training.",
+    "train_on": "Image tiles from one H&E (standard pink/purple stain) whole-slide scan per tumour; 581 tumours from 215 mice in 4 strains (verified).",
+    "predict": "Whether the tumour carries a Braf, Hras or Egfr driver mutation, as called from the same tumour's whole-genome sequencing.",
+    "why_worthwhile": "Tells mouse cancer-model labs whether cheap slides can stand in for sequencing, and whether models trained on human tissue work on mouse tissue and on unseen genetic backgrounds."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The 2026 preprint used the same slides (597 tumours) as our 581; we have no extra data."},
+    "confidence_score": {"answer": "partly", "why": "Several tumours per animal and per litter allow per-strain uncertainty estimates, but there are few replicate slides; the preprint's reporting of calibration was not checked."},
+    "models_beatable": {"answer": "partly", "why": "2026 ImageNet CNNs (ResNet50) on a 70/30 slide/batch split with Hras/Braf AUC ~0.75 are plausibly beatable by pathology foundation models, but they are recent and built by the data owners."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new joinable data measuring the same quantity exists, and the preprint's model and code are not confirmed runnable as a baseline."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "TCGA/GDC human tumours have H&E slides plus somatic mutation calls (known resource); no other public mouse DEN cohort with slides plus drivers found in search.", "approx_items": null, "join_key": "Gene symbol via mouse-human orthology (no sample-level key)", "why": "Human slide-mutation pairs would allow a cross-species transfer test, but the drivers differ in frequency, so the extra labels are only loosely comparable."},
+  "leakage_plan": {
+    "risks": [
+      "Several tumours from the same mouse (215 animals for 581 tumours) share background liver and slide batch, so splitting tumours randomly leaks animal identity.",
+      "Strain predicts both slide appearance and driver frequency (CAST 31/84 Egfr vs C3H 33/370), so a model can score well by recognising strain.",
+      "Scanner or staining batch (the 'Batch' slide field, e.g. HR10036) may track strain and collection date.",
+      "Tiles from one slide landing in both train and test would trivially leak."
+    ],
+    "split": "Hold out whole animals (animalId, seen in lceSAS) or whole litters (motherId) for the in-distribution estimate; leave-one-strain-out (strain column, seen) for transfer; all tiles of a slide stay together.",
+    "checks": [
+      "Report AUC within each strain separately and compare with the strain-only AUCs (0.667/0.632/0.562).",
+      "Shuffle driver labels within strain; performance must fall to the strain-only baseline.",
+      "Predict slide Batch from embeddings; if near-perfect and batch aligns with driver, stratify by batch."
+    ],
+    "verdict": "Manageable: the grouping columns exist, but strain confounding is serious and must be controlled explicitly."
+  },
+  "success_criteria": {
+    "metric": "Per-driver AUC (area under the ROC curve) computed within strain, under animal-grouped cross-validation; this matches deciding which tumours to sequence for a given driver.",
+    "baselines": "Strain-only predictor AUC: Egfr 0.667, Hras 0.632, Braf 0.562 (computed from lceSAS). Preprint ResNet50: Egfr 0.93, Hras 0.75, Braf 0.74 on a 70/30 slide/batch split.",
+    "success": "Hras and Braf AUC of 0.80 or more under animal-grouped CV, at least 0.10 above the strain-only baseline within C3H, and leave-one-strain-out AUC within 0.05 of the in-strain value.",
+    "noise_ceiling": null,
+    "kill": "If after embedding all slides the within-C3H Hras/Braf AUC is under 0.65, stop and write up the strain-confound note."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Nature Communications", "why": "Publishes biology-first ML; would need a clear demonstration that human foundation models transfer to mouse tissue and across genetic backgrounds."},
+    "realistic": {"journal": "Journal of Pathology: Clinical Research", "why": "Publishes computational pathology re-evaluations; fits a foundation-model versus CNN comparison with strain-confound controls."},
+    "fallback": {"journal": "bioRxiv preprint plus a MICCAI COMPAYL workshop paper", "why": "A negative transfer result or a strain-confound reanalysis is still a publishable short note."}
+  },
+  "pitch": {
+    "headline": "581 genetically controlled mouse liver tumours, each with a whole-slide image and sequencing-based driver calls, all public without login.",
+    "what_makes_the_data_unusual": "Four inbred strains with known pedigrees (215 animals, 110 mothers), one carcinogen, one lab: genetic background varies while environment is fixed. Slides total 36.6 GB across 680 SVS files.",
+    "the_win": "Frozen foundation-model embeddings reach Hras/Braf AUC ≥0.80 within strain, against the preprint's 0.75/0.74 and strain-only 0.63/0.56.",
+    "even_if_it_fails": "We learn how much of the published histology-to-driver signal is really strain recognition, measured against the strain-only baselines of 0.56-0.67.",
+    "who_wants_it": "The Aitken/Taylor/Odom groups (Edinburgh/Cambridge) and mouse-model pathologists deciding whether H&E can triage tumours for sequencing."
+  },
+  "ml_idea": "Tile the 680 H&E slides, embed tiles once with a frozen pathology foundation model on CPU, pool them per slide with attention-based multiple-instance learning, and predict Braf/Hras/Egfr driver status. Evaluate with animal-grouped CV and leave-one-strain-out, always reporting results against a strain-only baseline.",
+  "effort": {"hours_to_feature_table": 30, "working_set_gb": 36.6, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 5, "cv_run_minutes": 10, "compute_note": "Estimated, not timed: about 164k tiles (preprint count) at about 10 tiles/s for a ViT-B on CPU is about 4.5 h; slides streamed one at a time, so the 36.6 GB never sits in memory.", "cheapest_killing_check": "Download about 20 C3H slides (~1 GB), embed them, and check whether frozen embeddings separate Hras from Braf within C3H at all (nearest-neighbour AUC) before downloading the remaining 35 GB."},
+  "verdict": "park",
+  "verdict_reason": "Data is clean, public and matches the paper exactly. But the data owners' own 2026 preprint already does histology-to-driver on these slides, and their main limitation (failure across strains) is already reported. Our edge is only foundation models plus a strain-confound control, at a cost of a 37 GB slide pipeline."
+}

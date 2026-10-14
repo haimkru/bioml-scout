@@ -1,0 +1,51 @@
+{
+  "paper_id": "nature2026-11113-2",
+  "title": "Human genetics implicates a BACH2-NRF2 axis in fetal haemoglobin activation.",
+  "doi": "10.1038/s41586-026-11113-2",
+  "journal": "Nature",
+  "data_url": "https://github.com/sankaranlab/BACH2_hbf ; https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90860001-GCST90861000/GCST90860858/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the authors' GitHub repo (sankaranlab/BACH2_hbf). Downloaded and parsed its fine-mapping table hbf-META_finemap_20240712_p5e-8.txt: 30,559 variants with PIP (posterior inclusion probability, a fine-mapping model's estimate that a variant is causal); 65 have PIP>0.5 and 489 SNP IDs are duplicated. Parsed EDFig2d_source_data_nonzero-cs.tsv: 74 credible-set variants across 9 loci. Listed the GWAS Catalog directory for the meta-analysis, GCST90860858: one 2.9 GB TSV (not downloaded, over the 50 MB cap). The GWAS Catalog REST API returned 0 studies for PMID 42816612. The repo README lists 8 per-cohort GWAS Catalog accessions, GCST90860858 to GCST90860865.",
+    "what_came_from_paper_text_only": "The figures of 28,279 individuals, 91 conditionally independent signals and 12 regions come from the abstract. The cohort list and the dbGaP accessions for the TOPMed sickle-cell cohorts (phs001514, phs001608) come from the medRxiv preprint (PMC10055601). The Nature full text is paywalled and was not read, so its data availability statement was not seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Per-person fetal haemoglobin (HbF) levels and genotypes sit in controlled-access cohorts: TOPMed through dbGaP (phs001514, phs001608), plus cohorts such as Rotterdam, INTERVAL and the Thai cohort. Only per-variant summary statistics are public (GWAS Catalog, 2.9 GB meta-analysis TSV), and I checked that listing. The dbGaP accessions come from the preprint text."},
+    "a2_label_is_a_column": {"pass": false, "note": "There is no per-item measured label at a usable scale. Per-variant effect size (beta) is a column in the summary statistics, but it is an association statistic estimated across people, not a measurement of each variant. Turning it into a causal label requires fine-mapping and linkage-disequilibrium (LD, correlation between nearby variants) handling."},
+    "a3_inputs_present": {"pass": true, "note": "Variants come with chromosome, position (hg19/hg38) and alleles, so sequence windows could be pulled from the reference genome. Seen in the fine-map file."},
+    "a4_units_stated": {"pass": true, "note": "PIP is a probability from 0 to 1, and beta is in phenotype standard-deviation units according to the column names. The meta-analysis units were not verified in the 2.9 GB file."},
+    "a5_enough_rows": {"pass": false, "n_rows": 74, "note": "The only plausible variant-level target is 'causal for HbF': 74 credible-set variants across 9 loci (EDFig2d file), or 65 variants with PIP>0.5 out of 30,559. That is far under the threshold of about 400 for classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~2 MB fine-map table; 2.9 GB summary stats if used", "note": "The fine-map table is tiny. The full summary statistics could be streamed."},
+    "a7_counts_match_paper": {"pass": true, "note": "The paper's 91 signals across 12 regions vs 74 credible-set variants across 9 loci in the repo are not directly comparable: COJO conditional signals (from a stepwise conditional-analysis tool) vs fine-mapped credible sets. Not a clear conflict."},
+    "a8_label_provenance": {"pass": false, "note": "PIP is the output of a statistical fine-mapping model (SuSiE/FINEMAP) run on these summary statistics plus LD panels, not a physical measurement. Training on it would distil that model."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Milton et al. ensemble of genetic risk score models for HbF in sickle cell anaemia (Circulation: Cardiovascular Genetics)", "open_weights": null, "score_and_split": "Per the search snippet, the known HbF loci explain only about 10-12% of HbF variance; the split was not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "K-nearest-neighbours HbF% predictor from BCL11A, HBG2/Xmn1 and HBS1L-MYB genotypes (King's College London, ICICT 2021)", "open_weights": null, "score_and_split": "87.25% accuracy reported in the abstract snippet; the split was not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome (DNA sequence model) could score the variants, but the labelled set is too small for a head", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "Blood-cell trait GWAS (BCX2), the Granja 2019 bone-marrow scATAC-seq (single-cell chromatin accessibility) data, and the AlphaGenome variant-effect atlas", "join_key": "rsID / hg38 genomic coordinates", "bigger_question_one_sentence": "Do sequence-model variant-effect scores rank fine-mapped HbF causal variants above their LD-linked neighbours? With 74 variants this is a case study, not an ML project."},
+  "controls": {"positive_control": "Known causal variants such as the BCL11A erythroid-enhancer variant and the HBB-locus/HBS1L-MYB variants should get top scores.", "negative_control": "Non-credible-set variants in LD with them, at matched distances.", "external_validation": "None at scale. Earlier HbF GWAS cover the same loci."},
+  "honest_claim_h3": "At best, a sequence model's scores separate 74 statistically fine-mapped HbF variants from their LD neighbours within 9 loci. That is a small benchmark of model outputs, not a predictor trained on measurements.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around each variant to predict whether it is a likely cause of higher fetal haemoglobin.",
+    "train_on": "Sequence windows around 30,559 variants near HbF-associated loci; only 74 sit in credible sets (sets of variants likely to hold the causal one), and 65 have a probability of being causal above 0.5.",
+    "predict": "Whether a variant is likely causal, where the 'truth' is a statistical fine-mapping probability computed from GWAS (genome-wide association study) results, not a lab measurement.",
+    "why_worthwhile": "Picking out the causal variants would point gene-editing groups working on sickle cell disease and beta-thalassaemia to new regulatory targets, but the labelled set is too small to learn from."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rejected. The per-person HbF labels are controlled-access (dbGaP and other cohorts). The public variant-level labels are about 74 fine-mapped variants from a statistical model, too few and not a measurement.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.002, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because the project failed Part A.", "cheapest_killing_check": "Count the credible-set variants with PIP>0.5: 65 of 30,559 (done, so the project is dead)."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A1, A5 and A8. Per-person HbF levels and genotypes are controlled access through dbGaP and the cohorts. What is public is GWAS summary statistics and about 74 fine-mapped variants whose 'causal' label is a statistical model's posterior, not a measurement."
+}

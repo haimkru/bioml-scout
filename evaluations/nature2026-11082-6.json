@@ -1,0 +1,46 @@
+{
+  "paper_id": "nature2026-11082-6",
+  "title": "Osteoclasts intercept meningeal lymphatic paths for dural metastasis.",
+  "doi": "10.1038/s41586-026-11082-6",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE284281",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found two GEO (Gene Expression Omnibus) series by searching GEO; the PubMed record has no GEO link. GSE284281: 9 mouse single-cell samples (3 dural metastasis DM-4T1, 3 leptomeningeal LM-4T1, 3 non-tumour), filelist shows only raw barcodes/features/matrix.mtx per sample (946 MB tar), no cell-type annotation or metadata file. Downloaded two barcode and feature files: DM-4T1-1 has 12,874 barcodes and 31,253 genes, with 10x-style '-1' barcodes (deposited Dec 2024); Nontumor-1 has 8,249 barcodes, 32,285 genes, and 17-base barcodes with no suffix (deposited Mar 2026). So the tumour samples and control samples were made on different platforms or pipelines. GSE325223: 3 bulk RNA-seq samples of meningeal lymphatic vessels (PBS, ZOL zoledronate, ZOL+Ang2), one column each, 54,532 genes, no replicates.",
+    "what_came_from_paper_text_only": "Abstract only: the paper is paywalled and not in Europe PMC (no PMCID, no full text, no supplement listing). The large-versus-small osteoclast localisation, the cell-type annotations and the imaging findings come from the abstract; I could not see per-cell labels, cell counts after QC, or the data availability statement."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked in files: GEO GSE284281 and GSE325223 are public with no login; processed matrices can be downloaded."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in files: GEO has only raw count matrices. There is no cell-type, osteoclast-subtype or location column, so any per-cell label would have to be rebuilt by re-clustering. The only label that is given is the sample's condition (DM/LM/non-tumour)."},
+    "a3_inputs_present": {"pass": true, "note": "Checked in files: gene-by-cell count matrices with Ensembl mouse gene IDs are present."},
+    "a4_units_stated": {"pass": true, "note": "Single-cell files are raw UMI (unique molecular identifier) counts in standard 10x-style format. The bulk files hold unlabelled normalised values with no units stated."},
+    "a5_enough_rows": {"pass": false, "n_rows": 9, "note": "Checked in files: the independent unit is the mouse. That gives 9 single-cell samples (3 per condition) and 3 bulk samples with no replicates. Cell counts (about 8,000-13,000 per sample in the 2 checked) are not independent labels."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1 GB compressed sparse matrices", "note": "From the GEO filelist: about 0.95 GB compressed across 9 samples; fits in 16 GB as sparse matrices. Not tested."},
+    "a7_counts_match_paper": {"pass": false, "note": "Can't verify: no full text, so the paper's cell counts are unknown. The tumour and control samples also differ in barcode format and gene count (31,253 vs 32,285 genes), which suggests different chemistries or pipelines."},
+    "a8_label_provenance": {"pass": false, "note": "Any cell-type or osteoclast-state label would come from clustering the same expression matrix, so it would be computed from the features (circular). The condition label is mixed up with a platform batch: the tumour samples were deposited in 2024, the controls in 2026, with different barcode formats."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models; human-trained, mouse needs ortholog mapping)", "freeze_and_head_viable": null, "hardware": "CPU possible for embeddings of ~100k cells, slow", "licence": "scGPT MIT; Geneformer Apache-2.0"},
+  "integration": {"partner_dataset": "Public mouse bone-metastasis or osteoclast single-cell atlases (not checked)", "join_key": "Ensembl mouse gene ID", "bigger_question_one_sentence": "Do dural-metastasis osteoclasts share a transcriptional state with bone-metastasis osteoclasts? That is an analysis question, not a supervised ML task."},
+  "controls": {"positive_control": "Known osteoclast markers (Acp5, Ctsk, Mmp9) should mark one cluster.", "negative_control": "Shuffling condition labels across cells.", "external_validation": "None identified."},
+  "honest_claim_h3": "At best, the model could separate cells from 3 tumour-bearing mice and 3 control mice that were sequenced in different batches. Because condition and batch are mixed up, it could not say whether the difference is biology or batch.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from mouse dura to predict whether a cell came from a dural-metastasis, leptomeningeal-metastasis or tumour-free mouse.",
+    "train_on": "Gene-count profiles of single cells from 9 mice (3 per condition); about 8,000-13,000 cells per sample in the two I counted, but only 9 independent animals.",
+    "predict": "The sample's condition (which tumour model), taken from the GEO sample name. Per-cell osteoclast labels are not deposited.",
+    "why_worthwhile": "Little: with 3 mice per group and a platform batch mixed up with condition, any classifier would mostly learn batch. The data suits descriptive re-analysis, not ML."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 0, "sources": "No public resource holds dural-metastasis condition labels; osteoclast single-cell atlases exist but were not checked.", "approx_items": null, "join_key": "Ensembl mouse gene ID", "why": "Without outside labels, the 9-mouse dataset can't be expanded or externally validated."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: classify cell condition or osteoclast subtype from single-cell expression using frozen scGPT embeddings. It fails because the cell labels aren't deposited, there are only 9 animals, and batch is mixed up with condition.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from GEO file sizes only; nothing timed.", "cheapest_killing_check": "Count independent animals per condition (done: 3) and check whether the barcode format differs between conditions (done: it does)."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2/A8 and A5. GEO holds only raw count matrices with no per-cell annotations, so labels would be rebuilt by clustering the same features. The real unit is 9 mice (3 per group), and the tumour and control samples come from different sequencing batches or formats. The bulk data has 3 samples with no replicates."
+}

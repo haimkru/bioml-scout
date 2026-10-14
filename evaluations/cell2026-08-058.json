@@ -1,0 +1,282 @@
+{
+  "paper_id": "cell2026-08-058",
+  "title": "A pericyte-to-myofibroblast transition links APOE4 to cerebrovascular degeneration.",
+  "doi": "10.1016/j.cell.2026.08.058",
+  "journal": "Cell, 2026 (PMID 42785300; no PMCID; Europe PMC isOpenAccess=N). I used the matching bioRxiv preprint (10.1101/2025.09.04.674192, Europe PMC PPR1081027) for the methods and the data-availability statement, and did not touch the publisher site.",
+  "data_url": "GitHub releases: https://github.com/blanchardlab/Schuldt2025/releases/tag/v1.0.0 (12 processed Seurat/h5Seurat objects, 75 MB-1.27 GB each, no licence file). Source cohorts: GEO GSE163577 (Yang 2022, public) and GEO GSE254205 (Haney 2024, public); Sun 2023 is ROSMAP data whose official route (Synapse syn52293417 / syn3157322) needs a Data Use Certificate, but the vascular subset with APOE genotypes is re-posted in the GitHub release.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "(1) Europe PMC: the Cell paper has no PMCID; NCBI elink from PubMed 42785300 to GEO, SRA and BioProject returned no links. The preprint's statement reads verbatim 'All datasets utilized in this study are from publicly available sources. The code used in this study is available at https://github.com/blanchardlab/Schuldt2025.' (2) The GitHub repo: 18 files, licence field is null (no licence). I downloaded README.md, Figure1.R, haney.meta.xlsx and FPKM.csv. Figure1.R shows the metadata columns used (subject, apoe, age, sex, AD.status, dataset; apoe_genotype for the ROSMAP part) and the MatchIt propensity matching. (3) GitHub release v1.0.0: 12 assets, 75 MB-1.27 GB; ranged GETs returned HTTP 206 with no login, so they are genuinely public. (4) I read two of them over HTTP byte-range requests with h5py, without downloading the whole files. ROSMAP.VascularCells.seurat.harmony.final.h5Seurat (755,681,572 bytes): 22,510 cells, 410 donors, 14,476 genes; apoe_genotype is a numeric per-cell column with values 33 (241 donors), 34 (95), 23 (53), 24 (10), 44 (7), 22 (3) and 0 = missing (1); 2 of 410 donors carry more than one value; median 25 cells per donor (min 1, max 496), 254 donors with >=20 cells; 6 brain regions, 20 batches, 725 library IDs, AD/nonAD 10,270/12,240, age at death 70-108, sex 11,368 M / 11,142 F; cell types Endo 8,705, Fib 6,178, Per 6,001, SMC 1,286, Ependymal 340; raw counts layer is sparse with 39,243,692 non-zeros and I confirmed cell 0 holds 1,053 integer counts summing to 1,379; a dense scale.data of 22,510 x 14,476 float64 is also stored. merged.processed.filtered.data.h5Seurat (888,083,934 bytes): 71,329 cells, 220 donors, exactly 110 'e3' and 110 'e4' with zero within-donor disagreement, 33,562 genes, 82,139,512 non-zero counts; donors per source dataset sun 196 / haney 16 / yang 8, but cells per dataset yang 55,564 / haney 8,312 / sun 7,453. (5) MAJOR DEFECT I found only by opening the files: in both h5Seurat releases the gene names are integer placeholders '1'..'N' (APOE, ACTA2, FN1, PDGFRB, XIST all absent), so the released matrices have no gene identities. (6) GEO: GSE163577 SOFT shows 25 samples whose only characteristics are disease and brain region - no APOE genotype; I downloaded one 5.1 MB sample matrix (GSM4982098) and it parsed to 33,538 genes x 1,899 barcodes. GSE254205 SOFT shows 102 samples, 77 of them brain, with 'genotype: APOE 3/3' (46) and 'APOE 4/4' (31) as real metadata columns, and one 734 MB h5ad.gz at series level. (7) haney.meta.xlsx: 18 Banner Sun Health donors, ApoE 4/4 (10) and 3/3 (8), with plaque and tangle scores per region, Braak, CERAD, CAA yes/no (17 yes), MMSE, PMI; race is coded 1 for all 18. FPKM.csv: 23,615 genes x 6 mouse samples (3 APOE3 vs 3 APOE4).",
+    "what_came_from_paper_text_only": "From the abstract and preprint only: the pericyte-to-myofibroblast biology, the fibronectin and vascular amyloid findings, the TGF-beta mechanism, the immunostaining, and the mouse TGF-beta inhibition experiments. The preprint states '~64,000 nuclei from 220 individuals (32,396 APOE3/3 and 31,673 APOE4)'; the merged object I opened has 71,329 cells for the same 220 donors, which is consistent with it being the pre-cleaning object, but I could not open the CLEANED.merged.clustered.data.rds (534 MB) or Mural.merged.clustered.data.rds.rds (138 MB) to confirm 64,069, because R-serialised files cannot be read by byte range and both exceed the 50 MB download cap. I streamed and gzip-decompressed the first 342 MB of the mural object (45 MB downloaded) looking for gene symbols and found none, so I could not confirm that the RDS files retain gene names - that is an assumption, not a check. Sun et al. report 22,514 cerebrovascular cells from 428 individuals; the released object has 22,510 cells and 410 donors, and I could not reconcile the difference. I did not verify whether the re-posted ROSMAP object is permitted under the ROSMAP Data Use Certificate, nor whether its 'ROSMAP-xxxxx' subject IDs map to real ROSMAP project IDs."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked), with a serious caveat. All 12 GitHub release assets answer ranged GETs with HTTP 206 and no login, and I read metadata out of two of them. But the repository has no licence file at all, and the largest cohort inside is ROSMAP individual-level data plus APOE genotypes, which the official route (Synapse) only releases under a Data Use Certificate. The download works today; the legal basis for using it does not obviously exist, and the file could be withdrawn."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass (checked). APOE genotype is a per-cell metadata column that is constant within donor: 'apoe' ('e3'/'e4') in the merged object, with 0 of 220 donors disagreeing, and 'apoe_genotype' (33/34/23/24/44/22/0) in the ROSMAP object, with 2 of 410 donors disagreeing. No construction or cross-source matching is needed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass on values, fail on names (checked). The raw count matrices are in the same files (39.2M and 82.1M non-zeros, integer counts confirmed). But both h5Seurat releases store gene names as integers '1'..'N', so feature identities are missing and must be recovered from the R-serialised releases, which I could not open. Any gene-symbol-based method, including every single-cell foundation model, is blocked until that step is done."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass with a flag (checked). The counts layer is integer UMI (unique molecular identifier) counts, the data layer is log-normalised (max 4.48 on the cell I read), and nCount_RNA/nFeature_RNA are present. None of this is documented anywhere - no README, no data dictionary - I inferred it by reading the values. The label is a categorical genotype, so it needs no units."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 409,
+      "note": "Borderline pass (checked). The independent unit is the donor, not the cell. The ROSMAP object gives 409 genotyped donors (112 ε4 carriers vs 297 non-carriers) - just over the ~400 classification threshold - from 22,510 cells. The authors' matched atlas is only 220 donors. Restricting to pericytes alone drops to 340 donors (107 with >=10 cells), i.e. below threshold. Median 25 cells per donor also limits per-donor signal."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~1 GB: the sparse counts layer of the 755 MB ROSMAP h5Seurat (39.2M non-zeros) plus the 22,510-row cell metadata. The dense scale.data block (22,510 x 14,476 float64, ~2.6 GB) is skipped. The donor-level pseudobulk table is 409 x 14,476, about 24 MB.",
+      "note": "Pass. A donor-level logistic regression or gradient-boosted tree baseline is CPU-only and runs in minutes. Reading the 534 MB merged RDS in R would be the heaviest step and may strain 16 GB; the 138 MB mural subset is safer."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass with flags (checked). Donor counts match exactly: the preprint's 220 individuals, 110 ε3 and 110 ε4, are reproduced in the merged object. Cell counts do not: 71,329 in the released filtered object vs ~64,000 claimed, explainable as pre- vs post-cleaning but not confirmed. Sun et al.'s 22,514 cells / 428 donors vs the released 22,510 / 410 is also unreconciled."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass for the genotype label (reasoned, not checkable in the files). APOE genotype is donor DNA genotyping done by ROSMAP and Banner Sun Health, independent of the RNA features, and is no model's output. Only gene-level counts are released, so there is no allele-level read-through. WARNING: the alternative label the paper's title suggests - the 'myofibroblast-like' cell state - is a cluster the authors derived from this same expression matrix, so predicting it from expression is leakage by construction and would fail A8."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "One self-contained h5Seurat per cohort, counts and metadata joined on 'subject'; gene names need a second file."
+    },
+    "B2": {
+      "score": 1,
+      "why": "h5Seurat opened cleanly with h5py over HTTP ranges; not csv, and the RDS siblings need R."
+    },
+    "B3": {
+      "score": 2,
+      "why": "Genotype is genotype; the authors already harmonised ROSMAP 33/34/44, Haney 3/3-4/4 and Yang e3/e4 to one column."
+    },
+    "B4": {
+      "score": 1,
+      "why": "One donor coded apoe_genotype 0 (missing) and 66 ε2-carrying donors need an include/exclude policy; easy to drop."
+    },
+    "B5": {
+      "score": 1,
+      "why": "22,510 unique barcodes, but 2 of 410 donors show two genotype values and donors recur across 6 regions."
+    },
+    "B6": {
+      "score": 1,
+      "why": "ROSMAP and Seurat column names are standard and the R scripts show their use; no data dictionary, no licence, gene names lost."
+    },
+    "C1": {
+      "score": 2,
+      "why": "'How much ε4 status is readable from vascular cells, and does it transfer across cohorts?' is informative either way."
+    },
+    "C2": {
+      "score": 1,
+      "why": "No model found for APOE4-from-snRNA-seq, but several open donor-phenotype predictors (singleDeep, MIL, PASCode) cover the method."
+    },
+    "C3": {
+      "score": 1,
+      "why": "Unique-application plus diversity (vascular cells, not neurons/microglia), but the biological payoff is thin."
+    },
+    "C4": {
+      "score": 0,
+      "why": "APOE genotyping is a cheap routine assay, so a predictor replaces nothing; value is scientific only."
+    },
+    "C5": {
+      "score": 2,
+      "why": "Obvious dummies: majority class (297/409 non-carrier), per-cohort prior, APOE expression alone as one feature."
+    },
+    "D1": {
+      "score": 2,
+      "why": "scGPT and Geneformer have open downloadable weights for exactly this data type (human single-nucleus counts)."
+    },
+    "D2": {
+      "score": 1,
+      "why": "Embeddings cacheable once, but 22.5k-71k cells on CPU is hours, and gene symbols must first be recovered."
+    },
+    "D3": {
+      "score": 1,
+      "why": "Backbone licences permissive (scGPT MIT, Geneformer Apache-2.0); the data repo has no licence and is ROSMAP-derived."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Verified columns support leave-one-donor-out, leave-one-cohort-out, leave-one-region-out and leave-one-batch-out."
+    },
+    "E2": {
+      "ok": true,
+      "why": "410 donors, 20 batches, 6 brain regions, 3 source cohorts, 725 library IDs (all counted in the file)."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Majority class is 297/409 = 73% non-carrier; APOE-expression-only threshold is the other obvious dummy."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Same donors sampled in up to 6 regions and 725 libraries, giving a within-donor repeatability estimate."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Predict donor sex (msex column verified) from expression - must be near-perfect; ε4-linked APOE expression must also appear."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Shuffle genotype across donors, shuffle within cohort, ablate APOE and neighbours, replace features with noise."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Three independent cohorts in one file (ROSMAP, Banner/Haney, Stanford/Yang) plus the public GEO originals."
+    },
+    "E8": {
+      "ok": true,
+      "why": "The repo ships the authors' MAST differential-expression tables, and the reduced-pericyte-fraction claim is re-derivable."
+    },
+    "G1": {
+      "score": 1,
+      "why": "Gene symbols (once recovered) and pseudonymised 'ROSMAP-66835' subject IDs; no Ensembl IDs, no verified ID mapping."
+    },
+    "G2": {
+      "score": 1,
+      "why": "ROSMAP neuropathology tables (amyloid angiopathy, Braak) join on subject ID, but need a Data Use Certificate."
+    },
+    "G3": {
+      "score": 1,
+      "why": "Donor-to-cell is clean one-to-many; whether the pseudonymised IDs map to real ROSMAP IDs is unverified."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Asks whether the vascular ε4 signature tracks measured amyloid angiopathy or is genotype-driven regardless of pathology."
+    },
+    "H1": {
+      "score": 2,
+      "why": "Both outcomes present and systematically sampled: 110 vs 110 matched, 112 vs 297 in the ROSMAP object."
+    },
+    "H2": {
+      "score": 1,
+      "why": "3 cohorts, 6 regions, both sexes, but all aged post-mortem brains, one ancestry (Haney race=1 for all 18), 78% of merged cells from 8 donors."
+    },
+    "H3": {
+      "score": 2,
+      "why": "The claim is statable in one precise sentence (see honest_claim_h3), including the cohort and cell-type restriction."
+    },
+    "H4": {
+      "score": 1,
+      "why": "The paper documents its propensity matching; the ancestry skew and the 8-donor cell imbalance I found only by counting."
+    },
+    "I1": {
+      "score": 1,
+      "why": "Named labs exist (Blanchard at Mount Sinai, Tsai at MIT, Wyss-Coray at Stanford) but they want mechanism, not a genotype predictor."
+    },
+    "I2": {
+      "score": 1,
+      "why": "Effect-size bounds would inform power calculations and let ungenotyped cohorts be scored; no experiment is redirected."
+    },
+    "I3": {
+      "score": 1,
+      "why": "Donor-level area under the curve is computable and matches 'can we read genotype from cells'; no clinical threshold involved."
+    },
+    "I4": {
+      "score": 1,
+      "why": "APOE expression alone or a simple pseudobulk regression may do most of the work; untested, and worth one afternoon."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Grouped cross-validation, cross-cohort transfer, multiple-instance learning and frozen-embedding heads: real modelling."
+    },
+    "J2": {
+      "score": 1,
+      "why": "Sex, APOE expression and pericyte markers give sanity checks; judging a vascular ε4 signature needs an expert."
+    },
+    "J3": {
+      "score": 2,
+      "why": "A clean 409-donor pseudobulk-plus-genotype table, and the lost-gene-names finding, are each shareable alone."
+    },
+    "J4": {
+      "score": 1,
+      "why": "No budget set; two to three weeks would be enough for the donor-level baseline."
+    },
+    "J5": {
+      "score": 0,
+      "why": "No kill date written in NOTES.md."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "singleDeep (Torres-Rusillo et al., Briefings in Bioinformatics 2025, PMC11735047): per-cell-type deep neural networks that aggregate to a donor-level phenotype prediction from single-cell RNA data",
+        "open_weights": true,
+        "score_and_split": "From the paper's abstract and summaries retrieved by search, not from rerunning it: predicts dementia status in the SEA-AD (Seattle Alzheimer's Disease Cell Atlas) middle temporal gyrus cohort, 42 donors with dementia vs 47 without, and beats traditional machine learning on matched pseudobulk tables. Donor-level cross-validation; I did not see the exact split or metric.",
+        "authors_named_unsolved": "Their framing is that standard classifiers are ill-suited to single-cell data and that donor-level phenotype prediction with few donors is the open problem; I did not retrieve the discussion section.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Cell-type-aware multiple instance learning for Alzheimer's prediction from single-nucleus RNA-seq (Yim et al., Alzheimer's & Dementia 2025, PMC12726160)",
+        "open_weights": null,
+        "score_and_split": "From the abstract only: a hierarchical multiple-instance-learning model pools cell representations within each cell type, then across cell types by attention, to predict donor phenotype. I did not retrieve numbers or the split.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "PASCode, from the PsychAD population-scale single-cell project (Nature Medicine 2025, 'AI-based characterization of Alzheimer's disease phenotypes from population-scale single-cell data')",
+        "open_weights": null,
+        "score_and_split": "From the abstract and search summaries: over 6 million prefrontal-cortex nuclei from more than 1,000 donors; scores phenotype-associated cells and reports ~1.5 million such cells across 584 donors with Alzheimer-related phenotypes. Donor-level, not APOE genotype.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Cerebrospinal-fluid and plasma proteomic APOE4 classifiers (Shvetcov et al., Aging Cell 2025; and the cross-disease signature in Nature Medicine 2025)",
+        "open_weights": null,
+        "score_and_split": "From search summaries only: classification-and-regression-tree models give area under the curve 1.0 on a 7-protein independent set and 0.92 (sensitivity 0.99, specificity 0.74) on a 50-protein interactive set, in cerebrospinal fluid; a second study uses 1,346 cerebrospinal-fluid and 9,924 plasma samples. Different molecule type and tissue, so not a comparable number.",
+        "authors_named_unsolved": "Whether the signature is specific to APOE4 rather than to the inflammation it drives; not confirmed from full text.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer, single-cell transcriptome foundation models with open weights, frozen and mean-pooled per donor and cell type; a plain donor-level pseudobulk logistic regression or gradient-boosted tree is the baseline that must be beaten first. Both foundation models need gene symbols, which the released h5Seurat files do not have.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB. Embedding 22,510 cells is an estimated 4-8 hours one-off (not timed); the pseudobulk baseline runs in minutes.",
+    "licence": "scGPT MIT, Geneformer Apache-2.0. The data has no licence: the GitHub repo's licence field is null and the ROSMAP-derived object would normally need a Data Use Certificate."
+  },
+  "integration": {
+    "partner_dataset": "ROSMAP neuropathology and clinical tables in the AD Knowledge Portal (Synapse syn3157322 / syn52293417): per-donor cerebral amyloid angiopathy score, amyloid and tangle burden, Braak stage, cognition. Secondary, fully open partners: Human Protein Atlas or GTEx tissue expression on gene symbol.",
+    "join_key": "Donor identifier (the released object carries pseudonymised 'ROSMAP-xxxxx' subject IDs); gene symbol for the expression partners. Donor-to-cell is a clean one-to-many, collapsed by pseudobulk mean per donor and cell type. Expected coverage of the 409 donors is unknown because I could not test whether the pseudonymised IDs resolve.",
+    "bigger_question_one_sentence": "Does the vascular transcriptomic signature of APOE ε4 scale with how much cerebral amyloid angiopathy a donor actually had, or is it present in ε4 carriers regardless of pathology?"
+  },
+  "controls": {
+    "positive_control": "Predict donor sex from the same features (the msex column is verified present) - must be near-perfect. Then check that APOE's own expression separates genotypes, and that the paper's reported drop in pericyte fraction in ε4 carriers is recovered from the released metadata.",
+    "negative_control": "Shuffle genotype across donors (not cells) and rerun leave-one-donor-out: performance must fall to the 73% majority-class baseline. Also shuffle within cohort to test the grouping, ablate APOE and its correlated neighbours, and replace features with same-shape noise.",
+    "external_validation": "Train on the 196 ROSMAP donors and test on the Haney (16) and Yang (8) donors, and vice versa; the GEO originals (GSE254205, GSE163577) give an independent reprocessing route. The 6-sample APOE-targeted-replacement mouse table in the repo (FPKM.csv, 3 ε3 vs 3 ε4) is a cross-species direction check only."
+  },
+  "honest_claim_h3": "Among aged, almost entirely European-ancestry post-mortem brain donors in three cohorts, a model can tell APOE ε4 carriers from non-carriers with this accuracy using the transcriptomes of their vascular cells - and this is how much of that accuracy survives moving to a different cohort. It does not say ε4 causes the signature, and it says nothing about living brains or other ancestries.",
+  "pitch": {
+    "headline": "Two public single-cell brain-vascular matrices with APOE genotype already a column: 22,510 cells from 410 donors, plus a 110-vs-110 balanced atlas.",
+    "what_makes_the_data_unusual": "The authors' merged atlas is exactly 110 ε3 and 110 ε4 donors with zero within-donor genotype disagreement, and both releases carry raw integer UMI counts (39.2M and 82.1M non-zeros) across three cohorts, all verified by reading the files over HTTP byte ranges. Most notably, the ROSMAP vascular subset with per-donor APOE genotypes is re-posted here and answers ranged GETs with HTTP 206 and no login, whereas the official Synapse route requires a Data Use Certificate - which is also why this openness may not survive, and the repo has no licence file at all; separately, the gene names in both h5Seurat files are integer placeholders, so the matrices are unusable until names are recovered from the R objects.",
+    "the_win": "A donor-level area under the curve for ε4 carrier vs non-carrier that beats both the 73% majority-class baseline and a one-feature APOE-expression threshold under leave-one-donor-out, stated alongside how much of it survives leave-one-cohort-out (train on the 196 ROSMAP donors, test on the 16 Haney and 8 Yang donors). No comparison to an existing number is offered, because the models found in the audit predict dementia status or use cerebrospinal-fluid proteins, not this task.",
+    "even_if_it_fails": "A near-chance result bounds the ε4 vascular transcriptomic effect as small relative to donor-to-donor variation in aged post-mortem brain, which is a real answer rather than a dead end. The verified msex column makes that interpretable: if donor sex predicts near-perfectly from the same features while genotype does not, the null is about the biology and not a broken pipeline.",
+    "who_wants_it": "The Blanchard lab, which released these objects and whose pericyte-to-myofibroblast claim rests on their paper text rather than on anything in the released matrices, and groups building donor-level phenotype predictors from single-cell data - the singleDeep authors, whose weights are open and whose task was 42 vs 47 donors in SEA-AD. The decision it would change is whether to stratify vascular single-cell studies by genotype at all, or by measured cerebral amyloid angiopathy score from the ROSMAP neuropathology tables instead."
+  },
+  "plain_idea": {
+    "one_liner": "Use gene activity in single brain blood-vessel cells to predict whether the donor carried the Alzheimer's risk gene variant.",
+    "train_on": "For each cell, the counts of how many messenger-RNA molecules were detected per gene (14,476 genes). I verified 22,510 vascular cells from 410 donors in the largest released cohort, and 71,329 cells from 220 donors in the authors' combined atlas.",
+    "predict": "Whether the donor carries one or two copies of the ε4 version of the APOE gene. The true answer is the donor's DNA genotype, measured by the brain banks years before the gene-activity data existed, and stored as a column in the released files (verified).",
+    "why_worthwhile": "It puts a number on how strongly this genetic risk variant rewrites the behaviour of brain blood-vessel cells, and whether that fingerprint is the same in different brain banks. A near-chance result is just as informative: it would bound the effect as small relative to person-to-person variation."
+  },
+  "ml_idea": "Pseudobulk each donor x vascular cell type (pericyte, smooth muscle, fibroblast, endothelial), then classify APOE ε4 carrier vs non-carrier with regularised logistic regression and gradient-boosted trees under leave-one-donor-out, leave-one-batch-out and leave-one-cohort-out splits. Compare against majority class, per-cohort prior and APOE expression alone. Then add a frozen scGPT or Geneformer embedding with attention pooling over cells per donor, and report which cell type carries the signal and how much accuracy is lost moving between the three cohorts.",
+  "effort": {
+    "hours_to_feature_table": 14,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 5,
+    "embedding_hours": 6,
+    "cv_run_minutes": 10,
+    "compute_note": "Estimated, not timed, except that reading cell metadata out of the remote 755 MB h5Seurat took 10-14 MB of range reads and under a minute. Working set is the sparse counts layer (39.2M non-zeros, verified) plus metadata; the dense scale.data block is skipped. Peak RAM is set by reading an R-serialised object to recover gene names. Embedding hours assume roughly 1 cell per second per CPU core for a small single-cell transformer over 22,510 cells.",
+    "cheapest_killing_check": "Recover the gene names (read Mural.merged.clustered.data.rds.rds in R and write out rownames), then pseudobulk the 409 genotyped ROSMAP donors and fit a regularised logistic regression with leave-one-batch-out. Kill the project if the donor-level area under the curve does not beat both the 73% majority class and a one-feature APOE-expression threshold. If gene names are also missing from the RDS files, the project is dead on the spot."
+  },
+  "verdict": "park",
+  "verdict_reason": "The data is real, public and verified in the files: 22,510 cells x 410 donors with APOE genotype as a clean column, raw integer counts included. But three things cap the payoff. The question predicts a genotype that costs ten dollars to measure (C4 = 0), the donor count sits on the 400 threshold and falls below it for any single cell type, and both released matrices lost their gene names, which blocks every gene-symbol-based backbone until the R objects are read. On top of that the key cohort is ROSMAP individual-level data re-posted with no licence, so anything built on it may not be publishable. Park it; revisit only if the gene names are recoverable and a ROSMAP Data Use Certificate is in hand."
+}

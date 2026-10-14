@@ -1,0 +1,146 @@
+{
+  "paper_id": "cell2026-08-026",
+  "title": "An open benchmark and language models for AI in aging biology.",
+  "doi": "10.1016/j.cell.2026.08.026",
+  "journal": "Cell 189(19):5980-5994, Sep 2026 (PMID 42753698; no PMCID). Europe PMC: isOpenAccess=N, inEPMC=N, so no full text. Used the abstract, the HF dataset README and files, the HF model cards, the leaderboard JS bundle (longevitybenchmarks.org), and the bioRxiv v1 preprint 10.64898/2026.01.12.698650 (read through a WebFetch summary only).",
+  "data_url": "https://huggingface.co/datasets/insilicomedicine/longebench (CC-BY-NC-4.0, not gated, DOI 10.57967/hf/8851). Configs: benchmark/eval-00000-of-00001.parquet (91.4 MB), extra (46.4 MB), mini (6.9 MB), plus Supplementary_File_1_prompt_examples.json (364 KB). Models: HF collection insilicomedicine/longevity-llm. Agent code: github.com/Insilico-org/longeclaw (MIT).",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed README, mini.parquet (728 rows) and extra.parquet (65,374 rows). Schema has 11 columns: lb_id, pool, display_name, display_group, domain, format, metric, units, messages (system/user/assistant), task, metadata (JSON string). The label is the assistant turn (a letter, or a number for regression), and the true value sits again in metadata.follow_up free text. Features are serialized prose in the user turn. NHANES prompts randomize units about 50/50 (Albumin g/L 665 vs g/dL 654; Creatinine umol/L 656 vs mg/dL 642; Glucose mmol/L 655 vs mg/dL 634 in LB-0054). DNAm prompts list only the 100 lowest and 100 highest CpGs per sample (a variable set) and run about 27k tokens. GTEx genes are binned. Olink regression/multiclass use a fixed set of 396 NPX proteins. Benchmark config (not downloaded, over the cap): HF datasets-server statistics confirm 25,457 rows, 17 lb_ids, and per-task counts identical to the README (NHANES age regression 4,206; Olink regression 93). NHANES SEQN range is 2-9965 in LB-0054 (1,363 unique of 1,363) and in the mini rows, i.e. the 1999-2000 wave only. Mini age-task prompts show no age leakage ('year-old', 'at age' and 'Medications' all 0/45). In 4/45 mini DNAm regression rows the answer is 1 year below the metadata 'True age'. Extra LB-0195 (clock-replica) has 59,835 rows but only 1,452 GSMs from 32 GSEs (12,096 unique gsm-clock pairs). 486 GSMs carry two conflicting ages, the second always 65 (e.g. GSM7288129 at 12.9 and 65), and '65' is the answer in 12,466 rows. Quick sanity ridge (numpy, 28 parsed analytes, 5-fold) on LB-0054 deceased participants: age MAE 8.93 vs dummy 10.64. The leaderboard JS has per-task scores with SE for 28 entries (18 frontier, 5 L-LLM, 5 base). Model repos are not gated, and the L-LLMs are CC-BY-ND-4.0. Qwen3-0.6B-Longevity model.safetensors is 3.0 GB.",
+    "what_came_from_paper_text_only": "From the abstract: 17 tasks, 5 domains, 18 frontier systems, and 0.6B-9B L-LLMs. From the preprint v1 summary: no classical baselines, the NHANES test set is the oldest waves, and the stated limitations. The Cell version reportedly includes a protein aging clock at 0.749 concordance on Olink pairwise (web-search snippet only; I did not read the paywalled paper). The training corpus composition (≈10^6 prompts from NHANES/GEO/GTEx/Olink) comes from the model card and is not released, so train/test disjointness is unverifiable. The benchmark parquet (91 MB) was not opened, and the HF filter API returned 500s, so its 4,206 NHANES age rows were not parsed."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). HF dataset is not gated (CC-BY-NC-4.0), and mini and extra downloaded with HTTP 200. Model weights are not gated."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Weak pass (checked). The label is the assistant message of each row: a letter mapped to shuffled options, or a number for regression. The true age/survival is repeated in metadata.follow_up free text. It is a within-row parse, not a cross-source construction, but it is not a typed column."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Weak pass (checked). NHANES and Olink values are fully present inline, but as prose with randomized units and headers. DNAm prompts carry a per-sample variable top/bottom-100 CpG selection, and GTEx carries binned gene lists. A fixed feature matrix for those needs a re-pull from GEO/GTEx via GSM/sample IDs."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass with a conversion step (checked). Every analyte carries its unit inline, but three analytes are deliberately split about 50/50 between two units. A silent mg/dL vs umol/L trap if parsed naively. Ages are in years, Olink in log2 NPX, GTEx in log1p TPM, all stated."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 4206,
+      "note": "Pass for NHANES (count from datasets-server statistics): 4,206 age-regression, 4,206 mortality-binary, 2,102 and 3,889 pairs. DNAm has 500 per task and GTEx 900. Fails for Olink regression/multiclass (93 rows each) and SynergyAge (26)."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "145 MB of parquet in total; Qwen3-0.6B-Longevity 3.0 GB fp32",
+      "note": "CPU-only is fine for NHANES/Olink prompts (≤4k tokens). Embedding 500 DNAm prompts of about 27k tokens on CPU would take hours (not timed). L-Qwen3.5-9B needs a GPU per its card."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass with flags (checked). README rows (25,457 / 728 / 65,374) and per-task counts match datasets-server exactly. The leaderboard's Olink regression card says '1,615 prompts' under key olink_pooled_age_regression, while the released LB-0082 has 93 rows, so the scored Olink set may differ from the released one. Model counts are inconsistent (abstract 18 frontier; leaderboard 28 entries; notes '26 models')."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass (checked plus README). Labels are recorded chronological age (NHANES, GEO, GTEx bins) and NHANES-linked mortality, not model outputs. Flags: (1) LB-0195 (extra) has a 65-year placeholder conflicting with true ages for 486 of 1,452 GSMs. (2) DNAm answers are off by 1 year vs metadata in 4/45 rows. (3) The unreleased L-LLM training data came from the same sources, so the published L-LLM scores may be contaminated."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 6,
+    "c_worth_asking": 6,
+    "d_backbone_fit": 5,
+    "g_integration": 7,
+    "h_missing_data": 6,
+    "i_does_anyone_care": 4,
+    "j_fit_finishability": 7
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Longevity-LLMs (L-Qwen3.5-9B, L-LFM2-2.6B, L-Qwen3-1.7B, L-LFM2-1.2B, L-Qwen3-0.6B); HF insilicomedicine/* and LiquidAI/*-Longevity",
+        "open_weights": true,
+        "score_and_split": "Leaderboard JS (checked), on the released eval-only set with NHANES 1999-2000 held out. NHANES age MAE: best Gemini-3.1-Pro 12.05; L-Qwen3-0.6B 13.98 (chance 16.3). DNAm age MAE: L-Qwen3.5-9B 12.92 (chance 16.0). Olink age MAE: L-Qwen3-0.6B 5.67 (chance 10.4). DNAm pairwise concordance 0.868. GTEx pairwise 0.671. NHANES 10-yr mortality balanced accuracy 0.890. Training corpus not released.",
+        "authors_named_unsolved": "Preprint v1 (summary): regression outputs collapse toward 50-100 months, the six-fold transcriptomic-vs-proteomic generation gap is unexplained, output-format compliance is poor, and inference cost was not assessed. The abstract says omics age prediction is hardest 'regardless of scale'.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "18 frontier LLMs (GPT-5.x, Claude Opus/Sonnet 4.5-4.6, Gemini 2.5/3.1, Grok-4.3, Kimi-K2.5, DeepSeek R1/V3.2, o3, o4-mini, GPT-4.1)",
+        "open_weights": false,
+        "score_and_split": "Per-task scores with SE in the leaderboard JS (checked), e.g. Gemini-3.1-Pro NHANES age MAE 12.05 and Claude-Opus-4.5 DNAm MAE 14.54.",
+        "authors_named_unsolved": "Same as above.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Longevity-LLM v0.1, Qwen3-14B SFT+RL (Zhavoronkov et al., bioRxiv 10.64898/2026.03.28.714980)",
+        "open_weights": null,
+        "score_and_split": "Abstract only: 4.34-year MAE epigenetic age after RL, 'surpassing the Horvath multi-tissue clock'. Split not stated.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "LLM-based biological age from health exam reports (Nature Medicine 2025, PMID 40702324)",
+        "open_weights": null,
+        "score_and_split": "Abstract only: mortality C-index 0.757 over >10M participants in 6 cohorts, beating 8 epigenetic ages and 4 ML models.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Classical DNAm clocks (Horvath v1/v2, Hannum, Lin, VidalBralo, Ying Caus/Dam/AdaptAge, PEDBE), outputs shipped in LB-0195 metadata.predicted_age",
+        "open_weights": true,
+        "score_and_split": "Computed by me vs the LB-0195 answer age (which includes the corrupt 65s): Horvathv1 median AE 4.78 / mean 7.74 yr; Hannum 10.24 / 12.54. Covers 12 of the 153 mini DNAm GSMs.",
+        "authors_named_unsolved": "n/a",
+        "runnable_as_baseline": true
+      }
+    ],
+    "note": "Four searches plus the HF and leaderboard checks. LLM-on-LongevityBench is served by the authors (28 entries, open L-LLMs), and classical age prediction from NHANES or DNAm is saturated. What is left is a 'Better' angle: no classical or frozen-probe baselines in preprint v1, likely novel for this benchmark. A 'Unique application' angle is to use it as a probing testbed. Not 'Novel' or 'Diversity'."
+  },
+  "backbone": {
+    "name": "L-Qwen3-0.6B-Longevity (frozen; mean-pooled last-layer states) with a ridge/logistic head, compared against base Qwen3-0.6B as an ablation",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU for NHANES/Olink prompts (about 4k prompts × ≤1k tokens, roughly 1-2 h estimated, not timed). DNAm prompts of about 27k tokens are slow on CPU.",
+    "licence": "Models CC-BY-ND-4.0 (LFM variants lfm1.0), data CC-BY-NC-4.0, LongeClaw MIT. Non-commercial research is OK, but adapted weights cannot be redistributed."
+  },
+  "integration": {
+    "partner_dataset": "NHANES public files 1999-2018 (CDC) plus the NCHS Public-use Linked Mortality File. GEO series via GSM/GSE for DNAm.",
+    "join_key": "NHANES SEQN (one-to-one; benchmark SEQNs 2-9965 = 1999-2000 wave). GSM accession for DNAm. Not tested.",
+    "bigger_question_one_sentence": "Train on NHANES 2003-2018 and test on the exact benchmark participants: does a 1-hour ElasticNet, or a frozen-LLM embedding plus linear head, beat 28 generative LLMs, and how much of their gap is decoding rather than representation?"
+  },
+  "controls": {
+    "positive_control": "Predict sex from haemoglobin/RBC/creatinine in NHANES (should be near-perfect). Recover the cystatin C/creatinine/BUN rise with age, and ELOVL2 cg16867657 hypermethylation with age in DNAm prompts.",
+    "negative_control": "Shuffle the age labels. Use noise features of the same shape. Use base Qwen3-0.6B embeddings vs L-Qwen3-0.6B (fine-tuning ablation). Scramble units without converting them (should hurt the naive parser).",
+    "external_validation": "Temporal: NHANES 2003-2018 train vs the 1999-2000 benchmark wave via SEQN. Held-out GSE for DNAm (16 GSEs in mini alone). Olink is too small (93)."
+  },
+  "honest_claim_h3": "Among 1999-2000 NHANES adults rendered as text with randomized units, a frozen L-Qwen3-0.6B embedding plus linear head (or ElasticNet on the parsed values) does or does not predict chronological age and 10-year mortality better than the LLMs' own generated answers. This says nothing about biological age, other cohorts, or omics modalities with lossy serialization.",
+  "pitch": {
+    "headline": "4,206 NHANES adults' blood panels as text prompts, with 28 scored LLM entries and zero classical baselines to beat.",
+    "what_makes_the_data_unusual": "Every lab value sits inline in the prompt text with its unit, and three analytes are deliberately split about 50/50 between two units (Albumin g/L 665 vs g/dL 654, Creatinine umol/L 656 vs mg/dL 642) — a unit-robustness trap built into a benchmark rather than an accident. It also ships 28 per-task leaderboard scores with standard errors plus five open-weight L-LLMs, and per the model card the training corpus was never released.",
+    "the_win": "An ElasticNet on the parsed values, or a frozen L-Qwen3-0.6B embedding plus a ridge head, beating the best generative entry's 12.05-year NHANES age MAE (chance 16.3) — and quantifying how much of the LLM gap is decoding rather than representation, via the base-Qwen3-0.6B ablation.",
+    "even_if_it_fails": "A real result either way: if ElasticNet lands above 12 years, the 'LLMs trail classical baselines' claim dies and the frozen-probe comparison still measures representation versus decoding. The standalone data-quality finding also survives regardless — 486 of 1,452 GSMs in the extra clock task carry a 65-year placeholder conflicting with their true age, and '65' is the answer in 12,466 rows.",
+    "who_wants_it": "The Insilico Medicine LongevityBench authors and anyone submitting to longevitybenchmarks.org, who per the preprint v1 summary report no classical baselines — it would tell them whether their leaderboard ranks modelling ability or output formatting, and whether to fix LB-0195 before the next release."
+  },
+  "plain_idea": {
+    "one_liner": "Use a person's routine blood test results, written out as plain text, to predict their age and their chance of dying within ten years.",
+    "train_on": "Each example is a text prompt listing one adult's laboratory measurements — blood chemistry and blood count values from a United States national health survey, with the measurement unit written beside each value. There are 4,206 examples for the age task and 4,206 for the ten-year death task; two smaller sets of blood protein measurements have only 93 examples each.",
+    "predict": "The model outputs either a person's age in years or whether they died within ten years. The true age is the age recorded at the survey visit, and the death outcome comes from the survey's official linkage to national death records.",
+    "why_worthwhile": "Researchers building aging predictors would learn whether a simple statistical fit on the same numbers matches or beats large text-generating models on this public benchmark, which tells them how much of those models' error is in writing out an answer rather than in reading the data. The evaluation also flags a data problem: in one extra collection, 486 of 1,452 samples carry a placeholder age of 65 years instead of the real one."
+  },
+  "ml_idea": "(1) Parse LB-0038/0042 (NHANES) and LB-0074/0082 (Olink) into tables with unit harmonization. Fit ElasticNet/GBM in grouped CV and again trained on other NHANES waves. (2) Cache L-Qwen3-0.6B and base-Qwen3-0.6B embeddings of the same prompts on CPU and fit ridge heads. (3) Report all of these against the 28 leaderboard entries per task. Side output: a data-quality note on the LB-0195 65-year placeholder.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "cheapest_killing_check": "Download the benchmark parquet (91 MB), parse the 4,206 LB-0038 rows with unit conversion, and run 5-fold ElasticNet. The sanity ridge on the deceased-only LB-0054 subset gave 8.93 vs dummy 10.64, i.e. a smaller relative gain than the best LLM's 12.05 vs 16.3. If ElasticNet on LB-0038 is not clearly below 12 yr, the 'LLMs trail classical baselines' angle dies and only the probe remains.",
+    "working_set_gb": 0.145,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": 2,
+    "cv_run_minutes": null,
+    "compute_note": "Numbers come from stated file sizes (145 MB of parquet total, 91 MB benchmark download, 3.0 GB fp32 weights) and a rough estimate of 1-2 h to embed ~4k prompts of under 1k tokens on CPU; nothing was timed, and the 27k-token DNAm prompts are only described as taking hours."
+  },
+  "roi": 11,
+  "verdict": "park",
+  "verdict_reason": "Part A passes weakly, but B is 6/12. This is an LLM eval set: features are prose with deliberately randomized units, DNAm/GTEx inputs are lossy per-sample selections, there is no training split, and the extra clock task has a 65-year placeholder corrupting 486 of 1,452 GSMs. The open L-LLMs and 28 scored entries cover the LLM angle. What remains is a cheap 'classical/frozen-probe baseline' note with modest impact in a saturated aging-clock field; the raw NHANES/GEO sources are the better ML substrate.",
+  "c2_backfill": {
+    "score": 0,
+    "why": "Open L-Qwen3/L-LFM2 Longevity models plus 18 frontier LLMs scored on held-out NHANES in authors' leaderboard."
+  }
+}

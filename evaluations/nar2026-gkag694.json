@@ -1,0 +1,67 @@
+{
+  "paper_id": "nar2026-gkag694",
+  "title": "Opposing function of AEBP2 isoforms fine-tune PRC2 catalytic activity.",
+  "doi": "10.1093/nar/gkag694",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE310209",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the GEO (Gene Expression Omnibus) deposit GSE310209 by NCBI E-utilities and its FTP file list: 72 samples, and every processed file is a bigWig genome signal track (.bw, 16-160 MB each; whole archive GSE310209_RAW.tar = 3.82 GB, confirmed by a HEAD request). Downloaded one track (GSM9291263, H3K27me3 in triple-knockout cells, 17 MB) and parsed its binary header myself: valid bigWig version 4, 66 chromosomes, 2.73 billion bases covered, signal min 0 / max 535 / mean 0.14. Opened the Zenodo deposit metadata (10.5281/zenodo.20964805): uncropped western blot images only, CC-BY-4.0. Extracted the text of the 10-page supplementary PDF: figure legends only, no data tables.",
+    "what_came_from_paper_text_only": "That the bigWigs for chromatin immunoprecipitation (ChIP-seq) and CUT&Tag were scaled by a Drosophila spike-in factor, that RNA tracks are counts-per-million at 10 bp bins, that analysis used 10-kb bins restricted to the top 10% of wild-type H3K27me3, the Spearman correlations (about 0.4 in wild type and AEBP2-short, about -0.12 in AEBP2-long), and gene-set sizes (7,472 SUZ12-bound regions, 1,719 leading-edge genes, 52 overlapping genes). None of those derived tables are deposited anywhere I could find."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public NCBI FTP, no login: I downloaded one 17 MB bigWig and it parsed. Zenodo images are open CC-BY-4.0."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL, verified in the files. The deposit contains only 72 genome-wide signal tracks (bigWig). There is no gene table, no count matrix, no peak list, no differential-expression table and no supplementary data table. Any prediction target (H3K27me3 level per bin, or its change between isoform rescues) must be built from scratch by binning the tracks, averaging replicates and computing differences, with normalization choices of my own."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs would be mouse mm10 DNA sequence, a single public genome download, so no mass identifier lookups. But the sequence is not in this deposit."},
+    "a4_units_stated": {"pass": false, "note": "The bigWigs are described only as 'normalized' using a Drosophila spike-in factor; the actual scale factor, bin size and whether tracks are comparable across experiments are nowhere stated in the files or the paper. The header I read gives raw numbers (mean 0.14) with no unit."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Millions of 10-kb bins exist, but the independent unit is the biological condition: 4 cell states (wild type, triple knockout, knockout plus AEBP2-long, knockout plus AEBP2-short) x 2 timepoints, 2-4 replicates each. That is 8 conditions, not thousands of examples; bins within one genome are heavily correlated."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.6 GB if only the 16 H3K27me3 and H3K4me3 CUT&Tag tracks are taken; 3.8 GB for everything", "note": "Downloadable per sample, so subsetting is easy and peak memory stays small when binning track by track."},
+    "a7_counts_match_paper": {"pass": true, "note": "72 samples in GEO matches the experimental design described. There are no row counts to compare because no table was deposited."},
+    "a8_label_provenance": {"pass": true, "note": "Labels would be real measurements (CUT&Tag and ChIP-seq read coverage), not another model's output. The risk is different: DNA sequence is identical across the four conditions, so a model could only learn the wild-type landscape, not the isoform-specific effect."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "AlphaGenome (DeepMind sequence-to-function DNA model, 2025)", "open_weights": false, "score_and_split": "Reported by its authors to predict histone-modification ChIP tracks among many output types across human and mouse; exact per-track numbers not retrieved. Seen in search results only.", "authors_named_unsolved": "Not retrieved; I only saw the preprint summary.", "runnable_as_baseline": false},
+      {"name": "Enformer (transformer predicting genomic tracks from sequence, 2021)", "open_weights": true, "score_and_split": "Trained on human and mouse genomes including histone-modification ChIP tracks; held-out-chromosome split. Numbers not retrieved. From search snippet only.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "DeepHistone (2019 convolutional model for histone-modification sites)", "open_weights": true, "score_and_split": "Average area under the ROC curve 0.8391 for an embryonic stem cell line (Roadmap sample E003), beating DeepSEA, DanQ and gkm-SVM, per the search snippet.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Support-vector-machine classifier of H3K27me3 domains from DNA sequence (Genome Research 2014, frog embryos)", "open_weights": null, "score_and_split": "Reported to predict H3K27me3 domain sequences accurately from sequence alone, with a signature conserved across human, frog and fish; split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Nucleotide Transformer / HyenaDNA for mouse DNA", "freeze_and_head_viable": false, "hardware": "Frozen embeddings of millions of 10-kb bins would need a GPU day or more; CPU-only is impractical", "licence": "AlphaGenome weights are non-commercial; Nucleotide Transformer and HyenaDNA are open"},
+  "integration": {"partner_dataset": "ENCODE / Bing Ren mouse embryonic stem cell H3K27me3 and SUZ12 tracks, or the AlphaGenome Atlas", "join_key": "mm10 genomic coordinates", "bigger_question_one_sentence": "Does the sequence grammar that predicts where H3K27me3 sits also predict how far it spreads when PRC2 accessory subunits change? - a good question, but this deposit supplies only 8 conditions from one cell line to test it."},
+  "controls": {"positive_control": "A model must recover the known enrichment of H3K27me3 at CpG-island developmental gene promoters (Hox clusters) in the wild-type track.", "negative_control": "Shuffle bin labels and confirm collapse; also check that predictions do not simply track mappability or GC content.", "external_validation": "Independent mouse embryonic stem cell H3K27me3 from ENCODE exists, so external validation would be possible if a label table existed."},
+  "honest_claim_h3": "At best: 'in one mouse embryonic stem cell line from one lab, DNA sequence features explain where H3K27me3 sits, but the difference between AEBP2 long and short rescue is a per-condition shift that sequence cannot predict' - a claim about 8 conditions, not a general model.",
+  "plain_idea": {
+    "one_liner": "Use mouse DNA sequence to predict where the repressive histone mark H3K27me3 is deposited and how far it spreads",
+    "train_on": "Genomic windows (the paper uses 10-kb bins) of mouse mm10 DNA sequence, paired with measured chromatin signal in each of 4 cell states; only 8 biological conditions (4 genotypes x 2 differentiation timepoints) exist, with 2-4 replicates each, and no per-bin table is deposited.",
+    "predict": "The level of H3K27me3 (a histone mark that switches genes off) per genomic window, and its change between cells rescued with the long versus the short AEBP2 protein isoform. Truth would come from CUT&Tag sequencing coverage normalised by a fruit-fly chromatin spike-in, which I would have to quantify myself from the deposited signal tracks.",
+    "why_worthwhile": "Chromatin biologists studying Polycomb repressive complex 2 (PRC2) would like to know which DNA features decide where the mark spreads; but with one cell line and 8 conditions, nothing learned here would generalise, and the sequence-to-histone-mark task is already covered by large published models."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Enformer and AlphaGenome train on thousands of human and mouse tracks; this deposit adds 72 tracks from a single cell line, 16 of which are H3K27me3 or H3K4me3."},
+    "confidence_score": {"answer": "no", "why": "Only 2 replicates per chromatin condition, which is too few to estimate per-bin measurement noise reliably, and spike-in scale factors are not reported."},
+    "models_beatable": {"answer": "no", "why": "The relevant baselines are a 2021 transformer (Enformer) and a 2025 multimodal model (AlphaGenome), both evaluated on held-out chromosomes; the older 2019 DeepHistone is beatable but beating it on one cell line proves little."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model can be run as a baseline on this paper's specific label, because that label (isoform-specific H3K27me3 change) does not exist as a table and is not a quantity any published model predicts."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only modelling idea this deposit supports is predicting H3K27me3 level or spreading extent per 10-kb mouse genomic bin from DNA sequence, and secondarily asking whether the AEBP2 long-versus-short difference is predictable from local sequence or chromatin context. Both require building the label table from 72 bigWig signal tracks first, and the first task is already served by Enformer, AlphaGenome and DeepHistone.",
+  "effort": {
+    "hours_to_feature_table": 16,
+    "working_set_gb": 0.6,
+    "needs_gpu": true,
+    "peak_ram_gb": 4,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: binning 16 CUT&Tag bigWigs into 10-kb windows with deepTools or pyBigWig is a few minutes per file at low memory; the GPU need comes from any sequence backbone over millions of windows. I timed only the single 17 MB download and header parse.",
+    "cheapest_killing_check": "Count the independent biological conditions before anything else: 4 genotypes x 2 timepoints = 8, with 2 replicates for chromatin. That count alone kills it, and it took one NCBI query."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A2 fails, verified in the files: the deposit is 72 bigWig signal tracks and nothing else - no count matrix, no peak calls, no differential table, and a supplement that is figure legends only - so every prediction target would have to be constructed from raw genome coverage with undocumented normalisation (A4 also fails). Behind that sits an A5 failure in disguise: the independent unit is the biological condition, and there are 8 of them from one mouse embryonic stem cell line in one lab. This is a well-executed mechanistic biochemistry paper whose quantitative claims live in gel quantifications and figure panels, not in a model-ready table, and the one sequence-based task it could support is already covered by Enformer, AlphaGenome and DeepHistone."
+}

@@ -1,0 +1,72 @@
+{
+  "paper_id": "nature2026-10729-8",
+  "title": "N4-Acetylcytidine enhances synthetic mRNA translation yield and fidelity.",
+  "doi": "10.1038/s41586-026-10729-8",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE301223",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the GEO (Gene Expression Omnibus) record GSE301223: it has exactly 3 samples (GSM9078300-02), organism 'synthetic construct', and its file list is 3 BED alignment files (293-341 MB gzipped each) plus one 711-byte FASTA. I downloaded and unzipped that FASTA: it is a single 1,948-nucleotide reporter messenger RNA (+1 frameshift firefly luciferase). I queried NCBI SRA for BioProject PRJNA1280991 (the ribosome profiling data): exactly 3 runs (SRR34113691-93, ~3.5 million reads each, Illumina MiSeq, raw FASTQ only), named UM / Ac4C / MiPsi. No processed count table, no feature/label table exists in either deposit.",
+    "what_came_from_paper_text_only": "That the ribosome profiling was done in HeLa cells transfected with one reporter (WT-5xU firefly luciferase) under three modification conditions; that supplementary tables 1-3 are sequence lists, in-vitro-transcription error statistics and ribosome-profiling quality-control summaries; that the single-molecule imaging measured ~160 molecules/cells per condition. The Europe PMC supplementary-file endpoint timed out twice (75 s hard deadline), so the supplement itself was not retrievable and I could not confirm its contents or any figure source-data tables."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both deposits are public with no login: GEO FTP serves the BED files and FASTA (I downloaded the FASTA), SRA serves the FASTQ runs. Verified in the files."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. There is no label column anywhere. The only deposited processed files are per-read BED alignment coordinates; any target (ribosome occupancy per codon, frameshift rate, error rate) would have to be constructed by piling up reads, assigning ribosome P-sites and normalising. Verified by reading the GEO file list and sample metadata, not just the paper."},
+    "a3_inputs_present": {"pass": true, "note": "One reporter sequence is deposited as FASTA (1,948 nucleotides, opened and counted). Other construct sequences are only in Supplementary Table 1, which I could not retrieve."},
+    "a4_units_stated": {"pass": false, "note": "No units because there is no measurement table; BED files carry read coordinates only. Any quantity (reads per million, P-site density) would be defined by whoever processes the data, not by the depositors."},
+    "a5_enough_rows": {"pass": false, "n_rows": 6, "note": "FAIL, and this is the decisive one. The whole deposit is 6 sequencing libraries: 3 RNA-seq of one in-vitro-transcribed reporter and 3 ribosome-profiling libraries of one transfected reporter, one library per modification condition. Even counting codon positions, that is ~550 codons from a single gene, heavily autocorrelated, with no biological replicate libraries. Verified from GEO and SRA records."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.7 GB (913 MB BED tar + ~750 MB FASTQ)", "note": "Large but streamable on a laptop; not the reason this fails."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO says 3 libraries from the +1 frameshift reporter, SRA says 3 ribosome-profiling runs; both match the paper's description of three modification conditions. No contradiction found."},
+    "a8_label_provenance": {"pass": true, "note": "Had a label existed it would be a direct physical measurement (sequencing read counts), not another model's output. Not the failure point."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "RiboMIMO (deep learning model of ribosome density along full-length coding sequences, PLOS Computational Biology)", "open_weights": null, "score_and_split": "Reported by its authors to outperform prior methods on ribosome-profiling density prediction; I saw only the search-result summary, not the paper, so I have no number or split.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Ixnos / 'Accurate design of translational output by a neural network model of ribosome distribution' (neural network predicting ribosome footprint counts per position in yeast)", "open_weights": null, "score_and_split": "Not retrieved beyond the search-result summary.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "ERNIE-ac4C / DeepRNAac4C / STM-ac4C (sequence classifiers for where N4-acetylcytidine occurs naturally in human messenger RNA)", "open_weights": null, "score_and_split": "Not retrieved beyond search-result summaries. These predict modification sites, not the translation effects this paper measures.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM or Nucleotide Transformer (RNA/DNA language models) would be the natural fit for a sequence-to-ribosome-density task", "freeze_and_head_viable": null, "hardware": "CPU laptop would suffice for one 1,948-nucleotide sequence, which is exactly the problem: one sequence is not a training set", "licence": "Not checked; moot given the Part A failure."},
+  "integration": {"partner_dataset": "Public ribosome-profiling compendia (e.g. RiboBase/GWIPS-viz) could in principle supply transcriptome-wide occupancy", "join_key": "None available: this deposit contains only synthetic reporter constructs with no gene identifiers to join on", "bigger_question_one_sentence": "Cannot be written honestly: the paper's data covers one artificial reporter, so there is nothing to join to a transcriptome-scale resource."},
+  "controls": {"positive_control": "Would have been the three-nucleotide periodicity of ribosome footprints along the reading frame, which any correct pipeline recovers", "negative_control": "Label shuffling across codon positions", "external_validation": "None within this deposit; another lab's modified-messenger-RNA ribosome profiling would be needed and I did not find one."},
+  "honest_claim_h3": "With this data a model could at most claim 'ribosome occupancy at each codon of one 1,948-nucleotide firefly luciferase reporter, in HeLa cells, under three nucleotide-modification conditions, with one library per condition' — a statement about a single artificial sequence, not about messenger RNA design in general.",
+  "plain_idea": {
+    "one_liner": "Use messenger RNA sequence and its chemical modification to predict how fast ribosomes move along each codon.",
+    "train_on": "What I considered: codon-level sequence windows plus a flag for which modified nucleotide was used (unmodified, N4-acetylcytidine, or N1-methylpseudouridine). Verified count of usable examples: one 1,948-nucleotide reporter sequence across 3 conditions, i.e. roughly 550 codons x 3, from 6 sequencing libraries total.",
+    "predict": "Ribosome density at each codon, which would have to be computed from raw ribosome-profiling reads (ribosome footprints sequenced after nuclease digestion) deposited only as FASTQ and BED alignment files.",
+    "why_worthwhile": "Companies designing therapeutic messenger RNA (Moderna, BioNTech, CureVac) want to know which chemical modification gives the highest protein yield without frameshifting errors; a sequence model of elongation speed under each modification would guide that choice. But this paper's deposit cannot train one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Existing ribosome-density models were trained on transcriptome-wide profiling of thousands of genes; this deposit has one gene in three conditions, so it is vastly smaller, not bigger."},
+    "confidence_score": {"answer": "no", "why": "There is one sequencing library per condition, so there are no replicate measurements from which to estimate noise and attach a confidence to any prediction."},
+    "models_beatable": {"answer": "no", "why": "Irrelevant here: with one sequence and no held-out genes there is no honest way to compare against RiboMIMO or similar models at all."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: our data cannot even reproduce an existing model's evaluation, because the existing models are evaluated across many genes and this deposit has one."}
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Public ribosome-profiling repositories (GWIPS-viz, RiboBase, RiboSeq.Org) hold ribosome occupancy for many genes and species; known resources, not searched for this evaluation.",
+    "approx_items": null,
+    "join_key": "Gene/transcript identifier (Ensembl transcript) — which this deposit does not have, since its only sequences are synthetic reporters.",
+    "why": "Ribosome occupancy is measured widely elsewhere, but always on natural transcripts without the synthetic chemical modifications that are the entire point of this paper, so the outside data cannot supply the label of interest."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict per-codon ribosome dwell time from local sequence context plus a modification identity flag, using the paper's ribosome profiling of unmodified, N4-acetylcytidine and N1-methylpseudouridine reporters. Dead on arrival because the deposit contains one reporter sequence, three conditions, and no processed occupancy table.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 1.7,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: ~1.7 GB total download (913 MB BED tar seen in the GEO file listing plus ~750 MB of SRA FASTQ seen in the run summaries), and roughly a day of read-processing to build a per-codon occupancy table. None of it matters because the resulting table has one gene in it.",
+    "cheapest_killing_check": "Open the GEO series record and count the samples — it says three, all of one synthetic construct. That took one request and kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A2, A4 and A5. The entire deposit is 6 sequencing libraries (3 RNA-seq in GEO GSE301223, 3 ribosome-profiling runs in BioProject PRJNA1280991), all of a single 1,948-nucleotide firefly luciferase reporter under three nucleotide-modification conditions, with one library per condition. There is no label column: the only processed files are per-read BED alignment coordinates, so any prediction target would have to be built by piling up reads and assigning ribosome positions, and would carry no stated units. The number of independent examples is three, not the ~1,500 the checklist requires; even counted per codon it is ~550 autocorrelated positions from one gene. The science is strong and the single-molecule imaging measurements (~160 molecules per condition) are the interesting part, but those were not deposited and the supplement was not retrievable."
+}

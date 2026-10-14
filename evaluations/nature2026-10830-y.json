@@ -1,0 +1,275 @@
+{
+  "paper_id": "nature2026-10830-y",
+  "title": "A tumour-derived organoid biobank maps cancer gene dependencies.",
+  "doi": "10.1038/s41586-026-10830-y",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.6084/m9.figshare.28339340",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Figshare deposit 28339340 (licence CC BY 4.0, 53 files, no login) listed via the Figshare application programming interface; I downloaded and opened 12 files. '07_EssMatrix_bDepletionsB2.Rdata' read in R: a 17,647-gene x 930-model matrix of 0/1 'is this gene a dependency' calls, 0 missing values, 2,311,032 ones (mean 0.141), median 2,506 dependencies per model. Its 930 column identifiers split 580 'ACH-' (Broad DepMap model IDs) + 350 'SIDM-' (Sanger model IDs); cross-referencing against Cell Model Passports 'model_list_latest.csv' (1,984 rows) matched 334 SIDM IDs and ALL 334 are model_type 'Cell Line' -- there are ZERO organoids in this matrix. Organoid feature tables, all keyed on an HCM-SANG sample_ID: covariates 256x4 (ploidy, msStatus, library, tissue; 9.1% missing), driver-mutations 256x254 binary, CNV-genes 256x440 binary, GOF 256x350 binary, LOF 256x~330 binary, driver-variants 256x25 binary (e.g. KRAS_G12, BRAF_V600E), mutational signatures 242x44 binary. 'control-genes_organoids.csv' = 1,157 genes with an 'essentiality' column (curated_BAGEL_essential / non-essential). 'CRISPRInferredCommonEssentials.csv' = 1,492 gene names. 'normalized-gene-LFCs_different-batches-controls.csv' = 18,760 gene rows but only 3 organoids (a batch-control file). 'sgRNAs-counts_plasmid_early-point_end-points.csv' = 37,518 rows (gene, sgRNA, Plasmid) for only 3 organoids, 3 replicates each. The current public Cell Model Passports release I downloaded lists only 74 organoids in total, not 256. By HTTP HEAD only (not opened, over the project's 50 MB download cap): '07_EssMatrix_qnorm_corrected_logFCs.RData' = 125,803,583 bytes, and 'data_RNAseq_ALL-organoids.csv' = 65.3 MB. The analysis code repository Garnett-Lab/SangerOrganoidBiobank was listed via the GitHub API (9 R/shell scripts, including run_BAGEL2_bf.sh).",
+    "what_came_from_paper_text_only": "That 256 organoids were derived and that genome-wide CRISPR-Cas9 screens were run on 162 of them; that raw whole-genome, targeted and RNA sequencing sit in the European Genome-phenome Archive (EGA) under controlled access (EGAD00001015469, EGAD00001015470); that processed CRISPR data are in Cell Model Passports and the DepMap miner database; the KRAS variant-allele and EGFR-RAS-MAPK findings; and that Supplementary Table 10 indexes every dataset used (I did not retrieve the Supplementary Tables -- the Europe PMC supplementaryFiles bundle for PMC13581617 is larger than the 60 MB cap I allowed, so it was skipped rather than downloaded). Critically, I did NOT verify anywhere that a 162-organoid x gene dependency table exists, nor that its row/column identifiers join to the 256-organoid feature tables."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Figshare, CC BY 4.0, no login; I downloaded 12 files successfully. Raw sequencing is EGA controlled-access but is not needed. Caveat: the organoid dependency matrix appears to be a 125.8 MB R binary file, above this project's 50 MB cap, so I recorded its size rather than opening it."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The label (gene dependency per model) is a pre-computed matrix cell made by the authors, not something I would infer. BUT: in every file I could open, dependency labels exist only for cell lines, and they are keyed on SIDM/ACH model IDs while all organoid features are keyed on HCM-SANG IDs. Reaching the organoid labels needs the 125.8 MB file plus an identifier crosswalk. This is the main unverified risk."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: organoid inputs are literal binary indicator columns (gene mutated, gene amplified, signature active) in the files -- no accession lookups needed. Gap: the deposit carries no matching feature tables for the 930 cell lines, so a cell-line-to-organoid transfer experiment would need DepMap omics fetched separately."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The matrix I opened is unambiguous 0/1. Feature columns are self-describing (APC_mut, ABCB1_amp, ploidy). The continuous dependency scores are log fold-change and BAGEL2 Bayes factors, documented in the Methods and the GitHub scripts rather than in the files themselves."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 16411710,
+      "note": "Verified 17,647 x 930 = 16,411,710 gene-by-model label cells with 2,311,032 positives. But the independent unit is the model: 930 cell lines verified, 162 organoids claimed by the paper and not verified. Treat 162 as the real sample size for anything organoid-specific."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.6 GB",
+      "note": "The binary matrix is 16 MB as 8-bit integers; the 125.8 MB R file plus the 65 MB expression table load comfortably in a few GB. No GPU needed for a gradient-boosted-tree baseline."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "256 organoid rows confirmed in four separate feature tables, matching the paper. Two discrepancies, both explainable: the public Cell Model Passports release lists 74 organoids, not 256 (release lag, Figshare is authoritative), and the 930-model dependency matrix holds no organoids at all (it is the reference cell-line matrix, not the paper's headline screens)."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label is a physical measurement chain: sgRNA sequencing read counts (I saw the raw counts file with 3 replicates per model) to gene-level log fold-change to BAGEL2 Bayes factor to a binary call. Not another model's prediction. Features come from independent whole-genome sequencing, so no leakage; note only that the gain-of-function / loss-of-function feature columns rest partly on annotation tools (BoostDM, Cancer Genome Interpreter), which affects features, not labels."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "Six organoid feature tables join cleanly on one HCM-SANG key (saw it); label lives in a separate R binary on different IDs."
+    },
+    "B2": {
+      "score": 1,
+      "why": "All CSVs parsed first try in pandas; the dependency matrix is .RData and needed R, not a plain reader."
+    },
+    "B3": {
+      "score": 1,
+      "why": "Authors quantile-normalised and batch-corrected, but the 930-model matrix mixes Broad and Sanger CRISPR libraries."
+    },
+    "B4": {
+      "score": 2,
+      "why": "Zero missing values in the 17,647 x 930 matrix I opened; no censored or qualitative entries anywhere."
+    },
+    "B5": {
+      "score": 1,
+      "why": "Unique sample IDs in all tables, but the biobank includes paired pre/post-treatment samples from one patient needing patient-level grouping."
+    },
+    "B6": {
+      "score": 1,
+      "why": "Column names self-explanatory and full analysis code on GitHub, but I found no data dictionary on Figshare."
+    },
+    "C1": {
+      "score": 2,
+      "why": "'How much accuracy is lost going from cell lines to patient organoids' is informative whichever way it lands."
+    },
+    "C2": {
+      "score": 1,
+      "why": "DeepDEP and newer graph models predict cell-line dependencies with open code; none evaluated on patient-derived organoids."
+    },
+    "C3": {
+      "score": 2,
+      "why": "Clear diversity/unique-application angle: organoids are the underrepresented model system, and held-out-model-system testing is new."
+    },
+    "C4": {
+      "score": 2,
+      "why": "A genome-wide screen per organoid takes weeks of culture; the authors screened only 162 of their 256 models."
+    },
+    "C5": {
+      "score": 2,
+      "why": "DeepDEP reports a published correlation, the deposit includes the paper's own AUROC/AUPR curve data, and per-gene mean is an obvious dummy."
+    },
+    "D1": {
+      "score": 1,
+      "why": "No backbone fits binary genomic tables; Geneformer on the 65 MB bulk expression table is a stretch but open-weight."
+    },
+    "D2": {
+      "score": 2,
+      "why": "256 bulk profiles through Geneformer is minutes on CPU; ESM-2 small over 17,647 human proteins is an overnight job."
+    },
+    "D3": {
+      "score": 2,
+      "why": "Data CC BY 4.0 (read from Figshare API), Geneformer Apache-2.0, ESM-2 MIT -- all permissive."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Natural non-random splits: hold out whole model system (cell lines then organoids), whole patient, or whole gene."
+    },
+    "E2": {
+      "ok": true,
+      "why": "930 cell lines verified plus 162 organoids claimed, across 5 tumour tissues and 2 CRISPR libraries."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Per-gene mean dependency rate across models is computable directly from the matrix I opened; it will be a strong dummy."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Saw 3 replicates per organoid and batch1/batch2 repeats in the sgRNA count and batch-control files; noise floor estimable."
+    },
+    "E5": {
+      "ok": true,
+      "why": "control-genes_organoids.csv ships 1,157 curated essential/non-essential control genes -- a ready-made positive control I opened."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Label shuffling and feature-block ablation (mutations only, copy number only) are trivial on this tabular layout."
+    },
+    "E7": {
+      "ok": true,
+      "why": "A companion Nature paper (10.1038/s41586-026-10843-7) reports 147 independent 3D-model dependency screens from a different institute."
+    },
+    "E8": {
+      "ok": true,
+      "why": "The paper's own AUROC/AUPR curve data (21.9 MB) plus all five figures' code are public on GitHub."
+    },
+    "G1": {
+      "score": 2,
+      "why": "Saw HGNC gene symbols, Ensembl gene IDs in the sgRNA library file, SIDM/ACH model IDs and SIDP patient IDs."
+    },
+    "G2": {
+      "score": 2,
+      "why": "DepMap joins on the 580 ACH model IDs already present as columns in the matrix I opened; Open Targets table also included."
+    },
+    "G3": {
+      "score": 1,
+      "why": "Gene symbols map one-to-one, but HCM-SANG to SIDM to ACH mapping currently covers only 74 of 256 organoids publicly."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Combined question: which cell-line dependencies survive in patient-derived organoids that keep tumour expression programs?"
+    },
+    "H1": {
+      "score": 2,
+      "why": "Verified 86% of the 16.4M label cells are zeros (non-dependencies), plus curated non-essential control genes supplied."
+    },
+    "H2": {
+      "score": 1,
+      "why": "Five tumour types, but all UK clinical cohorts and all screens run at one institute with one library."
+    },
+    "H3": {
+      "score": 2,
+      "why": "Honest claim writes out precisely in one sentence; see honest_claim_h3 field."
+    },
+    "H4": {
+      "score": 2,
+      "why": "Paper openly discusses organoid-specific essential genes, culture adaptation and batch effects; dedicated batch-control files are deposited."
+    },
+    "I1": {
+      "score": 2,
+      "why": "Named: Garnett lab / Cell Model Passports at Wellcome Sanger, Broad DepMap, and the Open Targets prioritisation pipeline."
+    },
+    "I2": {
+      "score": 2,
+      "why": "Knowing which dependencies fail to transfer would change which targets get prioritised and which of the 94 unscreened organoids to screen next."
+    },
+    "I3": {
+      "score": 1,
+      "why": "Decision is a yes/no 'pursue this target', so precision-at-top-k fits; the field reports correlation instead."
+    },
+    "I4": {
+      "score": 1,
+      "why": "A per-gene average already captures most variance (common essential genes); ML only helps on the sparse selective dependencies."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Real transfer learning, grouped splits, held-out model system, external validation dataset -- the ML skills worth learning."
+    },
+    "J2": {
+      "score": 1,
+      "why": "Checkable intuitions exist (EGFR dependency should track EGFR amplification), but CRISPR screen quality-control subtleties need an expert."
+    },
+    "J3": {
+      "score": 2,
+      "why": "Even a mediocre model leaves a reusable organoid feature/label table plus a per-gene transfer-gap table."
+    },
+    "J4": {
+      "score": 1,
+      "why": "No budget written down anywhere; a 3-4 week estimate is plausible but is mine, not committed."
+    },
+    "J5": {
+      "score": 0,
+      "why": "No kill date or condition recorded in NOTES.md."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepDEP (deep neural network predicting cancer cell gene dependency from multi-omics; Science Advances 2021)",
+        "open_weights": true,
+        "score_and_split": "A search-result summary reports Pearson correlation 0.87 across 104 newly screened cell lines x all dependencies of interest; I did not retrieve the paper's full text, and the split is cell-line-level, never organoid-level.",
+        "authors_named_unsolved": "Per the same summary, generalising from cell lines to actual tumours is the open part; they validated across CRISPR libraries and RNA interference screens but had no patient-derived organoid data.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Context-aware gene dependency modelling via graph attention networks (PMC12805727, 2026)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the title and abstract snippet from search; scores and split unknown to me.",
+        "authors_named_unsolved": "Unknown -- I did not read the paper.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "A dependency map enhanced with next-generation 3D cancer models (Nature 2026, 10.1038/s41586-026-10843-7)",
+        "open_weights": null,
+        "score_and_split": "Not a predictive model -- a companion experimental resource of 147 genome-scale screens in organoids and spheroids across 10 cancer types. Found via search, full text not retrieved.",
+        "authors_named_unsolved": "Search summary says traditional cell lines silence tumour-relevant expression programs that these 3D models retain -- i.e. the cell-line-to-3D-model transfer gap is explicitly open.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Geneformer (open-weight transformer over ranked gene expression) on the bulk organoid expression table, optionally paired with ESM-2 t12 (protein language model) embeddings of the 17,647 knocked-out genes",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM; 256 bulk expression profiles embed in minutes, 17,647 protein sequences overnight",
+    "licence": "Geneformer Apache-2.0, ESM-2 MIT, data CC BY 4.0 -- all permissive"
+  },
+  "integration": {
+    "partner_dataset": "DepMap (CRISPR gene dependency across ~1,100 cancer cell lines), plus the Open Targets evidence table already included in the deposit",
+    "join_key": "gene symbol / Ensembl gene ID on one side, and model identifier on the other (580 Broad ACH- IDs are already column names in the matrix I opened; organoids need an HCM-SANG to SIDM crosswalk from Cell Model Passports)",
+    "bigger_question_one_sentence": "Which gene dependencies discovered in cell lines survive in patient-derived organoids that still carry tumour expression programs, and can the ones that fail to transfer be predicted in advance from genomics alone?"
+  },
+  "controls": {
+    "positive_control": "The 1,157 curated BAGEL essential and non-essential control genes shipped in control-genes_organoids.csv (I opened it): the model must call ribosome and proteasome genes dependencies in essentially every model and the non-essential set in essentially none. Second control: EGFR or ERBB2 dependency should track their amplification calls in CNV-genes.csv.",
+    "negative_control": "Shuffle the 0/1 dependency labels within each model and confirm collapse to the per-gene mean; ablate feature blocks (driver mutations only, copy number only, signatures only) to see whether tissue type alone does all the work.",
+    "external_validation": "The companion Nature paper 10.1038/s41586-026-10843-7, an independent set of 147 genome-scale CRISPR screens in 3D cancer models from a different institute; plus a straight DepMap cell-line hold-out."
+  },
+  "honest_claim_h3": "Among 162 UK patient-derived tumour organoids from five gastrointestinal and gynaecological cancers, all screened with one CRISPR library at one institute, this model predicts which gene knockouts kill the organoid using only DNA-level driver mutation and copy-number calls, and it quantifies how much accuracy is lost when the training examples are conventional cell lines rather than organoids.",
+  "plain_idea": {
+    "one_liner": "Use a tumour organoid's mutations and copy-number changes to predict which gene knockouts kill it.",
+    "train_on": "Each example is one (gene, tumour model) pair: the model's binary genomic profile (254 driver-gene mutation flags, 440 copy-number flags, 44 mutational-signature flags, ploidy, tissue -- all verified in the files) plus an identifier for the knocked-out gene. I verified 16,411,710 such pairs for 930 cancer cell lines; the paper claims a further 162 organoids whose labels I could not open.",
+    "predict": "A yes/no call on whether knocking out that gene stops the model growing. The truth comes from a genome-wide CRISPR-Cas9 dropout screen: cells carrying a guide against an essential gene die, so their guide's sequencing reads fall, scored with BAGEL2 and binarised by the authors.",
+    "why_worthwhile": "Cancer target discovery runs almost entirely on cell lines, which have adapted to plastic dishes; this would give the first number for how far cell-line dependency predictions carry over to organoids grown straight from patient tissue. Even a failure produces a per-gene list of which dependencies do not transfer."
+  },
+  "pitch": {
+    "headline": "256 patient-derived tumour organoids with open binary genomic feature tables, plus a 17,647-gene by 930-cell-line dependency matrix, all CC BY 4.0.",
+    "what_makes_the_data_unusual": "Organoids grown directly from patient tissue, not cell lines, across five cancers, with paired pre- and post-treatment samples. I downloaded 12 files with no login; licence verified CC BY 4.0 from the Figshare interface.",
+    "the_win": "A per-gene number for how much dependency-prediction accuracy drops from cell lines to patient organoids, benchmarked against the per-gene-mean dummy and DeepDEP, which was never tested on organoids.",
+    "even_if_it_fails": "You still ship the organoid-to-cell-line identifier crosswalk (the public Cell Model Passports release covers only 74 of 256 organoids today) and a table of which dependencies transfer -- both independently useful.",
+    "who_wants_it": "The Garnett lab and Cell Model Passports team at Wellcome Sanger, the Broad DepMap group behind the companion paper, and Open Targets -- it changes which targets they prioritise."
+  },
+  "ml_idea": "Two-sided tabular classifier over (knocked-out gene, tumour model) pairs: features are the model's binary driver-mutation, copy-number, mutational-signature, ploidy and tissue calls, plus a gene-side representation (one-hot, or frozen ESM-2 protein-language-model embedding, or the gene's expression rank in that model). Target is the authors' binary dependency call. The experiment that matters is a held-out-model-system split: train on the 930 cell lines, test on the 162 organoids, and report how accuracy decays versus a cell-line hold-out of the same size -- separately for pan-essential genes and for selective dependencies, since the former are easy and the latter are the decision-relevant ones. Secondary experiment: hold out whole patients to see whether paired pre/post-treatment organoids leak.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 0.6,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 2,
+    "cv_run_minutes": 30,
+    "compute_note": "Estimated, not timed, except that reading the 2.83 MB binary matrix in R and all CSVs in pandas took seconds. 12 hours covers fetching the 125.8 MB R binary (needs the 50 MB cap raised deliberately), exporting it from R, building the HCM-SANG to SIDM crosswalk, and joining six feature tables. ESM-2 t12 (35M parameters) over 17,647 human proteins at a few sequences per second on CPU is about 1.6 hours; gradient-boosted trees over ~2.9M organoid label cells with grouped cross-validation is tens of minutes.",
+    "cheapest_killing_check": "Download 07_EssMatrix_qnorm_corrected_logFCs.RData (125.8 MB), load it in R, and count how many of the 256 HCM-SANG organoid IDs in the feature tables appear as columns after crosswalking through Cell Model Passports. If fewer than roughly 120 organoids join, the project is dead -- and note the matrix I could open contains zero organoids, so this is a real possibility."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "The question is excellent and the evaluation story is unusually complete: a transfer question that cannot produce a useless answer, ready-made positive-control gene lists, replicate measurements for a noise floor, and an independent companion dataset of 147 organoid screens for external validation. Features are genuinely model-ready -- clean binary tables, 256 rows, one join key, zero missing values in the matrix I opened. But the label is the unverified half. The only dependency matrix I could open under the 50 MB cap holds 930 cell lines and, after cross-referencing Cell Model Passports, zero organoids; the organoid dependency scores appear to live in a 125.8 MB R binary keyed on different identifiers, and the public Cell Model Passports release currently exposes only 74 of the 256 organoids. Do the cheapest killing check first: open that 126 MB file and count how many organoids actually join to the feature tables. If the answer is above ~120, this is a 'do it'."
+}

@@ -1,0 +1,54 @@
+{
+  "paper_id": "nar2026-gkag897",
+  "title": "A transcription factor regulatory atlas for activity inference and perturbation prediction.",
+  "doi": "10.1093/nar/gkag897",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://zenodo.org/records/20779282",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the Zenodo record 20779282 through its API: about 40 CSVs, each tissue file 5–53 MB, TFactprofiler_all.csv 86 MB, Table S1.csv 159 MB, human_chipatlas.csv 1.98 GB. Downloaded CollecTRI.csv (64,495 rows; source, target, weight, pmid) and TFactprofier_tonsil.csv (407,018 rows; source, target, weight, where weight is a fitted regression coefficient such as 0.105).",
+    "what_came_from_paper_text_only": "The 2,606,176 interactions, 2,017 TFs (transcription factors) and 18,163 targets (I did not download all.csv). Knockdown benchmark results on KnockTF 2.0 and Replogle Perturb-seq (PRJNA831566, PRJNA1100571), and the comparisons with scFoundation and scGPT."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record is open with no login; two CSVs downloaded fine."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in the files: they hold only source/target/weight network edges. The only measured outcome, the expression change after a TF knockdown, lives in external data (KnockTF, Perturb-seq) and would have to be rebuilt as knockdown-minus-control contrasts."},
+    "a3_inputs_present": {"pass": true, "note": "Gene symbols are given directly, with no lookups needed."},
+    "a4_units_stated": {"pass": false, "note": "The weight column is a unitless regularized-regression coefficient, and the files have no documented scale."},
+    "a5_enough_rows": {"pass": true, "n_rows": 407018, "note": "That is the tonsil file, which I counted. The paper's 2.6M total for all.csv was not verified."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~86 MB for all.csv; tissue files 5–53 MB", "note": "Small, except the 2 GB ChIP-Atlas snapshot."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checked against all.csv; the tissue files are subsets."},
+    "a8_label_provenance": {"pass": false, "note": "The weights are outputs of the authors' cluster-wise regression on RNA-seq atlases. Predicting them means distilling their model, so the weights are not a measured label."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "TFActProfiler (this paper; zero-shot linear perturbation predictor)", "open_weights": true, "score_and_split": "Correlation between predicted and observed knockdown changes on held-out unseen perturbations (10-fold over TFs); paper says higher than CollecTRI, scFoundation and scGPT embeddings.", "authors_named_unsolved": "Evaluating against nonlinear methods under matched conditions, and context-specific regulation in rare cell types.", "runnable_as_baseline": true},
+      {"name": "Linear model with pretrained perturbation embeddings (Ahlmann-Eltze et al., Nature Methods 2025)", "open_weights": true, "score_and_split": "Matched or beat GEARS and scGPT on unseen single and double perturbations in Norman/Replogle data.", "authors_named_unsolved": "Deep models do not yet beat simple linear baselines.", "runnable_as_baseline": true},
+      {"name": "GEARS / scGPT / scFoundation (via PerturBench and the BMC Genomics benchmark)", "open_weights": true, "score_and_split": "Held-out perturbation splits; often no better than a mean-expression baseline.", "authors_named_unsolved": "Metric calibration; a later Nature Biotechnology 2026 paper argues deep models win on calibrated metrics.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "scGPT / scFoundation embeddings", "freeze_and_head_viable": true, "hardware": "CPU possible for gene embeddings", "licence": "open (MIT-style for scGPT)"},
+  "integration": {"partner_dataset": "Replogle 2022 Perturb-seq (K562/RPE1, PRJNA831566); KnockTF 2.0", "join_key": "gene symbol", "bigger_question_one_sentence": "Does a signed, prior-informed TF network predict knockdown responses in cell types it was not fitted on?"},
+  "controls": {"positive_control": "Knocking down a TF should lower that TF's own inferred activity.", "negative_control": "Shuffling the edge targets of the network.", "external_validation": "KnockTF 2.0 knockdown RNA-seq."},
+  "honest_claim_h3": "Learning the weights would only reproduce the authors' regression, and perturbation prediction is a crowded benchmark field whose labels live in other papers' data.",
+  "plain_idea": {
+    "one_liner": "Use a signed map of which regulators control which genes to predict how gene expression changes when one regulator is knocked down.",
+    "train_on": "TF–gene pairs with fitted regulatory coefficients (407,018 in the tonsil file; 2.6M overall per the paper), plus measured knockdown experiments from separate datasets.",
+    "predict": "The expression change of every gene after a TF knockdown. The true answer comes from CRISPRi Perturb-seq or knockdown RNA-seq in other studies, not from this paper.",
+    "why_worthwhile": "Labs studying gene regulation could rank candidate TF knockdowns before running them. But this paper's own benchmark already covers that use."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The measured knockdown data (Replogle Perturb-seq, KnockTF) are the same public sets that GEARS, scGPT and the linear-baseline benchmarks already use; this paper adds only a fitted network."},
+    "confidence_score": {"answer": "no", "why": "TFActProfiler already reports an uncertainty-aware reliability score for TF activity."},
+    "models_beatable": {"answer": "partly", "why": "Published benchmarks from 2025–2026 show deep models barely beat linear baselines, so gains would be marginal and disputed."},
+    "guaranteed_improvement": {"answer": "no", "why": "There is no new measured perturbation data here; the network is derived from the same public atlases."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict TF-knockdown transcriptome responses using the TFActProfiler signed network as a prior. Rejected: the labels are external, and the network weights are themselves model output.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.1, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because Part A failed.", "cheapest_killing_check": "Open the Zenodo CSVs: they contain only fitted edge weights and no measured outcome column (done)."},
+  "verdict": "reject",
+  "verdict_reason": "The deposited data is a fitted TF–gene coefficient network, which is model output with no measured label (A2, A8). The real labels, knockdown responses, sit in external Perturb-seq data that a crowded, heavily benchmarked field already uses."
+}

@@ -1,0 +1,106 @@
+{
+  "paper_id": "nar2026-gkag457",
+  "title": "Cancer epitope prediction tools and analysis pipelines in CEDAR.",
+  "doi": "10.1093/nar/gkag457",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://cedar.iedb.org/database_export_v3.php (file: https://cedar.iedb.org/downloader.php?file_name=doc/tcell_full_v3.zip)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded CEDAR's T cell assay export (14.4 MB zip, one 360 MB file tcell_full_v3.csv, zip entry dated 2026-09-24) and streamed all of it: 156,403 assay rows, 162 columns with a two-row header, 67,672 distinct epitope names, 4,021 distinct PubMed IDs. Label column 'Assay|Qualitative Measurement' = 87,899 Negative / 59,516 Positive / 6,255 Positive-Low / 1,976 Positive-High / 757 Positive-Intermediate. 30,601 rows carry a mutation annotation (neoepitopes). Restricting to human host, MHC class I, 8-11mer peptides with a 4-digit HLA-A/B/C allele and a non-prediction evidence code gives 24,095 rows -> 8,029 unique (peptide, allele) pairs, of which 1,568 (19.5%) carry both a Positive and a Negative call. 103 alleles, only 10 with >=200 rows, HLA-A*02:01 = 12,811 of 24,095 rows. Publication year present, 45 distinct years through 2026. Also queried the IEDB query API (https://query-api.iedb.org/tcell_search) and read a count header: 578,238 T cell assay rows in the parent IEDB. Licence CC-BY 4.0 read from the JSON-LD block on the CEDAR export page.",
+    "what_came_from_paper_text_only": "The description of the nextgen-tools pipelines and which predictors they wrap (NetMHCpan, NetMHCIIpan, MHCflurry, PRIME, ICERFIRE, IMPROVE, TCRMatch). Europe PMC's supplementary-file endpoint timed out, so the supplement was not retrievable. Published benchmark AUC values for competing tools came from retrieved search results, not from files I opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "No login: the export zip downloaded straight from cedar.iedb.org and opened. Export page carries a CC-BY 4.0 licence tag."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in the file: 'Assay|Qualitative Measurement' holds Positive/Positive-Low/-Intermediate/-High/Negative on every one of the 156,403 rows. Only choice needed is how to binarise."},
+    "a3_inputs_present": {"pass": true, "note": "Peptide amino acid sequence is in 'Epitope|Name' and the HLA allele in 'MHC Restriction|Name' - no accession lookups needed for the core task."},
+    "a4_units_stated": {"pass": true, "note": "Primary label is a documented category, not a number. The numeric column is only filled on 2,732 of 156,403 rows and mixes nM, 1/s, M^-1s^-1 and angstroms, so it is unusable as a label."},
+    "a5_enough_rows": {"pass": true, "n_rows": 156403, "note": "156,403 assay rows counted; the clean class I human 8-11mer subset is 8,029 unique peptide-allele pairs (6,461 after dropping contradictory ones)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "14.4 MB zip; 360 MB CSV streamed; ~0.4 GB in memory for the subset", "note": "Streamed the whole CSV with Python's csv module in under a minute; no GPU needed for peptides of 8-11 residues."},
+    "a7_counts_match_paper": {"pass": true, "note": "The paper is a tools description and states no row counts, so there is nothing to contradict. CEDAR export (156,403) is properly smaller than the parent IEDB count from the API (578,238)."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a real T cell assay outcome (ELISPOT 58,731, multimer/tetramer 23,409, ICS 14,295 and others). Caveat verified in the file: the HLA restriction - a feature - is itself a prediction on 17,535 rows ('MHC binding prediction' evidence code), so that subset must be dropped."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One CSV inside the zip, though 162 columns wide; verified in the file."},
+    "B2": {"score": 1, "why": "Two-row header and 360 MB size force streaming; otherwise parsed first try."},
+    "B3": {"score": 1, "why": "Positive/Negative comparable after binarising, but spans 15 assay methods; no author normalisation."},
+    "B4": {"score": 1, "why": "Positive-Low/-Intermediate/-High (8,988 rows) need a policy; numeric column mostly empty."},
+    "B5": {"score": 0, "why": "1,568 of 8,029 clean peptide-allele pairs (19.5%) hold contradictory Positive and Negative calls."},
+    "B6": {"score": 1, "why": "Column names self-describing, but evidence codes are ontology IRIs and 162 columns are undocumented in-file."},
+    "C1": {"score": 1, "why": "Transfer-decay framing is informative, but the obvious project is beating a published AUC."},
+    "C2": {"score": 0, "why": "BigMHC, PRIME, DeepImmuno, IMPROVE, ICERFIRE all open and already benchmarked on CEDAR itself."},
+    "C3": {"score": 0, "why": "Found a public repo already pairing ESM-2 embeddings with curated IEDB/CEDAR immunogenicity data."},
+    "C4": {"score": 1, "why": "T cell assays are costly, but prediction is already cheap and served by many free tools."},
+    "C5": {"score": 2, "why": "Published CEDAR-benchmark AUCs retrieved: IEDB 0.555, IMPROVE 0.624, ICERFIRE 0.726."},
+    "D1": {"score": 2, "why": "ESM-2, an open-weight protein language model, directly fits short peptide sequences."},
+    "D2": {"score": 2, "why": "8-11 residue peptides; ~8k embeddings cacheable once on a laptop CPU in minutes."},
+    "D3": {"score": 2, "why": "ESM-2 weights are MIT; CEDAR export page declares CC-BY 4.0 (read in its JSON-LD)."},
+    "E1": {"ok": true, "why": "Can hold out by source protein, allele or publication ID - all present as columns."},
+    "E2": {"ok": true, "why": "1,225 distinct publications and 103 alleles in the class I subset; 10 alleles have >=200 rows."},
+    "E3": {"ok": true, "why": "Majority-class dummy computable: 3,912 positive vs 2,549 negative clean pairs."},
+    "E4": {"ok": true, "why": "The 1,568 contradictory peptide-allele pairs give a direct measured noise floor."},
+    "E5": {"ok": true, "why": "HLA-A*02:01 anchor preference and known MART-1 epitope ELAGIGILTV (seen in file) must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffling and allele-only/peptide-only ablations are trivial on a single table."},
+    "E7": {"ok": true, "why": "Reference year column spans 45 years to 2026 (7,744 rows from 2025), so temporal split is one line."},
+    "E8": {"ok": true, "why": "IMPROVE's published CEDAR benchmark (2,436 peptides, RankEL<2) could be reconstructed; not attempted."},
+    "G1": {"score": 2, "why": "106,735 rows carry a UniProt-style parent-protein IRI plus NCBI taxonomy and allele ontology IRIs."},
+    "G2": {"score": 2, "why": "UniProt/AlphaFold DB on the parent protein and GTEx/Human Protein Atlas on gene expression are joinable."},
+    "G3": {"score": 1, "why": "Peptide to parent protein is clean one-to-many, but 49,668 rows have no parent IRI at all."},
+    "G4": {"score": 1, "why": "Does tumour-antigen expression add to sequence? Partly answered already by IMPROVE's feature set."},
+    "H1": {"score": 2, "why": "87,899 Negative rows counted - failures are systematically curated, not just hits."},
+    "H2": {"score": 1, "why": "4,021 publications (diverse labs) but HLA-A*02:01 is 53% of class I rows and host is 81% human."},
+    "H3": {"score": 2, "why": "Honest claim statable in one sentence; the selection bias is visible in the evidence-code column."},
+    "H4": {"score": 1, "why": "Evidence codes expose predicted-allele rows, but this tools paper never discusses dataset gaps."},
+    "I1": {"score": 2, "why": "Named groups: Gfeller lab (PRIME), Nielsen lab (ICERFIRE), Karchin lab (BigMHC), CEDAR team itself."},
+    "I2": {"score": 1, "why": "Would only change peptide shortlisting if it clearly beat BigMHC/PRIME, which is unlikely."},
+    "I3": {"score": 1, "why": "Users need precision in a top-20 shortlist; AUC on 6,461 pairs is only roughly that."},
+    "I4": {"score": 1, "why": "Machine learning helps, but a binding-predictor rank threshold already captures much of the signal."},
+    "J1": {"score": 2, "why": "Real grouped splits, temporal validation, frozen-backbone embeddings - the ML I want to practise."},
+    "J2": {"score": 1, "why": "HLA anchor motifs give a sanity check, but immunogenicity intuition needs an immunologist."},
+    "J3": {"score": 1, "why": "A cleaned CEDAR table with its 19.5% label-conflict statistic is shareable even if the model fails."},
+    "J4": {"score": 0, "why": "No time budget stated anywhere for this candidate."},
+    "J5": {"score": 0, "why": "No kill date or condition written down."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "BigMHC (deep learning predictor of peptide-MHC presentation and immunogenicity)", "open_weights": true, "score_and_split": "Retrieved description reports higher precision than seven other models on immunogenic neoepitopes after transfer learning; exact split not read from the paper itself.", "authors_named_unsolved": "Immunogenicity data scarcity relative to presentation data; they use transfer learning precisely because immunogenicity labels are few.", "runnable_as_baseline": true},
+      {"name": "PRIME (predictor of immunogenic class I epitopes, Gfeller lab)", "open_weights": true, "score_and_split": "No number retrieved; code on GitHub, free for academic non-commercial use.", "authors_named_unsolved": "Separating T cell receptor recognition propensity from MHC binding.", "runnable_as_baseline": true},
+      {"name": "DeepImmuno (deep learning immunogenicity predictor)", "open_weights": true, "score_and_split": "Retrieved review ranks it top by false-detection rate on one validation set and worst on the ITSNdb set - i.e. unstable across datasets.", "authors_named_unsolved": "Generalisation across independent benchmark sets.", "runnable_as_baseline": true},
+      {"name": "IMPROVE (feature model for neoepitope immunogenicity)", "open_weights": null, "score_and_split": "AUC 0.624 on a CEDAR-derived independent benchmark of 2,436 peptides (548 immunogenic), filtered to predicted binding rank <2; best tool on that set per the retrieved paper.", "authors_named_unsolved": "Weak absolute performance - AUC near 0.62 means most shortlisted peptides are still wrong.", "runnable_as_baseline": null},
+      {"name": "ICERFIRE (neoepitope immunogenicity predictor)", "open_weights": null, "score_and_split": "AUC 0.726 on independent neoepitope datasets per retrieved search result; split details not read in the source paper.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "NetMHCpan-4.1 / NetMHCIIpan / MHCflurry (binding and presentation predictors wrapped by the CEDAR pipelines)", "open_weights": true, "score_and_split": "The paper under evaluation reports IEDB's own immunogenicity tool at AUC 0.555 on CEDAR-style data per the retrieved benchmark; these tools define the baseline shortlisting step.", "authors_named_unsolved": "Going beyond binding to actual T cell recognition - stated as the central challenge in this paper's own abstract.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model; esm2_t12_35M or t33_650M checkpoint)", "freeze_and_head_viable": true, "hardware": "Laptop CPU: ~8k peptides of 8-11 residues embed in minutes", "licence": "MIT (ESM-2 weights); CEDAR data CC-BY 4.0"},
+  "integration": {"partner_dataset": "UniProt / AlphaFold DB on the parent protein, plus GTEx or Human Protein Atlas tissue expression for the source gene", "join_key": "UniProt accession parsed from 'Epitope|Molecule Parent IRI' (present on 106,735 of 156,403 rows)", "bigger_question_one_sentence": "Does how much, and where, the parent protein is expressed explain which tumour peptides actually trigger T cells, over and above the peptide sequence itself?"},
+  "controls": {"positive_control": "Model must recover the HLA-A*02:01 anchor preference (hydrophobic residue at position 2 and position 9) and call the known MART-1 melanoma epitope ELAGIGILTV - present in the file - immunogenic.", "negative_control": "Shuffle labels within each allele and confirm collapse to the per-allele majority rate; ablate to allele-only and peptide-only feature blocks.", "external_validation": "Temporal split on the reference-year column (train pre-2020, test the 7,744 rows from 2025 and 1,564 from 2026), plus the parent IEDB's 578,238 non-cancer T cell assays as a second source."},
+  "honest_claim_h3": "Among peptides that somebody chose to test - 53% of them HLA-A*02:01, most shortlisted by a binding predictor first - the peptide sequence plus allele predicts whether a published T cell assay was scored positive, with a ceiling set by the 19.5% of peptide-allele pairs on which labs disagree.",
+  "plain_idea": {
+    "one_liner": "Use a short peptide's amino acid sequence and the patient's immune-presentation molecule type to predict whether human T cells responded to it.",
+    "train_on": "One row per published immune assay: the peptide sequence (8-11 amino acids), its HLA (human leukocyte antigen) type, and the source protein. 156,403 rows total; 8,029 unique peptide-allele pairs survive filtering to human class I assays with an experimentally determined allele, 6,461 after dropping pairs where labs disagree.",
+    "predict": "A yes/no immunogenicity call. The truth comes from laboratory T cell assays curated from 4,021 publications - mostly ELISPOT (58,731 rows), tetramer staining (23,409) and intracellular cytokine staining (14,295) - recorded in the column 'Assay|Qualitative Measurement'.",
+    "why_worthwhile": "Cancer vaccine and cell-therapy groups must pick ~20 peptides per patient from thousands of candidates, and today's tools reach only about 0.62-0.73 area-under-curve on this very data. Even a failed attempt would quantify how much of the remaining error is irreducible disagreement between labs."
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "IEDB, the parent database of CEDAR - I queried its API and read a count of 578,238 T cell assay rows. Also VDJdb, McPAS-TCR and ITSNdb (known resources holding T cell recognition data; named in retrieved benchmark papers, not opened by me).",
+    "approx_items": 578238,
+    "join_key": "Peptide amino acid sequence plus HLA allele name (standard IMGT/MRO nomenclature, e.g. HLA-A*02:01)",
+    "why": "The same assay outcome is recorded for hundreds of thousands of non-cancer peptides, so a cancer-trained model can be tested on infectious-disease epitopes and vice versa - but it also means every existing tool already has this training data."
+  },
+  "pitch": null,
+  "ml_idea": "Freeze ESM-2 (protein language model), embed the 8-11mer peptide, concatenate a learned HLA allele representation, and train a small classifier on the 6,461 non-contradictory human class I peptide-allele pairs from CEDAR; evaluate with a source-protein grouped split and a temporal split on publication year, against BigMHC and PRIME as runnable baselines and the published CEDAR-benchmark AUCs (IEDB 0.555, IMPROVE 0.624, ICERFIRE 0.726). The one genuinely non-losable sub-result is measuring the label noise floor directly from the 1,568 contradictory pairs and reporting how much of the field's reported error that explains.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.4,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 0.3,
+    "cv_run_minutes": 5,
+    "compute_note": "Timed the actual streaming parse of the 360 MB CSV (under a minute, trivial RAM). Embedding and cross-validation times are estimates for ~8k peptides of 8-11 residues with a small ESM-2 checkpoint on a laptop CPU; not timed.",
+    "cheapest_killing_check": "Count the unique (peptide, HLA allele) pairs in the human class I 8-11mer subset and how many carry contradictory calls. Done: 8,029 pairs, 1,568 (19.5%) contradictory, leaving 6,461 - smaller than what BigMHC and PRIME already train on."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A passes cleanly and the data is genuinely open (CC-BY 4.0, 156,403 curated assay rows with 87,899 negatives, a year column and UniProt links), but the project dies on Part C and Part B. C2 is as saturated as it gets: BigMHC, PRIME, DeepImmuno, IMPROVE and ICERFIRE are open, published, and have already been benchmarked on CEDAR itself (AUC 0.555-0.726), and I found a public repository already combining ESM-2 embeddings with curated IEDB/CEDAR immunogenicity labels, so the planned angle is taken. Model-readiness is worse than it looks: the usable class I subset is only 8,029 unique peptide-allele pairs and 19.5% of them carry contradictory Positive and Negative calls across labs, which caps achievable performance near where the published tools already sit. The paper itself is a software description with no new dataset and no retrievable supplement, so there is no fresh measurement to exploit."
+}

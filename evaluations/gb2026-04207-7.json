@@ -1,0 +1,106 @@
+{
+  "paper_id": "gb2026-04207-7",
+  "title": "Comparative assessment of large language models for microbial phenotype assignment.",
+  "doi": "10.1186/s13059-026-04207-7",
+  "journal": "Genome Biology",
+  "data_url": "https://doi.org/10.5281/zenodo.13839818",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the Zenodo v2.0.0 archive (21.6 MB zip, MIT licence; the record redirects to 19693395). Opened ground_truth_WA.csv (3,876 species x 13 traits, 0 duplicate names) and ground_truth_LA.csv (15,257 species, 1 duplicate). Counted non-missing labels per trait: e.g. WA gram 3,870, spore 3,642, motility 2,977, biofilm only 255, health association only 12. Opened s6_complete.csv (69,794 LLM calls: 18 models x 3,884 species, query date column) and knowledge_accuracy_wa/la.csv (421,752 and 305,150 long-format rows: model, self-rated knowledge level, species, trait, ground truth, prediction). Also wa_with_gcount.txt (Google hit counts) and the R script that built the labels from bugphyzz.",
+    "what_came_from_paper_text_only": "Balanced-accuracy numbers (best ~0.77 Gemini 2.5 Pro; spore 89.8%, biofilm 53.0% means), the 57-model hallucination test, the 81% literature support for new calls, and the deep-learning comparison model (not identified in the text I retrieved). Whether bugphyzz labels include ancestral-state-reconstruction (inferred-by-phylogeny) entries was not checked: the R script calls importBugphyzz() with no Evidence filter."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo zip downloaded without login (verified); MIT licence."},
+    "a2_label_is_a_column": {"pass": true, "note": "Curated trait labels are columns in ground_truth_WA/LA.csv, and LLM predictions sit next to them in knowledge_accuracy_*.csv (verified). Correct/incorrect per LLM call is a direct comparison, not a construction."},
+    "a3_inputs_present": {"pass": true, "note": "For the in-hand task (meta-model over LLM calls) inputs are present: 18-31 LLM predictions, self-rated knowledge level, Google hit count. Genomes are NOT included; a genome-based model would need name-to-assembly lookups for thousands of species."},
+    "a4_units_stated": {"pass": true, "note": "Categorical labels with a fixed vocabulary (e.g. 'gram stain negative', 'biosafety level 2'); no physical units involved (verified)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 3876, "note": "3,876 WA species, with ~2,000-3,870 labels per main trait; 15,257 LA species (verified). Biofilm (255) and health association (12) are too sparse to use."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~100 MB of CSV", "note": "All tables together are under 200 MB; pandas on CPU is enough."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says WA 3,884 and LA 15,256; files hold 3,876 WA rows (3,884 in the prediction table, as in the paper's Fig. 4 '3876 species') and 15,257 LA rows. Small, explainable gaps."},
+    "a8_label_provenance": {"pass": true, "note": "Labels come from bugphyzz, a harmonized curation of BacDive and other sources. Risk: bugphyzz also contains annotations inferred by phylogeny (ancestral state reconstruction), and the label-building R script applies no evidence filter, so some labels may be predictions. Not fatal for judging LLMs, but unverified."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Ground-truth table plus long-format prediction table, joined on binomial species name; works but a name join (verified)."},
+    "B2": {"score": 1, "why": "CSVs parse, but mixed dtypes and 'TRUE'/'True'/'FALSE' string variants need normalizing (seen in files)."},
+    "B3": {"score": 1, "why": "Labels harmonized by bugphyzz, but sources mix BacDive, literature and possibly phylogenetic inference."},
+    "B4": {"score": 2, "why": "No censored values; missing labels are plain NaN (verified)."},
+    "B5": {"score": 1, "why": "One duplicate in LA; repo has multiple near-duplicate versions of s6 tables (s6_old, which_file_test) to pick between."},
+    "B6": {"score": 1, "why": "Column names self-explanatory; no data dictionary; which file was used for which figure is not documented."},
+    "C1": {"score": 1, "why": "A 'when to trust an LLM' model is informative either way, but mostly confirms the paper's own confidence finding."},
+    "C2": {"score": 1, "why": "Genome-based trait predictors exist and are open (BacDive random forests, MiGenPro); LLM meta-models largely unexplored beyond paper's ensemble."},
+    "C3": {"score": 1, "why": "Weak unique-application angle: combine LLM calls with genome predictors for obscure species."},
+    "C4": {"score": 2, "why": "Phenotype annotation is manual expert curation from literature and lab tests."},
+    "C5": {"score": 2, "why": "Published per-trait balanced accuracy per LLM, best single model ~0.77 mean (paper)."},
+    "D1": {"score": 1, "why": "No natural backbone for species-name inputs; protein models only if genomes are fetched separately."},
+    "D2": {"score": 1, "why": "Embedding whole proteomes of thousands of species with ESM-2 on CPU is days of compute."},
+    "D3": {"score": 2, "why": "Data MIT licence; bugphyzz is open (Artistic-2.0 Bioconductor package)."},
+    "E1": {"ok": true, "why": "Genus- or order-held-out splits possible from species names; phylogeny tree in repo."},
+    "E2": {"ok": true, "why": "Hundreds of genera; paper lists 30 orders with ≥10 species."},
+    "E3": {"ok": true, "why": "Majority class, best single LLM, majority vote across LLMs."},
+    "E4": {"ok": true, "why": "18-31 LLMs per species give disagreement; label noise itself not estimable without replicates."},
+    "E5": {"ok": true, "why": "Known effect: accuracy rises with self-rated knowledge and Google hit count (paper)."},
+    "E6": {"ok": true, "why": "Label shuffling and dropping LLM-confidence features are straightforward."},
+    "E7": {"ok": true, "why": "LA set (15,257 species) as second panel; BacDive genome-based predictions as an independent source."},
+    "E8": {"ok": true, "why": "Per-model balanced accuracies can be recomputed from knowledge_accuracy_wa.csv."},
+    "G1": {"score": 1, "why": "Only binomial names in output files; NCBI taxonomy IDs exist in bugphyzz but were dropped."},
+    "G2": {"score": 2, "why": "BacDive and GTDB/NCBI assemblies joinable on NCBI taxonomy ID after re-export from bugphyzz."},
+    "G3": {"score": 1, "why": "One species maps to many genomes/strains; need a type-strain collapse rule."},
+    "G4": {"score": 1, "why": "Where do LLMs beat genome models and vice versa, by species obscurity? Marginal new science."},
+    "H1": {"score": 2, "why": "Both True and False recorded for most binary traits (verified counts)."},
+    "H2": {"score": 1, "why": "Thousands of species across phyla, but all from one harmonized resource and biased to cultured type strains."},
+    "H3": {"score": 2, "why": "Claim can be stated precisely (see honest_claim_h3)."},
+    "H4": {"score": 1, "why": "Paper discusses sparse traits and naming limits; possible phylogeny-inferred labels not mentioned."},
+    "I1": {"score": 1, "why": "Microbial database curators (BacDive, bugphyzz/Waldron lab) and microbiome analysts; no specific decision."},
+    "I2": {"score": 1, "why": "Could set a filter for accepting LLM-filled annotations; marginal."},
+    "I3": {"score": 2, "why": "Decision is accept/reject an annotation; precision at a confidence cut-off is the metric."},
+    "I4": {"score": 1, "why": "Majority vote plus knowledge filter may already capture most of the gain."},
+    "J1": {"score": 1, "why": "Mostly tabular stacking and calibration; little representation learning."},
+    "J2": {"score": 1, "why": "Traits like Gram stain are easy to sanity-check; pathogenicity labels less so."},
+    "J3": {"score": 2, "why": "A per-trait accept/reject curve is shareable at every stage."},
+    "J4": {"score": 1, "why": "No budget set; roughly one to two weeks."},
+    "J5": {"score": 0, "why": "No kill date written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "BacDive genome-based random forest trait models (Communications Biology 2025)", "open_weights": true, "score_and_split": "Cross-validated on 15,938 BacDive strains with genomes for 8 traits (Gram, spores, motility, oxygen, temperature); exact split not checked.", "authors_named_unsolved": "Not retrieved in detail.", "runnable_as_baseline": true},
+      {"name": "MiGenPro linked-data genotype-to-phenotype workflow (bioRxiv 2025)", "open_weights": null, "score_and_split": "Not checked.", "authors_named_unsolved": "Not checked.", "runnable_as_baseline": null},
+      {"name": "NLP plus genome bacterial phenotype prediction (NAR Genomics and Bioinformatics 2025, lqaf174)", "open_weights": null, "score_and_split": "Not checked.", "authors_named_unsolved": "Not checked.", "runnable_as_baseline": null},
+      {"name": "Unsupervised whole-genome representation learning of bacterial phenotypes (bioRxiv 2025)", "open_weights": null, "score_and_split": "Not checked.", "authors_named_unsolved": "Not checked.", "runnable_as_baseline": null},
+      {"name": "The paper's own LLM benchmark and ensemble (zero-shot LLMs, best ~0.77 mean balanced accuracy)", "open_weights": true, "score_and_split": "All WA species, no train/test split (zero-shot).", "authors_named_unsolved": "Names without stable binomials, recently reclassified taxa and newly described species; hallucination by taxon left to future work.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "None natural for name-only inputs; ESM-2 (protein language model) over proteomes only if genomes are added", "freeze_and_head_viable": false, "hardware": "CPU for the tabular meta-model; proteome embedding would be days on CPU", "licence": "Data MIT; ESM-2 MIT"},
+  "integration": {"partner_dataset": "BacDive / NCBI type-strain genome assemblies, and BacDive's published genome-based trait predictions", "join_key": "NCBI taxonomy ID (re-exported from bugphyzz; dropped in these CSVs)", "bigger_question_one_sentence": "For which species and traits does what language models read about a microbe beat what its genome encodes, and does the crossover track how little has been written about it?"},
+  "controls": {"positive_control": "Accuracy must rise with Google hit count and self-rated knowledge; spore formation should be easier than biofilm formation.", "negative_control": "Shuffle labels within trait; drop all LLM-confidence features and check gain disappears.", "external_validation": "Train trust model on WA, test on the 15,257-species LA panel; or compare with BacDive genome-based predictions."},
+  "honest_claim_h3": "Among bacterial species with bugphyzz annotations (mostly cultured type strains, some possibly inferred by phylogeny), the model predicts which LLM-generated trait calls agree with that curation, not whether they are biologically true.",
+  "plain_idea": {
+    "one_liner": "Use the answers of many AI chatbots about a bacterial species, plus how famous it is, to predict which trait answers are right.",
+    "train_on": "For each species and trait, the predictions of 18-31 language models, their self-rated knowledge level and the species' web hit count; 3,876 species, ~2,000-3,870 labels per main trait (verified).",
+    "predict": "Whether the combined call matches the curated trait (Gram stain, motility, spore formation, etc.) recorded in bugphyzz, which collects lab-measured traits from BacDive and the literature.",
+    "why_worthwhile": "Database curators could decide which machine-filled trait annotations to accept without checking; even failure would show that a simple majority vote is enough."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "3,876 well-annotated species is fewer than BacDive's 15,938 genome-linked strains used for genome-based random forests."},
+    "confidence_score": {"answer": "partly", "why": "Many-model disagreement plus self-rated knowledge could give calibrated per-call confidence; the paper already reports knowledge-tier accuracy but not a calibrated probability."},
+    "models_beatable": {"answer": "partly", "why": "Best single LLM ~0.77 mean balanced accuracy on a zero-shot run is beatable by stacking; genome-based 2025 models are recent and likely not."},
+    "guaranteed_improvement": {"answer": "no", "why": "Stacking sees more than any single LLM, but labels may be partly phylogeny-inferred and no new data measures the same trait the same way on the same split."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "BacDive (known resource, genome-linked strain phenotypes), bugphyzz full export (known; >60,000 taxa, includes inferred entries), Madin et al. trait compilation (known resource).", "approx_items": null, "join_key": "NCBI taxonomy ID / species binomial", "why": "Curated traits exist for tens of thousands of other taxa, so any trust model can be checked on species outside this benchmark."},
+  "publication_target": {
+    "ambitious": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes microbial phenotype prediction methods; would need LLM-plus-genome combination clearly beating both on obscure species."},
+    "realistic": {"journal": "Bioinformatics (application note)", "why": "A calibrated filter for accepting LLM trait annotations, with a per-trait precision table."},
+    "fallback": {"journal": "bioRxiv preprint plus workshop", "why": "A negative result (majority vote is as good as any learned filter) is still a short note."}
+  },
+  "pitch": {
+    "headline": "727,000 scored LLM answers about 19,000 bacterial species, each with a curated truth label and the model's own confidence, in one MIT-licensed zip.",
+    "what_makes_the_data_unusual": "18-31 language models answering the same 10 traits for the same 3,876 species, plus self-rated knowledge and Google hit counts (verified in files); few benchmarks give this many models per item.",
+    "the_win": "A learned filter that keeps ≥90% precision while retaining more calls than the paper's 'Extensive'-knowledge filter, beating the best single model's ~0.77 mean balanced accuracy.",
+    "even_if_it_fails": "We learn that a simple majority vote or knowledge filter is all curators need, and how many labels are phylogeny-inferred rather than measured.",
+    "who_wants_it": "BacDive (DSMZ) and bugphyzz (Waldron lab) curators deciding whether to import LLM-filled traits; the GenomeNet/HZI authors maintaining LLM-BioEval."
+  },
+  "ml_idea": "Stack the per-species predictions of many LLMs with self-rated knowledge and web hit counts into a calibrated accept/reject model per trait, evaluated on genus-held-out splits and transferred from the WA to the LA panel; optional extension joins BacDive genome-based predictions via NCBI taxonomy ID.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.1, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": null, "cv_run_minutes": 5, "compute_note": "Estimated from file sizes (largest CSV 51 MB) and gradient-boosted trees on ~400k rows; nothing timed.", "cheapest_killing_check": "Re-export the WA labels from bugphyzz with the Evidence column and count what fraction are 'asr'/inferred; if large, labels are partly a model's output."},
+  "verdict": "park",
+  "verdict_reason": "Data is clean, open and real, but the only ready task (deciding when to trust LLM trait calls) is a small step past the paper's own finding, no backbone fits name-only inputs, genome-based trait prediction is already well covered, and an unchecked share of the labels may be inferred from phylogeny."
+}

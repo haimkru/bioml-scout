@@ -1,0 +1,128 @@
+{
+  "paper_id": "nature2026-11058-6",
+  "title": "The anthropogenic fingerprint on emerging infectious diseases.",
+  "doi": "10.1038/s41586-026-11058-6",
+  "journal": "Nature",
+  "data_url": "https://github.com/viralemergence/fingerprint-preprint (archived at https://zenodo.org/records/20738794, DOI 10.5281/zenodo.20738794)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the Zenodo record (one 600,874,624-byte zip, CC-BY-4.0) and the full GitHub tree. Downloaded and parsed 11 per-disease model tables (output/model_df/*_df_wp.csv), the 50,000-row global background file, the covariate dictionary and the processed dengue outbreak file. Counted presences per disease (dengue 11,313; CCHF 1,481; Chagas 1,219; melioidosis 521; chikungunya 458; Lassa 415; RVF 353; H5N1 193; P. knowlesi 122; MERS 63; Ebola 30; total 16,168), background rows, duplicate coordinates and missingness. Read the per-disease modelling script header (background points weighted by population, 2-8x presences).",
+    "what_came_from_paper_text_only": "The 58,319 records, 32 diseases, 16 drivers, 169 countries, 1910-2022 and the 32% per-hour reporting decline come from the abstract and press coverage; no full text was available (paywalled, no PMCID). I did not check the paper's per-disease counts against the files, and I did not open the 600 MB Zenodo zip (over the size cap)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public GitHub raw files downloaded without login; Zenodo archive is CC-BY-4.0. Only 11-13 of the 32 diseases are shared: the README says the rest came from non-public sources."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: a 'presence' column (1 = outbreak record, 0 = background point) is in every model table. The zeros are sampled background points, not observed absences."},
+    "a3_inputs_present": {"pass": true, "note": "Checked in files: 21 numeric driver covariates (forest cover, livestock density, travel time to a health facility, temperature change, etc.) are already extracted per row, plus longitude/latitude."},
+    "a4_units_stated": {"pass": true, "note": "covariate_lookup.csv describes each covariate (e.g. 'Proportion cropland cover 2015'); some units, such as minutes of travel time, are implied by the source products rather than stated in a column."},
+    "a5_enough_rows": {"pass": true, "n_rows": 41224, "note": "Counted: 41,224 rows across the 11 public disease tables (16,168 presences), plus 50,000 global background rows. Dengue alone has 23,421 rows. Ebola (30) and MERS (63) presences are tiny."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 40 MB of CSV", "note": "All model tables together are under 40 MB; nothing needs a GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "The public subset (16,168 presences) is far below the paper's 58,319 records, but the README explains why (non-public sources withheld). Dengue's processed file has 12,668 rows and its model table 11,313 presences, so some filtering happened between them. I could not check per-disease counts without the full text."},
+    "a8_label_provenance": {"pass": true, "note": "Presences are reported outbreak events from literature compilations (IHME), ministries of health and surveillance, so they are real observations, not model output. The zeros are population-weighted random background points, so 'presence vs background' partly measures where people live and report, not true absence."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "11 per-disease CSVs plus a global background CSV, all sharing one 28-column schema; pooling is a concat."},
+    "B2": {"score": 2, "why": "Every CSV parsed first try with pandas; numeric covariates are clean."},
+    "B3": {"score": 1, "why": "Presences mix point and admin-polygon records from IHME, ministries and surveillance; covariates harmonised by authors."},
+    "B4": {"score": 2, "why": "No censored values seen; but 'hunting' covariate is 50-79% missing in several tables."},
+    "B5": {"score": 1, "why": "4,656 of 11,313 dengue presences share coordinates with another; easy to dedupe or group."},
+    "B6": {"score": 1, "why": "covariate_lookup.csv documents 21 covariates; record_id and ADMcode codes are undocumented."},
+    "C1": {"score": 2, "why": "Leave-one-disease-out transfer is informative either way: it tests the paper's claim that drivers are disease-specific."},
+    "C2": {"score": 1, "why": "Per-disease niche maps (e.g. Ebola, eLife 2014) and authors' INLA models exist; no cross-disease predictive transfer found."},
+    "C3": {"score": 2, "why": "Unique application: predictive transfer across 11 harmonised diseases and location-embedding features, versus the paper's inferential models."},
+    "C4": {"score": 1, "why": "Outbreak surveillance is costly, but risk mapping itself is a cheap desk exercise already done per disease."},
+    "C5": {"score": 2, "why": "Obvious dummies: travel-time-only and population-only classifiers; logistic regression on the 16 drivers."},
+    "D1": {"score": 2, "why": "SatCLIP, a location encoder from satellite imagery, has open weights (GitHub licence checked: MIT)."},
+    "D2": {"score": 2, "why": "Embeddings come from latitude/longitude alone; about 90k points embed once on CPU."},
+    "D3": {"score": 2, "why": "SatCLIP is MIT; data archive CC-BY-4.0, though underlying IHME sources carry their own terms."},
+    "E1": {"ok": true, "why": "Spatial block, leave-one-disease-out and leave-one-region-out splits are all buildable from coordinates and files seen."},
+    "E2": {"ok": true, "why": "11 public diseases; dengue alone large enough for many spatial blocks."},
+    "E3": {"ok": true, "why": "Population-weighted background rate and a travel-time-only model are easy dummies."},
+    "E4": {"ok": false, "why": "No replicate measurements; duplicate coordinates are repeat events, not repeat measurements."},
+    "E5": {"ok": true, "why": "Paper reports reporting falls with travel time to health facility; model must recover that negative effect."},
+    "E6": {"ok": true, "why": "Label shuffling and covariate-block ablation are straightforward on the flat tables."},
+    "E7": {"ok": true, "why": "Held-out diseases or regions; processed outbreak files carry a Year column (dengue 1985-2015) for a temporal split."},
+    "E8": {"ok": true, "why": "example_pipeline reproduces dengue, Chagas and H5N1 INLA coefficients; published params CSVs available to compare."},
+    "G1": {"score": 2, "why": "Every row has longitude/latitude; presences also carry GAUL/GADM admin codes."},
+    "G2": {"score": 2, "why": "SatCLIP embeddings or WorldPop/ERA5 rasters join on coordinates directly."},
+    "G3": {"score": 1, "why": "Points join one-to-one; polygon-level presences need an aggregation rule."},
+    "G4": {"score": 1, "why": "Embeddings could show what the 16 hand-picked drivers miss, but that is a modest extension."},
+    "H1": {"score": 1, "why": "Negatives are only population-weighted pseudo-absences; true absence of outbreaks is never recorded."},
+    "H2": {"score": 1, "why": "11 diseases over several continents, but each disease is usually one source (IHME for dengue)."},
+    "H3": {"score": 2, "why": "Claim is precisely statable: separates reported outbreak sites from population-weighted background."},
+    "H4": {"score": 2, "why": "Paper models reporting bias explicitly; README states non-public diseases are withheld."},
+    "I1": {"score": 2, "why": "Verena / viralemergence consortium (Gibb, Carlson) and One Health surveillance planners."},
+    "I2": {"score": 1, "why": "A transfer result could shape whether multi-disease risk maps are used; marginal for single-disease planners."},
+    "I3": {"score": 1, "why": "AUC on presence-background roughly matches 'where to surveil', but not a calibrated outbreak probability."},
+    "I4": {"score": 1, "why": "Nonlinear covariate effects help, but travel time alone may explain much; must test first."},
+    "J1": {"score": 2, "why": "Real modelling: spatial CV, transfer across tasks, frozen embeddings plus head."},
+    "J2": {"score": 1, "why": "Disease ecology intuition needed to judge maps; paper's coefficients give a reference."},
+    "J3": {"score": 2, "why": "Even a spatial-CV benchmark of the 11 public tables is a shareable result."},
+    "J4": {"score": 1, "why": "Scope feasible in about two weeks but not yet written down."},
+    "J5": {"score": 1, "why": "Kill condition stated below; date not yet in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Gibb et al. 2026 INLA geospatial logistic regression (this paper)", "open_weights": true, "score_and_split": "Inferential Bayesian models with a spatial random effect, compared by information criteria; no held-out predictive score seen in the files I opened.", "authors_named_unsolved": "Abstract: directly transmitted zoonoses (Ebola, mpox) share few common drivers, and observed geography is dominated by healthcare access.", "runnable_as_baseline": true},
+      {"name": "Pigott et al. 2014, Ebola zoonotic niche map (eLife), boosted regression trees", "open_weights": null, "score_and_split": "Not retrieved in detail; seen only as a search result.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "Integrated machine-learning framework for zoonotic spillover across modified landscapes (Environmental Health Perspectives, 2026), CatBoost gradient boosting", "open_weights": null, "score_and_split": "Mean R-squared 0.72 under 10-fold random cross-validation (from the search snippet), so spatial leakage is likely.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "SatCLIP (satellite-imagery location encoder, Microsoft)", "freeze_and_head_viable": true, "hardware": "Laptop CPU; embed about 90k coordinates once, then gradient boosting or logistic head", "licence": "MIT (checked on GitHub API)"},
+  "integration": {"partner_dataset": "SatCLIP location embeddings (or WorldPop population and ERA5 climate rasters)", "join_key": "longitude/latitude (WGS84)", "bigger_question_one_sentence": "Do general-purpose satellite-derived location features predict where outbreaks of a held-out disease get reported better than the 16 hypothesis-driven anthropogenic drivers?"},
+  "controls": {"positive_control": "Recover the paper's negative effect of travel time to a health facility on reporting, and dengue's known positive association with urban cover and temperature.", "negative_control": "Shuffle presence labels within each disease and confirm AUC falls to 0.5; train on travel time plus population alone to measure how much is reporting bias.", "external_validation": "Leave-one-disease-out and leave-one-region-out (dengue/yellow fever arboregions exist in outputs), plus a temporal split using the Year column in output/spillovers_processed."},
+  "honest_claim_h3": "Among 11 publicly shareable diseases, the model separates places where outbreaks were reported from population-weighted random places, which mixes true outbreak risk with where surveillance reaches.",
+  "plain_idea": {
+    "one_liner": "Use land-use, climate and healthcare-access features at a location to predict whether an outbreak of a given disease was reported there.",
+    "train_on": "One row per outbreak record or random background point, with 21 pre-extracted environmental and social features; 41,224 rows across 11 diseases (16,168 outbreak records), verified in files.",
+    "predict": "Whether the row is a reported outbreak (1) or a population-weighted random background point (0); outbreaks come from literature compilations, ministries of health and surveillance reports.",
+    "why_worthwhile": "Tests whether a model trained on some diseases can map risk for another, which decides whether multi-disease risk maps are worth building for poorly recorded diseases; a failure confirms the paper's 'no one-size-fits-all' claim with predictive evidence."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "11 diseases with one shared, harmonised covariate set (41,224 rows) is broader than single-disease maps like Ebola's, but it is only the public part of the paper's 58,319 records, and most sources (IHME) were already used by earlier maps."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements, and the background zeros are not true absences, so a calibrated outbreak probability is not supported; the paper's INLA models already give posterior uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "The paper's 2026 INLA models are inferential, not tuned for held-out prediction, and the 2026 CatBoost study used random 10-fold cross-validation; an honest spatial-block comparison has not been seen."},
+    "guaranteed_improvement": {"answer": "no", "why": "Adding SatCLIP embeddings gives the model more information, but they do not measure the same quantity, and spatial autocorrelation may make gains illusory; improvement is not guaranteed."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "IHME occurrence databases for dengue, MERS and RVF (bundled in the repo, seen); global compendia for CCHF and Chagas (bundled, seen); WHO Disease Outbreak News and ProMED exist (known resources, not checked).", "approx_items": null, "join_key": "longitude/latitude or GAUL/GADM admin code", "why": "Further outbreak reports could serve as an external test of held-out locations, but they are scattered, have mixed formats and largely overlap the sources already used."},
+  "leakage_plan": {
+    "risks": [
+      "Repeated outbreaks at the same coordinates (4,656 of 11,313 dengue presences share a location) would land in both train and test under a random split.",
+      "Spatial autocorrelation: nearby points share covariates, so random cross-validation inflates the score.",
+      "Background points are population-weighted, so population-linked features (urban cover, travel time) can separate classes through sampling design rather than biology.",
+      "Polygon-level presences were assigned covariates by the authors' buffering, which differs from point rows and could correlate with source and region."
+    ],
+    "split": "Spatial block cross-validation (for example 500 km blocks built from the Longitude/Latitude columns, seen in files), plus leave-one-disease-out and leave-one-region-out; group identical coordinates in the same fold.",
+    "checks": [
+      "Shuffle presence labels and confirm AUC drops to about 0.5.",
+      "Fit travel time plus population density alone and report how much of the full model's AUC it reaches.",
+      "Compare random-split and spatial-block AUC; a large gap shows spatial leakage.",
+      "Measure each test point's distance to the nearest training point."
+    ],
+    "verdict": "Manageable for spatial leakage, but the population-weighted background is a serious structural confound that no split removes."
+  },
+  "success_criteria": {
+    "metric": "Spatial-block AUC (area under the ROC curve) on held-out diseases (leave-one-disease-out), because the use is ranking unsurveyed places for a disease with poor records.",
+    "baselines": "AUC of a travel-time plus population-only model and of logistic regression on the 16 drivers, on the same spatial blocks (not yet computed; no published held-out number found).",
+    "success": "Pooled cross-disease model beats the disease's own logistic-regression-on-drivers baseline by at least 0.05 AUC on at least 5 of 11 held-out diseases, or SatCLIP features add at least 0.05 AUC over the 16 drivers under spatial-block CV.",
+    "noise_ceiling": null,
+    "kill": "If travel time plus population alone reaches within 0.03 AUC of the full model under spatial-block CV for dengue, stop: the signal is reporting bias."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Nature Communications", "why": "Publishes cross-disease One Health risk modelling; would need clear positive cross-disease transfer that survives the reporting-bias control."},
+    "realistic": {"journal": "PLOS Computational Biology", "why": "Fits a methods-and-evaluation study of spatial transfer and location embeddings for outbreak mapping, including a mixed result."},
+    "fallback": {"journal": "medRxiv preprint plus a Climate Change AI or Machine Learning for Global Health workshop paper", "why": "A negative result (signal is mostly reporting bias, no transfer) is still a useful benchmark note."}
+  },
+  "pitch": {
+    "headline": "One harmonised 21-feature table for 11 emerging diseases, 16,168 outbreak records, ready to model in pandas.",
+    "what_makes_the_data_unusual": "Same covariates extracted the same way for dengue, CCHF, Chagas, Lassa, RVF, H5N1, MERS, Ebola and others, plus 50,000 global background points; CC-BY-4.0 archive.",
+    "the_win": "A leave-one-disease-out spatial AUC showing whether a pooled model maps a held-out disease's reported outbreaks better than its own driver-based model.",
+    "even_if_it_fails": "We learn how much of mapped outbreak 'risk' is just healthcare access and population sampling, quantified under honest spatial splits.",
+    "who_wants_it": "The Verena / viralemergence consortium (Gibb, Carlson) and One Health surveillance planners deciding whether multi-disease risk maps can stand in for missing single-disease data."
+  },
+  "ml_idea": "Pool the 11 public per-disease presence/background tables; train gradient boosting on the 21 drivers, with and without frozen SatCLIP location embeddings; evaluate with spatial-block and leave-one-disease-out CV against a travel-time plus population reporting-bias baseline.",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.04, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": 0.2, "cv_run_minutes": 3, "compute_note": "Estimated from file sizes (under 40 MB total) and row counts; SatCLIP on about 90k coordinates is a small CPU forward pass; nothing was timed.", "cheapest_killing_check": "On dengue (23,421 rows), compare spatial-block AUC of travel time plus population against all 21 drivers; if the gap is under 0.03, the project is about reporting bias."},
+  "verdict": "verify_first",
+  "verdict_reason": "Clean, harmonised public tables for 11 diseases pass Part A. But the zeros are population-weighted background points, and only 16,168 of the paper's 58,319 records are public, so first check that the drivers beat a travel-time plus population baseline under spatial-block CV."
+}

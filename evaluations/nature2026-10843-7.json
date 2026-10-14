@@ -1,0 +1,158 @@
+{
+  "paper_id": "nature2026-10843-7",
+  "title": "A dependency map enhanced with next-generation 3D cancer models.",
+  "doi": "10.1038/s41586-026-10843-7",
+  "journal": "Nature (2026-08-05, PMID 42557315, PMC13581591, open access)",
+  "data_url": "Figshare (Springer Nature) 10.6084/m9.figshare.29472362 - 35 metadata/analysis CSVs, CC BY 4.0, verified open. Primary matrices (CRISPR gene dependency, expression, copy number, mutation) on the DepMap portal, file set 'NextGen Model Manuscript 2026': https://depmap.org/portal/data_page/?tab=allData . Code: github.com/broadinstitute/DepMap-NextGen-Public . Plotting source data: figshare 31381135. Raw whole-genome and RNA sequencing is controlled access (dbGaP phs003444.v4.p1) and is not needed.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I downloaded and parsed 15 of the 35 Figshare files (CC BY 4.0) with pandas. screen_metadata.csv: 1,592 screens; cross-tab of quality-control flag by model type gives exactly 147 next-generation (3D organoid/spheroid) screens and 1,387 traditional 2D screens passing QC - matching the abstract. The 147 next-generation screens cover 147 distinct models, 10 lineages (CNS/brain 39, oesophagus/stomach 27, pancreas 23, bowel 22, breast 14, prostate 9, uterus 4, ampulla of Vater 4, ovary 3, biliary 2), 27 Oncotree subtypes; 146 have expression and 147 have copy-number data. model_metadata.csv: 1,999 models (314 next-generation, 1,685 traditional), 16 documented columns. I found 0 next-generation models screened genome-wide in BOTH 2D and 3D format, so the growth-format contrast at genome scale is across different models; the paired contrast comes only from the 18-screen minipool experiment. minipool_chronos_gene_effects.csv is a real dependency matrix: 18 screens x 1,000 genes of Chronos gene-effect scores, 0 missing values, range -8.60 to +1.18, median -0.054. minipool_screen_metadata.csv: replicate log-fold-change correlation for 16 screens, median 0.687 (min 0.233) - an estimable noise floor; 11 Dome vs 7 Plastic, 9 serum-free vs 9 serum. tda_dependency_classification.csv: 18,435 genes classified, 1,629 pan-dependency, 1,432 strongly selective, 739 high variance, 8,732 non-dependency, 276 unscreened; median between-model variance 0.033 all genes, 0.069 for the 2,171 selective/high-variance genes. organoids_vs_2d_gene_dependency_tests_full.csv: 18,159 genes, 0 duplicates, organoid (n=94) and adherent (n=433) gene means correlate r = 0.969, 8,169 genes at false-discovery rate < 0.05, only 562 with |mean difference| > 0.25; top hit MSMO1 mean difference -1.031. expression_addiction_tests_full.csv: 17,857 genes with both correlations; the self-expression-vs-dependency Pearson r agrees only weakly between next-generation and traditional models (r = 0.142 overall, 0.356 among 2,158 selective dependencies). celligner_geneset_scores.csv: 14,150 rows x 44 columns (1,914 DepMap models + 9,806 TCGA tumour IDs + TARGET), 0 missing. Alteration matrices: 744 screens x 740 oncogene columns named 'SYMBOL (ENTREZ)'. For the DepMap release matrices themselves I did ranged HTTP reads of the 24Q4 public Figshare mirror (same pipeline and format, no 3D models): CRISPRGeneEffect.csv header is 254,612 bytes with 17,916 'SYMBOL (ENTREZ)' gene columns, rows keyed by ModelID (ACH-000001); its first data row has 17,333 numeric values and 582 blanks (3.2% missing), min -4.55, max 0.68, 9.9% below -0.5 - consistent with Chronos units. I did the same header read for the expression (17,591 genes), damaging-mutation (17,063 genes) and Model.csv (47 columns) files. Five DepMap portal endpoints (api/download/files, download/api/downloads, api/download/filesets, data_page, download/external) all returned a 4.8 KB Cloudflare human-verification HTML page to scripted requests with a browser user-agent, so I could NOT open the NextGen fileset matrices themselves. The companion dataset for external validation was retrieved and confirmed open: 'A tumour-derived organoid biobank maps cancer gene dependencies', PMC13581617, CC BY, 256 organoids with genome-wide CRISPR screens across 162.",
+    "what_came_from_paper_text_only": "That the DepMap portal 'NextGen Model Manuscript 2026' file set actually contains mutation, copy-number, expression and gene-dependency matrices for these models, and their row/column counts - I could not fetch them. The inferred label-table size (147 next-generation screens x 18,435 classified genes = about 2.7 million dependency values, or about 28 million including the 1,387 traditional screens) is arithmetic from counts I verified, not a number I read in a file. Also from text only: the five screen-type definitions (2DS/2DO/3DO/2DN/3DN), that raw sequencing sits in dbGaP phs003444, and the claim that next-generation models preserve transcriptional programmes silenced in cell lines."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Partly checked. All 35 Figshare analysis/metadata files are CC BY 4.0 and downloaded fine (15 opened). The primary dependency and omics matrices sit on depmap.org, which is free and needs no login or application, but every scripted request I made (5 endpoints) returned a Cloudflare 'DepMap - Verification' page; DepMap's own guidance is to download in bulk through a browser. So: public, but one manual browser step, and unopened by me."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass. The label is a cell in a gene-by-model Chronos gene-effect matrix; converting a matrix to long format is reshaping, not constructing. Verified directly on two real matrices of this kind (the 18 x 1,000 minipool matrix in the Figshare set, and the 24Q4 CRISPRGeneEffect.csv header plus first data row)."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass. Features are the model's own expression, copy-number and mutation matrices, keyed by the same ModelID, plus metadata columns I opened (lineage, subtype, growth pattern, library, screen type). No per-row identifier lookups. Only the optional protein-language-model arm needs sequences, which is one bulk download for ~18,000 genes."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked). Chronos gene effect is a documented scale where 0 = no growth effect and -1 = the median pan-essential gene; observed values fit it (minipool -8.60 to 1.18; 24Q4 row min -4.55, 9.9% below -0.5). Expression is log2(transcripts per million + 1). The 31 KB README defines every Figshare column including the quality metrics NNMD and ROC-AUC."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 18000,
+      "note": "Pass. 18,000 Chronos values verified in hand (18 minipool screens x 1,000 genes), plus 18,159-18,435-row per-gene test tables. The project's own table is inferred, not verified: 147 x 18,435 = about 2.7 million next-generation labels and about 28 million including traditional screens. Unit of analysis for the transfer question is the model: 147 next-generation and 1,387 traditional."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "about 2 GB: one gene-effect matrix (429 MB as CSV in 24Q4, measured) plus one protein-coding expression matrix (507 MB, measured), downcast to 32-bit floats and subset to the ~2,171 selective genes",
+      "note": "Pass. Tabular, no GPU needed for ridge/random-forest baselines. Reading two ~500 MB CSVs with pandas is the heaviest step; converting to parquet once keeps later runs small. No raw sequencing is required."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass, and unusually clean: the quality-control cross-tab reproduces 147 next-generation and 1,387 traditional screens exactly as the abstract and README state, 10 lineages, 314 next-generation models, 1,685 traditional models. No disagreement found between paper text, README and files."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass with a caveat. Chronos gene effect is a statistical inference from measured sgRNA read counts (a physical assay), not another machine-learning model's biological prediction. Caveat to control for: DepMap's gene-effect pipeline corrects for copy number and screen quality, so using copy number as a feature is mildly circular - run a copy-number-ablated model as a check."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Several files; ModelID/ScreenID joins verified to work across metadata and alteration tables; label matrix is separate."},
+    "B2": {"score": 2, "why": "All 15 Figshare CSVs parsed first try in pandas; DepMap matrix header and first row parsed from ranged read."},
+    "B3": {"score": 1, "why": "Chronos scores jointly scaled by authors, but 3 libraries and 5 screen types; paper itself shows format/medium effects."},
+    "B4": {"score": 1, "why": "Checked: 582 of 17,916 cells blank in one real gene-effect row (3.2%); no censored text values anywhere."},
+    "B5": {"score": 1, "why": "1,592 screens for 1,534 QC-pass rows, several screens per model, so a dedupe rule is needed; 0 duplicate gene rows."},
+    "B6": {"score": 2, "why": "31 KB README documents every column of every Figshare file; DepMap portal files are documented too."},
+    "C1": {"score": 2, "why": "Transfer question: how much dependency-prediction accuracy is lost going from 2D cell lines to 3D models is informative either way."},
+    "C2": {"score": 1, "why": "DeepDEP and DepMap's own random-forest predictability pipeline exist for 2D lines; none evaluated on these 3D screens."},
+    "C3": {"score": 2, "why": "Diversity and unique-application angle: 147 organoid/spheroid screens released Aug 2026, unmodelled; 3D models underrepresented."},
+    "C4": {"score": 2, "why": "A genome-scale CRISPR screen in an organoid takes months and is costly; the paper reports only 147 of them."},
+    "C5": {"score": 2, "why": "Two baselines: per-gene 2D mean (gene means correlate 0.969, checked) and DepMap predictability random forest r>0.5 threshold."},
+    "D1": {"score": 2, "why": "ESM-2 (protein language model) for the knocked-out gene, Geneformer/scGPT for expression profiles; all open weights."},
+    "D2": {"score": 2, "why": "Freeze-and-cache: ~18,000 protein embeddings once on CPU, ~1,500 expression-profile embeddings; heads are ridge/random forest."},
+    "D3": {"score": 2, "why": "ESM-2 MIT, Geneformer Apache-2.0, data CC BY 4.0 (verified in the Figshare licence field)."},
+    "E1": {"ok": true, "why": "Hold out whole models, whole lineages (10 verified) or whole growth formats; no row-level random split needed."},
+    "E2": {"ok": true, "why": "147 next-generation models, 10 lineages, 27 subtypes, 5 screen types - all counted in screen_metadata.csv."},
+    "E3": {"ok": true, "why": "Per-gene mean dependency across the 1,387 2D screens is the standard, and very strong, dummy (r = 0.969 at gene level)."},
+    "E4": {"ok": true, "why": "Replicate log-fold-change correlations verified for 16 minipool screens (median 0.687); genome-scale QC report has per-screen metrics."},
+    "E5": {"ok": true, "why": "1,629 pan-dependency genes (RAN, RPL17 seen) must score essential; cholesterol genes MSMO1/SQLE must be organoid-enriched."},
+    "E6": {"ok": true, "why": "Shuffle labels within gene, ablate copy-number features (needed for the mild label circularity), replace features with noise."},
+    "E7": {"ok": true, "why": "Companion open paper PMC13581617 (retrieved): 162 independent organoid genome-wide CRISPR screens, CC BY; Sanger Project Score too."},
+    "E8": {"ok": true, "why": "The Figshare test tables give exact published numbers (e.g. MSMO1 mean difference -1.031) recomputable from the matrix."},
+    "G1": {"score": 2, "why": "Checked: DepMap ModelIDs (ACH-), Entrez IDs inside 'SYMBOL (ENTREZ)' column names, Oncotree codes, 9,806 TCGA tumour IDs."},
+    "G2": {"score": 2, "why": "PRISM drug repurposing and GDSC/Project Score join on DepMap ModelID; TCGA joins via the Celligner table I opened."},
+    "G3": {"score": 1, "why": "ModelID-to-screen is one-to-many (1,592 screens, 1,534 pass); gene columns need splitting; organoid-biobank join needs name mapping."},
+    "G4": {"score": 2, "why": "Combined question: do 3D-only dependencies match drug sensitivities and tumour expression programmes that 2D screens miss?"},
+    "H1": {"score": 2, "why": "Negatives abundant and explicit: 8,732 non-dependency and 4,854 weakly selective genes in the classification table."},
+    "H2": {"score": 1, "why": "All screens from one institution (Broad); 10 lineages but CNS/brain is 39 of 147 and no blood cancers among 3D models."},
+    "H3": {"score": 2, "why": "Honest one-sentence claim written below; the gap (no model screened in both formats) was found in the files."},
+    "H4": {"score": 2, "why": "The paper is explicit that cell lines miss subtypes and that culture format and medium change essentiality."},
+    "I1": {"score": 2, "why": "Broad DepMap team (Vazquez/Root), the Sanger Cancer Dependency Map, and the companion organoid-biobank consortium."},
+    "I2": {"score": 2, "why": "A transfer-decay number tells those groups whether to spend months screening organoids or predict from existing 2D screens."},
+    "I3": {"score": 1, "why": "Decision is 'is this gene a selective dependency in this model?', so correlation must be paired with a threshold metric."},
+    "I4": {"score": 1, "why": "Checked: the per-gene 2D mean already reproduces 3D gene means at r = 0.969, so the dumb rule is strong; headroom is in 2,171 selective genes."},
+    "J1": {"score": 2, "why": "Grouped splits, transfer evaluation, frozen-backbone embeddings, strong-dummy comparison - the modelling skills on offer are real."},
+    "J2": {"score": 1, "why": "Cancer dependency plausibility is checkable via pan-essential genes and known biomarkers, but needs some domain help."},
+    "J3": {"score": 2, "why": "A tidy long-format 2D-plus-3D dependency table with grouped splits is shareable even if every model underperforms the dummy."},
+    "J4": {"score": 1, "why": "Not stated yet; a sensible budget is 3-4 weeks given one manual download and ~8 h to the feature table."},
+    "J5": {"score": 0, "why": "No kill date written down yet; must be added to NOTES.md before starting."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepDEP (deep neural network predicting Chronos/CERES dependency scores from multi-omics plus a gene functional fingerprint)",
+        "open_weights": true,
+        "score_and_split": "Reported Pearson r ~0.87 between predicted and observed dependency across 104 held-out cell lines; that correlation is computed across genes within a sample, which is inflated by the large gene-level mean differences, not a per-gene across-model split.",
+        "authors_named_unsolved": "Predicting dependencies for tumours rather than cell lines, and the fact that cell-line training data does not represent in vivo/patient context.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DepMap 'Predictability' random-forest pipeline (one model per dependency, features = expression, mutation, copy number, lineage, fusions)",
+        "open_weights": true,
+        "score_and_split": "Published convention: a dependency is 'predictable' at random-forest Pearson r > 0.5; reported mean r across dependencies ~0.17. Evaluation is cross-validated across cell lines, all 2D. These numbers come from DepMap documentation summaries I saw in search results, not from a document I retrieved in full.",
+        "authors_named_unsolved": "Most dependencies remain unpredictable from baseline omics (mean r ~0.17), and biomarkers are confounded by lineage.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Translational cancer dependency map for TCGA (Nature Cancer 2024) and graph-attention context-aware dependency models (2026)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved in full; search results describe cell-line-to-tumour transfer and per-context evaluation. I did not verify their numbers or code availability.",
+        "authors_named_unsolved": "Cell-line-to-patient context transfer.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model, 35M or 150M checkpoint) embedding the knocked-out gene's protein, optionally Geneformer/scGPT embedding the model's expression profile",
+    "freeze_and_head_viable": true,
+    "hardware": "laptop CPU; ~18,000 protein embeddings cached once (estimated 6-10 h), then ridge or gradient-boosted heads",
+    "licence": "ESM-2 MIT, Geneformer Apache-2.0, data CC BY 4.0"
+  },
+  "integration": {
+    "partner_dataset": "PRISM Repurposing drug-sensitivity screens and GDSC/Sanger Project Score (both keyed by DepMap ModelID), plus TCGA tumour expression via the Celligner table in this paper's own Figshare set (9,806 TCGA IDs verified)",
+    "join_key": "DepMap ModelID (ACH-xxxxxx) for drug and omics partners; Entrez gene ID parsed out of the 'SYMBOL (ENTREZ)' column names for gene-level partners",
+    "bigger_question_one_sentence": "Do the gene dependencies that appear only in 3D models correspond to drug sensitivities and tumour-expressed programmes that 2D cell-line screens systematically miss?"
+  },
+  "controls": {
+    "positive_control": "The 1,629 pan-dependency genes (RAN, RPL17, SNRPD3 seen in the file) must be predicted essential in every model, and the cholesterol/SREBP genes MSMO1 and SQLE must come out more essential in organoids (verified mean difference -1.03 and -0.86, false-discovery rate < 1e-37).",
+    "negative_control": "Shuffle dependency labels within each gene (performance must collapse to the per-gene mean), ablate copy-number features to test the mild circularity from DepMap's copy-number correction, and replace features with same-shape noise.",
+    "external_validation": "The companion open-access Nature 2026 organoid biobank (PMC13581617, CC BY): 162 independent genome-wide CRISPR screens in patient-derived organoids from five cancer types; secondary option is Sanger Project Score (different library and lab)."
+  },
+  "honest_claim_h3": "Trained on 1,387 two-dimensional Broad cell-line CRISPR screens, the model predicts Chronos gene-effect scores for the 2,171 genes that vary between models, in 147 Broad-derived 3D organoid and spheroid models from 10 lineages (CNS/brain over-represented at 39), and the claim is only about how much accuracy is lost relative to the per-gene 2D mean - not about patient tumours, and not about growth format per se, because no model was screened genome-wide in both formats.",
+  "plain_idea": {
+    "one_liner": "Use a cancer model's baseline molecular profile to predict which genes it needs to survive, then test whether cell-line-trained predictions hold in 3D organoids.",
+    "train_on": "Each example is one gene in one cancer model: features are that model's gene expression, copy number, mutations and tissue label; training uses the 1,387 traditional two-dimensional screens (verified count). The inferred table size is about 28 million gene-model pairs, of which 2.7 million belong to the 147 three-dimensional models.",
+    "predict": "The output is the Chronos gene-effect score, a number where 0 means knocking the gene out did nothing and -1 means it killed the cells as much as a typical essential gene. It comes from measured CRISPR sgRNA read counts in a pooled screen, inferred by the Chronos statistical model.",
+    "why_worthwhile": "The Broad and Sanger dependency-map teams and anyone choosing between cell lines and organoids would learn whether existing cell-line screens can stand in for expensive organoid screens, and for which genes they cannot."
+  },
+  "pitch": {
+    "headline": "147 genome-scale CRISPR screens in 3D organoids and spheroids, counts verified against the paper, joinable to 1,387 two-dimensional screens by one key.",
+    "what_makes_the_data_unusual": "Checked in the files: 147 three-dimensional screens over 10 lineages and 27 subtypes versus 1,387 two-dimensional ones, all CC BY 4.0, with 146 of 147 carrying expression and all 147 carrying copy number. Nothing else public pairs 3D cancer models with genome-wide dependencies at this scale except the companion 162-organoid biobank, which makes a ready external test set.",
+    "the_win": "A transfer-decay number: per-gene across-model correlation for the 2,171 selective dependencies when training only on 2D screens, versus the same number inside 2D, versus DepMap's published random-forest convention of r > 0.5 for a 'predictable' dependency. Evidence there is headroom: biomarker-dependency correlations agree only r = 0.142 between 2D and 3D (0.356 among selective genes), a number I computed from the file.",
+    "even_if_it_fails": "You still get the honest ceiling: I already measured that 2D and 3D per-gene means correlate 0.969, so if nothing beats the per-gene mean the answer is 'existing 2D screens already tell you the average, and only 562 genes shift by more than 0.25' - useful guidance for screen design, published as a one-page note.",
+    "who_wants_it": "The Broad DepMap team (Vazquez and Root labs) who built both model sets, and the companion organoid-biobank consortium; the decision it changes is whether a target-discovery group pays for organoid screens or predicts from the 2D screens it already has."
+  },
+  "ml_idea": "Build a long-format table of (gene, model, Chronos gene effect) from the DepMap 'NextGen Model Manuscript 2026' file set, restricted to the 2,171 genes classed strongly selective or high variance. Features: the model's expression, copy number and damaging mutations, plus frozen ESM-2 embeddings of the knocked-out protein so one joint model can score held-out genes. Train only on the 1,387 traditional 2D screens with grouped cross-validation by model and by lineage, then evaluate on the 147 three-dimensional screens; report per-gene across-model correlation against the per-gene 2D mean dummy, stratified by whether the gene is 3D-shifted (the 562 genes with |mean difference| > 0.25). Validate externally on the 162-organoid companion biobank, and use the 18-screen, 1,000-gene minipool matrix (same models, Dome vs Plastic, serum vs serum-free) as the only clean growth-format contrast.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 2.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 6.0,
+    "embedding_hours": 8.0,
+    "cv_run_minutes": 90,
+    "compute_note": "Sizes are measured (429 MB gene-effect CSV, 507 MB expression CSV on the 24Q4 Figshare mirror; 254 KB header, 17,916 gene columns). Peak RAM and timings are estimates for pandas reads downcast to 32-bit floats and per-gene ridge/random-forest fits over ~2,000 genes x 1,534 screens; nothing was timed.",
+    "cheapest_killing_check": "In a browser, download the NextGen file set's gene-effect matrix and screen map (one manual step, since scripted requests hit a verification page). Then, for the 2,171 selective genes, compare the per-gene 2D mean against the actual 3D values: if the 2D mean already reaches the cross-replicate ceiling (median replicate log-fold-change correlation 0.687, verified) for most of them, or if fewer than a few hundred genes have meaningful between-model variance in the 147 3D screens, stop."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "All Part A checks pass on what I could open, and the counts match the paper exactly (147 three-dimensional and 1,387 two-dimensional screens, re-derived from the quality-control cross-tab). The question - how much dependency prediction decays from 2D cell lines to 3D models - cannot give a useless answer, has a published baseline and a genuinely independent 162-organoid validation set. Two things must be verified first: (1) the dependency and omics matrices are only reachable through a browser because depmap.org answers scripted requests with a Cloudflare verification page, so nobody has opened them yet; (2) the dummy is strong - 2D and 3D per-gene means already correlate 0.969 - so the project must be scoped to the 2,171 selective genes, where biomarker relations agree only r = 0.14-0.36 and real headroom exists."
+}

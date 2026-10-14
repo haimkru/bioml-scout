@@ -1,0 +1,183 @@
+{
+  "paper_id": "nar2026-gkag809",
+  "title": "iHaptenAb: an integrated hapten-antibody database for rational hapten design and antibody discovery.",
+  "doi": "10.1093/nar/gkag809",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://ihaptenab.com/iHaptenAb/ (bulk CSVs listed at /iHaptenAbApi/app/downloadFileDatas, fetched via /iHaptenAbApi/app/fileDownload?fileName=<name>)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all 7 bulk CSVs (4.7 MB total: Target 589x35, Immunizing_Hapten 1678x36, Immunogen 1900x8, Antibody 2097x37, Coating_Hapten 1480x36, Coating_Antigen 1614x17, Evaluation 4817x14) with no login. Ran every join myself (T_ID, Ab_ID, IMH_ID, IMG_ID, COA_ID, COH_ID all resolve). Counted usable labels: 1,329 cross-reactivity rows with all three SMILES present (846 numeric excluding the definitional CR=100, plus 483 left-censored '<x' negatives); 862 on-target IC50 rows, collapsing to 458 unique (hapten, target) pairs. Measured the noise floor (median 0.66 log-unit pIC50 spread, IQR 0.33-1.2, across 134 repeat groups), censoring (855/3359 IC50, 1417/1429 non-numeric CR), unit contamination (129 IC50 values carrying nM/mM), duplicate hapten SMILES (160 of 963 distinct), and empty columns (Year, Ref_ID, Journal, Background, hapten PubChem CID/CAS/IUPAC all 100% null). Recovered the field units and the authors' IC50(M) conversion rule from the web app's JavaScript bundle.",
+    "what_came_from_paper_text_only": "Nothing substantive. The paper has no PubMed Central full text (isOpenAccess=N, no PMCID) and the publisher PDF returned HTTP 403, so I could not read the methods or any data-availability statement; the abstract supplied the entity counts, which I then checked against the files. Curation provenance (how records were extracted from the ~1,094 source publications, and inter-curator agreement) is therefore unverified. I did not verify that HaptenDB or SuperHapten are still reachable, and I did not check whether the specific triazine compounds from the published QSAR papers are present here."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified: all 7 CSVs fetched anonymously from the site's own download API. Login/register endpoints exist but serve record submission, not download. No application, no embargo."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified in the files: 'CR' (cross-reactivity, %) and 'IC50' are literal columns in Evaluation.csv. Reaching the features needs a 4-table join, but the keys are explicit and I confirmed every one resolves, so no label construction is required."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "SMILES strings are present, not accessions: 575/589 targets and 1,281/1,678 haptens. The 1,329 usable rows need zero external lookups. Caveat: ~900 free-text cross-reactant names would need PubChem resolution to add further rows, and antibody sequences exist for only 51 of 2,097 antibodies (2.4%)."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Passes for the chosen label: cross-reactivity is a dimensionless percentage (declared 'CR (%)'). Flagged for the secondary label: IC50 is declared ng/mL only in the web interface (no data dictionary ships with the download), and 129 of 3,359 values carry foreign units inline ('18 nM', '0.14 mM') inside that column."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 1329,
+      "note": "1,329 cross-reactivity rows with target, hapten and cross-reactant structures all present - comfortably over the ~400 bar for classification. Does NOT clear the ~1,500 bar for regression, and the on-target IC50 regression task has only 862 rows (458 unique hapten-target pairs), so regression is not viable."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "4.7 MB of CSV; under 1 GB peak RAM",
+      "note": "Verified by downloading everything. The whole resource is smaller than a single photo album; pandas loads all 7 tables at once without effort."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Marginal pass, flagged. Targets (589), immunizing haptens (1,678) and antigens (1,900+1,614=3,514) match the paper exactly. But the evaluation table has three different counts from one resource: paper says 6,718, the site's own schema page says 6,718, the site's statistics card says 4,793, and the download has 4,817. Antibodies: paper 2,090 vs download 2,097. The download is internally consistent and the live database is evidently still growing, but I cannot confirm what the missing ~1,900 evaluation records are."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels are physical measurements: competitive ELISA IC50 values and cross-reactivity ratios curated from ~1,094 distinct publications (DOIs present for 1,682 antibody records). Not any model's output. Two traps I confirmed and would avoid: CR=100 rows are definitional self-comparisons (1,106 of them, excluded), and the site's derived fields log10(Ab_IC50), SEI and BEI are arithmetic functions of IC50 and PSA, so they must never be used as features for an IC50 or CR label."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Seven CSVs, not one table; but I verified all six key columns join cleanly."},
+    "B2": {"score": 2, "why": "All seven files parsed with pandas on the first try, no fixes needed."},
+    "B3": {"score": 2, "why": "Cross-reactivity is a within-assay ratio to the antibody's own IC50, so comparable across labs."},
+    "B4": {"score": 1, "why": "1,417 left-censored '<x' cross-reactivity values; usable as negatives but need a policy."},
+    "B5": {"score": 1, "why": "160 of 963 distinct hapten SMILES repeat across IDs; 93 near-duplicate evaluation rows; easy dedupe."},
+    "B6": {"score": 1, "why": "Units defined in the web app only, no data dictionary in download; Year/Background/CAS columns ship empty."},
+    "C1": {"score": 2, "why": "'Does hapten chemistry transfer across chemical families?' is informative either way; no baseline to beat."},
+    "C2": {"score": 1, "why": "Found single-family QSAR models (triazines, phenylureas, PAHs): closed, tens of compounds, weak splits."},
+    "C3": {"score": 2, "why": "Clear novel plus diversity angle: first model spanning chemotypes, where prior art does one family."},
+    "C4": {"score": 2, "why": "Each antibody costs months of immunization and screening; prior art docks haptens case by case."},
+    "C5": {"score": 1, "why": "Published single-family QSAR correlations exist as loose reference; obvious dummy is Tanimoto similarity."},
+    "D1": {"score": 2, "why": "ChemBERTa and MolFormer are open-weight on Hugging Face; SMILES is exactly their input."},
+    "D2": {"score": 2, "why": "Only ~2,600 unique molecules; embeddings cache once on CPU in minutes."},
+    "D3": {"score": 2, "why": "ChemBERTa ships Apache-2.0/MIT; permissive, no commercial restriction."},
+    "E1": {"ok": true, "why": "Verified 160 antibody-target groups and a 4-level chemical-class column for held-out-chemotype splits."},
+    "E2": {"ok": true, "why": "Counted 160 antibody-targets, 43 with 5+ rows, 211 distinct cross-reactants, 250+ source DOIs."},
+    "E3": {"ok": true, "why": "Majority class, plus a Tanimoto-similarity-only logistic regression as the meaningful dummy."},
+    "E4": {"ok": true, "why": "I measured it: median 0.66 log-unit spread (IQR 0.33-1.2) over 134 repeat hapten-target groups."},
+    "E5": {"ok": true, "why": "Predict target molecular weight from SMILES (trivial); plus textbook linker-site shielding effect must emerge."},
+    "E6": {"ok": true, "why": "Shuffle cross-reactivity within antibody group; ablate cross-reactant versus hapten feature blocks."},
+    "E7": {"ok": true, "why": "Held-out chemotype available now; temporal split after resolving 1,094 DOIs via Crossref, which I confirmed reachable."},
+    "E8": {"ok": false, "why": "No published number verified reproducible here; I did not confirm the triazine QSAR compounds are present."},
+    "G1": {"score": 2, "why": "Verified InChIKey for 575 targets and 1,280 haptens, PubChem CID for 576 targets, CAS for 566."},
+    "G2": {"score": 2, "why": "PubChem and ChEMBL join on InChIKey; regulatory residue-limit lists join on CAS."},
+    "G3": {"score": 1, "why": "Target side joins one-to-one; hapten PubChem CID column is 100% empty, so linker derivatives won't join."},
+    "G4": {"score": 1, "why": "Partner supplies features and regulatory priority, not new labels; combined question is real but modest."},
+    "H1": {"score": 2, "why": "Verified real negatives: 483 left-censored '<x' plus 190 rows under 1% cross-reactivity."},
+    "H2": {"score": 1, "why": "250+ studies but skewed: 1,199 mouse, 651 rabbit, 1,637 of 1,911 icELISA, pesticides dominant."},
+    "H3": {"score": 2, "why": "Honest claim writes out in one sentence, bounded by the published-panel selection effect."},
+    "H4": {"score": 1, "why": "Paper documents entity counts; empty columns, censoring and unit contamination visible only in files."},
+    "I1": {"score": 2, "why": "Named: food-safety/environmental immunoassay groups publishing in Analytical Chemistry and J. Agric. Food Chem."},
+    "I2": {"score": 2, "why": "Would redirect which hapten gets synthesized before a months-long immunization commitment."},
+    "I3": {"score": 2, "why": "Decision is binary ('does it cross-react enough to ruin specificity'); classifier at 10% is that decision."},
+    "I4": {"score": 1, "why": "Chemical similarity alone explains much, so the dumb baseline is decent; ML earns its place on linker geometry."},
+    "J1": {"score": 2, "why": "Grouped and chemotype splits, censored labels, frozen chemical language model plus head."},
+    "J2": {"score": 1, "why": "Chemical similarity is judgable; antibody immunochemistry intuition is specialized and would need a checker."},
+    "J3": {"score": 2, "why": "The unit-audited cross-reactivity table and the measured noise floor are useful even if the model fails."},
+    "J4": {"score": 1, "why": "Scoped at roughly 2-3 weekends from my own effort figures, but not formally committed."},
+    "J5": {"score": 0, "why": "No kill date written down yet; needs a line in NOTES.md before starting."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "QSAR of immune recognition for triazine herbicides (PLOS One, 2019) - a quantitative structure-activity relationship model, i.e. a regression from chemical descriptors onto measured binding",
+        "open_weights": false,
+        "score_and_split": "Reports regression fits relating descriptors to pIC50 and molar cross-reactivity for polyclonal and monoclonal antibodies against triazine herbicides only; tens of compounds, leave-one-out/internal validation, no held-out chemical family.",
+        "authors_named_unsolved": "That polyclonal-antibody systems are describable with 2D descriptors while monoclonals need 3D field-based methods, i.e. no single descriptor set transfers across antibody types.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Substructure-activity relationship study of antibody recognition for phenylurea compounds (2018)",
+        "open_weights": false,
+        "score_and_split": "Competitive immunoassay plus computational chemistry on the phenylurea herbicide family; correlation of binding with molecular-surface descriptors on a few dozen compounds, no external split.",
+        "authors_named_unsolved": "Which substituent positions drive recognition, derived per-family rather than as a general rule.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Multiple-regression QSAR for antibody recognition in two polycyclic aromatic hydrocarbon immunoassays (2012)",
+        "open_weights": false,
+        "score_and_split": "Multiple regression on two PAH immunoassays; single chemical class, internal validation only.",
+        "authors_named_unsolved": "Generalisation beyond the assay pair studied.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ChemBERTa (a chemical language model pretrained on SMILES strings; MolFormer is the alternative)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU. ~2,600 unique molecules embedded once in roughly 10-20 minutes, cached to disk, then gradient-boosted trees or logistic regression on top.",
+    "licence": "Apache-2.0 / MIT, permissive. Note: neither torch/transformers nor RDKit is currently installed here, and the project's dependency list would need extending; a descriptor-only baseline needs neither, since molecular weight, LogP, polar surface area, hydrogen-bond counts, ring counts and DFT-derived HOMO/LUMO/SASA/dipole values already ship in the CSVs."
+  },
+  "integration": {
+    "partner_dataset": "PubChem and ChEMBL (compound annotation and bioactivity), joined on InChIKey; plus maximum-residue-limit regulatory lists joined on CAS number",
+    "join_key": "InChIKey (575 of 589 targets, 1,280 of 1,678 haptens) and CAS (566 targets); PubChem CID present for 576 targets but entirely absent for haptens",
+    "bigger_question_one_sentence": "For the regulated contaminants that still have no usable antibody, which ones are chemically most tractable for a sensitive and specific immunoassay, and what hapten design does that imply?"
+  },
+  "controls": {
+    "positive_control": "Two, chosen in advance: (1) swap the label for target molecular weight computed from SMILES, which the pipeline must predict near-perfectly; (2) the textbook rule that analogues differing only at the linker-attachment site cross-react more strongly than those differing at the exposed end of the molecule must be recovered.",
+    "negative_control": "Shuffle cross-reactivity labels within each antibody group and confirm collapse to the majority-class baseline; ablate feature blocks separately (cross-reactant structure only, immunizing-hapten structure only, conjugation chemistry only) to see whether one block does all the work; replace features with same-shape random noise.",
+    "external_validation": "Held-out chemical family (train on pesticides and veterinary drugs, test on mycotoxins) is available immediately from the 'Nature' column. A temporal split is available after resolving the 1,094 distinct DOIs to publication years via Crossref, since the Year column ships empty. Older resources HaptenDB and SuperHapten are named as possible independent sources but I did not verify either is still online."
+  },
+  "honest_claim_h3": "Among small-molecule analogues that researchers chose to put into a published cross-reactivity panel, the model predicts whether an antibody raised against a given hapten will cross-react above 10%, for the antibody types and chemical families actually represented here - overwhelmingly mouse and rabbit antibodies tested by indirect competitive ELISA against pesticides, mycotoxins and veterinary drugs - and it cannot distinguish two antibodies raised against the same hapten, because antibody sequences are missing for 97.6% of records.",
+  "plain_idea": {
+    "one_liner": "Use three chemical structures to predict whether an antibody raised against one small molecule will also bind a look-alike compound.",
+    "train_on": "1,329 rows I counted myself. Each row carries the structure (as a SMILES string, a text encoding of a molecule) of the intended target compound, of the immunizing hapten (that target chemically modified with a linker so it can be attached to a carrier protein), and of the look-alike compound actually tested, plus the carrier protein, the coupling chemistry, the host animal and the antibody type.",
+    "predict": "A yes/no answer: does measured cross-reactivity exceed 10%? The truth comes from competitive ELISA (enzyme-linked immunosorbent assay) experiments reported in roughly 250 published papers, where cross-reactivity is the ratio of the antibody's half-maximal inhibitory concentration for its intended target to that for the look-alike, measured in the same assay.",
+    "why_worthwhile": "Labs doing food-safety and environmental testing spend months and thousands of dollars raising each antibody, and a hapten that yields an antibody confusing the target with a common relative is wasted effort; knowing which analogues will interfere tells them which hapten to make. Even a failure maps where chemistry-only prediction stops working."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "I counted 1,329 cross-reactivity measurements spanning 160 antibody targets and 211 distinct look-alike compounds across pesticides, mycotoxins, veterinary drugs and human drugs. The published QSAR models are each confined to one chemical family - triazine herbicides, phenylureas, or polycyclic aromatic hydrocarbons - with tens of compounds."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "134 hapten-target groups have repeat measurements, which gave me a real noise floor of 0.66 log units, and the 483 left-censored '<x' values mark confident negatives. But antibody sequences are absent for 97.6% of records, so per-antibody uncertainty can only be modelled as a group effect, not from the antibody itself."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The prior models are 2012-2019 multiple-regression and 3D field-based QSAR fitted to single chemical families, validated internally or leave-one-out on tens of compounds, with no pretrained backbone and no released code or weights."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails two of the four conditions: none of the published QSAR models is distributed as runnable code, so it cannot be our baseline, and each was fitted to a different compound set with a different split, so no shared evaluation exists. Any comparison would be against our own dummy, not against them."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "HaptenDB (2006) and SuperHapten (2007, Nucleic Acids Research) are older databases of haptens, carrier proteins and anti-hapten antibodies - named from search results, but I did not verify either is still reachable. Individual QSAR papers (triazine herbicides, phenylureas, polycyclic aromatic hydrocarbons) each report immunoassay IC50 and cross-reactivity for tens of compounds. Searched ChEMBL/PubChem conceptually: they hold small-molecule bioactivity but not anti-hapten antibody cross-reactivity.",
+    "approx_items": null,
+    "join_key": "InChIKey or CAS number for the compound; the antibody side has no standard public identifier here",
+    "why": "A modest independent check is possible by pulling cross-reactivity tables out of the older databases or the single-family QSAR papers, but there is no large public resource holding this label, so almost all the training signal and nearly all external validation must come from this one database plus a temporal or held-out-chemotype split within it."
+  },
+  "pitch": {
+    "headline": "1,329 measured antibody cross-reactivity values spanning 211 look-alike compounds and 160 antibody targets, downloadable as seven clean CSVs totalling 4.7 MB.",
+    "what_makes_the_data_unusual": "Real negatives are recorded, not just hits: I counted 483 left-censored '<0.1%' values and 190 below 1%. Cross-reactivity is a within-assay ratio, so it stays comparable across the 250+ source publications - verified in the files.",
+    "the_win": "A held-out-chemical-family AUC (area under the receiver operating characteristic curve) for 'will this antibody cross-react above 10%' that beats a chemical-similarity-only baseline: the first cross-chemotype number for this task.",
+    "even_if_it_fails": "We learn that hapten chemistry alone does not transfer across chemical families, and we still publish the measured 0.66 log-unit noise floor and a unit-audited cross-reactivity table that nobody has assembled.",
+    "who_wants_it": "Food-safety and environmental immunoassay groups publishing these antibodies in Analytical Chemistry and J. Agric. Food Chem., plus the iHaptenAb authors. It changes which hapten they synthesise before a months-long immunisation."
+  },
+  "ml_idea": "Binary classification of antibody cross-reactivity. For each (immunizing hapten, intended target, tested look-alike compound) triple, predict whether measured cross-reactivity exceeds 10%. Features: frozen ChemBERTa embeddings of the three SMILES strings plus their differences, the precomputed physicochemical and DFT descriptors already in the CSVs (polar surface area, LogP, HOMO/LUMO gap, solvent-accessible surface area), the conjugation active group and spacer-arm ring count, the carrier protein, the coupling method, the host species and the antibody type. Train 1,329 rows with leave-one-antibody-target-out and leave-one-chemical-family-out cross-validation; treat the 483 left-censored values as negatives. Compare against a Tanimoto-similarity-only logistic regression. The headline experiment is the chemotype-transfer curve: how does accuracy decay as the test chemical family gets more distant from training? The secondary, weaker task - regressing on-target assay sensitivity (862 rows) - should be reported only as an auxiliary signal, since it falls below the regression sample-size bar and its IC50 column has unit contamination.",
+  "effort": {
+    "hours_to_feature_table": 5,
+    "working_set_gb": 0.005,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.3,
+    "cv_run_minutes": 5,
+    "compute_note": "Measured, not guessed, for the data side: I downloaded all 4.7 MB and ran the full four-table join and label-counting pipeline in seconds on this laptop. The 5 hours to a feature table is my estimate covering the censored-value policy, deduplication of the 160 repeated hapten SMILES, and stripping the 129 foreign-unit IC50 values. Embedding time is estimated from ~2,600 unique molecules through a small ChemBERTa checkpoint on CPU at roughly 5-10 molecules per second; I did not time it because torch is not installed. Cross-validation on 1,329 rows with gradient-boosted trees is minutes.",
+    "cheapest_killing_check": "Already done, and it is the reason this passed: count the evaluation rows that have a numeric or left-censored cross-reactivity value AND all three structures present after the joins. The answer is 1,329 (846 numeric excluding the definitional CR=100 rows, plus 483 censored negatives) across 160 antibody-target groups. Had that come in under ~400 the project would be dead. The next cheapest check before committing is to confirm the 10% threshold leaves a workable class balance inside each held-out chemical family."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Everything in Part A was checked against the actual files, not the abstract, and it holds up: seven CSVs download anonymously, parse on the first try, total 4.7 MB, and every documented key joins. The label is a real lab measurement - competitive ELISA cross-reactivity curated from roughly 1,094 publications - not another model's output, and crucially it is a within-assay ratio, which makes it comparable across the 250-plus contributing labs in a way raw IC50 never would be. Usable n is 1,329 rows over 160 antibody-target groups, which clears the classification bar comfortably. The field is genuinely thin: the only prior models are 2012-2019 single-chemical-family QSAR fits on tens of compounds, closed and unrunnable, so a cross-chemotype model would be the first of its kind, and the chemotype-transfer question is informative whichever way it resolves. Backbone fit is perfect (6/6): SMILES in, frozen ChemBERTa out, cached on CPU in minutes, and a descriptor-only baseline needs no new tooling at all because the physicochemical and DFT columns already ship in the files. Three things to hold honestly rather than discover later. First, regression is off the table: 862 on-target IC50 rows (458 unique hapten-target pairs) is below the bar, and that column mixes nM and mM values into a field declared ng/mL with no data dictionary in the download. Second, antibody sequences are missing for 97.6% of records, so the model structurally cannot separate two antibodies raised against the same hapten - the measured 0.66 log-unit noise floor is partly irreducible, and the honest claim must say so. Third, the evaluation table has three disagreeing counts from one resource (paper 6,718, site statistics 4,793, download 4,817) while targets, haptens and antigens match exactly; the download is internally consistent but the missing roughly 1,900 records are unexplained, and that is worth one email to the authors. Do it as a small, low-risk project with a kill date written down first, since J5 is currently the only item scoring zero."
+}

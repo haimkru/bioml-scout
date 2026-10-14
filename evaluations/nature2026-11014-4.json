@@ -1,0 +1,127 @@
+{
+  "paper_id": "nature2026-11014-4",
+  "title": "A retinoic acid autoregulatory loop governing prefrontal-motor arealization.",
+  "doi": "10.1038/s41586-026-11014-4",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE325427",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found GEO series GSE325427 (34 samples, human + mouse, public 2026-07-15, BioProject PRJNA1438418) via GEO search; the Nature paper and the preprint PDF still say 'GSEXXXXXX'. Downloaded and parsed all six human mid-fetal dlPFC (dorsolateral prefrontal cortex) CUT&Tag peak files: MEIS2 54,237, RARA 19,426, RARB 10,422, RXRG 36,345, H3K27ac 58,911, H3K4me3 23,420 peaks; 3-column BED with no score column and 0 duplicate rows. Overlaps: 30% of RARA peaks and 30% of RARB peaks fall in H3K4me3 (promoter-mark) peaks; 48% of RARA peaks fall in H3K27ac peaks. Opened the Meis2 cKO (conditional knockout) bulk RNA-seq workbook: 25,239 genes x 3 control + 3 cKO counts, and a 19,864-row DESeq2 sheet whose top hit is Xist (log2FC 10.7). Counted 50,740 snRNA barcodes across 4 human donors. Read GEO filelist: the per-sample files are ATAC fragments (1.4-3.7 GB each) and mtx matrices; the RAW tar is 19 GB.",
+    "what_came_from_paper_text_only": "Donor ages (PCW 18-22 multiome, 19-23 CUT&Tag), the genome build, the peak caller, the claim that RAR/RXR sites sit near axonogenesis genes, and the SCENIC+ regulatory network all come from the bioRxiv preprint text (10.64898/2025.12.23.696038). The Nature version is paywalled and I did not read it; the NCBI PubMed-to-PMC link (PMC13192659) points to a different, citing Bhaduri-lab preprint."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: GEO GSE325427 is public; peak BEDs and the DEG xlsx downloaded without login."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked: for the sequence-to-binding task, the label is membership in a deposited peak file. Negatives must be sampled from non-peak genome, which is standard but still a design choice. No signal or score column exists, so only a binary label is possible."},
+    "a3_inputs_present": {"pass": true, "note": "The inputs are DNA sequences under hg38 coordinates. This needs one reference-genome download (about 1 GB), not thousands of lookups. The build is inferred from chr names and the preprint and is not stated in the files."},
+    "a4_units_stated": {"pass": true, "note": "The label is binary (peak or no peak), so no units are needed. BigWig signal units are undocumented, but we wouldn't use them."},
+    "a5_enough_rows": {"pass": true, "n_rows": 10422, "note": "Checked: the smallest factor set (RARB) has 10,422 peaks; MEIS2 has 54,237. Caveat: there are only 2 donors per factor, merged into one peak set."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1 GB (hg38 FASTA plus <2 MB of peak BEDs)", "note": "The peaks are tiny. The 19 GB RAW tar and the multi-GB ATAC fragments are not needed for this task."},
+    "a7_counts_match_paper": {"pass": true, "note": "The preprint gives no peak counts to compare against. The GEO sample list (4 human multiome donors, 2 CUT&Tag donors per mark, 3 vs 3 bulk RNA-seq) matches the preprint's methods."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a peak call: a computational threshold on a direct CUT&Tag measurement, not another model's prediction. Risk: TF CUT&Tag is known to bleed into open chromatin (30% of RARA peaks overlap H3K4me3), so some 'binding' may really be accessibility."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "One BED per factor (checked); must join to the hg38 FASTA and sample background regions."},
+    "B2": {"score": 2, "why": "All six BED.gz files parsed first try with pandas (checked)."},
+    "B3": {"score": 1, "why": "Same lab and assay, but only binary merged peaks, with no signal score to compare factors (checked)."},
+    "B4": {"score": 2, "why": "No censored values; the labels are binary peak membership."},
+    "B5": {"score": 2, "why": "0 duplicate intervals in any peak file (checked)."},
+    "B6": {"score": 1, "why": "Three bare columns. Genome build, peak caller and replicate merging are only in the preprint methods."},
+    "C1": {"score": 1, "why": "The 'binding versus merely open chromatin' question is informative either way, but a plain binding predictor needs to beat motif scans."},
+    "C2": {"score": 1, "why": "Strong open sequence-to-chromatin models exist (ChromBPNet); none are trained on fetal-brain RAR/RXR binding."},
+    "C3": {"score": 1, "why": "Diversity angle: fetal human brain tissue rather than cell lines. Weak beyond that."},
+    "C4": {"score": 1, "why": "CUT&Tag on mid-fetal human cortex is scarce and costly, but the predictions wouldn't replace it."},
+    "C5": {"score": 1, "why": "Obvious baselines (GC content, DR1/DR5 motif scan), but no published number on this data."},
+    "D1": {"score": 2, "why": "Open DNA language models (DNABERT-2, Nucleotide Transformer) take 500 bp peak sequences directly."},
+    "D2": {"score": 2, "why": "About 150k sequences of ~500 bp; embeddings can be cached once on CPU."},
+    "D3": {"score": 1, "why": "Licences not checked here; Nucleotide Transformer is believed non-commercial. Fine for research."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes, a standard split for genomic sequence models."},
+    "E2": {"ok": true, "why": "22 autosomes give many held-out groups; the peaks span all chromosomes (checked)."},
+    "E3": {"ok": true, "why": "GC-content and motif-count logistic regression are trivial to compute."},
+    "E4": {"ok": false, "why": "Only merged peaks are deposited; replicate agreement needs reprocessing of raw reads."},
+    "E5": {"ok": true, "why": "DR5/DR1 motifs should enrich in RARA/RARB peaks and TGACAG in MEIS2 peaks. Not yet tested."},
+    "E6": {"ok": true, "why": "Label shuffle, dinucleotide-shuffled sequences and GC-only models are all runnable."},
+    "E7": {"ok": true, "why": "ReMap/ENCODE cell-line RAR/RXR ChIP-seq gives an independent binding set on hg38 coordinates."},
+    "E8": {"ok": false, "why": "The paper reports enrichments, not a predictive number to reproduce."},
+    "G1": {"score": 1, "why": "Genomic coordinates only; the build (hg38 implied) isn't written in the files."},
+    "G2": {"score": 2, "why": "ReMap / ENCODE TF ChIP-seq, joinable by interval overlap on hg38."},
+    "G3": {"score": 1, "why": "Interval overlaps can be many-to-many; a collapse rule (any overlap) is easy."},
+    "G4": {"score": 1, "why": "Asks whether fetal-brain RAR binding follows the cell-line grammar. A modest gain."},
+    "H1": {"score": 1, "why": "Negatives are implicit (non-peak genome) and must be sampled."},
+    "H2": {"score": 0, "why": "One lab, one region (dlPFC), 2 donors per factor, mid-fetal ages only."},
+    "H3": {"score": 2, "why": "Claim can be stated precisely; see honest_claim_h3."},
+    "H4": {"score": 1, "why": "Donor counts are in the preprint; the promoter bias of CUT&Tag isn't discussed."},
+    "I1": {"score": 1, "why": "Developmental-neuroscience groups studying retinoic acid (e.g. Sestan lab); no named user of predictions."},
+    "I2": {"score": 1, "why": "Could prioritise candidate RA-responsive enhancers or variants for reporter assays; marginal."},
+    "I3": {"score": 1, "why": "AUPRC on held-out chromosomes roughly matches ranking candidate sites."},
+    "I4": {"score": 1, "why": "A position weight matrix scan may perform nearly as well; that is itself the test."},
+    "J1": {"score": 2, "why": "Real sequence modelling, chromosome splits and frozen-backbone transfer."},
+    "J2": {"score": 1, "why": "Motif enrichment gives some sanity checking; chromatin biology needs domain input."},
+    "J3": {"score": 2, "why": "The motif-enrichment and accessibility-bias check is a shareable result on day one."},
+    "J4": {"score": 1, "why": "Roughly a 2-week project, not yet written down."},
+    "J5": {"score": 1, "why": "Kill condition defined below; no date yet in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ChromBPNet (bias-factorised base-resolution sequence model of chromatin accessibility)", "open_weights": true, "score_and_split": "Reported competitive with larger models on variant effects and pioneer TF binding across contexts (bioRxiv 2024.12.25.630221); evaluated on held-out chromosomes. Not trained on RAR/RXR CUT&Tag.", "authors_named_unsolved": "Not retrieved in detail.", "runnable_as_baseline": true},
+      {"name": "Human Development Multiomic Atlas sequence models (Nature, s41586-026-10326-9)", "open_weights": null, "score_and_split": "ChromBPNet models of fetal chromatin accessibility across 12 organs and 203 cell types; I saw the title and summary only, not the scores.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 or Nucleotide Transformer (DNA language models), embeddings of 500 bp peak sequences", "freeze_and_head_viable": true, "hardware": "Laptop CPU; ~150k sequences, a few hours to embed", "licence": "Not checked; Nucleotide Transformer believed non-commercial"},
+  "integration": {"partner_dataset": "ReMap / ENCODE RARA, RXRA and MEIS ChIP-seq peaks in cell lines", "join_key": "hg38 genomic interval overlap", "bigger_question_one_sentence": "Do retinoic acid receptors in the fetal human prefrontal cortex bind the same sequence grammar as in cell lines, or does brain context recruit them to different sites?"},
+  "controls": {"positive_control": "DR5/DR1 direct-repeat motif enrichment in RARA/RARB peaks and MEIS TGACAG motif in MEIS2 peaks; the model should recover these in attribution maps.", "negative_control": "Dinucleotide-shuffled peak sequences and shuffled labels must fall to the GC-content baseline.", "external_validation": "ReMap/ENCODE cell-line RAR/RXR ChIP-seq peaks on hg38."},
+  "honest_claim_h3": "Predicts which ~500 bp regions were called as RAR, RXR or MEIS2 CUT&Tag peaks in pooled mid-fetal dorsolateral prefrontal cortex from 2 donors, which partly reflects open chromatin rather than direct binding.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence to predict where retinoic acid receptors and MEIS2 bind in the developing human prefrontal cortex, beyond merely open chromatin.",
+    "train_on": "About 500-letter DNA stretches: peaks for each factor (10,422 RARB to 54,237 MEIS2, counted) plus matched non-peak background regions.",
+    "predict": "Whether a region was called a binding peak in CUT&Tag (an antibody-guided DNA-cutting assay) on mid-fetal human brain tissue from 2 donors.",
+    "why_worthwhile": "It tells developmental neuroscientists whether brain retinoic acid binding follows a known DNA grammar that could flag candidate enhancers and disease variants. A failure would show the peaks mostly track open chromatin."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Fetal human brain tissue for RAR/RXR binding is rare, but it is only 10k-54k merged peaks from 2 donors, whereas sequence models train on hundreds of ENCODE tracks."},
+    "confidence_score": {"answer": "no", "why": "No replicate-level processed peaks or signal scores are deposited, so per-site confidence can't be calibrated from the data."},
+    "models_beatable": {"answer": "partly", "why": "ChromBPNet (2024) is strong and evaluated on held-out chromosomes, but it was not trained on brain RAR/RXR binding; a task-specific head could plausibly beat a generic model on this one task."},
+    "guaranteed_improvement": {"answer": "no", "why": "No accessible extra data measures the same factors in the same tissue with the same assay; ReMap cell-line ChIP-seq is a different assay and context."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "ReMap and ENCODE TF ChIP-seq include RARA/RXRA and MEIS factors in cell lines (known resources; not queried here).", "approx_items": null, "join_key": "hg38 genomic coordinates", "why": "Cell-line binding sets give a ready external test of whether a fetal-brain model generalises, or how far brain binding departs from cell lines."},
+  "leakage_plan": {
+    "risks": [
+      "Repeated or duplicated genome sequence (segmental duplications, alt contigs present in the BEDs) can place near-identical regions in both train and test.",
+      "Background negatives that differ in GC content or promoter status from peaks let the model learn 'promoter vs not' rather than binding.",
+      "The TF peaks overlap H3K4me3/H3K27ac peaks (30-48% for RARA), so a model may learn open chromatin, which the same tissue's histone peaks already reveal.",
+      "Blacklist artefact regions (e.g. chr1:10,000 appears in every peak file) are shared across factors and inflate multi-task accuracy."
+    ],
+    "split": "Hold out whole chromosomes (e.g. chr8 and chr9 for test, chr10 for validation), built from column 0 of the BED files (seen); drop alt contigs and ENCODE blacklist regions.",
+    "checks": [
+      "Train on GC content plus H3K27ac/H3K4me3 overlap alone and see how close it comes to the full model.",
+      "Restrict to H3K27ac-marked regions and ask whether the model still separates RAR-bound from unbound.",
+      "Shuffle labels and confirm AUPRC (area under the precision-recall curve) collapses to the positive rate.",
+      "Check the k-mer similarity of each test peak to its nearest training peak."
+    ],
+    "verdict": "Manageable. Chromosome splits are standard; the real danger is learning accessibility, not leakage across the split."
+  },
+  "success_criteria": {
+    "metric": "AUPRC for RARA/RARB peaks versus H3K27ac-matched non-bound regions on held-out chromosomes, because the question is 'bound beyond open chromatin'.",
+    "baselines": "Positive-class rate (dummy); a GC-content plus DR5/DR1 motif-count logistic regression; no published number exists.",
+    "success": "AUPRC at least 0.10 above the motif-scan baseline on held-out chromosomes within the H3K27ac-matched set. The threshold is our choice, not derived from data.",
+    "noise_ceiling": null,
+    "kill": "If RARA/RARB peaks show no DR5/DR1 enrichment over H3K27ac background, the label is accessibility, so stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes tissue-specific regulatory-grammar analyses; it would need a clear brain-specific RAR binding grammar validated against ReMap cell-line binding."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Fits a focused re-analysis showing whether fetal-brain RAR/RXR CUT&Tag binding is predictable from sequence beyond open chromatin."},
+    "fallback": {"journal": "bioRxiv preprint", "why": "A negative result (peaks mostly track accessibility) is still a useful caution about TF CUT&Tag in tissue."}
+  },
+  "pitch": {
+    "headline": "Rare RAR, RXR and MEIS2 binding maps from mid-fetal human prefrontal cortex: 10,422 to 54,237 peaks per factor, public on GEO.",
+    "what_makes_the_data_unusual": "Six CUT&Tag peak sets from primary mid-fetal human brain tissue (checked), alongside histone marks from the same tissue. Retinoic acid receptor binding is usually profiled in cell lines.",
+    "the_win": "A frozen DNA language model that separates RAR-bound from merely acetylated regions on held-out chromosomes, at least 0.10 AUPRC above a DR5/DR1 motif scan.",
+    "even_if_it_fails": "We learn whether tissue TF CUT&Tag peaks are mostly open-chromatin bleed-through. 30% of RARA peaks already overlap promoter marks (checked).",
+    "who_wants_it": "Groups studying retinoic acid signalling in cortical development (e.g. the Sestan lab), deciding which candidate RA-responsive enhancers to test in reporter assays."
+  },
+  "ml_idea": "Train a frozen-DNA-language-model head on 500 bp sequences to classify RARA/RARB/RXRG/MEIS2 CUT&Tag peaks against GC-matched and H3K27ac-matched background, with chromosome hold-out. Compare against a DR5/DR1 motif scan and test transfer to ReMap cell-line RAR/RXR ChIP-seq.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 3, "cv_run_minutes": 10, "compute_note": "Estimated, not timed: ~150k sequences of 500 bp at ~15/s on CPU for a small DNA language model; logistic or MLP heads on cached embeddings.", "cheapest_killing_check": "Fetch sequences for 2,000 RARA/RARB peaks and 2,000 H3K27ac-only regions and count DR5/DR1 (AGGTCA nnnnn AGGTCA) motifs. No enrichment means the label is accessibility."},
+  "verdict": "park",
+  "verdict_reason": "The data is public and clean (verified peak BEDs on GEO GSE325427), but the project is a generic sequence-to-binding task on merged peaks from 2 donors, with no replicate-level data. TF CUT&Tag may largely track open chromatin, and Part C scores below threshold. The Meis2 knockout RNA-seq is 3 vs 3, and its top DEG is Xist, a sex confound, so it is not usable for ML."
+}

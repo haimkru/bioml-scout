@@ -1,0 +1,61 @@
+{
+  "paper_id": "nar2026-gkag769",
+  "title": "BASELINE: a CRISPR base editing platform for mammalian-scale single-cell lineage tracing.",
+  "doi": "10.1093/nar/gkag769",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE289815 (processed single-cell gene expression); SRA BioProject PRJNA1224774 (raw reads); supplement via Europe PMC PMC13434336",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened the 18.6 MB supplement (two Excel workbooks): 990 selected 20-nucleotide guide sequences with no measured editing value; 9,991- and 4,601-row candidate-target tables whose only numeric columns are FlashFry (a guide-design tool) off-target predictions; 1,139 rows of (edit pattern, read count, target) over exactly 50 targets; one 7 x 272 table of percent-edited per adenine position across 7 clone datasets (1,904 values, range 0-99.95); 22,280 rows of cell barcode lists with no label. Also listed the GEO FTP directory (GSE289815_RAW.tar = 838,328,320 bytes; inside it only 10x Genomics barcodes/features/matrix gene-expression files, 187-354 MB each) and read the full GEO series matrix metadata (2 samples, mouse KPCY pancreatic cancer cells, Cell Ranger v8.0.1, no lineage or clone annotation columns).",
+    "what_came_from_paper_text_only": "That the 1,000-target library screen measured editing for 651/1,000 targets with the best adenine base editor and 252 with the best cytosine editor (shown only in Supplementary Figure 1, not as a table); that 35,035 cells passed filtering and ~98% carried recoverable lineage information; that per-cell recorder sequences were produced by a custom pipeline adapted from scNanoGPS run on raw nanopore reads."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "No login needed: I fetched the supplement zip and the GEO FTP listing/series matrix directly. Raw lineage reads sit in SRA PRJNA1224774, which is open but is raw sequencing."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL, checked in the files. Neither candidate label is a column anywhere: measured editing efficiency for the 1,000 screened target sites appears only inside Supplementary Figure 1, and per-cell lineage/clone assignment is absent from GEO (only gene-expression matrices are deposited). Both would have to be rebuilt from raw nanopore and amplicon reads in SRA by running the authors' consensus-calling pipeline."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are present: 990 twenty-nucleotide guides plus the 1,000-member oligo pool in the supplement, so inputs would not need database lookups."},
+    "a4_units_stated": {"pass": true, "note": "Where numbers exist they are clearly percent-edited per adenine position (0-99.95) or raw read counts; units readable from headers."},
+    "a5_enough_rows": {"pass": false, "n_rows": 272, "note": "FAIL, counted in the files. The only measured-label tables are 272 adenine positions nested inside just 50 distinct target sequences, 1,139 allele-outcome rows over the same 50 targets, and 7 clone-level rows. Far under the ~1,500-row bar, and only 50 independent sequences to generalise over."},
+    "a6_fits_laptop": {"pass": true, "working_set": "19 MB supplement; ~0.8 GB if the GEO expression matrices were added", "note": "Everything retrievable fits a laptop; only the raw SRA reads would not, and those are excluded by project rules."},
+    "a7_counts_match_paper": {"pass": true, "note": "Counts I could check agree with the text: 990 selected guides, 50 targets, 272 adenines, 4,601 filtered candidates, 9,991 initial candidates."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL for the only large table. The 9,991-row candidate-target sheet carries nothing measured, just FlashFry/Cas-OFFinder predicted on- and off-target scores, so any label built from it is another tool's output (circular), and 'was this guide selected' is computed from those same feature columns (leakage by construction)."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "BE-Hive (Arbab et al., Cell 2020) - deep model of base editing efficiency and allele outcomes", "open_weights": true, "score_and_split": "Reported Pearson correlation roughly 0.5-0.9 for efficiency and outcome frequencies on held-out target sites from library screens; split details per editor in the paper (read in search abstracts, not re-run by me).", "authors_named_unsolved": "Transfer to editor variants and nuclease backbones outside the trained set; bystander-edit prediction in new sequence contexts.", "runnable_as_baseline": true},
+      {"name": "BE-DICT / BEDICT2.0 (Marquart et al., Nat Commun 2021; Genome Biology 2025) - attention model trained on 28,294 integrated target sequences", "open_weights": true, "score_and_split": "BEDICT2.0 reports R = 0.60-0.94 in cell lines and 0.62-0.81 in mouse liver for adenine base editing efficiency; web server at be-dict.org.", "authors_named_unsolved": "Models are trained per editor (ABEmax, ABE8e, CBE4max, Target-AID); new editors need new training data.", "runnable_as_baseline": true},
+      {"name": "DeepBE (Kim et al., Nat Biotechnol 2023) - predicts efficiency and outcomes for 63 base editors built from 9 Cas9 variants", "open_weights": true, "score_and_split": "Design guided by DeepBE gave 2.9- to 20-fold higher median editing than rational design; correlations reported per editor on held-out targets (from abstract).", "authors_named_unsolved": "Coverage of non-SpCas9 nucleases such as Cas12a remains thin.", "runnable_as_baseline": true},
+      {"name": "Cassiopeia (Jones et al., Genome Biology 2020) - tree reconstruction for CRISPR lineage recorders", "open_weights": true, "score_and_split": "Benchmarked on 34,557 human cells traced over ~15 generations plus simulations; outperformed classical phylogenetics on several metrics.", "authors_named_unsolved": "Missing/dropped-out recorder data and high per-site saturation degrade reconstruction accuracy.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer or DNABERT-2 (DNA language models) would suit 20-nucleotide target sequences", "freeze_and_head_viable": true, "hardware": "Laptop CPU would be enough for a few thousand short sequences", "licence": "Open weights on Hugging Face, but irrelevant here because no measured label table exists"},
+  "integration": {"partner_dataset": "Published base-editing library screens (BE-Hive, BE-DICT's 28,294-sequence library, DeepBE) joinable on the 20-nucleotide protospacer string", "join_key": "target protospacer sequence", "bigger_question_one_sentence": "Do sequence rules learned from SpCas9 adenine base editors transfer to Cas12a adenine base editors? - a good question, but this paper deposits no per-target Cas12a efficiency table to answer it with."},
+  "controls": {"positive_control": "The known Cas12a high-activity editing window (positions ~4-11 of the protospacer) should dominate any model of per-adenine editing rate; the paper itself reports 147 of 272 adenines fall in that window.", "negative_control": "Shuffle percent-edited values across adenine positions and confirm collapse; compare against a position-only baseline.", "external_validation": "BE-DICT and DeepBE training libraries would be the external set, but only if a Cas12a efficiency table existed to train on."},
+  "honest_claim_h3": "With what is actually deposited, the strongest honest claim would be 'sequence position within the Cas12a protospacer predicts percent editing across 272 adenines in one 50-target array measured in 7 clones of a single mouse pancreatic cancer line' - a within-array description, not a model that generalises to new target sequences.",
+  "plain_idea": {
+    "one_liner": "Use a short DNA target sequence to predict how efficiently a Cas12a adenine base editor rewrites each A in it.",
+    "train_on": "The project I considered would train on the paper's 1,000 synthetic 20-letter target sites, each screened against six base editors in human cells; verified counts available are only 990 guide sequences with no measured value attached, plus 272 adenine positions with measured percent-edited.",
+    "predict": "Output would be percent of sequencing reads showing an A-to-G change at each adenine. The true answer comes from amplicon or nanopore sequencing of edited cells, which exists only as raw reads in SRA BioProject PRJNA1224774 and as bar charts in a supplementary figure.",
+    "why_worthwhile": "Labs designing lineage-recording arrays or therapeutic edits with Cas12a editors currently have no sequence-activity predictor (existing ones are SpCas9-based), so even a mediocre predictor would save a screening round; instead this paper only shows that the needed measurements were never tabulated."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "BE-DICT trained on 28,294 integrated target sequences and DeepBE spans 63 editors; this paper offers at most 50 target sequences with measured per-adenine rates, and its 1,000-target screen results are not deposited as numbers."},
+    "confidence_score": {"answer": "no", "why": "Only 7 clone-level replicates of the same 272 positions exist, which is enough to estimate noise for those positions but not to calibrate predictions for unseen sequences."},
+    "models_beatable": {"answer": "partly", "why": "The existing predictors (2020-2025) are trained almost entirely on SpCas9-based editors, so a Cas12a-specific model would fill a real gap - but you need Cas12a efficiency labels, which this paper does not release."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: there is no feature/label table here to train on, so an existing model cannot even be benchmarked against ours on the same split."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Intended idea: predict per-adenine Cas12a adenine-base-editor efficiency from the 20-nucleotide target sequence, using the paper's 1,000-target library screen, and test whether rules learned from SpCas9 base editors (BE-Hive, BE-DICT, DeepBE) transfer to Cas12a. Blocked because the screen's measured efficiencies are not deposited in any table; only guide sequences, predicted off-target scores, and a 272-position summary are available.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.02, "needs_gpu": false, "peak_ram_gb": 1.0,
+             "embedding_hours": null, "cv_run_minutes": null,
+             "compute_note": "Everything retrievable is 19 MB of Excel plus ~0.8 GB of gene-expression matrices, trivially laptop-sized; I did not estimate training time because no label table exists. Rebuilding labels would require raw nanopore/amplicon reads from SRA, which project rules exclude.",
+             "cheapest_killing_check": "Open the two supplementary workbooks and look for a column of measured editing efficiency per screened target - there is none (990 guides, sequence only), which kills the project in ten minutes."},
+  "verdict": "reject",
+  "verdict_reason": "Verified in the files: the labels that matter (per-target editing efficiency, per-cell lineage) are not columns anywhere and would have to be rebuilt from raw sequencing (A2 fail); the measured tables that do exist cover only 272 adenines in 50 target sequences (A5 fail); and the one large sequence table carries only another tool's predicted scores (A8 fail). Excellent wet-lab technology, no model-ready table."
+}

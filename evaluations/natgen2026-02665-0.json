@@ -1,0 +1,48 @@
+{
+  "paper_id": "natgen2026-02665-0",
+  "title": "Single-cell spatial mapping of human kidney development implicates the microenvironment in guiding cell fate decisions.",
+  "doi": "10.1038/s41588-026-02665-0",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE278614",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO file lists for both series: GSE277893 = 5 fetal kidney scRNA-seq (single-cell RNA sequencing) samples as 10x barcodes/features/mtx files (486 MB tar); GSE278614 = 3 CosMx spatial h5ad files (792, 324, 261 MB; 1.3 GB tar) plus a summary file. Read the obs table of GSM8551264_HK3524_raw.h5ad by HTTP range requests (31 MB transferred): 118,197 cells x 995 genes, obs columns only Area, CenterX/Y_global_px, cell_ID, fov (69), gAge (single value 19), sample, tech; obsm and uns empty, so no cell-type, lineage, neighbourhood or trajectory labels. Zenodo 10.5281/zenodo.20529508 holds only a 12 MB code zip; the GitHub repo tree is scripts and notebooks only.",
+    "what_came_from_paper_text_only": "The >700,000 cell total (which must include integrated cells beyond these 8 deposited samples), the Xenium data (no Xenium series found in GEO), and that cell types were assigned by scANVI/Leiden clustering and marker-gene annotation of expression. Contents of the 5 scRNA-seq mtx files and the 2 larger CosMx h5ad files were not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: GEO GSE277893 and GSE278614 are public, no login; processed matrices and h5ad files download. Raw reads withheld for privacy, which does not matter here."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in the HK3524 h5ad: no cell-type, lineage-probability, niche or fate column exists. Every candidate label (cell type, fate, neighbourhood) would have to be rebuilt by re-running the authors' clustering and annotation pipeline from GitHub."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: count matrices and spatial coordinates are present in the files, gene symbols in var."},
+    "a4_units_stated": {"pass": true, "note": "Raw counts plus pixel coordinates; units implicit but standard for CosMx/10x."},
+    "a5_enough_rows": {"pass": false, "n_rows": 118197, "note": "118,197 cells in one CosMx sample (verified), but cells are not independent: there are only 5 scRNA-seq donors and 3 CosMx tissues in GEO, and the HK3524 file carries a single gestational age. Any donor- or tissue-level question has n = 3 to 8."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.8 GB of h5ad and mtx files", "note": "Sparse matrices of ~1,000 CosMx genes fit in 16 GB if loaded one sample at a time."},
+    "a7_counts_match_paper": {"pass": false, "note": "Paper says >700,000 cells and includes Xenium; GEO holds 8 samples and no Xenium series, so the deposited data are a subset and the paper's count cannot be reproduced from the files."},
+    "a8_label_provenance": {"pass": false, "note": "Cell types and fates in the paper come from clustering, scANVI (a semi-supervised neural label-transfer model) and CellRank (a trajectory model) applied to the same expression, so predicting them from expression is circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models); CosMx's ~1,000-gene panel covers only part of their vocabulary", "freeze_and_head_viable": null, "hardware": "CPU feasible for embeddings of ~100k cells, slow", "licence": "scGPT MIT; Geneformer Apache-2.0"},
+  "integration": {"partner_dataset": "Human Nephrogenesis Atlas (Flatiron) or the CELLxGENE kidney atlases", "join_key": "gene symbol", "bigger_question_one_sentence": "Could not be written without labels in the deposited files; a cross-atlas annotation transfer would just reproduce existing label-transfer work."},
+  "controls": {"positive_control": "Marker genes (SIX2 for nephron progenitors) should localise to the cortical edge in CosMx coordinates.", "negative_control": "Shuffle spatial coordinates within each field of view.", "external_validation": "None among the deposited files; would need another lab's fetal kidney spatial data."},
+  "honest_claim_h3": "At best: predicts a cell's annotated type or neighbourhood from its own and its neighbours' expression in 2 fetal and 1 further kidney section, where the annotation itself came from clustering the same expression.",
+  "plain_idea": {
+    "one_liner": "Use the gene activity of a cell's spatial neighbours in fetal kidney tissue to predict which developmental fate that cell adopts.",
+    "train_on": "Each cell's measured RNA counts for ~995 genes plus those of its neighbours in CosMx tissue sections; 118,197 cells in one verified sample, 3 tissue sections total.",
+    "predict": "The cell's fate or type, but no such label is deposited; it would come from the authors' clustering and trajectory software run on the same RNA counts, not from an independent measurement.",
+    "why_worthwhile": "Developmental biologists would learn which niche signals steer kidney progenitors, but here the model would mostly relearn the authors' clustering."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Niche-to-fate prediction on CosMx fetal kidney: graph model over spatial neighbours predicting cell type or lineage probability. Rejected because labels are absent from the deposited files and would be clustering/scANVI/CellRank outputs computed from the same expression.",
+  "effort": {"hours_to_feature_table": 24, "working_set_gb": 1.8, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from verified file sizes (h5ad 261-792 MB, mtx 56-134 MB each); feature-table hours assume re-running the authors' annotation pipeline. Nothing timed.", "cheapest_killing_check": "Done: read the h5ad obs columns; no cell-type or fate column, single gestational age, 3 spatial tissues."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A8: the deposited CosMx h5ad has only coordinates, field of view and a single gestational age, with no cell-type or fate labels, and the paper's labels are clustering/scANVI/CellRank outputs computed from the same expression. Only 5 scRNA-seq donors and 3 spatial tissues are in GEO (A5 at the donor level), and the >700,000-cell and Xenium data are not all deposited (A7)."
+}

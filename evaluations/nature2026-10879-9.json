@@ -1,0 +1,50 @@
+{
+  "paper_id": "nature2026-10879-9",
+  "title": "Stimulation modulates gene-linked cell assemblies in the human brain.",
+  "doi": "10.1038/s41586-026-10879-9",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE288939",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE288939 series record and its file listing: 12 files, i.e. RNA and ATAC (chromatin accessibility) count matrices for the ex vivo MEA (microelectrode array) arm and the in vivo arm (RNA matrices 325-336 MB gzipped, ATAC matrices 1.0-1.3 GB). I downloaded the barcode and feature files. MEA RNA has 50,067 nuclei from 6 donors x control/stimulated (12 samples, 2,724-6,912 nuclei each). In vivo RNA has 47,411 nuclei from 9 donors x control/stimulated (18 samples; Stim160 has only 425 nuclei). There are 19,987 genes, listed by symbol only. GEO deposits no cell-type annotation or per-cell metadata file.",
+    "what_came_from_paper_text_only": "From the bioRxiv preprint (PMC12262240), not the Nature version: 37 MEA stimulation experiments from 12 subjects, 50,067 QC-passed nuclei (this matches the barcode file), 7 major cell classes, and 19 cell assemblies. I found no public deposit of the MEA electrophysiology (spike) recordings in GEO, and the preprint text has no DANDI or Zenodo link."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked in files: GEO FTP serves the processed matrices openly, with no login."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: the only label is stimulated vs control, encoded in the barcode prefix (Stim/Ctrl + donor number). Cell types and the physiology readouts (firing rate, assembly strength) are not deposited, so any label linking genes to physiology would have to be reconstructed."},
+    "a3_inputs_present": {"pass": true, "note": "Checked in files: the gene-by-nucleus count matrices are present as MTX (a sparse matrix format), with gene symbols."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI (unique molecular identifier) counts in 10x Genomics format, a standard unit. I did not open the MTX itself."},
+    "a5_enough_rows": {"pass": false, "n_rows": 30, "note": "Checked in files: there are 97,478 nuclei, but the label is assigned per sample, not per cell. That leaves 30 samples from 15 donors (6 ex vivo + 9 in vivo, each a control/stimulated pair). Each label is identical to one sequencing library, so a per-cell classifier learns library batch. The honest unit is 15 donor pairs."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.7 GB gzipped RNA matrices; ATAC 2.3 GB gzipped optional", "note": "The RNA-only working set fits in 16 GB RAM as a sparse matrix. Sizes come from the HEAD and file listing."},
+    "a7_counts_match_paper": {"pass": true, "note": "The MEA barcode count of 50,067 exactly matches the preprint's 50,067 nuclei across 12 samples."},
+    "a8_label_provenance": {"pass": true, "note": "Stimulation status is an experimental condition, not a model output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "NEUROeSTIMator (Nature Communications 2023/24, deep learning neuronal-activation score from transcriptomes)", "open_weights": null, "score_and_split": "Not retrieved in detail; from the search snippet, it was validated against electrophysiology across species and brain regions.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Geneformer or scGPT (single-cell foundation models)", "freeze_and_head_viable": true, "hardware": "CPU feasible for ~100k cells, slow", "licence": "Apache-2.0 / MIT"},
+  "integration": {"partner_dataset": "Allen Brain Map human MTG (middle temporal gyrus) cell-type reference", "join_key": "gene symbol", "bigger_question_one_sentence": "Do activity-induced programs in human cortex match those learned from rodent or iPSC (induced pluripotent stem cell) neuron activation data?"},
+  "controls": {"positive_control": "Immediate early genes (FOS, NPAS4, EGR1) induced in excitatory neurons", "negative_control": "Shuffle condition labels within donor", "external_validation": "In vivo arm (9 donors) versus ex vivo arm (6 donors)"},
+  "honest_claim_h3": "With 15 donor pairs, a model could at most claim that a stimulation signature found in 6 ex vivo donors separates stimulated from control tissue in 9 in vivo donors, a small-sample transfer test rather than a trained predictor.",
+  "plain_idea": {
+    "one_liner": "Use single-nucleus gene expression from human cortex to predict whether the tissue was electrically stimulated.",
+    "train_on": "Gene counts for 97,478 nuclei, but only 30 tissue samples from 15 patients carry the stimulated/control label.",
+    "predict": "Stimulated versus unstimulated tissue, a condition the experimenters set in the lab or operating room.",
+    "why_worthwhile": "A transferable stimulation signature could help neuromodulation researchers read out stimulation effects from tissue, but 15 donors cannot support a trained model."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Leave-one-donor-out classification of stimulated vs control pseudobulk profiles per cell type, with transfer from the ex vivo to the in vivo arm. This is rejected because there are only 15 donor pairs, and the physiology labels that make the paper interesting are not deposited.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 0.7, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from file sizes. Cell-type annotation would need to be redone because GEO has no metadata file.", "cheapest_killing_check": "Count labelled units: 30 samples / 15 donors (done; this kills it)."},
+  "verdict": "reject",
+  "verdict_reason": "A5 in disguise: 97,478 nuclei, but the stimulation label is per sample, giving 30 samples from 15 donors, each confounded with its sequencing library. No cell-type annotations or electrophysiology readouts are deposited, so the gene-to-physiology link cannot be modelled."
+}

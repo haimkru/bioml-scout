@@ -1,0 +1,135 @@
+{
+  "paper_id": "nature2026-10786-z",
+  "title": "GPC3-specific dnTGFβRII-armoured CAR T cells for hepatocellular carcinoma.",
+  "doi": "10.1038/s41586-026-10786-z",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE332850",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "The Nature paper has no PubMed Central full text (paywalled; the PMC ID returned by NCBI links, PMC13575960, is a different Frontiers in Immunology review). I found no deposit under the paper's own DOI in Zenodo, GEO, SRA or dbGaP, but BioProject PRJNA1469175 / GEO series GSE332850 ('Xenium Spatial Transcriptomics Reveals the Mechanism of TGFBRIIDN-Armored GPC3-CAR-T Cells in Hepatocellular Carcinoma Patients', submitted May 2026 by the First Affiliated Hospital, Zhejiang University) matches the therapy. I downloaded and opened: GSE332850_RAW.tar (1.8 MB) containing 17 per-sample 'cell_annotation' CSVs, and two gene-count matrices in HDF5 format (cell_feature_matrix1.h5, 27 MB and cell_feature_matrix5.h5, 2.7 MB). Counted directly: 262,949 annotated cells across 17 tissue sections from 13 patients; columns are only cell_id, sample, group, cell_id_sample; group has exactly three values (pre 89,719 cells, Non_PR 137,927, PR 35,303); zero missing values; 262,940 unique cell_id (9 collisions, so cell_id is only unique within a section). The HDF5 panel has 10,029 probes of which 5,001 are real 'Gene Expression' features; I checked gene membership directly: GPC3 absent, PTPRC absent, ALB absent, AFP absent, while TGFB1, TGFBR2, CD3E, CD8A, FOXP3, MKI67 are present. cell_feature_matrix1.h5 holds 85,282 cells, far more than any single section, so the eight matrices are multi-section slides that are not keyed to the 17 sample labels in any documented file. I listed the whole FTP supplementary directory: the per-cell coordinate and transcript tables are Apache Parquet (a columnar table format) and the images are 271 MB–3.4 GB OME-TIFF each, totalling roughly 14 GB. I could not read the Parquet coordinate file because the pyarrow library is not installed locally.",
+    "what_came_from_paper_text_only": "Everything clinical: 36 patients, four dose levels, cytokine release syndrome in 34, objective response rate 44.4%, median best tumour reduction 41.6%, median progression-free survival 4.2 months, overall survival 14.2 months, and the claim that GPC3 antigen loss and raised TGFβ drive resistance. All of that comes from the abstract alone. I could not read the paper's Data Availability or Methods statement: nature.com redirects to a login page, and there is no open-access full text. So the link between this Nature paper and GSE332850 is a strong inference from the BioProject title and the trial's patient-ID style (C003, C005 ...), not a statement I read in the paper."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "GSE332850 downloads anonymously from the GEO FTP site with no login; I pulled the 1.8 MB annotation archive and two HDF5 matrices. The paper's own 36-patient clinical table is not deposited anywhere I could find, so only the spatial data is actually obtainable."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The response label is a literal column: 'group' in each cell_annotation CSV, with values pre / PR (partial response) / Non_PR. No construction needed. The cell-type label a spatial project would want is NOT present — the files called 'cell_annotation' contain no cell type column."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "The gene counts exist but cannot be joined to the labels from documented files: there are 8 HDF5 matrices (cfm1 alone has 85,282 cells) for 17 labelled sections, and no file maps slide to section. You would have to intersect random-looking cell IDs across 8 slides and 17 CSVs to rebuild the mapping yourself."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Values are int32 transcript counts per cell per gene in the standard 10x Genomics Xenium HDF5 layout (matrix/data, indices, indptr). Units are conventional rather than written down anywhere in the deposit."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 17,
+      "note": "KILLER. The labelled unit is the tissue section, not the cell. Verified in the files: 17 sections from 13 patients, of which only 9 are post-treatment and carry a response label (3 PR, 6 Non_PR); the other 8 are pre-treatment. 262,949 cells are not independent examples — they are repeated measurements inside 13 people. The checklist floor is ~400 labelled rows for classification."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.2 GB for annotations plus all eight count matrices; ~14 GB if the OME-TIFF images are included",
+      "note": "The count matrices total about 100 MB and the annotations 1.8 MB, so the modelling working set fits easily in 16 GB. Only the morphology images (271 MB–3.4 GB each) would not, and they are not needed."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Three disagreements I saw in the files. GEO and BioProject both say 18 samples from 13 patients, but only 17 cell_annotation CSVs exist (GSM9754322, 'C020-pre_2', has none). The file named GSM9754319_...C013-PR.csv.gz contains sample 'C015-1st' and GSM9754320_...C013-pre.csv.gz contains 'C015-pre', so the GEO sample titles and the in-file sample IDs name different patients. The Nature paper is paywalled, so I cannot check either count against it."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The group label is clinical RECIST-style response assessment (partial response versus not) recorded by the trial, i.e. a radiological measurement independent of the Xenium transcript counts. Not a model output and not computable from the features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "tcellMIL — attention-based multiple instance learning that predicts CAR T response from infusion-product single-cell RNA sequencing (Blood, 2025)",
+        "open_weights": null,
+        "score_and_split": "Trained on an atlas of axicabtagene ciloleucel infusion products from 64 patients with large B-cell lymphoma across three US institutions, predicting overall response at 3 months; I read the abstract listing only, not the numbers or split.",
+        "authors_named_unsolved": "Which cells inside the product actually drive response; they used in-silico perturbation to nominate TBX21 and FOXM1 as engineering targets.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "CART-GPT — a transformer fine-tuned on a curated atlas of 1.12 million CAR T single-cell profiles with clinical outcomes (bioRxiv preprint, 2025)",
+        "open_weights": null,
+        "score_and_split": "Reported area under the receiver operating characteristic curve of roughly 0.8 for both treatment response and neurotoxicity risk; split not stated in the material I retrieved.",
+        "authors_named_unsolved": "Extension beyond blood cancers; the atlas is dominated by B-cell malignancy products, not solid-tumour trials.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Single-cell foundation models for durable CAR T response (bioRxiv preprint, 2026)",
+        "open_weights": null,
+        "score_and_split": "Pre-infusion product composition stratified patients by duration of B-cell aplasia with leave-one-out cross-validated area under the curve 0.879; leave-one-patient-out on a small cohort.",
+        "authors_named_unsolved": "Imperfect cell-type annotation; the authors frame robustness to annotation error as the open issue.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (single-cell transcriptome foundation models); Nicheformer/CellPLM for spatial neighbourhoods",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-feasible for embedding ~263,000 cells over a 5,001-gene panel, but slow (likely overnight)",
+    "licence": "scGPT is MIT-licensed; Geneformer is Apache 2.0. Not a blocker. Moot here because the labelled sample size kills the project."
+  },
+  "integration": {
+    "partner_dataset": "GSE253352 — 'Interleukin-15-armored GPC3-CAR T cells for patients with solid cancers', 83 samples, a second GPC3 CAR T trial deposited in GEO; plus The Cancer Genome Atlas liver cancer cohort (TCGA-LIHC) for bulk hepatocellular carcinoma expression",
+    "join_key": "HGNC gene symbol (the Xenium panel stores plain gene symbols such as TGFB1, CD8A); no patient-level key exists across trials",
+    "bigger_question_one_sentence": "Does the tumour microenvironment state that precedes GPC3 CAR T failure look the same whether the cells are armoured against TGFβ or against exhaustion with interleukin-15 — i.e. is resistance about the armour or about the tumour? The join is only at gene level, so the answer would be a signature comparison, not a prediction, and with 9 labelled post-treatment sections here it is underpowered."
+  },
+  "controls": {
+    "positive_control": "The model should recover the textbook relationship that CD8A- and CD3E-positive cells cluster together and are spatially separated from proliferating MKI67-high tumour cells; both genes are confirmed present in the 5,001-gene panel. A second control: predict total transcript count per cell from the count vector, which must be near-perfect.",
+    "negative_control": "Shuffle the pre/PR/Non_PR label across the 9 post-treatment sections and confirm accuracy collapses to the 6-of-9 majority-class rate. With only 9 sections, shuffled labels will frequently beat the real ones by chance, which is itself the demonstration that the cohort is too small.",
+    "external_validation": "GSE253352 (interleukin-15-armoured GPC3 CAR T, 83 samples) is the nearest independent source, but it is a different armouring strategy, different assay and has no section-level PR/Non-PR column that I verified, so it is not a true held-out test set for this label."
+  },
+  "honest_claim_h3": "With 9 post-treatment tissue sections (3 partial response, 6 non-response) from at most 9 patients, any model here would be claiming 'the transcript composition of these particular nine biopsies separates into two groups', which is a description of nine samples and not a predictor of CAR T response in hepatocellular carcinoma.",
+  "plain_idea": {
+    "one_liner": "Use the gene activity map of a liver tumour biopsy to predict whether armoured CAR T therapy will shrink it.",
+    "train_on": "Each example would be one tumour biopsy section imaged with Xenium spatial transcriptomics, summarised as the mixture and spatial arrangement of its cells over a 5,001-gene panel. I counted 262,949 cells, but only 17 sections from 13 patients, of which 9 carry a post-treatment response label.",
+    "predict": "A yes/no on partial response versus non-response. The true answer comes from the trial's standard radiological tumour measurement (imaging of target lesion size), recorded in the deposit as the 'group' column with values pre / PR / Non_PR.",
+    "why_worthwhile": "Cell therapy groups running solid-tumour CAR T trials would use a pre-treatment biopsy readout to decide who to enrol, because today roughly half of patients get a toxic and expensive therapy that does not work. Even a negative result would tell them how many patients a spatial biomarker study needs."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The named CAR T response models were trained on 64 patients (tcellMIL) and an atlas of 1.12 million cells with outcomes (CART-GPT). This deposit has 13 patients and 9 labelled post-treatment sections, so it is an order of magnitude smaller in the unit that matters."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no technical replicates of the same section, and only one patient (C025) has more than one post-treatment biopsy, so there is nothing to estimate measurement noise from. Per-prediction confidence with 9 labelled examples would be meaningless."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The existing CAR T response models are all 2025–2026, use leave-one-patient-out splits on small cohorts, and none covers solid tumours or spatial data — so the solid-tumour spatial niche is genuinely open. But nothing here is large enough to occupy it."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The condition that fails is the most basic one: no existing model can be run as a baseline on this data, because none takes a 5,001-gene spatial panel from a solid tumour as input, and the response label here is measured on tumour tissue rather than on the infusion product the published models consume."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered: predict partial response versus non-response to GPC3-targeted, TGFβ-armoured CAR T therapy in hepatocellular carcinoma from the cellular composition and spatial neighbourhood structure of a tumour biopsy, using a frozen single-cell foundation model (scGPT or Geneformer) to embed each of 262,949 Xenium cells and an attention-based multiple-instance-learning head to pool cells into a per-section prediction, evaluated leave-one-patient-out. It dies on sample size: the bag label exists for 9 post-treatment sections. A salvageable smaller exercise would be unsupervised — describe which cell neighbourhoods accompany failure — but that is a figure, not an ML project.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 0.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 20,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed end-to-end. I did time the actual downloads and the pandas pass over all 17 annotation CSVs (seconds). The 12 hours is for the undocumented step: intersecting cell IDs across 8 multi-section HDF5 slides and 17 label CSVs to work out which slide region is which patient sample, which no file in the deposit tells you. The 20 embedding hours assumes ~263,000 cells through a frozen single-cell transformer at a few cells per second on CPU.",
+    "cheapest_killing_check": "Count the labelled units, not the cells: `zcat GSE332850_RAW.tar annotations | cut -f group` gives 17 sections, 13 patients, and only 9 post-treatment sections with a PR/Non-PR label. That one count, which takes five minutes, kills it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 decisively, and A3 and A7 as well. The only deposited data I could find for this trial is GEO series GSE332850, 262,949 Xenium spatial-transcriptomics cells — but the response label (pre / PR / Non_PR) attaches to the tissue section, and there are 17 sections from 13 patients, of which just 9 are post-treatment (3 partial response, 6 non-response). This is the scCT-DB trap exactly: millions of cells, a dozen patients. Three further problems make it worse. First, the eight gene-count matrices are multi-section slides (one holds 85,282 cells) with no documented mapping to the 17 labelled sections, so the features cannot be joined to the labels from anything the depositors provided (A3). Second, GEO says 18 samples but only 17 annotation files exist, and two files named for patient C013 contain data labelled C015 (A7). Third, GPC3 — the antigen whose loss the paper proposes as the resistance mechanism — is not among the 5,001 genes in the panel, nor are PTPRC, ALB or AFP, so the deposited data cannot even address the paper's own headline claim. The 36-patient clinical outcome table is not deposited anywhere I found, and the paper is paywalled so I could not read its Data Availability statement."
+}

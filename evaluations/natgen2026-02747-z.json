@@ -1,0 +1,196 @@
+{
+  "paper_id": "natgen2026-02747-z",
+  "title": "Genetic landscape of an in vivo protein interactome.",
+  "doi": "10.1038/s41588-026-02747-z",
+  "journal": "Nature Genetics",
+  "data_url": "https://github.com/ladyson1806/piQTL-SerohijosLab (MIT licence; archived at Zenodo DOI 10.5281/zenodo.21134506; raw barcode counts at GEO GSE246414)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I downloaded and parsed with pandas: the genotype matrix (12,054 SNPs x 357 strains, values in {-1,0,1}, 0% missing), the phenotype matrix (310 traits x 357 strains of log2-ratio interaction fitness, 0% missing, range -12.2 to +20.4 in the un-normalised delta file), the trait metadata (620 rows mapping each label to its protein pair / drug / methotrexate arm; 62 reporter labels = 61 protein pairs plus one no-interaction reference, 44 distinct proteins, 5 drugs), the SNP location table (12,054 rows with chromosome, position, reference and alternate allele), the final piQTL (protein-interaction quantitative trait locus) hit table (1,185 rows x 30 columns with SGD gene IDs and descriptions), replicate statistics (620 A-vs-B correlations, median 0.791), the bundled protein-abundance QTL table (6,476 associations, 923 proteins, 2,401 unique SNP indices all inside the same 1-12,054 marker space), and the GEO raw barcode-count tar (660 KB, 21 CSVs of 361 strains x 62 reporter columns of integer read counts). I verified the strain IDs join 357/357 between genotype and phenotype. I then ran real models: 5-fold held-out-strain ridge regression on 38 traits (median Pearson r = 0.24 on the raw trait, 0.006 on the interaction-specific residual), a shuffled-label negative control (r = -0.028), and the shared-component baseline (each trait correlates at median r = 0.755 with the average of traits from other reporter pairs). I read the authors' quantification script and README.",
+    "what_came_from_paper_text_only": "The Nature Genetics article itself is paywalled with no PubMed Central copy, so I never read its methods, discussion or supplementary tables. Everything about the biology (that trans-acting loci outnumber cis, that noncoding-RNA and 3'UTR variants have comparable effects, the drug mechanism-of-action claims) comes from the abstract and the bioRxiv preprint abstract only. I did not verify how the '_normalized_' phenotype file was rescaled (its median is 9.74 versus 1.67 for the un-normalised delta file), so I would use the un-normalised delta, which is in interpretable log2 units."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Opened in the files: public GitHub repository under the MIT licence, plus a Zenodo archive (DOI 10.5281/zenodo.21134506, 230 MB zip) and GEO GSE246414. No login, no application, every file I asked for downloaded."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is already a numeric cell: a 310-trait x 357-strain matrix of log2-ratio interaction fitness. Getting to a feature/label table is one transpose, one melt and one merge on strain ID; I did it and 357/357 strains matched."},
+    "a3_inputs_present": {"pass": true, "note": "The full genotype matrix is in the repo as integers (12,054 SNPs x 357 strains, no missing values). No accession lookups needed. Protein identities are SGD gene names, and sequences for the 44 proteins are one bulk UniProt/SGD fetch if wanted."},
+    "a4_units_stated": {"pass": true, "note": "Units are a log2 ratio of reads-per-million barcode frequency relative to time zero, averaged over two replicates, minus a reference strain, then methotrexate minus no-methotrexate. Stated in column names and in the header docstring of 02b_ppi_quantification.py, which I read. Caveat: the separate '_normalized_' file is on an unexplained shifted scale, so use the un-normalised delta."},
+    "a5_enough_rows": {"pass": true, "n_rows": 110670, "note": "357 strains x 310 trait columns = 110,670 measured values, zero missing. The honest independent units are smaller: 357 strains and 62 reporter pairs. Comfortably over the 1,500-row bar, but the 357-strain limit is the real statistical constraint and I flag it throughout."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~17 MB (genotype as 32-bit floats) + ~2 MB phenotypes", "note": "Verified by loading everything at once; peak memory stayed around 1-2 GB. I timed 60 five-fold ridge cross-validations at 23 seconds, so a full sweep of all 310 traits is about 4 minutes on CPU. No GPU anywhere in the baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Abstract says ~12,000 SNPs and 61 reporter interactions; files give exactly 12,054 SNPs and 61 pairs plus one no-interaction reference. One small, explainable gap: GEO raw count tables have 361 strain rows while the genotype and phenotype matrices have 357, so 4 sequenced strains lack genotypes. The paywalled full text could not be checked."},
+    "a8_label_provenance": {"pass": true, "note": "The label traces to a physical measurement: integer sequencing read counts per barcoded strain (I opened them in GEO) converted to growth log-ratios by the posted pipeline. It is not another model's output, and it is computed entirely from sequencing data with no input from the genotype features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "Two CSVs, genotype and phenotype; strain IDs matched 357/357 exactly in a single merge I ran."},
+    "B2": {"score": 2, "why": "Plain comma-separated files; pandas parsed every one first try, no encoding or delimiter fixes."},
+    "B3": {"score": 2, "why": "One assay, one pipeline, already replicate-averaged and reference-subtracted by the authors; verified in files."},
+    "B4": {"score": 2, "why": "Zero missing values in both the 12,054x357 genotype and 310x357 phenotype matrices; no censored or qualitative entries."},
+    "B5": {"score": 2, "why": "Strain IDs and trait labels all unique; no duplicate rows or columns found when loading."},
+    "B6": {"score": 2, "why": "README table, a 620-row metadata CSV mapping each trait to pair/drug/arm, and a documented pipeline script I read."},
+    "C1": {"score": 2, "why": "Shared-versus-interaction-specific genetic variance is informative either way; my 20-minute probe already gave a usable answer."},
+    "C2": {"score": 1, "why": "Open yeast genotype-to-phenotype pipelines exist and transfer directly, though none have been pointed at interaction traits."},
+    "C3": {"score": 2, "why": "Nobody has done out-of-sample prediction on interaction QTL data; searches returned only marginal association analyses."},
+    "C4": {"score": 2, "why": "Current method is a barcoded growth-selection screen across 357 strains in 5 drugs: months of lab and sequencing work."},
+    "C5": {"score": 2, "why": "Four baselines, three of which I computed myself: trait mean, shared component 0.755, ridge 0.242, ridge-on-residual 0.006."},
+    "D1": {"score": 2, "why": "ESM-2 and HyenaDNA both open-weight, but they cover only the auxiliary protein and DNA-context inputs, not the genotype matrix."},
+    "D2": {"score": 2, "why": "44 protein sequences embed in minutes on CPU; 12,054 one-kilobase DNA windows is a one-time cacheable job."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT, HyenaDNA Apache-2.0, the dataset repository and Zenodo archive both MIT; no restriction on use."},
+    "E1": {"ok": true, "why": "Hold out whole strains (357) or whole reporter pairs (62); both grouping columns are present in the files I opened."},
+    "E2": {"ok": true, "why": "357 strains, 62 reporter pairs, 5 drug conditions: far more than the five groups the checklist asks for."},
+    "E3": {"ok": true, "why": "Per-trait mean and the across-reporter shared component; I computed the latter at median r = 0.755."},
+    "E4": {"ok": true, "why": "lineage_tracking_stats.csv gives 620 replicate A-vs-B correlations, median 0.791, a real per-trait noise ceiling."},
+    "E5": {"ok": true, "why": "Reproduce the authors' association betas from posted matrices; plus the ERG11-fluconazole link, whose drug target is Erg11p."},
+    "E6": {"ok": true, "why": "Already run: shuffling labels dropped held-out correlation from 0.242 to -0.028, exactly as it should."},
+    "E7": {"ok": true, "why": "Bundled protein-abundance QTL table (6,476 associations, 923 proteins) on the same SNP index space; I opened it."},
+    "E8": {"ok": true, "why": "The 1,185 published piQTL betas and p-values are posted per trait and recomputable from the posted genotype and phenotype matrices."},
+    "G1": {"score": 2, "why": "SGD systematic ORF names, SGDIDs, chromosome/position on genome build R64-3-1, and reference/alternate alleles, all seen in the hit table."},
+    "G2": {"score": 2, "why": "Named partners already joinable: the bundled yeast protein-abundance and expression QTL tables, plus BioGRID/STRING on ORF name."},
+    "G3": {"score": 2, "why": "SNP index to SNP index is one-to-one (all 6,476 protein-abundance QTL indices fall inside 1-12,054); ORF name to network node is one-to-one."},
+    "G4": {"score": 2, "why": "Combined question: does network distance predict which interaction a locus perturbs, beyond its effect on protein abundance?"},
+    "H1": {"score": 2, "why": "Every strain x reporter x drug cell is measured with no gaps, and a no-interaction reporter and no-drug arm are built in."},
+    "H2": {"score": 1, "why": "One lab, one assay, one species, one cross; breadth comes only from 5 drugs and 357 genetic backgrounds."},
+    "H3": {"score": 2, "why": "Honest claim written as one sentence below, and my own probe already quantifies the main caveat in it."},
+    "H4": {"score": 1, "why": "Repository documents the pipeline well, but the bias in choosing 44 detectable proteins is in the paywalled text I could not read."},
+    "I1": {"score": 2, "why": "Serohijos and Michnick labs (Montreal) who made it; Kruglyak and Albert labs doing yeast expression and protein-abundance QTL."},
+    "I2": {"score": 2, "why": "A null result tells the next molecular-trait screen it needs thousands of strains, not hundreds; that redirects real experiments."},
+    "I3": {"score": 2, "why": "Metric is held-out-strain correlation on the interaction-specific residual, relative to the measured replicate ceiling; that is the decision."},
+    "I4": {"score": 1, "why": "The dumbest baseline (mean of other reporters) already reaches r = 0.755, and ridge adds ~0 on the residual."},
+    "J1": {"score": 2, "why": "Multi-task learning, grouped splits by strain and by reporter, noise-ceiling-relative scoring, frozen-backbone embeddings."},
+    "J2": {"score": 2, "why": "Yeast genetics with textbook positive controls, the authors' own numbers to reproduce, and SGD annotations to sanity-check hits."},
+    "J3": {"score": 2, "why": "The cleaned 357x12,054 plus 357x310 benchmark table, the variance decomposition, and the replication audit are each shareable alone."},
+    "J4": {"score": 1, "why": "I propose three to four weeks, but no budget is written down anywhere yet."},
+    "J5": {"score": 1, "why": "A specific kill condition exists below, but it has not been committed to NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The paper's own MatrixEQTL scan (a single-SNP linear association test, not a predictive model)",
+        "open_weights": true,
+        "score_and_split": "1,185 lead associations reported at false-discovery-rate thresholds (I counted the rows), evaluated entirely in-sample on all 357 strains with no held-out prediction of any kind.",
+        "authors_named_unsolved": "Unknown to me: the Nature Genetics discussion is paywalled and has no PubMed Central copy, so I could not read what the authors called unsolved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Grinberg, King et al., 'An evaluation of machine-learning for predicting phenotype' (Machine Learning, 2020)",
+        "open_weights": true,
+        "score_and_split": "From the search result only, which I did not open: compares ridge, elastic net, LASSO, random forest, gradient boosting and support vector machines against classical statistical genetics on 1,008 BY x RM yeast segregants. I did not retrieve its numbers, so I quote none.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "'Predicting natural variation in the yeast phenotypic landscape with machine learning' (Molecular Systems Biology, 2025)",
+        "open_weights": null,
+        "score_and_split": "From the search result only, which I did not open: 223 traits across 1,011 genome-sequenced S. cerevisiae strains, with gradient boosting reported as the best performer. No numbers retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model) for the 44 yeast proteins; HyenaDNA or Nucleotide Transformer (DNA language models) for one-kilobase sequence windows around each of the 12,054 SNPs",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM. 44 protein embeddings take minutes; 12,054 DNA windows are a one-time job of roughly two to three hours, cached to disk and reused.",
+    "licence": "ESM-2 MIT, HyenaDNA Apache-2.0, dataset MIT. Nothing blocks commercial use."
+  },
+  "integration": {
+    "partner_dataset": "The published yeast protein-abundance QTL table already bundled in this repository (6,476 associations over 923 proteins and 2,401 unique SNPs, every SNP index inside the same 1-12,054 marker space, which I verified by opening the file), plus the BioGRID or STRING yeast protein-interaction network.",
+    "join_key": "SNP index and genomic coordinate on genome build R64-3-1 for the QTL side; SGD systematic ORF name (for example YOL067C) for the network side.",
+    "bigger_question_one_sentence": "Does a gene's distance in the protein-interaction network from a reporter pair predict whether its variants perturb that pair, better than that gene's known effect on protein abundance does?"
+  },
+  "controls": {
+    "positive_control": "Recompute the authors' association statistics for the 1,185 reported hits from the posted genotype and phenotype matrices and match their per-trait p-value files; separately, check that reporters containing ERG11 respond most strongly to fluconazole, whose drug target is the Erg11 protein.",
+    "negative_control": "Label shuffling, which I already ran: held-out correlation fell from 0.242 to -0.028. Plus a shared-component-only predictor, which caps how much apparent accuracy can come from non-specific strain effects.",
+    "external_validation": "The bundled protein-abundance QTL and expression QTL tables on the same SNP index space, and independent re-derivation of the phenotypes from the GEO GSE246414 raw barcode counts."
+  },
+  "honest_claim_h3": "Within one yeast cross of 357 inbred strains and 44 proteins that were chosen because they gave a detectable interaction signal, a model can predict a measurable share of strain-to-strain variation in how strongly two proteins stick together, but most of that share is a general strain-fitness effect shared across all 61 interactions rather than anything specific to the interaction being predicted.",
+  "plain_idea": {
+    "one_liner": "Use a yeast strain's genome to predict how strongly two particular proteins stick together inside its living cells.",
+    "train_on": "For each example: the strain's genotype at 12,054 variable genome positions (coded -1/0/1), plus which protein pair and which drug. There are 357 strains x 310 protein-pair-by-drug combinations = 110,670 measurements, with zero missing values, all verified by opening the files.",
+    "predict": "How strongly the two proteins interact, read out as a log2 growth ratio from a barcoded assay in which a cell only grows under drug selection if its two tagged proteins touch. The true answer comes from counting DNA barcodes by sequencing (raw integer counts are in GEO GSE246414, which I opened).",
+    "why_worthwhile": "It tells anyone planning a molecular-trait genetic screen whether interaction-specific genetic effects are learnable at a few hundred strains, and whether a protein's position in the cell's interaction network predicts which genetic variants will perturb it. Both answers are useful; neither requires the model to work."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Our 357 strains are fewer than the 1,008-1,011 strains used by the published yeast genotype-to-phenotype machine-learning studies, so we are smaller in that dimension. But protein-interaction strength as a quantitative trait, measured in living cells across 310 genotype-by-drug combinations with no missing values, is a trait class nobody has modelled at all."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The data clearly supports calibration: 620 replicate A-versus-B correlations (median 0.791, interquartile range 0.685-0.889) give a measured reliability for every single trait, so each prediction can be reported against its own ceiling. I did not open the existing yeast papers to confirm they omit this, so I cannot claim they lack it."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "There is no head-to-head: the existing yeast models were fitted to growth traits, not interaction traits. The relevant baseline is my own, measured here: ridge regression over 12,054 SNPs on held-out strains gives median Pearson r = 0.242 on the raw trait and 0.006 on the interaction-specific residual. The first is easy to match, the second may be unbeatable."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The partner protein-abundance and expression QTL data were produced in different experiments measuring a different quantity (protein or transcript level, not interaction strength), so condition three fails. Adding them could just as easily add noise as signal."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "The exact label (interaction strength across many genotypes) exists only in this dataset. The same growth-selection interaction readout exists for yeast genome-wide at single-genotype level in the in-vivo yeast interactome map published in Science (returned by my search; I did not open it). Binary and scored yeast interactions are in BioGRID and STRING (known resources). The nearest public quantitative-genetics labels are the yeast protein-abundance and expression QTL tables bundled in this very repository, which I opened: 6,476 protein-abundance associations over 923 proteins.",
+    "approx_items": null,
+    "join_key": "SGD systematic ORF name (for example YOL067C) for proteins and interactions; SNP index or genomic coordinate on build R64-3-1 for loci.",
+    "why": "Existing resources give an outside check on whether the loci we find also move protein abundance, but they cannot supply extra training examples of the actual label, so the model is limited to the 357 strains in this one panel."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The big one, which I measured: a shared strain effect that is not specific to any interaction. Every trait correlates at median r = 0.755 with the average of traits from other reporter pairs, so a model can look good without learning anything about the interaction it is predicting.",
+      "The same strain appears in all 310 traits, so splitting rows at random would put a strain's genotype in both training and test sets.",
+      "Replicates A and B were already averaged by the authors before the posted phenotypes, so you cannot hold out a replicate; the only clean biological split is by strain.",
+      "Neighbouring SNPs are in strong linkage disequilibrium (the repository defines blocks at thresholds of 0.5 and 0.75), so holding out individual SNPs is meaningless; splits must be by strain or by whole locus block.",
+      "If the paper's 1,185 lead loci are used as features, they were selected using all 357 strains, so reusing them without reselecting inside each training fold leaks the test strains' information (classic winner's curse)."
+    ],
+    "split": "Five-fold grouped on the strain ID column, which is present in both matrices and which I verified matches 357/357; all 310 traits for a held-out strain stay together. Second, independent axis: leave-one-reporter-pair-out over the 62 reporter labels listed in all_PPI_logratio_metadata.csv. Any SNP selection or linkage-disequilibrium clumping is redone inside the training fold only.",
+    "checks": [
+      "Shuffle the labels and confirm collapse to the dummy. Already done: held-out correlation went from 0.242 to -0.028.",
+      "Report every result against the shared-component-only predictor (predict a trait from the mean of traits belonging to other reporter pairs), not just against the trait mean.",
+      "Permute labels within strain rather than globally, to confirm the grouped cross-validation is really grouping.",
+      "Measure genotype similarity between each held-out strain and its nearest training strain; this is a recombinant inbred panel, so relatedness is real and must be quantified."
+    ],
+    "verdict": "Manageable, but the shared strain-fitness component is a serious trap that I have already caught in action: it alone explains almost everything ridge regression achieves here, so every reported number must be on the interaction-specific residual or it means nothing."
+  },
+  "success_criteria": {
+    "metric": "Out-of-sample Pearson correlation per trait on the interaction-specific residual (the trait minus the shared across-reporter component), with whole strains held out, expressed as a fraction of that trait's own replicate-reproducibility ceiling. This matches the decision a geneticist faces: is there interaction-specific genetic signal worth running a bigger screen for?",
+    "baselines": "All measured by me on this data: per-trait mean (correlation 0 by construction); shared-component predictor, median r = 0.755 on the raw trait; genome-wide ridge on the raw trait, median r = 0.242 (interquartile range 0.159-0.324, 30 random traits); genome-wide ridge on the interaction-specific residual, median r = 0.006 (interquartile range -0.032 to 0.045). The last is the number to beat. Published comparison numbers exist only for different yeast traits, so none is directly applicable.",
+    "success": "Median held-out-strain Pearson r of at least 0.15 on the interaction-specific residual across the 310 traits, against the ridge baseline of 0.006 that I measured; and at least 30% of the 1,185 published piQTLs showing a same-sign effect in held-out strains.",
+    "noise_ceiling": 0.791,
+    "kill": "If restricting the model to the paper's own 1,185 lead loci still leaves median held-out-strain r at or below 0.05 on the interaction-specific residual after two weeks, stop modelling and write up the negative result."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Cell Systems",
+      "why": "Publishes biology-first modelling of networks; it would take a clear positive result showing that a protein's position in the interaction network predicts which genetic variants perturb it, beating a genotype-only model on held-out strains."
+    },
+    "realistic": {
+      "journal": "PLOS Genetics",
+      "why": "Publishes careful quantitative-genetics re-analyses; the likely result, a variance decomposition showing interaction-strength genetics is mostly a shared polygenic background plus an honest out-of-sample audit of the 1,185 published loci, fits squarely there."
+    },
+    "fallback": {
+      "journal": "G3: Genes|Genomes|Genetics (with a bioRxiv preprint)",
+      "why": "Publishes yeast quantitative-genetics results including negative ones; even 'the published interaction QTLs do not replicate in held-out strains, and here is the cleaned benchmark table' is a complete paper there."
+    }
+  },
+  "pitch": {
+    "headline": "357 yeast genomes, 12,054 variants, 310 interaction-strength traits, zero missing values, MIT-licensed, and nobody has ever fitted a predictive model to it.",
+    "what_makes_the_data_unusual": "Protein-interaction strength measured inside living cells for every combination of 357 genotypes, 61 interactions and 5 drugs, with no gaps, and 620 replicate correlations (median 0.791) giving each trait its own noise ceiling. All verified by opening the files.",
+    "the_win": "Show interaction-specific genetic signal is predictable in held-out strains above the ridge baseline I measured (median r = 0.006 on the residual, versus 0.242 on the raw trait), or prove it is not and bound what interaction QTL mapping can claim.",
+    "even_if_it_fails": "We learn that the 1,185 published interaction loci do not predict out of sample and that this trait's genetics is a shared polygenic background, which tells the next screen it needs thousands of strains, not hundreds.",
+    "who_wants_it": "The Serohijos and Michnick labs who produced it, the Kruglyak and Albert labs mapping yeast expression and protein-abundance QTL, and anyone designing the next molecular-trait QTL screen."
+  },
+  "ml_idea": "Multi-task genomic prediction of protein-interaction strength. Input per example: a strain's 12,054-SNP genotype vector, plus an embedding of the reporter pair (ESM-2 embeddings of the two yeast proteins, or a learned reporter factor) and a drug indicator. Output: the log2-ratio interaction fitness. Train a shared-trunk multi-task model across all 310 traits and compare it to per-trait ridge, with two evaluation axes: held-out strains (5-fold grouped on strain ID) and leave-one-reporter-pair-out. The central measurement is a decomposition: how much held-out accuracy is a shared strain effect common to all reporters, and how much is specific to the interaction being predicted. A second, cheaper arm audits the paper's own output: do the 1,185 published interaction loci replicate in held-out strains once selection is redone inside the training fold? Optional enrichment: features describing the network distance from each candidate locus's gene to the reporter pair in BioGRID or STRING, which turns the paper's qualitative network-proximity claim into a testable predictive feature.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 3,
+    "cv_run_minutes": 4,
+    "compute_note": "Timed on this laptop, not estimated: 60 five-fold ridge cross-validations over 357 strains by 12,054 SNPs took 23 seconds, so all 310 traits twice is about 4 minutes. Genotype matrix is 10.5 MB on disk and 17 MB as 32-bit floats; peak memory stayed around 1-2 GB with everything loaded. The 3-hour embedding figure is an estimate (12,054 one-kilobase DNA windows through a small DNA language model on CPU); the 44 ESM-2 protein embeddings are minutes.",
+    "cheapest_killing_check": "Restrict the features to the paper's own 1,185 lead loci, reselecting them inside each training fold, and test held-out-strain prediction of the interaction-specific residual. My genome-wide ridge already gives median r = 0.006 there; if the targeted version also stays near zero, there is no interaction-specific signal to model and the project becomes a short negative-result note."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "Everything in Part A passes on files I actually opened, and the data is as clean as anything I have scored: two CSVs, a perfect 357/357 strain join, zero missing values, log2 units documented in the authors' own script, a measured replicate noise ceiling (median 0.791), an MIT licence, and a 4-minute full cross-validation. Parts B through J are strong. The one thing that stops this being an immediate 'do it' is a number I measured rather than read: each trait correlates at median r = 0.755 with the average of the other reporter pairs' traits, and once that shared strain effect is removed, genome-wide ridge on held-out strains predicts the interaction-specific residual at median r = 0.006 (versus 0.242 on the raw trait, and -0.028 under shuffled labels). That may be a power problem rather than an absence of signal, since the published effects are small and n = 357 is modest, which is exactly why the targeted check comes first: use the paper's own 1,185 lead loci, reselected inside each training fold, and see whether any interaction-specific signal survives. If it does, this is an excellent multi-task modelling project on data nobody has modelled. If it does not, the honest negative result, that published interaction QTLs do not replicate out of sample and the genetics of protein interactions is mostly a shared background, is itself publishable, so the project cannot produce a useless answer either way."
+}

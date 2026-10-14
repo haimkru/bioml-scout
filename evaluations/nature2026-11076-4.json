@@ -1,0 +1,104 @@
+{
+  "paper_id": "nature2026-11076-4",
+  "title": "γδ T cell receptor dependencies define a unique immunosurveillance modality.",
+  "doi": "10.1038/s41586-026-11076-4",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE277903 (mouse RNA-seq), GSE277902 (mouse ATAC-seq), GSE297713 (human RNA-seq)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed every processed file in all three GEO (Gene Expression Omnibus) series: three mouse RNA-seq count tables (45,706 gene rows each; 6 epidermis + 6 dermis + 7 gut = 19 sample columns, RSEM expected counts, Ensembl mouse gene IDs), two ATAC-seq (chromatin accessibility) differential tables (epidermis 34,309 peaks, gut 26,630 peaks; columns logFC, logCPM, LR, PValue, FDR, Geneid, Chr, Start, End, median_WT_counts, median_HET_counts), and the human table (24,647 genes x 4 columns: WT_Rep1, KO_Rep1, WT_Rep2, KO_Rep2). Also read all 13 ATAC sample titles (skin: 2 WT + 3 HET; gut: 3 WT + 5 HET), the GEO sample-level genotype/tissue annotations, and the open Research Square preprint (rs-6803702) methods, which state GRCm38/mm10, Ensembl 95, nf-core pipelines, DESeq2 1.46.0, edgeR likelihood-ratio test and HOMER motif analysis. Total download ~6.6 MB compressed.",
+    "what_came_from_paper_text_only": "The published Nature article is paywalled with no PubMed Central copy, so figure-level sample numbers and any statement of effect sizes come from the author preprint and the GEO design statements, not the final paper. Supplementary Table 1 (proteomics) lists only 4 proteins and was read from the preprint's Word file, not from a repository deposit."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "All three GEO series are public with no login: I downloaded every processed supplementary file over plain HTTPS from the NCBI FTP mirror."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Mixed but passable: the ATAC-seq tables already contain the outcome as a column (logFC and FDR per peak), while for RNA-seq only raw RSEM counts are posted, so a knockout-versus-wild-type fold change would have to be recomputed with DESeq2 from one file (a single standard step, not a cross-source construction). Genotype labels are in GEO sample metadata, not in the count table headers, so one small join is needed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Gene identifiers (Ensembl) and peak coordinates (chromosome, start, end) are present; DNA sequence for a sequence model would come from one local mm10 genome FASTA, which is a single download rather than thousands of lookups."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are consistent but only implied: RSEM expected counts (non-integer values present, e.g. 146.35), log2 fold change and counts-per-million for accessibility, variance-stabilised values for the human table. The genome build (GRCm38/mm10) appears in the preprint methods, not in the coordinate file itself."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 36,
+      "note": "FAIL. The labelled unit is the mouse or the cell sample, and there are only 36 in total: 19 mouse RNA-seq samples (3-4 per genotype per tissue), 13 mouse ATAC-seq samples (skin 2 wild-type vs 3 knockout; gut 3 vs 5) and 4 human samples from a single donor-derived cell line. That is far under the ~400 needed even for classification. The tens of thousands of gene and peak rows are not independent examples: they are five pairwise wild-type-versus-knockout contrasts, so this repeats the failure mode recorded for the scCT-DB candidate (many rows, few true units)."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~6.6 MB compressed / ~35 MB uncompressed for all processed tables; ~3 GB if an mm10 genome FASTA were added",
+      "note": "Trivially laptop-sized; only the raw ATAC bigWig and RAW.tar files are larger and are not needed."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Internally consistent: GEO states 19 / 13 / 4 samples and the files contain exactly 19 / 13 / 4 sample columns or titles. I could not cross-check against the final Nature figures because the article is paywalled with no PubMed Central copy. One naming inconsistency: RNA-seq calls the deleted group 'TCR KO' while ATAC calls it 'HET'."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels trace to physical measurements (Illumina RNA-seq read counts and ATAC-seq fragment counts from sorted cells), not to another model's output, and they are not computed from the proposed features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "PreGame (machine-learning classifier of tumour-reactive γδ T cells from single-cell CITE-seq data, reported in Nature 2026, doi 10.1038/s41586-026-11055-9)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; I saw only a search-result summary, not the paper's evaluation.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "AlphaGenome or ChromBPNet-style DNA sequence models would be the natural fit for a peak-level accessibility task; ESM-2 and single-cell backbones are irrelevant here",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU would suffice for the tiny tables, but no backbone helps when there are only two chromatin contrasts to learn from",
+    "licence": "GEO data are unrestricted; AlphaGenome weights are non-commercial"
+  },
+  "integration": {
+    "partner_dataset": "ImmGen (mouse immune cell expression atlas) or the Human Protein Atlas, joinable on Ensembl gene ID; mouse ENCODE ATAC data joinable on mm10 coordinates",
+    "join_key": "Ensembl mouse gene ID (present in the RNA-seq tables); mm10 chromosome/start/end (present in the ATAC tables)",
+    "bigger_question_one_sentence": "Do the genes that depend on the γδ T cell receptor overlap the genes that separate tissue-resident γδ T cells from innate lymphoid cells across the ImmGen atlas? — a real question, but one answered by enrichment statistics on five contrasts, not by a trained model."
+  },
+  "controls": {
+    "positive_control": "The deleted receptor genes themselves (Trgc1, Trdc, and in human TRDV1) must come out as the strongest down-regulated features; the proteomics table confirms TRGC1 and TRDC drop (log2 fold change -1.47 and -0.81).",
+    "negative_control": "Permute the genotype labels within tissue; with 3 versus 3 mice almost any apparent signal survives weakly, which is itself the problem.",
+    "external_validation": "None found: no second dataset exists in which the γδ T cell receptor is acutely deleted in tissue-resident γδ T cells, and the human arm is 2 versus 2 samples from one parental cell line."
+  },
+  "honest_claim_h3": "Any model here could only claim 'in male C57BL/6 mice from one institute, these genes and peaks moved after tamoxifen-induced receptor deletion in 3-5 animals per group' — a description of five differential tests, not a predictor that generalises to a new animal, tissue or species.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around each accessible chromatin region to predict whether that region loses accessibility when the γδ T cell receptor is deleted.",
+    "train_on": "Regions of open chromatin measured by ATAC-seq in sorted mouse skin and gut γδ T cells: 34,309 epidermis peaks and 26,630 gut peaks, each with coordinates and a measured log2 fold change, but derived from only 13 animals in two wild-type-versus-knockout contrasts.",
+    "predict": "Direction and size of the accessibility change after receptor deletion. The true answer comes from ATAC-seq fragment counts in sorted cells, normalised with edgeR and tested with a likelihood-ratio test by the authors.",
+    "why_worthwhile": "Immunologists designing γδ T cell therapies want to know which regulatory elements the receptor keeps open; in practice the authors already answered this with standard motif-enrichment software, so a model would mostly re-derive their result."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: (a) classify wild-type versus receptor-knockout samples from expression — only 19 mouse plus 4 human samples; (b) predict each gene's receptor-dependence from promoter sequence — the label is three noisy contrasts with 3-4 mice per group; (c) predict differential chromatin accessibility from DNA sequence across 60,939 peaks — looks like enough rows, but all rows come from two contrasts in one mouse strain, there is no second dataset to validate on, and the authors already ran HOMER motif enrichment on exactly these peaks, which is the cheap non-ML answer to the same question.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.04,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated from the actual downloads: all processed tables total ~6.6 MB compressed and parse in seconds with pandas on this laptop; no modelling was attempted because the sample count rules the project out.",
+    "cheapest_killing_check": "Count samples per genotype per tissue in the GEO metadata — 19 mouse RNA-seq, 13 mouse ATAC-seq, 4 human — which takes five minutes and kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A5. This is a well-executed small-n mouse immunology experiment: 19 bulk RNA-seq samples, 13 ATAC-seq samples and 4 human samples, amounting to five wild-type-versus-knockout contrasts from one lab, one mouse strain and male animals only. The 60,939 chromatin peaks and ~45,000 genes look like plenty of rows but are not independent examples; the honest unit is the contrast. There is no second dataset in which the γδ T cell receptor is acutely deleted, so there is nothing to validate against, and the authors already ran the standard motif-enrichment analysis that any sequence model here would be re-deriving. The data are clean, open and well documented — they are simply a differential-expression experiment, not a training set."
+}

@@ -1,0 +1,99 @@
+{
+  "paper_id": "cell2026-06-033",
+  "title": "Robust regulatory interplay of enhancers, facilitators, and promoters in a native chromatin context.",
+  "doi": "10.1016/j.cell.2026.06.033",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE299355 (processed table); companion raw series GSE299351, GSE299353, GSE299354",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the only processed data file, GSE299355_barcode_counts_across_bins.xlsx (55 KB). It holds exactly 83 unique engineered elements, 328 unique DNA barcodes (median 4 barcodes per element), read counts in 8 FlowFISH expression bins plus an unsorted control, for 2 biological replicates (4.81M and 5.18M total reads). Also listed the supplementary directories of the other three GEO (Gene Expression Omnibus) series: each contains only a RAW.tar of raw sequencing reads (16 GB for ATAC-seq, 2.3 GB for ChIP-seq/4C-seq, 17 GB for PRO-seq/PRO-cap) with no processed tracks or count tables.",
+    "what_came_from_paper_text_only": "The biology (eNMU drives ~10,000-fold activation of the NMU gene; enhancer e1 is autonomous, e2 is an inactive 'facilitator') comes from the abstract and the GEO series descriptions only. Europe PMC full text returned HTTP 500 and the bioRxiv preprint returned HTTP 429, so I could not read the methods, the data availability statement, or the paper's own stated library size; the 83-element count comes from the file itself, not the paper."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "GSE299355's processed Excel table downloads anonymously from the NCBI (National Center for Biotechnology Information) FTP site with no login. The other three series are also public, but only as raw read archives."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no expression column. The file gives raw read counts of each barcode in 8 sorted expression bins; the actual label (NMU gene expression per element) must be constructed by computing a bin-weighted average, normalising to the unsorted control, and collapsing ~4 barcodes per element. Standard for this assay type, but it is a construction step, not a column."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "No sequences are in the file. Elements are named by edit, e.g. '43_e1_d78-178' (deletion of bases 78-178 of e1) or '34_e1_mGATA1' (mutated GATA1 transcription-factor motif). To get model inputs you would have to reconstruct each variant sequence from the wild-type e1/e2 sequence plus a supplementary table I could not retrieve."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Columns are self-describing integer read counts per bin (Bin1-Bin8, Unsorted); units are unambiguous even though no documentation file is provided."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 83,
+      "note": "KILLER. 83 unique elements is the entire measured library (328 barcode rows, but ~4 barcodes of the same element are technical replicates, not independent examples). The checklist needs ~1,500 labelled rows, or ~400 for classification. Verified by counting unique values in the file."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "0.06 GB for the usable table; ~35 GB of raw sequencing reads for everything else",
+      "note": "The 55 KB table fits trivially but is too small to model. The ATAC-seq, PRO-seq/PRO-cap and ChIP-seq/4C-seq series are published only as raw read archives totalling ~35 GB, which would need alignment from scratch and breaches both the 50 MB download rule and the ~5 GB working-set limit."
+    },
+    "a7_counts_match_paper": {
+      "pass": null,
+      "note": "Could not check. Europe PMC full text returned HTTP 500 and the bioRxiv preprint returned HTTP 429, so the paper's own stated library size was never readable. The file's internal counts are self-consistent across both replicates (both exactly 328 barcodes / 83 elements)."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label traces to a physical measurement: fluorescence in situ hybridisation of NMU messenger RNA, cells sorted into 8 expression bins, then amplicon sequencing of the integrated element's barcode. No model output involved and not computable from the features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "",
+    "freeze_and_head_viable": null,
+    "hardware": "",
+    "licence": ""
+  },
+  "integration": {
+    "partner_dataset": "",
+    "join_key": "",
+    "bigger_question_one_sentence": ""
+  },
+  "controls": {
+    "positive_control": "",
+    "negative_control": "",
+    "external_validation": ""
+  },
+  "honest_claim_h3": "No honest modelling claim is available: with 83 variants of two short sequences at a single gene in a single cell line, any model would describe this one locus and could not be held out or generalised.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence of an edited regulatory element to predict how strongly it switches on a nearby gene.",
+    "train_on": "The project I considered would train on engineered versions of two neighbouring regulatory elements (e1 and e2) of the human NMU gene, each with a chunk deleted or a transcription-factor binding site mutated, swapped back into the gene's own location in K562 leukaemia cells. There are only 83 such versions, verified by counting the data file.",
+    "predict": "The output would be the resulting NMU gene expression level. The true answer comes from counting each version's DNA barcode across 8 cell-sorting bins, where cells were sorted by how much NMU messenger RNA they contained (fluorescence in situ hybridisation), in 2 biological replicates.",
+    "why_worthwhile": "Labs that build genome-wide enhancer-activity predictors would want to know whether sequence features learned from plasmid-based assays transfer to an element sitting in its own chromosome; but 83 examples at one locus cannot answer that, so the dataset is at best a very small external test set."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Regulatory-element activity measurements exist at scale elsewhere: ENCODE (Encyclopedia of DNA Elements) massively parallel reporter assays, and CRISPRi-FlowFISH enhancer-gene screens from the Engreitz lab (both known public resources; surfaced in my search, not downloaded here).",
+    "approx_items": null,
+    "join_key": "human genome coordinates (hg38) plus target gene symbol",
+    "why": "Because similar readouts exist for thousands of elements elsewhere, the sensible use of this file is as a tiny held-out validation set for a model trained on those larger resources, not as a training set of its own."
+  },
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rejected idea: predict NMU expression from the sequence of each engineered e1/e2 variant using a DNA language model such as DNABERT-2 or HyenaDNA with a frozen backbone and a regression head. The only salvageable use of this data is as an 83-element external test set for an existing enhancer-activity model, to ask whether plasmid-trained predictions hold for an element in its native chromatin; that is a figure in someone else's paper, not a project.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.06,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated, not timed beyond the 2-second parse of the 55 KB Excel file. The 6 hours is almost entirely reconstructing 83 variant sequences from edit names plus wild-type sequence, since no sequences are in the file; the modelling itself would take minutes.",
+    "cheapest_killing_check": "Count unique element names in GSE299355_barcode_counts_across_bins.xlsx. It is 83. That single count kills the project in under five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 outright: the only processed data is 83 engineered elements (328 barcodes) at one locus in one cell line, against a ~1,500-row threshold. Also fails A2 (expression must be computed from bin counts, it is not a column) and A3 (no sequences, only edit names like 'e1_d78-178'). Everything else the paper produced is raw sequencing reads only, ~35 GB across three GEO series with no processed tracks, so it also breaches A6. This is an excellent, careful mechanistic study of a single enhancer and a bad machine-learning substrate; its data is better used as a small external sanity check on models trained on large reporter-assay resources."
+}

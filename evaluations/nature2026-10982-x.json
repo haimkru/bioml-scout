@@ -1,0 +1,61 @@
+{
+  "paper_id": "nature2026-10982-x",
+  "title": "Functional chimeric mRNAs encode proteins in mammalian immunity.",
+  "doi": "10.1038/s41586-026-10982-x",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE267147",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found three GEO (Gene Expression Omnibus) series by keyword search (none linked from PubMed): GSE267147 (long-read direct RNA sequencing, 10 samples), GSE324139 (short-read, 12 samples), GSE324391 (Hi-C chromosome contact maps, 12 .hic files, 5.7 GB tar, not downloaded). Downloaded and opened both small RAW tars: every file is a Salmon quant.sf with 140,790 standard Ensembl mouse transcripts (ENSMUST IDs) and zero chimeric/fusion transcript entries. Opened GSE267147 LCPM xlsx: 11,377 genes x 10 samples (NT/M1/M2 macrophage states), gene-level log counts only.",
+    "what_came_from_paper_text_only": "Everything about the chimeric transcript calls (how many, which gene pairs, validation status) comes from the abstract only; the Nature full text and supplementary tables are paywalled, not in Europe PMC, and were not retrievable, so the list of discovered chimeras was never seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO processed files download freely (checked); raw reads in SRA (Sequence Read Archive) not fetched by policy. Paper supplement, which likely holds the chimera list, is paywalled."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked files: deposited tables are ordinary transcript/gene expression against the standard Ensembl reference, with no chimeric-transcript column or list. A chimera label would have to be constructed by re-running fusion detection on raw long reads."},
+    "a3_inputs_present": {"pass": true, "note": "Expression values present for 140,790 transcripts; sequences would need the Ensembl reference, a standard download."},
+    "a4_units_stated": {"pass": true, "note": "Salmon TPM (transcripts per million) and NumReads columns; xlsx is log CPM (counts per million) with prior count 1, stated in file name."},
+    "a5_enough_rows": {"pass": false, "n_rows": 22, "note": "The sample unit is 10 long-read + 12 short-read macrophage libraries from one lab; the paper's validated chimera set is reported as a handful plus one functional protein (abstract), far below ~400 labels."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~36 MB processed quant files", "note": "Processed files are tiny; Hi-C is 5.7 GB but not needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Cannot compare to paper sample counts (full text unavailable); GEO filelists match the archives opened."},
+    "a8_label_provenance": {"pass": false, "note": "Any chimera label we could build would be the output of a fusion-calling pipeline (a model) on our own re-processing, not the authors' validated calls, which are not deposited in machine-readable form we could find."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "CTAT-LR-Fusion (long-read fusion transcript caller)", "open_weights": true, "score_and_split": "Not retrieved; protocol chapter only seen in search results.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "LongGF (long-read gene fusion detector)", "open_weights": true, "score_and_split": "Reported accurate on simulated and real cancer data (BMC Genomics abstract); split details not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "RTCpredictor (read-through chimeric RNA identifier)", "open_weights": null, "score_and_split": "Not retrieved; Briefings in Bioinformatics 2024 title seen only.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "With only 22 bulk libraries from one lab and no deposited chimera list, a model could at most claim to re-detect fusion transcripts in mouse bone-marrow macrophages that our own caller found, which is not a learned biological prediction.",
+  "plain_idea": {
+    "one_liner": "Use the sequence and inflammation-linked expression of gene pairs to predict which pairs form protein-coding chimeric messenger RNAs in immune cells.",
+    "train_on": "Gene pairs from mouse macrophage RNA sequencing, with expression in resting vs inflamed states; the number of labelled chimeric pairs is unknown because the list is not in the deposited files.",
+    "predict": "Whether a gene pair forms a chimeric transcript, with truth coming from long-read direct RNA sequencing calls validated by the authors (paper supplement, not accessible).",
+    "why_worthwhile": "Immunologists could prioritise candidate fusion proteins for validation; but the labelled set is tiny and not deposited, so the project is not defined."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify gene pairs as chimera-forming from sequence and inflammation-responsive expression/3D contact features; infeasible because the chimera calls are not deposited and the sample count is 22 libraries.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.04,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Only measured file sizes of processed GEO data; no modelling estimate since Part A failed.",
+    "cheapest_killing_check": "Grep deposited quant files for non-Ensembl (chimeric) transcript IDs: done, found 0, so labels are absent."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A2/A5/A8 fail: the opened GEO files (GSE267147, GSE324139) hold only standard Ensembl expression for 22 macrophage libraries with no chimeric-transcript list; the chimera calls sit in a paywalled supplement and would otherwise have to be rebuilt from raw reads with a fusion caller."
+}

@@ -1,0 +1,43 @@
+{
+  "paper_id": "science2026-aea6187",
+  "title": "A cross-organ single-cell analysis of hypertension.",
+  "doi": "10.1126/science.aea6187",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/20059464",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 20059464 (CC-BY-4.0, open) file list via API: snRNAseq_rds.zip 39,233 MB, bulkRNAseq.zip 10,219 MB, metadata.zip 2 KB, code.zip 12.5 MB. Downloaded and opened metadata.zip and code.zip. sample_metadata.tsv has 326 rows (323 unique IDs, 3 duplicate rows, stray trailing spaces): 228 bulk RNA-seq, 65 snRNA-seq, 26 snMultiome-seq, 7 scRNA-seq samples across 12 model/strain/treatment groups. Columns are only ID, assay, model, strain, treatment, tissue; there is no blood pressure or kidney-injury column. code/data/Figure2/program_phenotype.summary.tsv (3,026 rows) shows gene-program vs mean blood pressure (BP_mean) regressions fitted with N = 10-12 samples per cell type.",
+    "what_came_from_paper_text_only": "612,984 single nuclei and 179,637 snATAC (single-nucleus chromatin accessibility) nuclei, from the bioRxiv preprint abstract (10.1101/2024.12.25.630332); full text of the Science paper and preprint was not retrievable (no PMC copy, bioRxiv returned HTTP 429). Contents of the 39 GB rds archive were not opened. No GEO accession was found; the data lives on Zenodo plus a Shiny portal (viz.datascience.arizona.edu/scHTN)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 20059464 is open, CC-BY-4.0; confirmed via API and by downloading the metadata and code zips."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked the files: the sample metadata has only the group labels (strain, treatment, tissue). The per-animal blood pressure and renal injury values used in the paper are not in the released metadata, so any outcome label would have to be rebuilt from the paper's figures."},
+    "a3_inputs_present": {"pass": true, "note": "Expression matrices are said to be inside the rds (R object) archive; not opened because of its size."},
+    "a4_units_stated": {"pass": false, "note": "No phenotype values are released, so no units exist to check; the regression table holds only fitted coefficients against BP_mean."},
+    "a5_enough_rows": {"pass": false, "n_rows": 98, "note": "The independent unit is the animal or sample: 98 single-cell libraries (65 snRNA + 26 multiome + 7 scRNA) across 12 groups, and the authors' own BP regressions use 10-12 samples. The 613k nuclei are pseudo-replicates, and each sample is a single condition, so condition is confounded with batch."},
+    "a6_fits_laptop": {"pass": false, "working_set": "39 GB zip of R rds objects (plus 10 GB bulk RNA-seq zip)", "note": "A single monolithic 39 GB zip, R-only format; subsetting needs a ranged unzip and then R-to-Python conversion. Over the 5 GB guideline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not fully checkable. The metadata has 323 unique sample IDs with 3 duplicate rows (e.g. RMSA11SN repeated three times); nucleus counts were not verified."},
+    "a8_label_provenance": {"pass": true, "note": "Treatment group is an experimental assignment, a real measured label, but it is per animal, not per cell. Cell-type labels are cluster annotations computed from the expression itself, which would make them circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models), mouse/rat need ortholog mapping", "freeze_and_head_viable": null, "hardware": "CPU embedding of ~613k nuclei would take many hours", "licence": "Data CC-BY-4.0"},
+  "integration": {"partner_dataset": "Human blood pressure GWAS (genome-wide association study) summary statistics, already used by the authors", "join_key": "gene symbol via mouse/rat-human orthologs", "bigger_question_one_sentence": "Which cell types carry human blood-pressure genetic risk, which the paper itself already answers."},
+  "controls": {"positive_control": "Recover the known Ang II (angiotensin II) vascular smooth muscle program reported by the authors.", "negative_control": "Shuffle treatment labels across animals.", "external_validation": "None identified with matching tissues and models."},
+  "honest_claim_h3": "Among about 98 single-cell libraries from 12 groups of three rodent hypertension models, a classifier separates treatment groups, which is confounded with sequencing batch because each library is one condition.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from rodent organs to predict whether the animal was hypertensive and how severely.",
+    "train_on": "Gene expression of nuclei from heart, kidney, brain and arteries, pooled per animal; about 98 single-cell libraries verified in the metadata.",
+    "predict": "Hypertension condition or blood pressure. Only the condition group is released; the per-animal blood pressure measurements are not in the files.",
+    "why_worthwhile": "Hypertension researchers could see which organs' cells best track blood pressure, but with about 98 animals the paper's own descriptive analysis already covers this."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Pseudobulk per-sample expression to predict treatment group or blood pressure. Not viable: about 98 samples, no released blood pressure column, and condition confounded with batch.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 39, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated only, from Zenodo file sizes; nothing timed.", "cheapest_killing_check": "Count samples with a per-animal blood pressure value: none are in the released metadata (already done, project killed)."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2, A5 and A6. Verified in the Zenodo metadata: there is no per-animal blood pressure or injury column, only about 98 single-cell libraries across 12 groups (the 613k nuclei are not independent), and the expression data is one 39 GB R-format zip."
+}

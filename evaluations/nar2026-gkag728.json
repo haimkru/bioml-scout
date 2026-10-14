@@ -1,0 +1,182 @@
+{
+  "paper_id": "nar2026-gkag728",
+  "title": "Kozak sequence libraries for systematically characterizing transgenes across expression levels.",
+  "doi": "10.1093/nar/gkag728",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/MatreyekLab/Kozak (static release: https://doi.org/10.5281/zenodo.20601283; raw reads: NCBI GEO GSE295498)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded 8 files from raw.githubusercontent.com (no login, MIT licence): Supp_table_4_kozak_sortseq_and_infection.csv (4,048 rows x 15 columns; 4,042 rows have scores; every sequence is 9 letters and 99.95% end in ATG; calibrated_score spans 0.0044-1.354), Noderer.tsv (65,536 x 4), gfp_merge_kozak.csv (4,096 x 3), GSE210035_highThroughput_rawcounts_sequences.tsv (4,838 x 9), Supp_table_5_mixed_library_infection.csv (3,669 x 5), Avecedo_Supp_Table_S1.csv (680 x 3), Human_kozak_permutations.csv (71,862 x 8), Supp_table_2_ClinVar.tsv (1,826 x 31; 1,153 genes). I recomputed the paper's cross-assay number myself: Pearson r-squared 0.6745 between log10 calibrated score and the Noderer efficiency (paper reports 0.67), Spearman rho 0.777. Median 95% confidence-interval width per sequence is 0.17 log10 units (about 1.5-fold). I read the knitted analysis notebook (README.md, 184 KB) to trace how each column was computed and to collect the published statistics. I checked the Zenodo record (MIT licence; the only file is a 217 MB repository zip, which I did not download, over the 50 MB cap) and the Optimus 5-Prime code repository licence (GPL-3.0) via the GitHub API.",
+    "what_came_from_paper_text_only": "The '~100-fold range' phrasing (the file's minimum-to-maximum span is 310-fold), the cell line and landing-pad construct details, the sort-seq and flow-cytometry protocol, and the ACE2 pseudotyped-virus infection experiment design. Also unverified: the 2026 eTIS preprint's model, numbers and code availability (bioRxiv returned HTTP 429 when fetched), and the raw sequencing reads in GEO GSE295498, which I did not inspect."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Opened the files: all processed tables download anonymously from GitHub raw URLs; Zenodo mirror is MIT licensed. No application or login anywhere."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is already a column in the file I opened: calibrated_score (relative protein abundance), plus sort_geomean, mfi_lm_norm and 95% bounds. Nothing to construct."},
+    "a3_inputs_present": {"pass": true, "note": "The 'sequence' column holds the actual 9-letter DNA window (6 variable letters + ATG) for all 4,048 rows. No accession lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Units are documented relative scales, traced in the R notebook: sort_geomean is a weighted average over 4 fluorescence sort bins (0-1), calibrated_score is abundance relative to a reference, mfi_individual is mean fluorescence intensity. Across the five assays the scales differ, so joining needs rank normalisation."},
+    "a5_enough_rows": {"pass": true, "n_rows": 4042, "note": "4,042 scored sequences here (counted in the file), plus 65,536 + 4,838 + 4,096 + 680 from four independent assays bundled in the same repository: 79,192 sequence-level measurements. Caveat: only 4,096 distinct 6-letter windows exist, so the input space is nearly saturated."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.1 GB (largest needed file 17 MB)", "note": "Verified by downloading: every table I need is under 20 MB and pandas reads each in seconds. No GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Verified: 4,042 non-missing scores in the file exactly matches the abstract's '4042 sequences' and the notebook's printed 'total number of variants that we scored was 4042'. Only mismatch is presentational: the file's min-max span is 310-fold where the abstract says ~100-fold."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are physical measurements: cells sorted into 4 fluorescence bins then amplicon-sequenced, calibrated against individually measured fluorescence of 15 clones. Two columns must NOT be used as labels: rf_predict_mfi is the paper's random-forest output, and the calibrated_score in the ClinVar and permutation tables is a lookup of these same 4,042 measurements, not a new measurement."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One 4,048-row table carries sequence plus every label; partner assays join on the exact sequence string."},
+    "B2": {"score": 2, "why": "All six downloaded csv/tsv files parsed with pandas on the first try, no fixes."},
+    "B3": {"score": 1, "why": "Within this paper authors already calibrated; across the five assays scales differ and need rank normalisation."},
+    "B4": {"score": 2, "why": "No censored values seen in the files; only 6 of 4,048 rows have missing scores."},
+    "B5": {"score": 2, "why": "Checked: all 4,048 sequences unique; Noderer's 65,536 unique too."},
+    "B6": {"score": 2, "why": "No data dictionary, but the 184 KB knitted R notebook shows each column's derivation; I traced calibrated_score, noderer, rf_predict_mfi."},
+    "C1": {"score": 2, "why": "Question is how much start-codon effect transfers between assays; informative whichever way it resolves."},
+    "C2": {"score": 1, "why": "Paper's own random forest is open and reproducible; Optimus 5-Prime open (GPL-3.0, verified); 2026 eTIS deep model exists but splits are weak or unverified."},
+    "C3": {"score": 1, "why": "Angle is honest re-evaluation plus first five-assay consensus; the paper already ran all four pairwise comparisons itself."},
+    "C4": {"score": 2, "why": "Each score needs cell sorting plus amplicon sequencing; individual validation is one clone at a time."},
+    "C5": {"score": 2, "why": "Published numbers exist and I reproduced one exactly: cross-assay r-squared 0.67 (I got 0.6745)."},
+    "D1": {"score": 2, "why": "Optimus 5-Prime, a published 5' untranslated region translation network, has open code and weights on GitHub (verified)."},
+    "D2": {"score": 2, "why": "It is a small 3-layer convolutional network; predictions for ~80k short sequences cache on laptop CPU in minutes."},
+    "D3": {"score": 1, "why": "Data is MIT (verified on Zenodo) but the backbone code is GPL-3.0, which restricts redistribution."},
+    "E1": {"ok": true, "why": "Leave-one-assay-out across five independently produced datasets; within-assay, Hamming-distance blocks on the 6-letter window."},
+    "E2": {"ok": true, "why": "Five independent assays with 680-65,536 sequences each, all bundled in the repository I downloaded."},
+    "E3": {"ok": true, "why": "Dummy baselines available: global mean, Kozak-consensus position-weight rule, and the other assay's raw score."},
+    "E4": {"ok": true, "why": "Every row has 95% bounds (median width 0.17 log10, I computed it); GSE210035 has two replicates; Acevedo has standard deviations."},
+    "E5": {"ok": true, "why": "Consensus GCCACCATG scores 0.69 vs 0.30 for weak TTATGGATG in the notebook output; purine at -3 must come out strongest."},
+    "E6": {"ok": true, "why": "Label shuffling and per-position ablation are trivial on a 4,042-row one-hot table."},
+    "E7": {"ok": true, "why": "Four independent published assays (Noderer 2014, Ambrosini GSE210035, Acevedo 2018, Farrell) already harmonised in the repository."},
+    "E8": {"ok": true, "why": "I already reproduced the paper's published cross-assay r-squared of 0.67 (got 0.6745) from the downloaded file."},
+    "G1": {"score": 2, "why": "ClinVar table carries NCBI GeneID, HGNC ID, RefSeq NM accession and GRCh38 coordinates; assay joins use the exact sequence."},
+    "G2": {"score": 2, "why": "ClinVar (1,826 start-codon-adjacent variants already assembled), gnomAD frequencies, and the Sample 2019 human 5' untranslated region assay."},
+    "G3": {"score": 1, "why": "Assay-to-assay joins are clean after collapsing Noderer's 16 downstream contexts per 6-mer; variant-to-transcript is one-to-many."},
+    "G4": {"score": 2, "why": "Asks which of 1,086 variants of uncertain significance lower protein abundance, and how that changes with five assays instead of one."},
+    "H1": {"score": 2, "why": "Full 100-fold range measured including the weakest sequences; low expressers are systematically reported, not dropped."},
+    "H2": {"score": 1, "why": "One cell line (HEK293T), one integration site, fluorescent-protein reporters; the other four assays are also human reporter assays."},
+    "H3": {"score": 2, "why": "Honest claim is writable in one sentence; see honest_claim_h3."},
+    "H4": {"score": 2, "why": "Paper and notebook explicitly show the systematically disagreeing ATGG sequence class and the context caveat."},
+    "I1": {"score": 2, "why": "Matreyek lab, ClinGen/ClinVar 5' untranslated region variant curators, Atlas of Variant Effects Alliance, transgene-dose engineers."},
+    "I2": {"score": 2, "why": "Tells curators whether a lookup-based Kozak score is trustworthy enough to prioritise variants for lab testing."},
+    "I3": {"score": 2, "why": "Metric is ranking and top-100 precision, which is exactly how variants get picked for assays."},
+    "I4": {"score": 1, "why": "Only 6 letters vary and 4,042 of 4,096 are measured, so a lookup table is the within-assay answer; modelling earns its keep only across assays."},
+    "J1": {"score": 1, "why": "Real splits, calibration and uncertainty work, but a 6-letter input means little deep-learning or transfer practice."},
+    "J2": {"score": 2, "why": "Kozak consensus and purine-at-minus-3 are textbook, and 15 individually measured clones anchor sanity checks."},
+    "J3": {"score": 2, "why": "A harmonised five-assay score table with uncertainty is shareable even if no model beats the lookup."},
+    "J4": {"score": 2, "why": "Two to three weeks: files already downloaded and parsed during this evaluation."},
+    "J5": {"score": 2, "why": "Kill condition is numeric and pre-committed in success_criteria: no 0.03 Spearman gain in one week."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The paper's own random forest (R randomForest, 200 trees, mtry=3, on one-hot 6-letter Kozak windows)",
+        "open_weights": true,
+        "score_and_split": "Pearson 0.89 / Spearman 0.91 against the 15 individually measured clones; r-squared 0.85 versus the independent Noderer assay, up from 0.67 for the raw scores. But that 0.85 is computed over all 4,042 sequences, including the ones the forest trained on, in a 6-letter space that is 99% enumerated, so it is interpolation rather than generalisation.",
+        "authors_named_unsolved": "They flag a sequence class (ATGG context) where their scores and Noderer's systematically disagree, and caution that Kozak effects measured on one reporter may not carry over to other genes and contexts.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Optimus 5-Prime (Sample et al. 2019, Nature Biotechnology) - convolutional network predicting translation from 50-nucleotide 5' untranslated regions",
+        "open_weights": true,
+        "score_and_split": "r-squared 0.93 on 20,000 sequences held out at random from its own library of ~280,000 random 50-nucleotide 5' untranslated regions in HEK293T cells. Random split within one assay; code and weights on GitHub (pjsample/human_5utr_modeling, GPL-3.0, verified via the GitHub interface).",
+        "authors_named_unsolved": "Generalisation to native and variable-length human 5' untranslated regions beyond their random library; their readout is ribosome loading, not steady-state protein abundance.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "eTIS deep-learning model, 'Decoding the Sequence Requirements for Translation Initiation' (bioRxiv, May 2026)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - bioRxiv returned HTTP 429. Per the search summary it trains on a massively parallel reporter assay over an ~80-nucleotide window around the start codon and reports accurate prediction of initiation across transcripts; no number or split verified.",
+        "authors_named_unsolved": "Per the summary they report that the Kozak sequence is not optimal for initiation as commonly assumed and that position +6 matters, implying the 6-letter window used here is incomplete.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "TITER (Zhang et al. 2017, Bioinformatics) - deep network for translation initiation site prediction",
+        "open_weights": true,
+        "score_and_split": "Reported on classification of initiation sites from ribosome profiling data, not on quantitative efficiency; different task, so not a direct competitor, but it occupies the same keyword space.",
+        "authors_named_unsolved": "Quantitative prediction of initiation efficiency as opposed to site classification.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Optimus 5-Prime (published convolutional network for 5' untranslated region translation), used frozen as a feature extractor and baseline; Nucleotide Transformer or HyenaDNA only if the project is extended to native genomic context",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; predictions for ~80,000 short padded sequences in minutes. Note a 6-letter input is far below any DNA language model's useful context, so the backbone matters mainly as a published comparator.",
+    "licence": "Kozak data MIT (verified on Zenodo); Optimus 5-Prime code GPL-3.0 (verified)"
+  },
+  "integration": {
+    "partner_dataset": "ClinVar start-codon-adjacent variants (1,826 rows, 1,153 genes, already assembled in Supp_table_2_ClinVar.tsv, which I opened), plus gnomAD allele frequencies and the Sample et al. 2019 human 5' untranslated region assay",
+    "join_key": "GRCh38 chromosome/start/stop with RefSeq NM accession and NCBI GeneID / HGNC ID for the variant side; the exact nucleotide window around ATG for the assay-to-assay side",
+    "bigger_question_one_sentence": "Which of the 1,086 start-codon-adjacent variants of uncertain significance in ClinVar actually lower protein abundance enough to matter, and how much does that answer change when the score comes from five independent assays instead of one?"
+  },
+  "controls": {
+    "positive_control": "The textbook consensus GCCACCATG must rank near the top (its weighted sort average is 0.69 versus 0.30 for the weak TTATGGATG, both printed in the notebook) and a purine at position -3 must be the strongest single-position effect. Second control: the 15 individually re-measured clones should be the easiest predictions.",
+    "negative_control": "Shuffle calibrated_score across sequences and confirm collapse to the global mean; ablate each of the six positions; train on sort-bin read-depth columns alone to confirm depth carries no label information.",
+    "external_validation": "Leave-one-assay-out across Noderer et al. 2014 (65,536 sequences), Ambrosini GSE210035 (4,838), Acevedo & Teleman 2018 (680) and Farrell (4,096 six-letter windows) - all four files already in the repository and opened here."
+  },
+  "honest_claim_h3": "Among single-copy transgenes driven by one inducible promoter at one genomic landing site in HEK293T cells, the model predicts the relative steady-state abundance of a fluorescent reporter from the six nucleotides before its start codon, and it reports how much of that prediction survives transfer to four other independently produced reporter assays.",
+  "plain_idea": {
+    "one_liner": "Use the six DNA letters just before a gene's start codon to predict how much protein the cell makes.",
+    "train_on": "One row per sequence: the 9-letter window ending in ATG. 4,042 measured sequences from this paper, plus 75,150 from four independent published assays bundled in the same repository, for 79,192 sequence-level measurements (all counts taken from files I opened).",
+    "predict": "Relative steady-state protein abundance. The true answer comes from sort-seq: cells each carrying one library member were sorted into four fluorescence bins and the bins sequenced, then the resulting score was calibrated against the individually measured fluorescence of 15 separately built clones.",
+    "why_worthwhile": "Anyone tuning how much of a transgene a cell makes, or judging whether a patient's variant just upstream of a start codon lowers protein, needs a number they can trust. This project says how much of that number is a property of translation and how much is a property of the assay that measured it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Our union of five assays is 79,192 measurements against any single one of them, and it is the only set with 95% confidence bounds on nearly every one of the 4,096 possible 6-letter windows. But Optimus 5-Prime alone trained on ~280,000 sequences, so we are not bigger than the field's largest training set, only broader across assays."},
+    "confidence_score": {"answer": "yes", "why": "Every row in the file I opened carries sort_upper_conf and sort_lower_conf (median width 0.17 log10, about 1.5-fold), Noderer carries bounds, GSE210035 has two replicates and Acevedo has standard deviations. Neither the paper's random forest output (rf_predict_mfi) nor Optimus 5-Prime emits an uncertainty, so calibrated per-sequence intervals would be new."},
+    "models_beatable": {"answer": "partly", "why": "The paper's 2026 random forest is 200 trees on 6-letter one-hot with a random split of an enumerated space, so its headline 0.85 cross-assay number is re-evaluable rather than hard to beat. Optimus 5-Prime is a 2019 Keras convolutional network evaluated on a random within-assay split. The 2026 eTIS deep model over an 80-nucleotide window is new and probably not beatable on its own task."},
+    "guaranteed_improvement": {"answer": "no", "why": "The paper's random forest can be run as our baseline and we would see everything it sees plus four more assays, but those assays measure a different quantity (FACS-seq initiation efficiency, or ribosome loading) on different scales with different reporters, so the condition 'the new data measures the same quantity the same way' fails."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Verified by opening the files in this repository: Noderer et al. 2014 (Data/Noderer.tsv, 65,536 measured initiation efficiencies), Ambrosini GSE210035 (4,838 sequences with sort-bin counts), Acevedo & Teleman 2018 (680 sequences with strength and standard deviation), Farrell (gfp_merge_kozak.csv, all 4,096 six-letter windows in two conditions). Known but not opened: the Sample et al. 2019 human 5' untranslated region assay (~280,000 random plus native human sequences).",
+    "approx_items": 79192,
+    "join_key": "The nucleotide window around the start codon (positions -6 to -1, optionally +4 to +6), after converting U to T and trimming to a common width",
+    "why": "Four independent labs have already measured the same quantity for tens of thousands of start-codon contexts, which gives a ready-made held-out-assay test set and a measurable ceiling on how well any such score can transfer."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The 6-letter space is 99% enumerated (4,042 of 4,096 measured), so in any random split nearly every test sequence has a one-letter-different neighbour in training; that interpolation is probably why the paper's random forest looks so good.",
+      "Two columns in the files are model outputs rather than measurements: rf_predict_mfi is the paper's random forest prediction, and the calibrated_score in the ClinVar and permutation tables is a lookup of the same 4,042 measurements - using either as a label would be circular.",
+      "Noderer's library varies two downstream positions as well, giving 16 rows per 6-letter window; unless those are collapsed before splitting, the same window appears on both sides of the split.",
+      "Sequencing read depth per sort bin is itself a function of abundance, so any count-derived feature leaks the label.",
+      "All five assays use fluorescent-protein reporters in human cell lines, mostly HEK293T, so leave-one-assay-out tests lab and construct independence but not biological context independence."
+    ],
+    "split": "Primary: leave-one-assay-out over a 'source' column we create when concatenating the five datasets (Matreyek, Noderer, Ambrosini, Acevedo, Farrell) - the sequence column exists in every file and I verified it, but no source column exists yet. Secondary: within-assay blocks defined by the sequence itself, holding out all windows within Hamming distance 1 of a held-out seed rather than random rows.",
+    "checks": [
+      "Shuffle calibrated_score and confirm performance collapses to the global mean.",
+      "Report the nearest-neighbour Hamming distance from every test window to the training set, to show the within-assay split is not interpolation.",
+      "Train on sort-bin read depth alone and confirm it predicts nothing.",
+      "Always show the plain other-assay lookup table as the baseline any model must beat."
+    ],
+    "verdict": "Manageable: the one real trap is that within-assay random splits are near-duplicate interpolation, and holding out whole assays (we have five) fixes it cleanly."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured start-codon effect on a completely held-out assay, plus precision among the 100 sequences predicted to reduce abundance most - because the user's decision is which variants to rank for lab follow-up.",
+    "baselines": "(a) Use the other assay's raw score directly: I recomputed this at Pearson r-squared 0.6745 / Spearman 0.777 for Noderer versus this paper's calibrated scores, matching the paper's reported 0.67. (b) The paper's random-forest-refined score: reported r-squared 0.85 / Spearman-squared 0.76 versus Noderer, but computed over all 4,042 sequences including its own training set. (c) A Kozak-consensus position-weight rule. (d) The global mean.",
+    "success": "Leave-one-assay-out Spearman above 0.80 against Noderer (beating the raw-transfer 0.777) while using only sequences the model never saw, and 95% prediction intervals that cover about 95% of held-out measurements.",
+    "noise_ceiling": "Within-assay reliability caps it: the paper's sort-seq scores correlate with individually measured fluorescence at r-squared 0.92 across the 15 individually built clones, and the median per-sequence 95% interval is 0.17 log10 wide (about 1.5-fold), which I computed from the file.",
+    "kill": "If after one week no model beats the raw other-assay score by more than 0.03 Spearman on leave-one-assay-out, stop: the 6-letter lookup table is the answer and the result is a one-page note."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes method-plus-resource papers on variant interpretation; it would take showing that the single-assay smoothing gain is largely interpolation and that a five-assay consensus changes which ClinVar start-codon variants look damaging."},
+    "realistic": {"journal": "Bioinformatics", "why": "The likely result - a harmonised five-assay start-codon score with calibrated uncertainty, honest leave-one-assay-out numbers, and a re-evaluation of a published random forest - is exactly an applications-note-sized methods contribution."},
+    "fallback": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes short negative and benchmarking results, so 'cross-assay agreement caps near r-squared 0.7 and model smoothing does not transfer' is still publishable there, with a bioRxiv preprint in the meantime."}
+  },
+  "pitch": {
+    "headline": "Five independent start-codon-context assays, 79,192 measurements, already harmonised in one MIT-licensed repository - and they agree with each other only r-squared 0.55 to 0.77.",
+    "what_makes_the_data_unusual": "4,042 of the 4,096 possible Kozak 6-mers measured, each with a 95% interval (median 1.5-fold wide), 15 clones individually re-measured, and matched virus-infection readouts for 2,462 sequences. All counts verified in the files.",
+    "the_win": "A leave-one-assay-out model that beats raw cross-assay transfer (Spearman 0.777, which I recomputed myself) and reaches the paper's reported 0.85 r-squared on sequences it has never seen.",
+    "even_if_it_fails": "We get a measured ceiling on any sequence-based start-codon score: if five assays cap near r-squared 0.7, every genome-wide Kozak prediction built on one assay - including this paper's 1,826 ClinVar variants - inherits that error.",
+    "who_wants_it": "The Matreyek lab, ClinVar and ClinGen curators who have no functional evidence for 1,086 start-codon-adjacent variants of uncertain significance, and gene-therapy groups tuning transgene dose."
+  },
+  "ml_idea": "Concatenate the five independent start-codon-context assays in this repository (79,192 measurements, joined on the trimmed nucleotide window around ATG after U-to-T conversion and collapsing Noderer's 16 downstream contexts), rank-normalise their scales, and fit a model of relative protein abundance from the one-hot sequence window with per-sequence uncertainty, evaluated leave-one-assay-out against the plain other-assay lookup table and against the paper's own random forest run on the same held-out sequences. Deliverables: an honest cross-assay transfer curve, a consensus score with calibrated intervals, and a re-ranked list of the 1,826 ClinVar start-codon-adjacent variants.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.5,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed end to end, but grounded: I downloaded and parsed all six tables during this evaluation in a few seconds each, the largest file I would need is 17 MB, and the 0.5 embedding hours covers only the optional step of running Optimus 5-Prime over ~80,000 padded 50-nucleotide inputs on CPU.",
+    "cheapest_killing_check": "Count how many sequence windows are actually shared between assays after trimming and U-to-T conversion, then report the nearest-neighbour Hamming distance from each held-out window to the training set. If every test window has a one-letter neighbour in training - very likely, since 4,042 of 4,096 are measured - then no within-assay split is honest and the project must be leave-one-assay-out only."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer verified in the files, not the paper: 4,042 scored 9-letter sequences matching the abstract exactly, labels already columns with 95% bounds, and I reproduced the paper's own published cross-assay r-squared of 0.67 (0.6745) in minutes. Effort is near zero (~0.1 GB, no GPU) and the repository already contains four independent assays, so leave-one-assay-out evaluation, a noise ceiling and a reproducible published number all come free - the question cannot produce a useless answer. The honest caveat: with only six nucleotides varying and 99% of that space measured, a lookup table is the within-assay answer and the paper already ran a random forest, so this is a benchmarking-and-consensus project with modest ML content, not a new-architecture one."
+}

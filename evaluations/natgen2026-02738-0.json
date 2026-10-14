@@ -1,0 +1,347 @@
+{
+  "paper_id": "natgen2026-02738-0",
+  "title": "Cancer treatment alters mutant selection in normal esophagus.",
+  "doi": "10.1038/s41588-026-02738-0",
+  "journal": "Nature Genetics",
+  "data_url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41588-026-02738-0/MediaObjects/41588_2026_2738_MOESM4_ESM.xlsx (Supplementary Tables 1-19); mirror of mutation calls for 19 of the 70 patients at https://github.com/shorthouse-lab/fowler_selection",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded with no login: the Supplementary Tables workbook (6.9 MB, 20 sheets) and three mutation CSVs from the authors' GitHub (4.8 MB). Parsed Supplementary Table 8: 23,692 rows x 28 columns, 70 patients whose per-group counts (CROSS 11, ECX 17, EOX 14, FLOT 7, untreated 21) match the paper exactly, 417 genes, 6,239 biopsy identifiers, zero missing values in every column, zero exact duplicate rows, 409 rows that are the same mutation in the same patient seen in a second biopsy. Measured how much of the variation in log10 clone size (variant allele fraction, the fraction of DNA copies carrying the mutation) is explained by gene (R2=0.120), by patient (0.229) and by treatment group (0.100). Measured correlation 0.954 between log mutation count per patient and log number of biopsies sequenced. Confirmed the built-in positive control: protein-truncating variants have higher median allele fraction (nonsense 0.00119, essential splice 0.00100) than silent ones (0.00066), and NOTCH1/TP53/PPM1D top the per-gene ranking. Confirmed Supplementary Table 2's columns for sex, smoking, tumour type and tumour location are EMPTY in the released file (only patient ID, age and tumour stage carry values). Cross-checked the GitHub CROSS file (8,082 rows) against Table 8's CROSS subset (7,984 rows): same 11 patients, 98.8% of positions shared.",
+    "what_came_from_paper_text_only": "The sequencing protocol (mutation calling with ShearwaterML/deepSNV, >250-fold coverage, 2-mm2 grid samples versus 0.25-mm microbiopsies), the data availability statement naming European Genome-phenome Archive accessions EGAD00001011181-4 as controlled access obtained by emailing datasharing@sanger.ac.uk, the biological claim that chemoradiotherapy expands TP53 and PPM1D clones while the FLOT chemotherapy regimen selects RAC1, NFE2L2 and MTOR mutants, and the genome build (I inferred GRCh37 from TP53 sitting at chr17:7,577,534; the build is not stated in the file itself)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "I downloaded the Supplementary Tables workbook and the GitHub CSVs anonymously, no login or application. The raw sequencing reads are controlled access at the European Genome-phenome Archive (EGAD00001011181-4, by application to the Sanger Institute), but the proposed project needs only the processed mutation table, which is open."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Clone size is already the column 'tum_globalvaf' (variant allele fraction across the patient) and 'summed_vaf' (summed across biopsies) in Supplementary Table 8, and treatment arm is the column 'Group'. Nothing has to be constructed or inferred across sources."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Every row carries chromosome, position, reference and alternate base, gene symbol, CCDS transcript ID, cDNA change and protein change (e.g. p.G329V), plus variant class. Only 417 protein sequences need fetching to run a sequence model, not one lookup per row."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Allele fractions are plain fractions between 0 and 1 (observed range 3.9e-05 to 0.955), read counts are integers, age is in years, mutation burden in Supplementary Table 3 is per megabase. Units are unambiguous from values, though no formal data dictionary exists."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 23692,
+      "note": "23,692 mutation rows (23,283 after collapsing the same mutation seen twice in one patient), of which 13,424 are missense. 70 patients, 6,239 biopsies, 417 genes. Well above the 1,500-row bar."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~12 MB of tables; ~59 MB of cached protein-model vectors for the 11,456 unique missense variants",
+      "note": "Everything fits in memory many times over. The only non-trivial compute is a one-off pass of a protein language model over 417 sequences on CPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Patient numbers in Table 8 match the paper's stated 11/17/14/7/21 exactly. Two small disagreements, both resolvable: the EOX arm is 14 in Supplementary Table 1 and Table 8 but 13 in Supplementary Table 6 and a figure legend (one patient dropped from the signature analysis), and the GitHub CROSS file has 8,082 rows against Table 8's 7,984 (98.8% overlap, slightly different filtering). Use Table 8."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The allele fraction is a physical measurement: each row gives mutant_reads_sum and depth_sum, so the label is reconstructable from raw read counts. Important caveat recorded for whoever builds this: Supplementary Tables 9-13 (dN/dS selection statistics) and the Darwinian Shift notebooks ARE model outputs and must never be used as labels. Which variants were called at all does depend on the ShearwaterML caller, so the model learns about detected clones, not all clones."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 2,
+      "why": "One sheet (Table 8) holds variant, clone size, patient and treatment; age joins from Table 2 at 100%."
+    },
+    "B2": {
+      "score": 2,
+      "why": "Table 8 parsed on the first try with pandas, header on row 0; GitHub mirrors are plain CSV."
+    },
+    "B3": {
+      "score": 1,
+      "why": "One lab, one caller, one panel, but merges 2-mm2 grids and 0.25-mm biopsies; cross-patient allele fractions need normalisation."
+    },
+    "B4": {
+      "score": 2,
+      "why": "No censored or qualitative entries; zero missing values across all 28 columns of 23,692 rows."
+    },
+    "B5": {
+      "score": 1,
+      "why": "409 rows are the same mutation+patient from a second biopsy; zero exact duplicates; one drop_duplicates call fixes it."
+    },
+    "B6": {
+      "score": 1,
+      "why": "Names like gene, pos, protein_desc are clear; xfw_sum/nbw_sum and the proportion_samples denominator are undocumented."
+    },
+    "C1": {
+      "score": 2,
+      "why": "Train on untreated, test on treated: informative whether it transfers or breaks, and where it breaks names the genes."
+    },
+    "C2": {
+      "score": 2,
+      "why": "Searched: no model predicts clone size in normal solid epithelium; nearest is boostDM-CH, built for blood genes."
+    },
+    "C3": {
+      "score": 2,
+      "why": "Novel plus unique-application: these 23,692 measured clone sizes have never been used as supervised training data."
+    },
+    "C4": {
+      "score": 2,
+      "why": "Required surgical specimens, microdissection into 6,239 biopsies and deep targeted sequencing; not repeatable cheaply."
+    },
+    "C5": {
+      "score": 2,
+      "why": "I computed the dummies myself: per-gene median explains R2=0.120, per-patient 0.229; dN/dS tables give a published comparator."
+    },
+    "D1": {
+      "score": 2,
+      "why": "ESM-2, an open-weight protein language model, matches directly: 417 proteins, exact substitutions given as p.G329V."
+    },
+    "D2": {
+      "score": 2,
+      "why": "Only 417 sequences to embed once on CPU; cache the mutated-residue vectors (~59 MB) and reuse for every head."
+    },
+    "D3": {
+      "score": 2,
+      "why": "ESM-2 weights are MIT licensed; the mutation table is published supplementary data and the GitHub repo carries a LICENSE."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Hold out whole patients using the 'subject' column, which I confirmed is present with 70 values."
+    },
+    "E2": {
+      "ok": true,
+      "why": "70 patients, 5 treatment arms, and 64 genes carry at least 50 missense mutations each."
+    },
+    "E3": {
+      "ok": true,
+      "why": "I already computed per-gene, per-patient and global median baselines on the real file."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Replicate allele fractions exist: a clone is measured in up to 28 biopsies, plus binomial read-count error per row."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Verified in the file: truncating variants outrank silent (0.00119 vs 0.00066) and NOTCH1/TP53/PPM1D top the gene ranking."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Shuffle allele fraction within patient, randomise the sequence-model features, and fit on gene symbol alone."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Martincorena 2018 Science and Yokoyama 2019 Nature report normal-esophagus clone fractions; I confirmed the papers, not their file access."
+    },
+    "E8": {
+      "ok": true,
+      "why": "dNdScv is open and Tables 9-13 are its outputs, so I can re-run it on Table 8 and check the published values."
+    },
+    "G1": {
+      "score": 2,
+      "why": "Genomic coordinates, gene symbols, CCDS transcript IDs and protein changes all present in the file I opened."
+    },
+    "G2": {
+      "score": 2,
+      "why": "AlphaMissense scores every possible human missense variant; COSMIC and TCGA give esophageal tumour frequencies for the same coordinates."
+    },
+    "G3": {
+      "score": 1,
+      "why": "Coordinate join is clean once the build matches, but transcript multiplicity and a likely GRCh37-to-hg38 lift need handling."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Asks whether therapy-favoured mutants in healthy tissue are the same ones that seed tumours and relapses."
+    },
+    "H1": {
+      "score": 2,
+      "why": "3,669 silent mutations give a built-in neutral class, and small clones dominate the allele-fraction distribution."
+    },
+    "H2": {
+      "score": 1,
+      "why": "One tissue, two hospitals (UK and Milan), 70 patients, ancestry unreported; sex and smoking columns are empty in the file."
+    },
+    "H3": {
+      "score": 2,
+      "why": "The honest claim writes out in one sentence; the missing pre-treatment sample is the explicit limit."
+    },
+    "H4": {
+      "score": 1,
+      "why": "Paper states its limits (no pre-treatment sampling, targeted panel, modest n); the empty metadata columns are a hidden gap I found."
+    },
+    "I1": {
+      "score": 2,
+      "why": "Phil Jones's group at the Wellcome Sanger Institute, who already run CRISPR screens on normal epithelium (Supplementary Table 19)."
+    },
+    "I2": {
+      "score": 2,
+      "why": "A ranked shortlist of therapy-favoured variants tells them which mutants to put into the next competition assay."
+    },
+    "I3": {
+      "score": 2,
+      "why": "They test a handful of variants, so precision in the top-k and rank correlation are literally the decision."
+    },
+    "I4": {
+      "score": 1,
+      "why": "Gene identity alone explains R2=0.120 of log clone size; a per-gene lookup is a genuinely strong rival."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Frozen protein-model embeddings plus a head, grouped splits, transfer evaluation, calibration from read counts."
+    },
+    "J2": {
+      "score": 2,
+      "why": "Known drivers and the truncating-versus-silent gradient make nonsense obvious; TP53 hotspots should surface."
+    },
+    "J3": {
+      "score": 2,
+      "why": "The cleaned table and the biopsy-count artifact (r=0.954) are shareable findings even if the model is mediocre."
+    },
+    "J4": {
+      "score": 1,
+      "why": "No budget committed by the user; four weeks is a reasonable proposal given a 6-8 hour feature table."
+    },
+    "J5": {
+      "score": 1,
+      "why": "I state a kill condition in success_criteria, but it is not yet written into NOTES.md with a date."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "dNdScv (Martincorena et al.), the ratio of non-synonymous to synonymous mutations used as a selection test",
+        "open_weights": true,
+        "score_and_split": "Not a predictor and reports no held-out score. It outputs per-gene selection ratios with p and q values; this paper's Supplementary Tables 9-13 are exactly its output, e.g. TP53 missense ratio 79.3 in the chemoradiotherapy arm.",
+        "authors_named_unsolved": "It gives a gene-level verdict only and cannot say which individual variant within a gene will expand.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Darwinian Shift (Hall et al. 2023, Communications Biology), an open Python package testing whether selection varies along a protein",
+        "open_weights": true,
+        "score_and_split": "A statistical test, not a trained predictor, so it has no accuracy number or split. The authors' notebooks for this paper are in the GitHub repo I listed.",
+        "authors_named_unsolved": "It detects that selection is non-uniform along a protein but does not predict the effect of an unseen substitution.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "boostDM-CH (Cancer Discovery 2024), gene-specific machine-learning classifiers of clonal-haematopoiesis driver mutations built by in-silico saturation mutagenesis",
+        "open_weights": true,
+        "score_and_split": "Trained for 12 recurrent blood genes and reported to outperform an experimental base-editing screen and expert curation; evaluated on blood data, not on solid epithelium. I read the abstract, not the full evaluation.",
+        "authors_named_unsolved": "Coverage is limited to the handful of genes with enough mutations in blood cohorts.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "MetaCH (npj Precision Oncology 2025), a machine-learning classifier that flags clonal-haematopoiesis variants in cell-free DNA",
+        "open_weights": null,
+        "score_and_split": "Reported to surpass previous classification rates on cell-free DNA; the task is distinguishing blood-derived from tumour-derived variants, not predicting clone size. Exact numbers and splits not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (esm2_t33_650M_UR50D), a protein language model with open weights",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM. Embed 417 protein sequences once (estimated 1-2 hours), cache the vector at each mutated residue (~59 MB for 11,456 unique missense variants), then fit any head in minutes.",
+    "licence": "MIT (permissive)"
+  },
+  "integration": {
+    "partner_dataset": "AlphaMissense, which scores every possible human missense change, together with COSMIC/TCGA esophageal tumour mutation frequencies",
+    "join_key": "chromosome:position:reference:alternate genomic coordinate (GRCh37 in this file, inferred from TP53 at chr17:7,577,534), backed up by gene symbol plus protein change",
+    "bigger_question_one_sentence": "Are the mutations that chemotherapy and radiotherapy favour in healthy esophageal lining the same ones that go on to build tumours, or does normal tissue reward a different set of changes than cancer does?"
+  },
+  "controls": {
+    "positive_control": "Protein-truncating variants must rank above silent ones, which I verified holds in the file (median allele fraction 0.00119 for nonsense and 0.00100 for essential splice versus 0.00066 for silent), and NOTCH1, TP53 and PPM1D must come out as the largest-clone genes, which I also verified.",
+    "negative_control": "Shuffle the allele fraction within each patient and confirm the model collapses to the per-patient median; replace the protein-model features with random vectors of the same shape; fit on gene symbol alone to fix the floor at R2=0.120.",
+    "external_validation": "Martincorena et al. 2018 (Science) and Yokoyama et al. 2019 (Nature) both report normal-esophagus mutation calls with allele fractions from independent cohorts. I confirmed both papers exist but could not open their supplementary files (Science returned HTTP 403), so this remains unverified. A fully internal fallback is to train on the 21 untreated patients and test on the 49 treated ones."
+  },
+  "honest_claim_h3": "Among coding mutations detectable by a 324-gene panel in surgically removed normal esophagus from 70 patients at two hospitals, the model ranks which variants occupy the largest clones at a single time point after treatment; it cannot show that treatment caused any expansion, because no patient was sampled before therapy.",
+  "plain_idea": {
+    "one_liner": "Use a mutation's gene, position and amino-acid change to predict how large a clone it forms in normal esophagus.",
+    "train_on": "Each example is one coding mutation found in the healthy lining of the esophagus: its gene, genomic position, amino-acid substitution, variant class, and the patient's age and treatment arm. There are 23,692 such mutations from 70 patients, a count I verified by opening Supplementary Table 8.",
+    "predict": "The output is the clone's size, measured as variant allele fraction, meaning the fraction of DNA copies in the tissue that carry the mutation. It comes from deep targeted sequencing of 6,239 microdissected tissue samples at a median 590-fold read depth, and each row gives the mutant and total read counts behind it.",
+    "why_worthwhile": "Phil Jones's group at the Wellcome Sanger Institute runs laboratory competition assays on candidate mutants, and a ranked shortlist of variants predicted to thrive under chemotherapy tells them which to test next. Even if the model fails, we learn whether clone size in healthy tissue is predictable from the variant at all or is mostly chance."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "This is the only dataset of measured clone sizes in therapy-exposed healthy epithelium: 23,692 mutations, 70 patients, 6,239 biopsies, five treatment arms, all verified in the file. But boostDM-CH works on blood and dNdScv is not a trained model, so there is no like-for-like comparison, and 70 patients is small in absolute terms."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "Every row carries mutant_reads_sum and depth_sum, so the sampling error on each allele fraction is computable, and a clone seen in up to 28 biopsies of one patient gives true replicates. dNdScv reports gene-level p values, not a per-variant interval, and boostDM-CH reports a classifier score rather than a calibrated clone-size range."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "dNdScv (2017) and Darwinian Shift (2023) are statistical tests that answer a gene-level question, so beating them is not really the frame; boostDM-CH (2024) is recent and carefully evaluated but only on 12 blood genes, so it does not compete on esophagus. The real rival is the trivial per-gene median lookup, which already explains R2=0.120 of log clone size."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The condition that fails is the baseline one: boostDM-CH cannot be run on this data (different tissue, different gene set, different label), so there is no existing model to sit underneath ours. No accessible new data measures clone size in treated normal esophagus the same way."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Martincorena et al. 2018 (Science) and Yokoyama et al. 2019 (Nature) both measured mutant clone allele fractions in normal human esophagus in independent cohorts, and Li et al. 2021 (Nature) covers multiple normal tissues. I found these by search and confirmed the papers; I did not open their supplementary files. No single large public resource holds this label.",
+    "approx_items": null,
+    "join_key": "chromosome:position:reference:alternate genomic coordinate, or gene symbol plus protein change",
+    "why": "Two independent normal-esophagus cohorts give a genuine external test of whether a clone-size model trained here generalises, but each needs a supplementary table extracted by hand rather than a clean download."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Mutations from the same patient share that person's clonal history, mutation signatures and biopsy set, so a random row split would scatter one patient's clones across train and test.",
+      "409 rows are literally the same mutation in the same patient observed in a second biopsy, so an identical pair can straddle a random split.",
+      "Per-patient mutation count is driven almost entirely by how many biopsies were sequenced: I measured a correlation of 0.954 between log mutation count and log biopsy number, and the treatment arms differ roughly five-fold in biopsies per patient, so any treatment classifier can cheat on sampling effort instead of biology.",
+      "745 missense variants recur in two or more patients (one in 26), so hotspot positions can leak across a patient-level split and inflate the score.",
+      "Gene identity alone explains 12% of the variance in log clone size, so handing the model a gene symbol makes it look informative without learning anything about the specific variant.",
+      "Supplementary Tables 9-13 and the Darwinian Shift notebooks are themselves model outputs; using them as labels would distil the authors' statistics instead of measuring biology."
+    ],
+    "split": "Primary split: hold out whole patients using the 'subject' column, which I saw in the file with 70 distinct values. Secondary split: hold out whole genes to test unseen-gene generalisation. Headline experiment: train on the 21 untreated patients and test on the 49 treated ones, using the 'Group' column, which I also saw in the file.",
+    "checks": [
+      "Shuffle the allele fraction within each patient and confirm performance collapses to the per-patient median baseline.",
+      "Fit on gene symbol alone and report that number (R2=0.120 on log clone size) as the floor every richer model must clear.",
+      "Count how many held-out variants share an exact genomic position with a training variant, and report the score with those removed.",
+      "For the treatment-classification arm, recompute every feature per biopsy rather than per patient and confirm the signal survives, since raw counts track sampling effort at r=0.954."
+    ],
+    "verdict": "Manageable: every column needed to build an honest split (subject, gene, Group, mut_site) is present in the file, but the biopsy-count confound is a serious trap specifically for any model that predicts treatment arm."
+  },
+  "success_criteria": {
+    "metric": "Spearman rank correlation between predicted and observed log10 clone size on held-out patients, plus precision among the top 100 ranked variants, because the users would take a handful of top-ranked mutants into a laboratory competition assay and only the ordering matters to that decision.",
+    "baselines": "Three dummies I computed myself on all 23,692 rows: global median (explains nothing), per-gene median (R2=0.120 of log10 clone-size variance) and per-patient median (R2=0.229). Published comparator: the per-gene selection ratios in Supplementary Tables 9-13, reproducible by re-running the open dNdScv package.",
+    "success": "Spearman at least 0.40 on patient-held-out folds for log10 clone size, and at least 0.10 Spearman above the per-gene median lookup, with the gain demonstrably coming from within-gene signal rather than from gene identity.",
+    "noise_ceiling": null,
+    "kill": "If after one week a frozen protein-language-model head does not beat the per-gene median by at least 0.05 Spearman on patient-held-out folds, stop: the gene lookup is the answer and the result is a one-page note."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning on new clinical datasets; it would take a model that both predicts clone size in held-out patients and correctly flags the therapy-shifted genes, validated on an independent normal-esophagus cohort."
+    },
+    "realistic": {
+      "journal": "PLOS Computational Biology",
+      "why": "Publishes honest, modest quantitative results on real biological data; the likely outcome, a protein-language-model head that beats a gene lookup by a small margin with errors concentrating on the therapy-selected genes, fits squarely here."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Takes negative and resource-style results; even if the model never beats the gene lookup, the cleaned 23,692-row clone-size table and the sampling artifact (mutation count tracking biopsy number at r=0.954) are publishable there."
+    }
+  },
+  "pitch": {
+    "headline": "23,692 measured mutant-clone sizes from the healthy esophagus of 70 patients, most of them chemotherapy- or radiation-treated, downloaded without any access application.",
+    "what_makes_the_data_unusual": "Clone sizes measured in healthy tissue rather than tumours, across five treatment regimens, from 6,239 microdissected biopsies at median 590-fold depth. I opened the file: 28 columns, zero missing values, zero exact duplicate rows.",
+    "the_win": "Spearman 0.40 or better on held-out patients for log clone size, beating the per-gene median lookup that explains only 12% of the variance (R2=0.120, which I measured on all 23,692 rows).",
+    "even_if_it_fails": "We learn whether clone size in healthy tissue is predictable from the variant at all or is mostly drift, and we publish the sampling artifact I found: per-patient mutation count tracks biopsy number at r=0.954, not biology.",
+    "who_wants_it": "Phil Jones's lab at the Wellcome Sanger Institute, who run CRISPR and competition assays on normal epithelium, plus the clonal-haematopoiesis community worried about therapy-selected mutant clones."
+  },
+  "ml_idea": "Build a clone-fitness model for normal tissue. Input per example: one coding mutation's gene, variant class, and the frozen ESM-2 embedding at the mutated residue plus the substitution itself, with patient age and treatment arm as context. Output: log10 variant allele fraction, the measured clone size. Train with patients held out (70 groups), and beat two dummies I already computed (per-gene median R2=0.120, per-patient median R2=0.229). The headline experiment is a transfer test that cannot produce a useless answer: train only on the 21 untreated patients, then predict clone sizes in the 49 treated ones, and look at where the ranking breaks. If it transfers, cancer therapy barely reshapes which mutants win in healthy tissue. If it breaks, the genes it breaks on are the therapy-responsive ones, and the paper's own finding (TP53 and PPM1D under chemoradiotherapy, RAC1, NFE2L2 and MTOR under FLOT) becomes a built-in check that the pipeline works. A second arm joins AlphaMissense scores and COSMIC/TCGA esophageal tumour frequencies on genomic coordinate to ask whether the mutations therapy favours in healthy tissue are the ones that later build tumours. Hard rules: never use the dN/dS or Darwinian Shift tables as labels, always normalise anything patient-level by the number of biopsies sequenced, and report the gene-symbol-only score as the floor.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 2,
+    "cv_run_minutes": 10,
+    "compute_note": "File sizes, row counts and the variance-explained figures are measured, not estimated: the tables are 12 MB total and parsed in seconds. The embedding and cross-validation times are estimates, assuming ESM-2 650M runs over 417 proteins of roughly 1,000 residues on a laptop CPU at 5-20 seconds each, and a gradient-boosted head over 13,424 missense rows by 1,300 features.",
+    "cheapest_killing_check": "Half of it is already done: gene identity explains R2=0.120 and patient identity 0.229 of log clone-size variance, so a gene lookup is the real rival. The remaining check is whether sequence-model features add anything WITHIN one gene: fit on TP53's 1,087 mutations alone and see whether within-gene Spearman clears zero. If it does not, stop."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "All eight Part A killers pass on files I actually opened and counted, not on the paper's description: a single 23,692-row, 28-column sheet in a freely downloadable Supplementary Tables workbook, with the label (measured variant allele fraction, backed by per-row read counts) and the treatment arm already as columns, patient counts matching the paper exactly, and zero missing values. The raw reads are controlled-access at the European Genome-phenome Archive, but the project does not need them. The field is genuinely empty: searches found statistical selection tests (dNdScv, Darwinian Shift) and blood-focused classifiers (boostDM-CH, MetaCH), but no model that predicts clone size in normal solid epithelium, and nobody has used these measurements as supervised training data. ESM-2 fits as a frozen backbone over only 417 proteins on a laptop CPU. The headline experiment, train on untreated patients and test on treated, is informative whichever way it resolves, and the data carries its own positive control (truncating variants outrank silent, which I verified) and its own trap (per-patient mutation count tracks biopsy number at r=0.954, which I also measured, so any treatment classifier must normalise by sampling effort). The honest risk is that a per-gene lookup already explains 12% of the variance and the sequence model may add little within genes; that is a one-afternoon check on TP53 alone, and even a negative answer is worth writing down."
+}

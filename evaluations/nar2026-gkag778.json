@@ -1,0 +1,56 @@
+{
+  "paper_id": "nar2026-gkag778",
+  "title": "Structural characterization of ribosome recycling and fusidic acid inhibition in Staphylococcus aureus.",
+  "doi": "10.1093/nar/gkag778",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/empiar/EMPIAR-13144/ (raw movies, 8.8 TB); PDB 9TI5-9TI9; EMDB EMD-55944 to EMD-55948; https://doi.org/10.5281/zenodo.21379912 (code only)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Queried the EMPIAR application programming interface for EMPIAR-13144: it reports dataset_size 8.8 TB, two raw movie sets (56,478 movies x 33 frames at 5760x4092 pixels, and 39,281 x 40 frames at 4096x4096) and no processed table. Queried the Protein Data Bank entry 9TI9 (one of five deposited structures) and the Zenodo record 21379912, which is a software release (MIT licence, 'pdb_python_tools') containing analysis scripts, not data.",
+    "what_came_from_paper_text_only": "The biological interpretation (which inter-subunit bridges are broken, the back-rotation of the small subunit, fusidic acid trapping elongation factor G on the post-termination complex) and the number of distinct conformational intermediates, which I read in the abstract and data availability statement rather than measuring from particle counts."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Everything is open: five Protein Data Bank models, five Electron Microscopy Data Bank maps, and the raw movies in EMPIAR-13144, all with no login. Verified by direct application programming interface calls."},
+    "a2_label_is_a_column": {"pass": false, "note": "There is no label column anywhere. The only candidate target (which conformational state a particle is in, or whether fusidic acid is bound) does not exist as a column; it would have to be constructed by re-running three-dimensional classification on 56,478 raw cryo-electron microscopy movies, i.e. by reproducing the paper's entire image-processing pipeline. This is label construction, which the checklist defines as a Part A2 failure."},
+    "a3_inputs_present": {"pass": true, "note": "Atomic coordinates and density maps are present as files, not as references. Not scored further because A2 already fails."},
+    "a4_units_stated": {"pass": true, "note": "Angstrom pixel sizes (0.504 and 0.688 A/pixel), electron dose and map resolutions are all stated in the EMPIAR metadata I read."},
+    "a5_enough_rows": {"pass": false, "n_rows": 5, "note": "Five deposited structures and five maps. Even counting every published conformational intermediate the unit of analysis is a handful of structures, far under the ~400-row floor for classification."},
+    "a6_fits_laptop": {"pass": false, "working_set": "8.8 TB raw movies; ~1 GB if only the five maps and models are used", "note": "EMPIAR reports 8.8 TB officially, and my own pixel-count estimate of the two raw movie sets is tens of terabytes uncompressed. Any project using the particle-level data needs a graphics processing unit cluster, not a 16 GB laptop. Only the five final maps/models fit, and five items is not a dataset."},
+    "a7_counts_match_paper": {"pass": true, "note": "The five Protein Data Bank identifiers and five Electron Microscopy Data Bank accessions named in the paper all exist and cross-reference EMPIAR-13144 correctly; no count disagreement found."},
+    "a8_label_provenance": {"pass": false, "note": "If the label were 'conformational state', it comes from maximum-likelihood three-dimensional classification software (RELION/cryoSPARC) plus human model-building, so it is an algorithm's assignment of the same images that would be the features. That is leakage by construction and circularity in one, the exact A8 failure mode."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "cryoDRGN (deep generative model for continuous conformational heterogeneity in cryo-electron microscopy, Zhong et al., Nature Methods 2021)", "open_weights": true, "score_and_split": "No held-out quantitative benchmark; evaluated qualitatively by recovering known ribosome assembly states and spliceosome motions on the authors' own datasets.", "authors_named_unsolved": "Interpreting the learned latent space physically, and separating genuine conformational change from imaging artefacts.", "runnable_as_baseline": false},
+      {"name": "DeepHEMNMA (residual-network hybrid normal-mode analysis of per-particle heterogeneity, Frontiers in Molecular Biosciences 2022)", "open_weights": true, "score_and_split": "Demonstrated on synthetic data and an experimental yeast 80S ribosome-tRNA dataset; no standard split or leaderboard number reported.", "authors_named_unsolved": "Scaling to large experimental datasets and handling continuous heterogeneity without a starting reference structure.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "None applicable", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "n/a"},
+  "integration": {"partner_dataset": "Protein Data Bank / AlphaFold DB on UniProt accession for EF-G (elongation factor G) and RRF (ribosome recycling factor)", "join_key": "UniProt accession / PDB ID", "bigger_question_one_sentence": "Could not write one that this data answers: with five structures the join adds reference points, not training examples."},
+  "controls": {"positive_control": "None definable: there is no model and no held-out quantity.", "negative_control": "None: label shuffling is meaningless with five items.", "external_validation": "Related ribosome structures exist (PDB 9GHG, 8P2H, 7NHM, cited as fitting templates), but they are comparators for structural analysis, not a validation set."},
+  "honest_claim_h3": "No model claim is possible from this deposition: it is five cryo-electron microscopy structures of Staphylococcus aureus ribosome recycling intermediates plus 8.8 TB of raw movies, with no feature/label table and no measured outcome variable.",
+  "plain_idea": {
+    "one_liner": "Use cryo-electron microscopy particle images to predict which ribosome recycling state each particle occupies.",
+    "train_on": "Single-particle images of Staphylococcus aureus ribosomes from EMPIAR-13144. I verified 56,478 high-quality movies plus 39,281 screening movies, totalling 8.8 TB; the number of extracted particles per published state is not given in any file I could read.",
+    "predict": "A discrete conformational state (post-termination complex alone, with ribosome recycling factor, or with recycling factor plus elongation factor G locked by fusidic acid). The 'true answer' is whatever the authors' own three-dimensional classification assigned, which is software output, not an independent measurement.",
+    "why_worthwhile": "Automating conformational state assignment would help structural biologists, but the label here is the output of the very algorithm the model would replace, so nothing independent is learned."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "cryoDRGN and DeepHEMNMA were both developed and demonstrated on ribosome datasets of comparable or larger particle counts; this is one more such dataset, not a bigger or differently-covered one."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements of any quantity and no per-item uncertainty in the deposition; map local resolution is not a prediction confidence."},
+    "models_beatable": {"answer": "no", "why": "cryoDRGN (2021) and DeepHEMNMA (2022) are open and widely used; neither reports a benchmark number to beat, so 'beating' them is not even well defined on this data."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails every condition: we cannot run either model as a baseline on a 16 GB laptop, there is no shared evaluation split, and the target quantity is not measured the same way twice."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only machine-learning task this deposition supports is per-particle conformational state classification from the raw cryo-electron microscopy images, which requires terabyte-scale data and graphics processing units and whose labels are themselves produced by existing classification software. A sideways idea (predict fusidic acid resistance from elongation factor G sequence, using the structures as features) would draw its labels and examples entirely from other papers' minimum-inhibitory-concentration data, not from this one.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 8800.0, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Working set taken from EMPIAR's own dataset_size field (8.8 TB), cross-checked against my pixel-count estimate of the two movie sets. Nothing timed, because nothing was downloadable at this scale.", "cheapest_killing_check": "Ask how many labelled rows exist: the answer is five deposited structures. That one count, which takes two minutes against the Protein Data Bank, kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "A structural biology paper with five deposited structures and 8.8 TB of raw movies: no label column (A2), five items instead of hundreds (A5), terabyte working set needing a graphics processing unit (A6), and any conformational label would be another algorithm's output applied to the same images (A8). The Zenodo deposit is analysis code under an MIT licence, not data."
+}

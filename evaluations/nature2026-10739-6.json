@@ -1,0 +1,55 @@
+{
+  "paper_id": "nature2026-10739-6",
+  "title": "Mapping drivers of life expectancy change in Asia from 1990 to 2023.",
+  "doi": "10.1038/s41586-026-10739-6",
+  "journal": "Nature",
+  "data_url": "https://vizhub.healthdata.org/gbd-results/",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Ran paper_context.py: no PMCID, no open full text, no supplement, no accessions, no NCBI links, no Zenodo/Dryad hits. Fetched the GBD (Global Burden of Disease) Results Tool landing page (HTTP 200, a JavaScript app); no direct file download was reachable without the interactive tool.",
+    "what_came_from_paper_text_only": "From the abstract only: 34 Asian countries/territories, 1990-2023, life expectancy, cause-specific mortality and risk factors, all taken from GBD 2023 estimates. That the GBD Results Tool requires a free IHME (Institute for Health Metrics and Evaluation) account to download is from prior knowledge, not confirmed in this session."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "No data of the paper's own; the inputs are GBD 2023 estimates served via the IHME Results Tool, which (per prior knowledge, not verified here) needs an account login to export. Not checked in files."},
+    "a2_label_is_a_column": {"pass": true, "note": "Life expectancy and cause-specific death rates would be columns in a GBD export; not verified in files."},
+    "a3_inputs_present": {"pass": true, "note": "Risk-factor exposures and covariates are available as GBD columns per country-year; not verified in files."},
+    "a4_units_stated": {"pass": true, "note": "GBD exports state metric (rate, number, percent) and units; from prior knowledge, not checked."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Unit of analysis is the country-year: 34 countries x 34 years is about 1,156 highly autocorrelated rows, below the ~1,500 threshold; effective independent n is ~34 countries."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<100 MB for Asia subset (estimate)", "note": "Tabular aggregates; small."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checkable without the export; no conflict seen."},
+    "a8_label_provenance": {"pass": false, "note": "Every GBD number (life expectancy, cause-specific mortality, risk-attributable burden) is itself a model output (CODEm cause-of-death ensemble models, DisMod-MR, spatiotemporal Gaussian process regression) that already uses the same covariates as inputs; predicting it from GBD covariates would distil IHME's models, not learn from measurements."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "none (country-year tabular data; no matching pretrained backbone)", "freeze_and_head_viable": false, "hardware": "laptop CPU", "licence": "IHME non-commercial user agreement (prior knowledge)"},
+  "integration": {"partner_dataset": "World Bank World Development Indicators", "join_key": "ISO3 country code + year", "bigger_question_one_sentence": "Whether socioeconomic indicators explain regional life-expectancy gains, but the GBD side is model-derived so the join would mostly recover GBD's own covariates."},
+  "controls": {"positive_control": "Recover the COVID-19 drop in life expectancy in 2020-2021 reported in the abstract.", "negative_control": "Shuffle country labels within year.", "external_validation": "UN World Population Prospects life tables (also modelled, partly independent)."},
+  "honest_claim_h3": "A model would only predict IHME's modelled life expectancy estimates from IHME's own covariates for 34 Asian countries, not measured mortality.",
+  "plain_idea": {
+    "one_liner": "Use country-level risk-factor and development indicators to predict yearly life expectancy across 34 Asian countries.",
+    "train_on": "One row per country per year (34 countries x 1990-2023, roughly 1,156 rows, not verified), with modelled risk-factor exposures as features.",
+    "predict": "Life expectancy at birth per country-year, which comes from the Global Burden of Disease Study's own statistical models rather than a direct measurement.",
+    "why_worthwhile": "Health-policy analysts would see which risks track gains, but the answer largely restates the source models' assumptions."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict country-year life expectancy or cause-specific mortality from GBD risk-factor exposures; rejected because labels are GBD model outputs built from the same covariates.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated only; nothing downloaded or timed.",
+    "cheapest_killing_check": "Confirm whether the GBD Results Tool export works without an IHME login; label provenance (A8) kills it regardless."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A8: all labels are Global Burden of Disease model estimates derived from the same covariates, so any model would distil IHME's pipeline. Also fails A5 (about 1,156 autocorrelated country-years from 34 countries) and likely A1 (the export needs an IHME account login, not verified here). The paper itself releases no new data."
+}

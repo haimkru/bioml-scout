@@ -1,0 +1,55 @@
+{
+  "paper_id": "nature2026-11032-2",
+  "title": "Developmental xenocortication using human-derived organoids in mice.",
+  "doi": "10.1038/s41586-026-11032-2",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE301194",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found GEO GSE301194 (single-cell RNA sequencing, 8 samples) by searching GEO, since the paper has no PMC full text or NCBI links. Read the file list: 6 human-organoid graft samples (10x-style MTX/barcodes/features, ~80-105 MB matrices each), 2 whole-brain apallial (cortex-depleted) control mice (Parse-style MTX of 3.4 GB and 1.8 GB), two processed Seurat objects (an R single-cell data format) of 4.4 GB and 7.6 GB, and a 5.3 GB RAW tar. Downloaded and counted barcodes: 11,604 / 10,678 / 11,644 / 8,585 / 12,664 / 10,225 cells (65,400 in total). The features file has 68,886 rows: 36,601 human GRCh38 and 32,285 mouse mm10 genes (a mixed-species reference). Opened the female control metadata CSV: 647,200 cells, with columns for sample, species, gene/transcript counts and barcode wells, but no cell-type column.",
+    "what_came_from_paper_text_only": "Abstract only (paywalled, no PMC copy): graft volume, cell-type diversity, calcium imaging, electrophysiology and behaviour. I found no deposited calcium-imaging, electrophysiology or behaviour tables. The 91.9% graft-volume figure comes from press coverage, not from files. Cell-type annotations are presumably inside the Seurat RDS files, which I did not open because they are over the 50 MB cap."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO GSE301194 is public, no login needed. Checked the file list and downloaded the barcode, feature and metadata files."},
+    "a2_label_is_a_column": {"pass": false, "note": "The open MTX and metadata files have no outcome column, only sample, line, day and QC counts (checked in files). Cell-type labels, if present, sit only in the 4.4-7.6 GB Seurat objects, and the behaviour and imaging readouts are not deposited, so any prediction target would have to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Gene-by-cell count matrices are present, with Ensembl gene IDs in the features files (checked)."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI (unique molecular identifier) counts, the standard single-cell unit; units are implicit in the format."},
+    "a5_enough_rows": {"pass": false, "n_rows": 65400, "note": "65,400 graft cells counted from the barcodes, but they come from only 6 grafts, 2 stem-cell lines and 2 time points (checked in sample titles). Any biological contrast has n = 6 units, not 65,400."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~560 MB of compressed graft matrices; control mouse matrices are 5.1 GB", "note": "The graft matrices fit in RAM; the control mice and Seurat objects would need subsetting."},
+    "a7_counts_match_paper": {"pass": true, "note": "No cell counts were available from the paper text (abstract only) to compare, so this is unverified rather than contradicted."},
+    "a8_label_provenance": {"pass": false, "note": "The only label obtainable at scale is cell-type identity, which authors assign by clustering the same expression features. Predicting it from expression is circular (the label is computed from the features)."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "Geneformer or scGPT (single-cell foundation models) would match the data type", "freeze_and_head_viable": null, "hardware": "CPU feasible for 65k cells", "licence": "Not assessed (rejected at Part A)"},
+  "integration": {"partner_dataset": "Developing human cortex atlases (e.g. primary fetal cortex single-cell data) via Ensembl gene IDs", "join_key": "Ensembl gene ID", "bigger_question_one_sentence": "How closely do human organoid cells matured in a mouse cortex match primary human fetal cortex? That is an atlas-mapping analysis, not a supervised prediction task."},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "At best, a classifier would recover author-assigned clusters among 65,400 cells from 6 grafts derived from 2 stem-cell lines; that's circular and has no measured outcome.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from human organoid grafts in mice to predict cell identity or graft condition.",
+    "train_on": "Gene-expression profiles of 65,400 single human cells (verified barcode count) from 6 grafts in cortex-depleted mice.",
+    "predict": "Cell type, which the authors assign by clustering the same expression data, or graft line/time point (6 units). Neither is an independent measurement.",
+    "why_worthwhile": "Little. The data suit atlas comparison of grafted versus primary human cortex, not supervised ML. The behaviour and calcium-imaging readouts that would make a real label are not deposited."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "None viable. Cell-type annotation from expression is circular (A8), the true experimental unit is 6 grafts (A5), and the functional and behavioural readouts are not in any deposited file (A2).",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.56,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Only file sizes were measured; no timing was done because the project was rejected at Part A.",
+    "cheapest_killing_check": "Count independent units: 6 grafts from 2 lines (done, from the GEO sample titles)."
+  },
+  "verdict": "reject",
+  "verdict_reason": "GEO GSE301194 holds only single-cell count matrices: 65,400 graft cells from 6 grafts and 2 stem-cell lines. There is no measured outcome column, cell-type labels would be circular because they come from clustering the same expression, and the behaviour and imaging data are not deposited."
+}

@@ -1,0 +1,93 @@
+{
+  "paper_id": "nature2026-11050-0",
+  "title": "The lipidomic architecture of the mouse brain.",
+  "doi": "10.1038/s41586-026-11050-0",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.15379565",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed all three processed Zenodo records (15379499: peaks.parquet 49.4 GB; 15379534: multimodal.zip 39.6 GB; 15379565: maindata_2.parquet 9.2 GB, csv.zip 3.7 GB, mixed.zip 1.2 GB, STalignOutput.zip 115 MB). Using partial (ranged) downloads I read the parquet footers: maindata_2 has 7,570,647 pixel rows x 289 columns (173 named lipid intensity columns + section, sex, condition, Allen atlas region acronym/name/structure path, CCF (Common Coordinate Framework) x/y/z, lipizone and cell-type-neighbour labels); peaks.parquet has 10,536,256 rows x 1,416 columns (about 1,385 m/z (mass-to-charge) peak columns + metadata). Read 5 metadata columns for all 7.57M rows: 12 samples (ReferenceAtlas 1,726,060 px, SecondAtlas 2,137,479, Male1-3, Female1-3, Pregnant1/2/4, GBA1 disease 335,918); region acronym missing in 0.01%; 660 distinct regions, 517 with 1,000 or more pixels; 0 rows flagged BadSection. Read 5 lipid columns from the GBA1 row group: values 0-0.1, no NaNs. Extracted and opened 6 small CSVs from csv.zip: acquisitions_metadata (138 sections, 18 flagged bad, includes 6 CERT1 disease sections not in maindata), xgb_genestolipids (173 lipids, gene-to-lipid test Pearson r), metrics_imputation_df (841 peaks, imputation validation r), QuantitativeLCMS (liquid chromatography mass spectrometry, units 'nmol% total lipid', 4 female vs 4 male), celltype_lipidomes, brainlipids_unique.",
+    "what_came_from_paper_text_only": "That intensities are uMAIA-normalized jointly across all sections; the 172 lipids / 109 sections / 11 mice / 7.2M pixel counts; that Allen region labels come from manual ABBA registration plus STalign warping using peak m/z 845.528 as the target image; the existence and performance of the authors' 'Lipid2position' model (I did not see its numbers); that PI annotations are tentative; CC BY 4.0 licence of the article (the Zenodo records list no licence). I did not identify which lipid column corresponds to m/z 845.528."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open Zenodo records, no login; verified by reading parquet footers and zip directories with ranged requests. Main table is a single 9.2 GB parquet, above the 50 MB cap, so only column subsets were read."},
+    "a2_label_is_a_column": {"pass": true, "note": "Allen atlas region (acronym, name, structure_id_path, 11 hierarchy levels) is a column on every pixel row in maindata_2 (verified). Sex and Condition are also columns."},
+    "a3_inputs_present": {"pass": true, "note": "173 annotated lipid intensity columns per pixel in maindata_2, plus about 1,385 raw m/z peak columns in peaks.parquet (verified in schema). No identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Intensities are unitless normalized relative values (0-0.1 in the 5 columns checked); no units column, but all on one scale normalized by the authors (paper text). Weak pass."},
+    "a5_enough_rows": {"pass": true, "n_rows": 7570647, "note": "7.57M labelled pixels verified, but the independent unit is the brain: 12 brains (verified), of which 2 densely sampled. Pixels are strongly spatially correlated, so effective n is far smaller."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.7 GB for 1M subsampled pixels x 173 float32 lipids; full table ~5.2 GB in float32", "note": "Column projection plus row-group subsampling from the remote parquet worked; reading 5 columns of all rows took about 2 minutes. No GPU needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "File has 7,570,647 pixels and 12 samples vs paper's 7.2M pixels and 11 mice; the extra sample is a GBA1 disease brain the paper's count likely excludes. 173 lipid columns vs paper's 172 (one is a merged isobaric label). Explainable."},
+    "a8_label_provenance": {"pass": true, "note": "Region labels come from atlas registration, not a model of the lipids, but the paper says registration was guided by manual borders on the images and by peak m/z 845.528. That is partial leakage: drop that peak and its correlates. Lipizone labels are clusters of the same lipid features, so they are circular and must not be targets."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One parquet table holds features, region labels, sex, condition, section ID (verified schema)."},
+    "B2": {"score": 2, "why": "Parquet footer and column reads parsed directly with pyarrow over ranged requests."},
+    "B3": {"score": 2, "why": "All sections normalized jointly by uMAIA per paper; values on one 0-0.1 scale in files."},
+    "B4": {"score": 2, "why": "No censored values; 0 NaNs in 5 lipid columns checked; region missing in 0.01% of rows."},
+    "B5": {"score": 1, "why": "Some sections re-acquired ('S25_duplicate' path; three sections share one Macosko slice); easy to dedupe by SectionID."},
+    "B6": {"score": 1, "why": "No data dictionary on Zenodo; column names self-explanatory; notebooks in GitHub repo (not opened)."},
+    "C1": {"score": 1, "why": "Transfer of region classifier to pregnant/disease brains is informative either way, but authors already characterized pregnancy remodelling."},
+    "C2": {"score": 1, "why": "Authors' Lipid2position predicts CCF position from lipids; CBLA does MSI region classification on other data."},
+    "C3": {"score": 1, "why": "Weak diversity/transfer angle: across sex, pregnancy, GBA1 disease brains; core task already done."},
+    "C4": {"score": 1, "why": "Registration is manual ABBA plus STalign; automated lipid-based localization saves some time."},
+    "C5": {"score": 2, "why": "Majority-class and per-region nearest-centroid dummies; authors' XGBoost test Pearson values in xgb_genestolipids.csv."},
+    "D1": {"score": 1, "why": "MetaboFM (bioRxiv MSI foundation model) exists; weights availability not verified; no standard lipid-vector backbone."},
+    "D2": {"score": 1, "why": "MetaboFM works on image patches, not 173-lipid vectors; caching embeddings unclear without GPU."},
+    "D3": {"score": 1, "why": "Licence of MetaboFM weights unknown; paper data CC BY 4.0 per article."},
+    "E1": {"ok": true, "why": "Leave-one-brain-out split possible; SectionID and Sample columns verified."},
+    "E2": {"ok": true, "why": "12 brains verified in maindata; 9 sparsely sampled brains have 267k-484k pixels each."},
+    "E3": {"ok": true, "why": "Majority region and per-region mean-lipid nearest-centroid computable from the table."},
+    "E4": {"ok": true, "why": "Three naive males and three females give inter-animal replicate variation."},
+    "E5": {"ok": true, "why": "Paper names marker lipids: PC 40:6 cerebellum, SM 36:2;O2 cortical subplate; both columns present."},
+    "E6": {"ok": true, "why": "Label shuffling and lipid-class block ablation trivially runnable on the table."},
+    "E7": {"ok": true, "why": "Authors' held-out validation brain (SecondAtlas) plus independent CBLA MSI data on Zenodo 18772221 (not opened)."},
+    "E8": {"ok": true, "why": "Gene-to-lipid XGBoost train/test Pearson per lipid in xgb_genestolipids.csv (opened)."},
+    "G1": {"score": 2, "why": "Allen CCF coordinates and structure IDs on every pixel (verified)."},
+    "G2": {"score": 2, "why": "Allen Brain Cell Atlas MERFISH (Yao et al.) joinable on CCF coordinates; authors already did it."},
+    "G3": {"score": 1, "why": "Pixel to nearby cells is a spatial many-to-many join needing a radius rule."},
+    "G4": {"score": 1, "why": "Gene expression predicting lipids already done by authors (about 56% variance per paper)."},
+    "H1": {"score": 2, "why": "Every pixel of each section measured; all regions represented, not only positives."},
+    "H2": {"score": 1, "why": "One lab, one mouse strain, one MALDI platform, positive ion mode only; 12 brains."},
+    "H3": {"score": 2, "why": "Claim stated precisely below, scoped to positive-mode lipids in 12 mice."},
+    "H4": {"score": 2, "why": "Paper flags tentative PI annotations, positive-mode limits, and per-brain sampling density."},
+    "I1": {"score": 2, "why": "La Manno lab (EPFL) and the MALDI imaging community using lipid atlases for registration."},
+    "I2": {"score": 1, "why": "Lipid-only localization could replace manual registration; marginal for most users."},
+    "I3": {"score": 1, "why": "Region accuracy roughly matches the registration decision; boundary pixels matter most."},
+    "I4": {"score": 1, "why": "Nearest-centroid per region may get most of the way; ML helps for fine subregions."},
+    "J1": {"score": 1, "why": "Tabular classification with grouped splits; no pretrained backbone to learn transfer."},
+    "J2": {"score": 1, "why": "Anatomy errors are interpretable via Allen hierarchy, but lipid biology needs an expert."},
+    "J3": {"score": 2, "why": "Per-brain transfer table is shareable even if the model only matches centroids."},
+    "J4": {"score": 1, "why": "No stated budget; estimate one to two weeks."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Lipid2position (authors' model in this paper)", "open_weights": null, "score_and_split": "Shown as scatterplots of true vs predicted 3D CCF coordinates per pixel (Extended Data); I did not see a numeric score or split.", "authors_named_unsolved": "Not retrieved for this model.", "runnable_as_baseline": null},
+      {"name": "Authors' XGBoost gene-to-lipid models (xgb_genestolipids.csv)", "open_weights": true, "score_and_split": "Per-lipid test Pearson r, e.g. 0.53-0.69 for ceramides (opened file); paper says the full transcriptome explains about 56% of lipid variance.", "authors_named_unsolved": "Enzyme transcripts did not trivially predict their lipid products (81 of 338 pairs R > 0.5).", "runnable_as_baseline": true},
+      {"name": "Computational Brain Lipid Atlas (CBLA), MSI plus explainable ML", "open_weights": null, "score_and_split": "Ensembles of supervised models over 123 mouse brain regions on its own MSI data (search summary only; numbers not retrieved).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "MetaboFM, spatial metabolomics foundation model (bioRxiv 2025)", "open_weights": null, "score_and_split": "Average macro F1 0.61 on visual question answering tasks (search summary); not a region classifier on this data.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "None suitable; MetaboFM (image-patch MSI foundation model) is the only candidate and its weights were not verified", "freeze_and_head_viable": false, "hardware": "Laptop CPU for gradient boosting or logistic regression on 173 lipid features", "licence": "Article CC BY 4.0; Zenodo records list no licence; MetaboFM licence unknown"},
+  "integration": {"partner_dataset": "Allen Brain Cell Atlas MERFISH (Yao et al.) cell-type maps", "join_key": "Allen CCF (Common Coordinate Framework) x/y/z coordinates and structure ID", "bigger_question_one_sentence": "Does local cell-type composition explain the lipid differences that pregnancy or GBA1 disease cause within the same region, or do they go beyond cell composition? The authors already partly answered this for naive brains."},
+  "controls": {"positive_control": "Recover known marker lipids (PC 40:6 in cerebellum, SM 36:2;O2 in cortical subplate, hexosylceramides in fibre tracts), and predict the trivially learnable CCF z coordinate (front-to-back position) within the densely sampled reference brain.", "negative_control": "Shuffle region labels within each section; drop the registration-target peak m/z 845.528 and its correlates to test for leakage.", "external_validation": "Train on ReferenceAtlas and test on SecondAtlas, the authors' designated validation brain; then test on pregnant and GBA1 brains."},
+  "honest_claim_h3": "Among 25-micrometre pixels from 12 mice of one strain imaged in positive ion mode in one lab, the model predicts the atlas-registered brain region from 173 normalized lipid intensities, with labels that partly depend on one registration peak.",
+  "plain_idea": {
+    "one_liner": "Use the lipid makeup of a tiny brain spot to predict its anatomical region, then test it on pregnant and diseased brains.",
+    "train_on": "For each 25-micrometre spot on a brain slice, the relative amounts of 173 membrane lipids measured by imaging mass spectrometry; 7,570,647 spots from 12 mice (verified).",
+    "predict": "The Allen atlas brain region of each spot, which comes from aligning each slice to the standard mouse brain atlas, done by hand plus automatic warping.",
+    "why_worthwhile": "Lipid imaging labs could place slices in the atlas without manual alignment. If accuracy drops in pregnant or GBA1 brains, the drop shows which regions change their lipids."
+  },
+  "pitch": {
+    "headline": "7.57 million brain spots, each with 173 normalized lipid amounts and an atlas region, from 12 mice including pregnant and GBA1-disease brains, in one open table.",
+    "what_makes_the_data_unusual": "Whole-brain lipid imaging covering 660 atlas regions (517 with at least 1,000 spots) in one table, with sex, pregnancy and disease brains processed through the same pipeline. Normalization comes from the paper; the counts are verified.",
+    "the_win": "Quantify per-region transfer accuracy from naive male brains to pregnant and GBA1 brains, beyond the spread between the three naive males. No published number exists to beat.",
+    "even_if_it_fails": "If a per-region average lipid profile classifies as well as any model, then lipid-based registration is a lookup table, which is worth knowing. Otherwise little is learned beyond the paper.",
+    "who_wants_it": "The La Manno lab (EPFL) and MALDI imaging groups who register brain slices to the Allen atlas by hand."
+  },
+  "ml_idea": "Grouped leave-one-brain-out classification of the Allen region (at several hierarchy levels) from 173 lipid intensities, using gradient boosting against a nearest-centroid baseline. Report accuracy decay from naive males to females, pregnant and GBA1 brains, and drop peak m/z 845.528 to check for registration leakage.",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.7, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": 30, "compute_note": "Estimated: 1M subsampled pixels x 173 float32 is about 0.7 GB; reading 5 columns for all rows over ranged HTTP took about 2 min (timed). CV time is a guess for LightGBM over 12 folds.", "cheapest_killing_check": "Train nearest-centroid and gradient boosting on ReferenceAtlas, test on SecondAtlas at division level. If boosting beats centroids by under 2 points, the ML is unnecessary."},
+  "verdict": "park",
+  "verdict_reason": "Data is open, clean and model-ready (one 7.57M-row table with region labels, verified), but no freeze-and-head backbone fits (D fails). The authors already predict position from lipids (Lipid2position) and lipids from genes. The independent unit is only 12 brains, and region labels partly come from one lipid peak used in registration."
+}

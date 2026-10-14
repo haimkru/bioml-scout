@@ -1,0 +1,48 @@
+{
+  "paper_id": "cell2026-07-016",
+  "title": "CRISPR screens identify targets to rescue age-related T cell dysfunction in cancer.",
+  "doi": "10.1016/j.cell.2026.07.016",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE306058",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Paper is paywalled with no Europe PMC full text and no PubMed-to-GEO link. Found the series by GEO (Gene Expression Omnibus) search: GSE306058 (single-cell CRISPR screen, 11 samples, 1.52 GB RAW.tar; per-sample tars 43-174 MB) and GSE310273 (ATAC-seq, a chromatin-accessibility assay; 48 samples). Downloaded and opened sample GSM9192242 (AgedtdLN1): 10x matrix with 32,285 genes plus 412 guide features (about 6 guides per gene, so roughly 68 targets including controls), 9,870 cell barcodes, 8,460 guide-called cells, of which 4,712 carry exactly one guide spread over 63 target labels (median 42 cells per target). Opened the ATAC normalized count table: 53,868 peaks by 48 samples (3 perturbations x 4 T-cell subsets x young/aged x 2-3 replicates).",
+    "what_came_from_paper_text_only": "Biological conclusions (Dusp5, Zfp219, human ZNF219 survival association) come from the abstract only. The other 10 screen samples, the exact full target list and the total cell count were not opened; per-sample cell numbers come from GEO's design text (target 10,000 cells per run, 2 pooled biological replicates per group)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO GSE306058 and GSE310273 are public; one screen sample and the ATAC matrix downloaded without login."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: the guide called in each cell is a column (protospacer_calls_per_cell.csv) and host age is in the sample name. But any perturbation-effect label (per-gene shift in expression or state) would have to be computed by us from cell profiles."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: full gene-by-cell count matrices with gene symbols and Ensembl IDs are present."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI (unique molecular identifier) counts in standard 10x format; ATAC values are normalized counts per peak."},
+    "a5_enough_rows": {"pass": false, "n_rows": 68, "note": "Checked in one sample: 412 guides / about 6 per gene = about 68 perturbed genes; the honest unit for perturbation-response prediction is the gene (x2 ages), not the roughly 100k cells. Per-condition only 4 tumour replicates (pooled mice). Far below 400 labelled units."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 1.5 GB compressed for all 11 screen samples", "note": "Sparse matrices fit in 16 GB RAM if loaded per sample."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper text unavailable; GEO sample counts (11 screen, 48 ATAC) match their own metadata."},
+    "a8_label_provenance": {"pass": true, "note": "Guide identity and host age are experimental facts, not model outputs."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Community machine-learning challenge on predicting gene-knockout effects on T cell differentiation (PubMed 42239045; in vivo Perturb-seq of 73 genes in OT-1 CD8 T cells in mouse melanoma)", "open_weights": null, "score_and_split": "Held-out perturbed genes; abstract reports performance driven mainly by gene features derived from other perturbation data. Exact numbers not retrieved.", "authors_named_unsolved": "Not retrieved beyond the abstract summary.", "runnable_as_baseline": null},
+      {"name": "GEARS, scGPT, scFoundation, CPA and simple mean baselines (benchmarked in PerturBench, scPerturBench and BMC Genomics 2025)", "open_weights": true, "score_and_split": "Benchmarks on held-out perturbations report that a training-mean baseline matched or beat scGPT and scFoundation.", "authors_named_unsolved": "Generalization to unseen perturbations and to primary/in vivo cells rather than cell lines.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models)", "freeze_and_head_viable": true, "hardware": "CPU feasible for about 100k cells with small checkpoints, slow", "licence": "scGPT MIT; Geneformer Apache-2.0"},
+  "integration": {"partner_dataset": "Community-challenge in vivo Perturb-seq of 73 genes in OT-1 T cells in melanoma (same model system), joinable on target gene symbol", "join_key": "mouse gene symbol of perturbed gene", "bigger_question_one_sentence": "Do knockout effects measured in young-host tumours predict effects in aged-host tumours?"},
+  "controls": {"positive_control": "Knockout target gene's own mRNA dropping in its guide group; Dusp5 knockout raising proliferation signatures as the paper reports.", "negative_control": "Non-targeting or OTC (likely a safe-harbour control) guides; shuffled guide labels.", "external_validation": "The 73-gene community-challenge Perturb-seq in the same OT-1/melanoma system."},
+  "honest_claim_h3": "With about 68 knocked-out genes in one mouse T-cell line and one tumour model, a model could at most describe how each knockout shifts T-cell states in young versus aged hosts, not predict effects of unseen genes.",
+  "plain_idea": {"one_liner": "Use single-cell gene expression of knockout T cells to predict how each knockout changes T-cell states differently in old versus young mice.", "train_on": "Per-cell expression profiles of transferred mouse killer T cells carrying one of about 68 gene knockouts, from 11 tumour and lymph-node samples; about 4,700 single-guide cells per sample in the one sample checked.", "predict": "The shift in T-cell state per knockout and host age, computed from the cells' measured RNA; the knockout identity comes from sequenced guide barcodes.", "why_worthwhile": "Immuno-oncology groups could prioritize knockouts that rescue T cells in older patients; but with about 68 genes it is a descriptive analysis, not an ML training set."},
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Adds host age (young vs aged) that the 73-gene challenge dataset lacks, but has similar or fewer perturbed genes (about 68 vs 73)."},
+    "confidence_score": {"answer": "no", "why": "Only 2 pooled biological replicates per group per run, too few to calibrate per-gene uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "Benchmarks show foundation models barely beat a mean baseline, but with about 68 genes no model could be shown better with confidence."},
+    "guaranteed_improvement": {"answer": "no", "why": "No joined data measures the same quantity the same way under a shared split; the challenge dataset is a different lab and lacks aged hosts."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Perturbation-response prediction or age-transfer of knockout effects in in vivo T cells; killed by about 68 perturbed genes as the true sample unit.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 1.5, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from file sizes of one opened sample (43 MB compressed, 9,870 cells); nothing timed.", "cheapest_killing_check": "Count distinct targeted genes in features.tsv: about 68 (412 guides / 6), already done."},
+  "verdict": "reject",
+  "verdict_reason": "A5 fails: the data is public and clean 10x output, but the real unit for any predictive model is the perturbed gene (about 68) across 4 replicates per age, which is far too few, and a 73-gene in vivo T-cell Perturb-seq with established benchmarks already exists."
+}

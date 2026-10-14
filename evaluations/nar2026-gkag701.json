@@ -1,0 +1,85 @@
+{
+  "paper_id": "nar2026-gkag701",
+  "title": "A potential RNA-RNA distal interaction competing with a functional pseudoknot in the 3'-untranslated region of SARS-like coronaviruses.",
+  "doi": "10.1093/nar/gkag701",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://europepmc.org/api/fulltextRepo?pprId=PMC13369322 (supplementary zip; only file of interest is gkag701_supplemental_file.pdf)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the full Europe PMC supplement (4.75 MB): 12 figure images plus one 16-page PDF. Extracted all 16 pages of PDF text with pypdf and probed pages 1-6 with pdfplumber: Tables S1-S5 exist only as embedded bitmap images (0 extractable table rows, 1-2 images and ~300 text characters per page, captions only). No CSV/TSV/XLSX/FASTA anywhere; no accession for a deposited dataset.",
+    "what_came_from_paper_text_only": "The counts inside those image-only tables: 16,923 initial LRIscan hits filtered to 1,029 candidate long-range pairings, of which 48 involving the 5'UTR/3'UTR/frameshift region are listed in Table S5. Also from text only: the gel-shift experiments, the 5-6 mutant recombinant viruses, and BLASTn conservation hits (503 for 3SL1+2, 466 for ORF7b; 40 and 41 unique)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Data availability says only 'available in the article and in its online supplementary material'. The supplement is one PDF whose tables are pictures, so there is no machine-readable file to download at all (verified by extracting the PDF)."},
+    "a2_label_is_a_column": {"pass": false, "note": "There is no table with a prediction target. Any label (does a long-range RNA-RNA contact form? does the mutant virus rescue?) would have to be read off gel images and figure panels and typed in by hand."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are identifiable: SARS-CoV-2 NC_045512, MT246667, SARS-CoV-1 NC_004718, bat Rp3 DQ071615, all fetchable from NCBI; genomic coordinates given in the text."},
+    "a4_units_stated": {"pass": true, "note": "Where numbers appear they carry units (interaction energy in kcal/mol, nucleotide distances, RNA concentration 2 micromolar), read from the text and table captions."},
+    "a5_enough_rows": {"pass": false, "n_rows": 48, "note": "The largest table is 48 predicted contacts (and it is an image). Experimental labels number roughly a dozen gel lanes and about 6 mutant viruses. Far below the ~1,500-row (or ~400-row classification) bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "4.75 MB supplement; a 30 kb viral genome", "note": "Trivially laptop-sized; size was never the problem."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked: the counts (16,923 / 1,029 / 48) live inside bitmap tables, so there is no download to compare the paper against."},
+    "a8_label_provenance": {"pass": false, "note": "The only list-like data (Table S5) is output of LRIscan, a thermodynamic long-range-interaction predictor, cross-checked with IntaRNA. Training on it would distil those tools rather than learn from measurement."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RNA language model approach to SARS-CoV-2 genome interactions (Hou et al., 2025, PMC12624540) using RNAErnie and deepRAM on vRIC-seq interaction data",
+        "open_weights": true,
+        "score_and_split": "Reported AUC (area under the receiver operating characteristic curve) around 0.92-0.93 for k-mer embedding baselines with RNAErnie best, on their own train/test split of viral RNA fragment pairs; split details not verified by me beyond the abstract-level summary returned by search.",
+        "authors_named_unsolved": "Not verified - I only saw the search summary, not the discussion section.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "LRIscan (Fricke & Marz 2016), the thermodynamic/comparative long-range interaction scanner this paper itself used, plus IntaRNA 2.0",
+        "open_weights": true,
+        "score_and_split": "No machine-learning benchmark number; it is an energy-and-conservation scanner. In this paper it produced 16,923 hits, filtered to 1,029, then 48 - i.e. a very low precision screen (per the paper text).",
+        "authors_named_unsolved": "Distinguishing real tertiary contacts from thermodynamically plausible ones remains manual, as this paper's own workflow shows (text only).",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model trained on ~23 million non-coding RNA sequences)",
+    "freeze_and_head_viable": null,
+    "hardware": "CPU would suffice for a 30 kb genome's worth of windows, but there is no label set here to fit a head on.",
+    "licence": "RNA-FM code is on GitHub (ml4bio/RNA-FM); licence not checked because the project died at Part A."
+  },
+  "integration": {
+    "partner_dataset": "COMRADES/vRIC-seq SARS-CoV-2 RNA-RNA interactome maps (Ziv et al. 2020 Mol Cell; Zhang et al. 2021 Nat Commun), joinable on SARS-CoV-2 genomic coordinates (NC_045512)",
+    "join_key": "genomic coordinate pairs on NC_045512",
+    "bigger_question_one_sentence": "Which thermodynamically plausible long-range RNA-RNA contacts in a viral genome are actually formed in cells - but that question is answered using the crosslinking datasets themselves, not this paper, which contributes only one validated contact."
+  },
+  "controls": {
+    "positive_control": "Would be the known local 3'UTR pseudoknot and the previously crosslink-detected contacts flagged in Table S5 - but those sit in an image, not a file.",
+    "negative_control": "Not applicable; no model can be trained on this paper's data.",
+    "external_validation": "The published SARS-CoV-2 RNA-RNA interactome datasets, which are separate papers with their own deposited data."
+  },
+  "honest_claim_h3": "With this paper's data alone, a model could claim nothing beyond 'it reproduces LRIscan's energy ranking for 48 hand-picked candidate contacts in one viral genome'.",
+  "plain_idea": {
+    "one_liner": "Use viral genome sequence to predict which far-apart regions of the RNA genome physically touch each other.",
+    "train_on": "What I considered: windows of viral RNA sequence paired with other windows, labelled as contacting or not. This paper supplies 48 candidate pairs (one experimentally followed up) and a handful of gel and virus-rescue results - verified as image-only content, so effectively zero usable examples.",
+    "predict": "Whether two distant stretches of the same RNA genome form a base-paired tertiary contact. A trustworthy answer would come from crosslinking-and-sequencing experiments (COMRADES, vRIC-seq) or gel-shift assays, not from this paper.",
+    "why_worthwhile": "Virologists designing antivirals or attenuated vaccine strains want to know which genome contacts are functionally essential; but the training labels for that have to come from the interactome papers, not from this one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rejected idea: fine-tune an RNA language model to tell genuine long-range RNA-RNA contacts from thermodynamically plausible decoys in viral genomes. The labels for that project exist in the SARS-CoV-2 crosslinking interactome papers (Ziv 2020, Zhang 2021) - which are the datasets to evaluate instead - not in this single-contact mutagenesis study.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.005,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Only the 4.75 MB supplement was handled; sizes are measured, not estimated. Modelling costs are null because there is no dataset to model.",
+    "cheapest_killing_check": "Open the supplement and ask whether any table is machine-readable: five minutes with pypdf showed all five tables are bitmap images and the largest has 48 rows."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A single-mechanism wet-lab virology paper with no deposited data: the entire supplement is one PDF whose five tables are pictures. Part A fails four ways - nothing machine-readable to download (A1), no label column (A2), at most 48 rows and those are software predictions (A5, A8). The interesting ML question (which plausible long-range viral RNA contacts are real) belongs to the crosslinking interactome datasets this paper cites, and a 2025 RNA-language-model paper already attacks it."
+}

@@ -1,0 +1,44 @@
+{
+  "paper_id": "nature2026-10271-7",
+  "title": "Lifespan single-cell transcriptomic atlas of the human prefrontal cortex.",
+  "doi": "10.1038/s41586-026-10271-7",
+  "journal": "Nature",
+  "data_url": "https://datasets.cellxgene.cziscience.com/13e8f1dd-962f-47b7-9cf7-c71d2b21b8a5.h5ad",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "CELLxGENE (public single-cell data portal) curation API metadata for the PsychAD collection 84ce6837: the 'Aging_Cohort' dataset lists 1,332,155 cells, 291 donors, 85 age-stage terms (1 month to old age), one tissue (dorsolateral prefrontal cortex), one assay (10x 3' v3), 25 cell types, H5AD size 12,421,671,635 bytes (12.4 GB, not downloaded). The explorer ID cited in the paper (8c3ae5ad...) returned 404 on every API route tried. The paper's GitHub repo (DLPFC_Lifespan_Atlas) holds only analysis code, no data tables.",
+    "what_came_from_paper_text_only": "284 neurotypical donors aged 0-97, 1,307,674 nuclei, 27 subclasses; Synapse syn52396927 needs a data-use agreement; a 306-donor replication set drawn from published studies. Supplementary tables were not retrievable (Europe PMC supplementaryFiles timed out). I did not confirm that Aging_Cohort is exactly the paper's cohort; the donor and cell counts differ slightly."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "The official Synapse copy needs a signed data-use agreement (fail), but CELLxGENE hosts a public H5AD (an AnnData single-cell file) of the matching Aging_Cohort. I checked the metadata only; the file was not downloaded because it is 12.4 GB."},
+    "a2_label_is_a_column": {"pass": true, "note": "Donor age is stored in the standard development_stage column as ontology terms such as '45-year-old stage' (seen in the CELLxGENE metadata). Turning these into numbers is a simple parse, not building a new label."},
+    "a3_inputs_present": {"pass": true, "note": "Per CELLxGENE schema 7.1.0 the file holds the gene-by-cell count matrix with Ensembl gene IDs (from the portal's standard schema; I did not open the file)."},
+    "a4_units_stated": {"pass": true, "note": "Age is given in years, or in months for infants, inside the ontology term. The counts are raw UMI (unique molecular identifier) counts under the CELLxGENE schema."},
+    "a5_enough_rows": {"pass": false, "n_rows": 291, "note": "1.33M cells, but each age label belongs to a donor, so a donor is one independent example: 291 donors in CELLxGENE metadata (284 per the paper). That is below the ~1,500 threshold for regression and the ~400 for classification. Same trap as scCT-DB."},
+    "a6_fits_laptop": {"pass": false, "working_set": "12.4 GB H5AD; a per-donor, per-cell-type summary table would be under 100 MB", "note": "The raw download is over the 5 GB working-set limit and the 50 MB download cap. Streaming it in chunks to make per-donor summaries is possible but slow, and I did not test it."},
+    "a7_counts_match_paper": {"pass": true, "note": "Close but not exact: CELLxGENE lists 291 donors and 1,332,155 cells, the paper 284 donors and 1,307,674 nuclei. The paper probably applied extra filters, which are not resolved."},
+    "a8_label_provenance": {"pass": true, "note": "Chronological age at death is a recorded donor fact, not a model output, and it is not computed from expression."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Muralidharan et al. 2025, cell-type-specific brain aging clocks from single-nucleus RNA (Advanced Science)", "open_weights": null, "score_and_split": "Correlation with true age about 0.9 for pseudobulk clocks and about 0.8 for single-cell clocks (oligodendrocyte precursors, microglia, excitatory neurons) on held-out test samples from 31 donors (73,941 nuclei); they report it holds up on independent datasets. Read in search snippets; full text was blocked by a captcha.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Geneformer or scGPT (single-cell foundation models)", "freeze_and_head_viable": null, "hardware": "Embedding 1.3M cells on a CPU is impractical; would need subsampling or a GPU", "licence": "CELLxGENE data under CC BY 4.0 (a permissive licence; portal default, not checked per dataset)"},
+  "integration": {"partner_dataset": "Other PsychAD cohorts on CELLxGENE (MSSM 1,042 donors, HBCC 300, RADC 152; metadata verified)", "join_key": "Ensembl gene IDs; donor_id", "bigger_question_one_sentence": "Do cell-type-specific age clocks trained on neurotypical brains show faster aging in donors with Alzheimer's disease or psychiatric disorders?"},
+  "controls": {"positive_control": "Known age-linked shifts such as the drop in SST (somatostatin) interneurons and the rise in microglial immune genes reported in the paper.", "negative_control": "Shuffle donor ages and confirm the error falls back to that of predicting the mean age.", "external_validation": "The 306-donor replication cohort assembled from published studies (paper text only), or the Muralidharan 31-donor set."},
+  "honest_claim_h3": "Predicts chronological age at death from prefrontal cortex single-nucleus expression, among about 291 post-mortem donors from two US brain banks with no brain diagnosis.",
+  "plain_idea": {
+    "one_liner": "Use the gene activity of each brain cell type to predict how old the donor was at death.",
+    "train_on": "Expression profiles summed per donor and per cell type from prefrontal cortex tissue; 291 donors (CELLxGENE metadata), 1.33M cells in total.",
+    "predict": "Donor age in years, taken from brain-bank records of age at death.",
+    "why_worthwhile": "A cell-type-resolved brain age clock would let researchers measure accelerated aging in diseased brains, but a 31-donor version already exists."
+  },
+  "pitch": null,
+  "ml_idea": "Donor-level brain-age regression from per-cell-type pseudobulk (expression summed over all cells of a type in one donor), with donor-grouped cross-validation, then applied to the disease donors in other PsychAD cohorts to measure age acceleration.",
+  "effort": {"hours_to_feature_table": 12, "working_set_gb": 12.4, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": null, "cv_run_minutes": 5, "compute_note": "Estimated only, nothing timed: streaming a 12.4 GB H5AD in chunks to build per-donor sums takes hours on CPU; a linear model on 291 donors trains in minutes.", "cheapest_killing_check": "Count donors with a parseable age per CELLxGENE metadata: 291, below the A5 threshold, so the check has already killed it."},
+  "verdict": "reject",
+  "verdict_reason": "A5 fails: the label is donor age, so there are only 291 independent examples (284 per the paper) despite 1.33M cells. A6 is also over the limit (a 12.4 GB H5AD), and the official Synapse route needs a data-use agreement. A 31-donor brain-age clock already exists."
+}

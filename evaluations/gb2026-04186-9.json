@@ -1,0 +1,101 @@
+{
+  "paper_id": "gb2026-04186-9",
+  "title": "Lentiviral single-cell MPRA of synthetic enhancers reveals motif affinity-based encoding of cell state specificity.",
+  "doi": "10.1186/s13059-026-04186-9",
+  "journal": "Genome Biology",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE331nnn/GSE331030/suppl/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed Additional file 4 (Table S3): 607 rows carrying a DNA sequence, 600 unique sequences, 246-250 bp, split 84 synthetic (library Alpha), 91 synthetic (library Beta), 384 synthetic + 48 endogenous (library PoC). Downloaded the GEO GSE331030 processed matrices and counted: Alpha reporter (GFP) matrix 1,561,869 barcodes x 66,582 cells with 92,359 non-zero entries and 325,047 total UMIs (unique molecular identifiers, i.e. counted mRNA molecules); Beta 135,872 x 129,787 with 139,387 non-zeros and 473,749 UMIs; guide-presence matrix for Alpha 20,643 x 66,582 with 130,101 non-zeros; targeted gene-expression panel = 5,001 genes. Collapsed barcode names to designs: 85 unique designs in Alpha (8 transcription factors: Tal1, Gata1, Gfi1b, Trp53, Cebpa, Fli1, Gata2, Spi1; 12 affinity levels), 90 in Beta, 428 in PoC. Median GFP UMIs per cell = 3 in both libraries; 50,558 (Alpha) and 91,443 (Beta) cells have at least one reporter barcode; 728,827 of Alpha's barcodes are named 'QCFailure'. Also listed all GEO supplementary files and sizes for GSE331230, GSE331072, GSE331030.",
+    "what_came_from_paper_text_only": "Only the abstract was retrievable: the paper is not in PubMed Central, the publisher HTML served front matter only (no Methods, no Data Availability section), and bioRxiv returned HTTP 429 (rate limited) on two attempts, so the preprint's data/code availability statement and the authors' per-cell activity normalisation recipe were not retrieved. Whether a processed enhancer-activity table or analysis code exists on GitHub/Zenodo is therefore unknown; nothing of that kind is in GEO."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All files fetched anonymously from the NCBI GEO FTP site and from the publisher; article is CC-BY. No login, no access application. Verified by downloading."},
+    "a2_label_is_a_column": {"pass": false, "note": "No activity column anywhere. 'Enhancer activity' must be constructed: join the sparse reporter-count matrix to the guide-presence matrix to assign which synthetic enhancer each cell carries, sum UMIs, pick a normalisation (the only expression data is a 5,001-gene targeted panel, not a whole-transcriptome size factor), and decide what to do with the 1.83 reporter barcodes per cell in Alpha. Verified in the files: GEO holds only raw count matrices."},
+    "a3_inputs_present": {"pass": true, "note": "Actual DNA sequences are in Table S3 (600 unique, 246-250 bp), and design annotations (transcription factor, motif affinity, orientation, spacing) are embedded in the feature names. No accession lookups needed. Verified by parsing both files."},
+    "a4_units_stated": {"pass": true, "note": "Matrix Market files declare integer counts; values are UMI (unique molecular identifier) counts of reporter transcripts. Consistent across libraries. No separate units column, but no ambiguity either."},
+    "a5_enough_rows": {"pass": false, "n_rows": 175, "note": "The experimental unit is the synthetic enhancer, and there are 85 (Alpha) + 90 (Beta) = 175 distinct designs, 607 sequences including the small proof-of-concept library. ~190,000 cells is 'A5 in disguise' exactly like the scCT-DB precedent: 142,001 cells carry a reporter signal but they are repeats of 175 conditions, with a median of 3 UMIs each. Far under the 1,500-row bar for regression and under 400 for classification. Counted in the files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~85 MB gzipped processed matrices (GSE331030) plus a 88 KB sequence table", "note": "Everything needed fits in well under 1 GB of RAM. The 220 MB barcode-association tar in GSE331072 is only needed to rebuild the barcode-to-enhancer map, which the feature files already encode."},
+    "a7_counts_match_paper": {"pass": true, "note": "Files agree with the abstract: 84 + 91 = 175 synthetic enhancers vs '~160'; 66,582 + 129,787 = 196,369 cells vs '~190,000'. Verified by counting lines and matrix headers."},
+    "a8_label_provenance": {"pass": true, "note": "The signal is a physical measurement (sequenced reporter mRNA barcodes), not another model's output. Note the motif-affinity annotations used as features come from a position-weight-matrix affinity calculation, so they are model-derived features, not labels."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Malinois (deep convolutional neural network predicting regulatory element activity from DNA sequence, Gosai et al., Nature 2024)",
+        "open_weights": true,
+        "score_and_split": "Trained on 776,474 200-base-pair sequences measured by massively parallel reporter assay in three human cell lines; authors report Pearson correlation 0.91 against a held-out reporter assay. Split is sequence-level, not motif-design-level.",
+        "authors_named_unsolved": "Transfer to cell types and primary cells outside the three training lines, and designing elements that are specific to one cell state rather than merely strong.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MPRAnn (4-layer convolutional network for massively parallel reporter assay data) and the DREAM-challenge-optimised regulatory sequence models (Nature Biotechnology 2024)",
+        "open_weights": true,
+        "score_and_split": "DREAM-optimised models reported to substantially outperform MPRAnn on held-out random promoter sequences measured in yeast; the gap widens with more training data. Random sequence split.",
+        "authors_named_unsolved": "Generalisation across assay types and to sequences unlike the training distribution; models remain data-hungry.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Iterative deep-learning enhancer design (Yin et al., Cell Systems 2025)",
+        "open_weights": null,
+        "score_and_split": "Neural predictors trained on Sharpr-MPRA (467,000 145-base-pair candidate enhancers across four human cell lines), then used iteratively to design cell-type-specific synthetic enhancers; evaluated by re-measuring designed sequences.",
+        "authors_named_unsolved": "Achieving high specificity, not just high activity, and the fact that condensed motif grammar rules were learned rather than imposed.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Velten lab's own companion resource: 62,126 fully synthetic sequences assayed across blood-stem differentiation (Cell 2025, 'Design principles of cell-state-specific enhancers in hematopoiesis')",
+        "open_weights": null,
+        "score_and_split": "Not retrieved in detail; it is the same group's much larger synthetic-enhancer screen and is the dataset an ML project on this question should actually use.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNA language models (Nucleotide Transformer, DNABERT-2, HyenaDNA) or a small convolutional network would all fit 250-base-pair sequences",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only laptop would suffice for 600 sequences",
+    "licence": "Mostly permissive/open weights; not the limiting factor here"
+  },
+  "integration": {
+    "partner_dataset": "The same lab's 62,126-sequence synthetic enhancer screen (Cell 2025) and public mouse haematopoiesis single-cell atlases",
+    "join_key": "Transcription-factor motif identity plus designed affinity level; mouse gene symbols for the 5,001-gene targeted panel",
+    "bigger_question_one_sentence": "Does the single-cell dose-response of an enhancer to its transcription factor, measured here, explain activity differences in the much larger bulk synthetic-enhancer screens? — a good question, but it needs the large screen as the training set, not this 175-design one."
+  },
+  "controls": {
+    "positive_control": "Inert spacer-only control designs are present in both libraries and should show near-background reporter counts; Trp53 and Cebpa designs should track their transcription factor's expression, which is the paper's own finding.",
+    "negative_control": "Shuffling the enhancer-to-cell assignment should collapse any apparent design effect; the 728,827 'QCFailure' barcodes in library Alpha provide a built-in junk set.",
+    "external_validation": "The companion 62,126-sequence screen from the same lab, and the proof-of-concept library's 48 endogenous enhancers, which overlap published bulk measurements."
+  },
+  "honest_claim_h3": "Any model built here could only claim: 'for 175 designed 250-base-pair enhancers built from eight mouse blood transcription factor motifs at twelve affinity levels, assayed in one lab in one mouse blood-stem differentiation system, reporter output per cell scales with transcription factor expression in this way' — a description of 175 sequences, not a predictive statement about enhancers in general.",
+  "plain_idea": {
+    "one_liner": "Use a designed enhancer's motif content and a cell's own state to predict how strongly that enhancer switches on in that cell.",
+    "train_on": "Each example would be one cell: the DNA sequence (or motif/affinity description) of the single synthetic enhancer integrated into it, plus that cell's measured expression of 5,001 genes. I counted 142,001 cells carrying a reporter signal, but only 175 distinct enhancer designs across the two main libraries (607 sequences in total including the small pilot library).",
+    "predict": "The reporter output of that enhancer in that cell, measured as counted green-fluorescent-protein reporter messenger-RNA barcodes from single-cell sequencing (median 3 counted molecules per cell).",
+    "why_worthwhile": "Labs that engineer synthetic enhancers for cell-type-targeted gene therapy want to know whether weak binding sites give sharper cell-state specificity than strong ones; a model relating motif affinity to the transcription-factor dose-response would make that design rule quantitative."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "175 designed enhancers here versus 776,474 measured sequences behind Malinois and 467,000 behind the Sharpr-MPRA-trained designers. The one genuine advantage — per-cell resolution along a differentiation trajectory — is spread over only 175 sequences."},
+    "confidence_score": {"answer": "partly", "why": "Thousands of cells per design (median 429 in Alpha, 1,041 in Beta) would give a good error bar on each design's mean activity, which bulk assays lack. But with 175 designs there is nothing to calibrate a sequence-level predictor on."},
+    "models_beatable": {"answer": "no", "why": "Malinois (2024) and the DREAM-optimised models (2024) have open weights, are trained on hundreds of thousands of sequences, and were honestly evaluated; 175 mouse designs cannot train a competitor, only test one."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails is the data itself: this assay measures a different quantity (per-cell reporter counts in mouse blood progenitors) from the bulk human reporter assays the existing models were trained on, so there is no common split or join key to add data on."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: predict single-cell reporter output from the enhancer's motif composition and affinity plus the cell's own transcriptional state, with a held-out-enhancer split, to test whether low-affinity binding sites genuinely encode sharper cell-state specificity. It is a good question, but this dataset supplies only 175 enhancer designs to generalise over; the same lab's 62,126-sequence screen (Cell 2025) is the dataset that could actually support it, and that is where the effort should go.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed end-to-end, but I did download and parse all the processed matrices in under a minute: total working set is ~85 MB gzipped, and embedding 600 sequences of 250 base pairs with a small DNA language model is minutes of CPU time. Compute is not the obstacle here; the number of distinct enhancers is.",
+    "cheapest_killing_check": "Count the unique enhancer designs behind the 190,000 cells. I did it: strip the barcode prefix from GSE331030_gfp_alpha_features.tsv.gz and GSE331030_gfp_beta_features.tsv.gz and take the set — 85 and 90. Five minutes, and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5, and A2 as well. The headline '~190,000 single cells' hides the real experimental unit: there are only 85 + 90 = 175 distinct synthetic enhancer designs in the two main libraries (607 sequences including the pilot library), verified by collapsing barcode names in the GEO feature files, and the abstract's '~160 enhancers' is accurate. Any sequence-to-activity model would be generalising over 175 points built from 8 transcription factor motifs at 12 affinity levels — far below the 1,500-row bar, and the same trap as the scCT-DB candidate. Separately, no enhancer-activity table was deposited: the label has to be built by joining three sparse count matrices with a normalisation policy, from a median of 3 reporter molecules per cell. The field is also well served by open models trained on 100x more sequences (Malinois, DREAM-optimised models). The dataset is clean, well organised and matches its paper; it is simply a mechanistic experiment, not an ML training set. The same lab's 62,126-sequence screen (Cell 2025) is the candidate worth evaluating instead."
+}

@@ -1,0 +1,135 @@
+{
+  "paper_id": "nar2026-gkag695",
+  "title": "Programmed repair of disease-causing UGA premature termination codons in mammalian brain.",
+  "doi": "10.1093/nar/gkag695",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE334212",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded GSE334212_RAW.tar (1.16 MB) from NCBI GEO (Gene Expression Omnibus, a public repository), unpacked it and read all 12 tables. It holds exactly 6 mouse-brain samples (3 injected, 3 uninjected). Each sample has one abundance table of 213-222 rows (columns: name, count) listing read counts per mouse transfer-RNA gene, and one per-base table of ~16,200-16,800 rows (columns: gene, position, base, pileup, mutation, stop, A, C, G, T, N, deletion, insertion). Also read the GEO series record, both GEO sample records with their full processing descriptions, and the article's full text and data availability statement.",
+    "what_came_from_paper_text_only": "The bioluminescence imaging measurements of premature-stop-codon rescue per viral construct (the paper's actual headline result) were only read about in the text; they are shown in figure plots with n = 3-4 mice per construct and are not deposited as any table. The supplementary file bundle (which the paper says contains custom scripts) was not retrievable: the Europe PMC supplementaryFiles endpoint timed out twice, so 'supplement not retrievable'."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "GEO accession GSE334212 is public with no login; I downloaded and unpacked the 1.16 MB processed-data archive successfully."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. No prediction target is a column anywhere. The deposited columns are raw read counts and per-base pileups. The quantity worth predicting - how well each suppressor transfer-RNA viral construct rescues the premature stop codon - lives only in figure plots, never in a deposited table, so it would have to be reconstructed by reading numbers off graphs."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Transfer-RNA gene names are present in a standard GtRNAdb-style format (e.g. tRNA|Mus_musculus|Ala-AGC-1), so the ~220 sequences could be pulled from GtRNAdb in one lookup; sequences themselves are absent from the files."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are interpretable from the GEO processing notes: 'count' is filtered reads per gene, 'pileup' is reads covering a base, 'mutation' is a misincorporation fraction. No library-size normalisation has been applied, so counts are not comparable across samples as-is."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 6,
+      "note": "FAIL, badly. The experimental unit is the mouse: 6 animals in 2 groups of 3, one tissue, one lab, one species. Even counting generously there are only ~220 transfer-RNA genes, or ~16,500 gene-by-position rows per sample, and positions within a gene are not independent. The checklist floor is ~1,500 labelled rows (~400 for classification) and the group count needed for any honest held-out split is nowhere near met."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "1.16 MB archive, ~12 MB uncompressed",
+      "note": "Trivially laptop-sized; the whole processed dataset fits in memory many times over. This is the only part of Part A that is comfortable."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO's stated design (n = 3 per group, two groups) matches the 6 sample files I unpacked, and ~220 genes matches the custom mouse mature transfer-RNA reference described in the processing notes."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Values are direct sequencing measurements (read counts and reverse-transcriptase misincorporation rates from tRNA sequencing), not another model's predictions, so there is no circularity. This killer is the one thing the data does well."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Readthrough predictor of Toledano et al. 2024 (Nature Communications 'Extended stop codon context predicts nonsense codon readthrough efficiency in human cells')",
+        "open_weights": null,
+        "score_and_split": "Reported that machine-learning models on reporter and ribosome-profiling data identify sequence positions up to +9 around the stop codon as predictive; I read the search summary and abstract only, not the paper's split or metric values.",
+        "authors_named_unsolved": "Which specific patient alleles (e.g. in CFTR, the cystic fibrosis gene) are amenable to readthrough therapy.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Drug-induced readthrough predictor of the 2024 Nature Genetics study 'Genome-scale quantification and prediction of pathogenic stop codon readthrough by small molecules'",
+        "open_weights": null,
+        "score_and_split": "Built on measured readthrough for ~5,800-6,000 human pathogenic stop codons from ClinVar, TCGA and MSK-IMPACT against 8 drugs; numbers and split read from abstract/search summary only.",
+        "authors_named_unsolved": "Different drugs rescue complementary subsets of stop codons, so matching drug to local sequence context genome-wide is the open part.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Alltrna's transfer-RNA design platform (company, not a paper)",
+        "open_weights": false,
+        "score_and_split": "Press releases describe in-silico screening of billions of transfer-RNA designs and machine-learning-guided optimisation; no published numbers or split.",
+        "authors_named_unsolved": "Not stated publicly.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model) or a small convolutional network over transfer-RNA sequence",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU laptop would be ample for ~220 sequences, but that sample size is far too small to fit or evaluate any head honestly.",
+    "licence": "Not investigated, because the data cannot support the task."
+  },
+  "integration": {
+    "partner_dataset": "GtRNAdb (transfer-RNA gene catalogue) plus MODOMICS (catalogue of known RNA chemical modifications) would join on transfer-RNA gene name; mim-tRNAseq published datasets would join on the same key.",
+    "join_key": "Transfer-RNA gene identifier (e.g. tRNA|Mus_musculus|Ala-AGC-1)",
+    "bigger_question_one_sentence": "A joinable question exists in principle - can transfer-RNA sequence predict where chemical modifications sit - but this paper contributes only 6 mouse brains of one tissue, so the join would be entirely carried by the partner resources and nothing here would matter."
+  },
+  "controls": {
+    "positive_control": "Available in principle: the delivered ArgUCA suppressor transfer RNA should appear in the injected samples and be absent from the uninjected ones, and known modification hotspots (e.g. position 58) should show high misincorporation. Useful for checking a pipeline, not for training anything.",
+    "negative_control": "Label shuffling across 6 samples is meaningless - with 3 per group almost any shuffle is as likely as the truth.",
+    "external_validation": "mim-tRNAseq mouse datasets could serve as an independent source, but they would supply essentially all of the data, which is a different project than this paper."
+  },
+  "honest_claim_h3": "Nothing beyond 'virally delivered suppressor transfer RNA did not detectably perturb endogenous transfer-RNA abundance, charging or processing in 3 injected mouse brains' - a descriptive wet-lab control result, not a claim any model could make or extend.",
+  "plain_idea": {
+    "one_liner": "Use viral construct design features to predict how well a suppressor transfer RNA repairs a premature stop codon in mouse brain.",
+    "train_on": "What a model would see per example: the design of one gene-therapy construct (promoter type, single-stranded versus self-complementary viral genome, how much surrounding genomic sequence, whether an intron is kept, how many transfer-RNA copies, viral dose). Verified count of distinct construct-dose conditions: roughly a dozen, with only 3-4 mice each, and none of it in a deposited table.",
+    "predict": "How much light the brain emits in a live mouse carrying a broken luciferase gene, measured by shining-through-the-skull bioluminescence imaging; more light means the premature stop codon was read through and the protein was repaired.",
+    "why_worthwhile": "Gene-therapy groups building suppressor transfer-RNA treatments for childhood neurological disease would love a model that ranks construct designs before making viruses. But this paper supplies roughly a dozen designs, so the idea needs a dataset two or three orders of magnitude larger."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The published readthrough models were trained on ~5,800-6,000 measured human pathogenic stop codons (2024 Nature Genetics) or on reporter libraries varying sequence context. This paper has one fixed stop codon (luciferase p.R387X) in one mouse line and 6 deposited samples - smaller by three orders of magnitude, and varying the vector rather than the target."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "With 3 biological replicates per group, a per-prediction confidence estimate would itself be estimated from 3 numbers; the data cannot support calibration."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Both named predictors are from 2024 and were built on large purpose-made reporter libraries. Nothing in this paper's 6-sample tRNA-sequencing deposit overlaps the task they solve, so there is no comparison to win."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on every condition: the existing models predict readthrough from stop-codon sequence context, this paper varies viral vector design instead, so the quantity measured and the evaluation split differ and there is no join key between them."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered two projects, both dead. (1) Predict premature-stop-codon rescue efficiency from suppressor transfer-RNA viral construct design: the right question, but the labels exist only inside figure plots for roughly a dozen construct-dose conditions at n = 3-4 mice each, so the target would have to be built by reading graphs and there is no sample size. (2) Predict per-base reverse-transcriptase misincorporation (a proxy for RNA chemical modifications) in mouse transfer RNAs from sequence: the per-base tables do give ~16,500 rows per sample, but they come from only ~220 transfer-RNA genes in 6 brains from one lab, positions within a gene are not independent, and far larger mim-tRNAseq resources already cover this. This is a well-executed gene-therapy paper whose deposited data is a negative control, not a modelling substrate.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.012,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.2,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Measured directly: the whole processed deposit is 1.16 MB compressed and ~12 MB unpacked, and I loaded and counted every file in seconds. Effort is trivial, which is exactly the problem - there is almost nothing there.",
+    "cheapest_killing_check": "Count the samples in GEO. I did it in one request: 6 samples, 3 per group. That single number kills the project before any download."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A2 on the files I opened. The deposited data is 6 mouse brains (3 injected, 3 uninjected) of transfer-RNA sequencing, ~220 genes each, whose only purpose in the paper is to show the therapy does no harm. The one label worth predicting - rescue efficiency per viral construct - is not deposited at all; it exists as figure plots over roughly a dozen conditions with 3-4 mice each. Meanwhile the related prediction task (which premature stop codons can be read through) is already served by 2024 models trained on ~5,800 measured human stop codons, data this paper cannot add to. Excellent therapeutic paper, no machine-learning project in it."
+}

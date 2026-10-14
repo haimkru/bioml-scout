@@ -1,0 +1,81 @@
+{
+  "paper_id": "nature2026-10797-w",
+  "title": "A global molecular code for birth order and neuronal identity in Drosophila.",
+  "doi": "10.1038/s41586-026-10797-w",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE304221",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened in R the authors' own per-cell annotation table (VNC_neurons_metadata.rds, 25.5 MB, from their GitHub repo FlyNeuroAtlas/DevSeqVNC): 302,765 rows x 71 columns. Counted the label columns directly: birthtime = primary 114,214 / secondary 168,872 / earlysecondary 9,817 / missing 9,862; Stage (animal age in hours after pupa formation) = 6h 73,531, 24h 104,693, 36h 37,997, 48h 86,544; Sex = 156,646 female / 146,119 male; hemilineage (developmental lineage of origin) = 35 values with 80,794 'Unclassified'; neurotransmitter = 3 values, no missing; 12 fly genotypes, 23 sequencing lanes, 1 tissue. Also listed the Gene Expression Omnibus (GEO) file directory (GSE304221_VNC_neurons.rds = 21 GB, VNC_all.rds = 25 GB, RAW.tar = 14 GB, 24 samples, 29.1 GB total), read the 13 KB GEO README column dictionary, queried the Zenodo application programming interface for the three loom files (VNC.loom 3.49 GB CC-BY-4.0, VNC.neurons.loom 2.89 GB CC0, VNC.glia.loom 0.56 GB CC-BY-4.0), and opened all 10 supplementary tables from the 6.6 MB Excel file (row counts: 9, 30, 20, 1000, 866, 15, 109, 18832, 837, 1051).",
+    "what_came_from_paper_text_only": "How each annotation column was made. From the Methods: birth order ('birthtime') was seeded by thresholding two marker genes in the same expression matrix (Imp > 2 for embryonic-born, dati > 2 for larval-born) and then extended to every cell by a devCellPy classifier (an XGBoost-based cell-type annotation tool) trained on all 3,000 integrated genes, run 50 times with a consensus vote. Hemilineage was seeded by reporter lines plus markers and then also propagated by devCellPy; soma segment came from Hox gene expression thresholds; neurotransmitter from marker argmax; pseudotime from Monocle3 on the same expression data. I did not open the 2.9 GB expression matrix, so the gene-level feature content is from the README and the paper only.",
+    "note_on_limits": "Project rules cap downloads at 50 MB, so the loom and RDS expression matrices were inspected via directory listing and API metadata, not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Fully public, no login: I downloaded the 25.5 MB metadata table and the 6.6 MB supplementary Excel file; Zenodo loom files are CC0/CC-BY-4.0."},
+    "a2_label_is_a_column": {"pass": true, "note": "'birthtime' is a real column in the table I opened (302,765 rows, 4 values). For the alternative connectome-matching task the label would have to be constructed, but the headline label is a column."},
+    "a3_inputs_present": {"pass": true, "note": "Gene counts exist as files but not in the 25.5 MB label table; you must pull the 2.9 GB loom (neurons) and join on cell barcode. Present, not referenced, so a marginal pass."},
+    "a4_units_stated": {"pass": true, "note": "GEO README documents every column: Stage in hours after pupa formation, counts as unique molecular identifiers (UMI), percentages for mitochondrial/ribosomal fraction."},
+    "a5_enough_rows": {"pass": true, "n_rows": 302765, "note": "302,765 neurons counted in the file. Caveat: only 12 independent animal samples, 4 timepoints, 1 lab, 1 tissue, so the independent unit count is tiny."},
+    "a6_fits_laptop": {"pass": false, "working_set": "2.9 GB compressed loom; ~4-6 GB in memory as a sparse matrix, 21 GB if you use the Seurat RDS", "note": "Only verified from the GEO directory listing and Zenodo API sizes. Under the ~5 GB bar only if you stream the loom and subset genes; the RDS route needs far more than 16 GB. Marginal fail, and the project's own 50 MB download cap forbids fetching it."},
+    "a7_counts_match_paper": {"pass": true, "note": "302,765 neurons and 69,796 glia in the file I opened match the GEO README exactly; 24 samples in the GEO file list match."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL. Methods state birth order was seeded by thresholding two genes (Imp, dati) that sit inside the 3,000-gene feature matrix, then predicted across the whole atlas by a devCellPy classifier. The label is another model's output computed from the features: both circularity and leakage by construction. Hemilineage, soma segment, neurotransmitter and pseudotime are derived the same way."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "devCellPy (XGBoost-based hierarchical cell-type annotation tool, Nature Communications 2022)",
+        "open_weights": true,
+        "score_and_split": "Authors report over 90% prediction accuracy across annotation layers on a 104,199-cell mouse heart atlas and on new mouse data; split described as a held-out test fraction (testSplit = 0.1), i.e. a random cell-level split, not a held-out animal or batch.",
+        "authors_named_unsolved": "Annotating cells with complex multilayered identities or transitory states; they also highlight cross-species transfer as the hard case.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Bilinear gene-expression-to-connectivity model (eLife 2024, 'Deciphering the genetic code of neuronal type connectivity through bilinear modeling')",
+        "open_weights": null,
+        "score_and_split": "Reported as comparable to or slightly better than the earlier spatial connectome model at reconstructing electrical synapse connectivity in C. elegans from single-cell gene expression; no split details retrieved from the abstract.",
+        "authors_named_unsolved": "Which genetic interactions actually dictate specific connections between neuronal types.",
+        "runnable_as_baseline": null
+      }
+    ],
+    "note": "devCellPy is not a competitor here: it is the tool that generated this dataset's birth-order and hemilineage labels, which is exactly why the prediction task is circular."
+  },
+  "backbone": {
+    "name": "Geneformer or scGPT (single-cell transcriptome foundation models)",
+    "freeze_and_head_viable": true,
+    "hardware": "Embedding 302,765 cells on a 16 GB CPU-only laptop would take tens of hours; a gene-subset logistic regression needs no GPU.",
+    "licence": "Geneformer weights are openly downloadable; the atlas itself is CC-BY-4.0 / CC0, so licensing is not the obstacle."
+  },
+  "integration": {
+    "partner_dataset": "MANC / male CNS Drosophila ventral nerve cord connectome (electron-microscopy reconstruction with independent primary/secondary birth-order and hemilineage annotations)",
+    "join_key": "hemilineage label plus soma segment (neuromere); at the single-neuron level, connectome body IDs as in Supplementary Tables 5, 8 and 9 (866, 18,832 and 837 rows, which I opened)",
+    "bigger_question_one_sentence": "Does the transcriptional state of a developing neuron predict the wiring partners its adult counterpart chooses, beyond what lineage and segment identity already predict?"
+  },
+  "controls": {
+    "positive_control": "Predict the animal's sex from expression, which must be near-perfect because the roX1/roX2 long non-coding RNAs are strongly sex-biased in flies; and predict the number of detected genes per cell, which is trivially recoverable.",
+    "negative_control": "Shuffle the birth-order label within sequencing lane and confirm collapse to the majority-class rate; also drop Imp and dati from the features, which should barely hurt accuracy if the label were genuinely independent, and will in fact reveal the label's dependence on them.",
+    "external_validation": "The connectome's own primary/secondary birth-order annotation (MANC), which is independent of transcription, plus the earlier published pupal VNC dataset GEO GSE141807."
+  },
+  "honest_claim_h3": "A model trained on this atlas would claim only that it can reproduce a devCellPy classifier's primary-versus-secondary call for cells from one laboratory's 12 pupal Drosophila ventral nerve cord samples, given the same expression matrix that classifier used; it would not claim to predict when a neuron was actually born.",
+  "plain_idea": {
+    "one_liner": "Use a developing fly neuron's gene expression to predict whether it was born early in the embryo or later in the larva.",
+    "train_on": "Each example is one neuron's messenger RNA profile from single-cell sequencing; 302,765 neurons verified in the file I opened, from 12 animal samples at four pupal ages (6, 24, 36 and 48 hours after pupa formation).",
+    "predict": "A two-way birth-order call, embryonic-born ('primary') versus larval-born ('secondary'). The true answer in this dataset is not a measurement: it is the output of devCellPy, a machine-learning annotation tool the authors ran on the same gene expression matrix after seeding it with thresholds on two genes, Imp and dati.",
+    "why_worthwhile": "If birth order were independently measured, developmental neurobiologists could read a neuron's birth date off its transcriptome and skip birth-dating experiments; as the data actually stands, the only thing learnable is the annotation tool's own decision boundary."
+  },
+  "pitch": null,
+  "ml_idea": "Headline idea considered and rejected: classify each neuron as embryonic-born or larval-born from its single-cell expression profile, with held-out-hemilineage and held-out-sample splits, using a frozen single-cell foundation model plus a linear head. It dies because the label is a classifier's output computed from the features. The non-circular reframings are all weak: predicting the animal's age (Stage) is nearly free from batch structure and uninteresting; predicting connectome wiring from transcriptome requires first constructing the transcriptome-to-connectome cell-type match, which is itself the hard, unsolved step and a Part A2 failure.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 2.9,
+    "needs_gpu": false,
+    "peak_ram_gb": 10,
+    "embedding_hours": 60,
+    "cv_run_minutes": 45,
+    "compute_note": "Estimated, not timed: reading a 2.9 GB loom into a sparse matrix of roughly 302,765 cells by 3,000 genes is about 3.6 GB dense or well under 1 GB sparse, so about 10 GB peak with overhead; embedding hours assume a few cells per second for a single-cell foundation model on CPU.",
+    "cheapest_killing_check": "Fit a two-feature logistic regression using only Imp and dati expression against the 'birthtime' column. Methods say those two thresholds seeded the label, so near-perfect accuracy confirms the label is circular and kills the project in under an hour."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A8 fails decisively: the birth-order label is not a measurement but the output of devCellPy, a machine-learning annotation tool the authors trained on thresholds of two genes (Imp, dati) that sit inside the same 3,000-gene feature matrix and then applied to all 302,765 neurons. Predicting it means distilling that classifier with the ceiling set by its unknown errors. Every other candidate label in the table (hemilineage, soma segment, neurotransmitter, maturation, pseudotime) was built the same way from marker-gene expression. A6 also fails marginally: the only expression files are a 2.9 GB loom or a 21 GB Seurat object, above this project's 50 MB download cap and awkward on a 16 GB laptop. Because Part A failed, Parts B, C and D were not scored and ROI is undefined. The honest alternative, using the connectome's independent birth-order annotation as the label, fails A2 instead, since the transcriptome-to-connectome match would have to be constructed first."
+}

@@ -1,0 +1,51 @@
+{
+  "paper_id": "nature2026-11056-8",
+  "title": "A design approach for bitopic kinase inhibitors.",
+  "doi": "10.1038/s41586-026-11056-8",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.21752810",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened the paper's Source Data zip (36 MB, 18 files) and Supplementary Tables PDF from Springer, plus the Zenodo record listing (30 files, CC-BY-4.0). Counted rows in every Excel workbook: Supplementary Table 11 lists exactly 20 bitopic compounds (molecular weight, linker length in heavy atoms and in PEG units, no SMILES); fitted dose-response tables across the 11 Supplementary Tables hold roughly 200 IC50 values in PDF form; the PRISM cell-line screen sheet has 2,661 rows but only 3 treatments (asciminib, ponatinib, PonatiLink-2-7-10) across 865 cell lines; the kinase selectivity sheet has 1,542 rows = 386 kinases x 2 treatments x duplicates; the 8,406-row mutagenesis sheet contains only library coverage counts (baseline read counts), no per-variant drug-resistance score.",
+    "what_came_from_paper_text_only": "The data availability statement and code availability statement were read from the article PDF (CC-BY): raw figure data in Zenodo 10.5281/zenodo.21752810, no new PDB depositions (structures 5MO4, 7K1H, 2GQG, 3OXZ, 1OPK, 1YOJ, 2IJM re-used). I did not download the 200-400 MB molecular-dynamics trajectory zips or the 285 MB NMR archive; their names and sizes come from the Zenodo file listing."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified: Source Data zips download from Springer without login and the Zenodo record (30 files, CC-BY-4.0) resolves and lists sizes. No access application anywhere."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified: IC50_nM and EC50_nM are real columns (e.g. resistance sheet, 36 rows; Supplementary Tables 1-10). Most of them, though, live in a PDF rather than a spreadsheet."},
+    "a3_inputs_present": {"pass": false, "note": "Verified: no machine-readable chemical structures. Supplementary Table 11 gives only molecular weight and linker length for the 20 compounds; no SMILES or MOL files anywhere, structures exist only as figure drawings and synthesis text."},
+    "a4_units_stated": {"pass": true, "note": "Verified: columns are explicitly IC50_nM, EC50_nM, dose_nM, conc_ng_mL/conc_nM, molecular weight (Da), linker length (heavy atoms)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 20, "note": "Verified: 20 distinct bitopic compounds total (Supplementary Table 11); roughly 200 fitted IC50 values across ~6 targets. Far below the ~1,500-row bar, and below 400 even for classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~15 MB of Excel source data (excluding 200-400 MB MD trajectory zips)", "note": "Verified by downloading: largest tabular file is a 12.8 MB molecular-dynamics workbook; everything else is under 1 MB."},
+    "a7_counts_match_paper": {"pass": true, "note": "Verified: the three compound series named in the text (DasatiLink-1, PonatiLink-1, PonatiLink-2, plus OsimertiLink) match the 20 rows of Supplementary Table 11 and the treatment labels in the source data."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are measured: cell viability (CellTiter-Glo) and purified-kinase activity (SelectScreen Z'-LYTE) dose-response fits. The molecular-dynamics entropy/RMSF values are simulation outputs, so they would be a circular label if used as a target."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "COMPASS (computational pipeline screening linkers for PROTAC ternary complexes)", "open_weights": null, "score_and_split": "Not retrieved - seen only as a search-result summary (PMC article title and abstract snippet); no numbers verified.", "authors_named_unsolved": "Search summary mentions fragmented benchmarking and scoring functions that do not transfer across targets; not verified in the paper itself.", "runnable_as_baseline": null},
+      {"name": "PROTAC/bivalent-linker machine-learning design literature (JCIM 2026 review 'From Ternary Modeling to Predictive PROTAC Design')", "open_weights": null, "score_and_split": "Not retrieved - review title and summary only; no model, score or split verified.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ChemBERTa or MolFormer (molecule language models) would be the natural fit", "freeze_and_head_viable": false, "hardware": "CPU laptop would suffice, but there are no SMILES to embed and only 20 molecules to learn from", "licence": "Data is CC-BY-4.0; backbone licences are permissive - irrelevant here"},
+  "integration": {"partner_dataset": "ChEMBL / PubChem kinase bioactivities, and DepMap/PRISM Repurposing for the cell-line sheet", "join_key": "InChIKey (would have to be created from hand-drawn structures) or CCLE cell-line name for the PRISM sheet", "bigger_question_one_sentence": "Whether linker length rules learned on bivalent kinase inhibitors transfer to the much larger PROTAC bioactivity corpus - but with 20 molecules and no structures, this dataset cannot contribute to it."},
+  "controls": {"positive_control": "Ponatinib should be far more potent than asciminib against the ABL1 T315I mutant in these tables, and it is - but this is a sanity check on the data, not a model control.", "negative_control": "Label shuffling is meaningless at n=20.", "external_validation": "ChEMBL has ponatinib/dasatinib/asciminib potency values against ABL1 and its mutants, but no bitopic compounds from this series."},
+  "honest_claim_h3": "With 20 compounds, two numeric features (molecular weight and linker length) and no structures, any model would claim only 'IC50 varies smoothly with PEG linker length within three closely related chemical series from one laboratory' - a trend the paper already plots directly.",
+  "plain_idea": {
+    "one_liner": "Use a two-headed inhibitor's building blocks and chain length to predict how strongly it blocks a cancer-driving kinase.",
+    "train_on": "Each example would be one bitopic molecule (two drug fragments joined by a flexible polyethylene-glycol chain) described by which fragments were used, where they were attached and how long the chain is. Verified count: 20 such molecules exist in the paper's Supplementary Table 11.",
+    "predict": "The concentration that halves kinase activity or cell growth (IC50, in nanomolar), measured by CellTiter-Glo cell viability assays in K562 leukaemia cells and by purified-kinase activity assays (Thermo SelectScreen Z'-LYTE).",
+    "why_worthwhile": "Medicinal chemists building bivalent drugs (two-headed binders, including the fast-growing PROTAC field) currently find the best linker length by synthesising a whole series; a predictive rule would save months of synthesis. Even a failed model would quantify how far linker-length effects transfer between chemical series."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict bitopic inhibitor potency (IC50) from active-site ligand identity, attachment vector and linker length. A secondary idea - predict cell-line sensitivity (area under the dose-response curve) from DepMap molecular features using the paper's PRISM screen - also fails, because that sheet covers only 3 compounds (asciminib, ponatinib, PonatiLink-2-7-10) over 865 cell lines, the dominant signal is simply whether the line carries a BCR::ABL1 fusion (a one-column lookup, not a modelling problem), and public PRISM Repurposing data already contains ponatinib and dasatinib across a similar panel.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.02, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated, not timed: all tabular data is under 15 MB and opened instantly with pandas; the 4 hours is transcribing roughly 200 IC50 rows out of the Supplementary Tables PDF and hand-drawing 20 SMILES strings.", "cheapest_killing_check": "Count the distinct bitopic compounds that have an IC50 - Supplementary Table 11 answers it in one page: 20."},
+  "verdict": "reject",
+  "verdict_reason": "Beautiful, fully open, CC-BY data (Zenodo, 30 files; Source Data zips opened and counted) but it is a medicinal-chemistry paper, not a dataset: 20 bitopic compounds in total, roughly 200 IC50 measurements, and those mostly trapped in a Supplementary Tables PDF. A5 fails by two orders of magnitude and A3 fails too, because no machine-readable structures (SMILES or MOL) are provided - only molecular weight and linker length. The two larger tables are decoys: the 8,406-row mutagenesis sheet holds only library coverage counts with no per-variant resistance label, and the 2,661-row PRISM sheet is just 3 compounds across 865 cell lines where the sensitive lines are identified by a BCR::ABL1 fusion column."
+}

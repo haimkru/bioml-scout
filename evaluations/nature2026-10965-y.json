@@ -1,0 +1,209 @@
+{
+  "paper_id": "nature2026-10965-y",
+  "title": "Function-preserving watermarking of AI-generated proteins.",
+  "doi": "10.1038/s41586-026-10965-y",
+  "journal": "Nature",
+  "data_url": "https://github.com/google-deepmind/synthidbio (data in synthidbio_sequence/data/, CC-BY-4.0; code Apache-2.0)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all four released CSVs (pdl1_data.csv 541 rows, sc2rbd_data.csv 540, vegfa_data.csv 543, all_g_values.csv 810 rows). Confirmed 1,624 measurement rows over 810 unique designs (270 per target), 810 distinct amino-acid sequences (length 60-136), 2 replicates for 806 designs, 578 designs binding in at least one replicate and 232 never binding, 564 designs with a measured dissociation constant (KD). Verified KD equals off-rate/on-rate to within 2% for all 1,126 complete rows, so the implied units (molar; per second; per molar per second) are internally consistent. Verified the g-value table joins 810/810 to the binding tables on the design name. Verified that at sampling temperature 0.1 all 15 design scaffolds appear in both the watermarked (267) and unwatermarked (222) arms with near-identical sequence-length distributions, and that glutamine frequency already differs between the two arms with Cohen's d = +1.04. Listed the whole repository tree via the GitHub API: 810 AlphaFold-3 .cif structures totalling 142 MB, 1,616 kinetics plots totalling 713 MB, repository 936 MB.",
+    "what_came_from_paper_text_only": "The paper itself is paywalled with no PubMed Central copy, so I could only read the abstract plus the repository README. The binding assay instrument and protocol, the exact watermark key schedule used for the published designs, and any row counts stated in the paper's figures were not retrievable; I therefore could not cross-check the file counts against the paper's own text. The in-silico benchmark sets mentioned in secondary coverage (hundreds of thousands of sequences) are not in the repository."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public GitHub raw downloads, no login, no application. I fetched all four CSVs successfully; data licensed CC-BY-4.0, code Apache-2.0."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in the files: 'Subset_Name' records the generation condition (watermark_0.1, watermark_0.5, non_watermark_0.1, Parent Sequence, Negative Control), and 'binding'/'kd' hold the measured outcome. Nothing has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Full amino-acid sequences are in a 'sequence' column (810 distinct, 60-136 residues). No accession lookups needed. 810 predicted complex structures are also provided as .cif."},
+    "a4_units_stated": {"pass": true, "note": "Units are not written in the headers, but I verified KD = off-rate/on-rate to within 2% for all 1,126 complete rows and the magnitudes are standard (KD 7e-11 to 2e-6 M). The primary task uses sequence only, so units are not on its critical path."},
+    "a5_enough_rows": {"pass": true, "n_rows": 810, "note": "810 labelled designs (1,624 measurement rows); the temperature-matched classification set is 489 (267 watermarked vs 222 unwatermarked), above the ~400 classification floor but thin. The released code can generate unlimited extra labelled sequences."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.4 MB of CSVs; 142 MB of structures if used; the 713 MB of plot images are not needed", "note": "Counted file sizes from the GitHub tree. Embedding 810 short sequences with a protein language model on CPU is minutes to an hour."},
+    "a7_counts_match_paper": {"pass": true, "note": "Three independent files agree: 810 rows of g-values, 810 unique design names in the binding tables, 810 .cif structures, 270 per target. The paper is paywalled so I could not compare against its own text; internal consistency is what I verified."},
+    "a8_label_provenance": {"pass": true, "note": "The provenance label is the generation condition the authors set (watermarking switched on or off), a process fact, not any model's output. The binding/KD labels come from a wet-lab kinetics assay. Warning: the two g-value columns ARE computed from the sequence with the secret key, so they must be used only as the positive control, never as a feature or a label."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three per-target binding CSVs plus one g-value CSV; join on design name verified at 810/810."},
+    "B2": {"score": 1, "why": "Parsed first try, but 'binding' is boolean in one file and TRUE/FALSE/unknown strings in two; column names differ."},
+    "B3": {"score": 2, "why": "One campaign, one assay; KD equals off-rate/on-rate to within 2% in all 1,126 complete rows I checked."},
+    "B4": {"score": 1, "why": "12 'unknown' binding rows; KD absent for the 232 non-binders, i.e. censored below the assay limit."},
+    "B5": {"score": 2, "why": "810 unique names and 810 unique sequences, zero duplicate sequences; replicates are explicitly flagged rows."},
+    "B6": {"score": 1, "why": "README documents the directory and the CIF encoding well; no data dictionary for CSV columns or units."},
+    "C1": {"score": 2, "why": "Keyless detectability is informative either way: a hit breaks the imperceptibility claim, a miss supports it."},
+    "C2": {"score": 1, "why": "Several open protein-watermarking methods exist (SynthIDBio, FoldMark, MARCO, Pattern-mark); no keyless detector found."},
+    "C3": {"score": 2, "why": "Clear unique-application angle: attack-side evaluation of a brand-new Nature method, using its own released designs."},
+    "C4": {"score": 1, "why": "Keyed detection is already cheap; the expensive part is the wet-lab validation of whether function survives."},
+    "C5": {"score": 2, "why": "Baselines in hand: chance AUROC 0.5, amino-acid composition logistic regression, and the keyed g-value detector."},
+    "D1": {"score": 2, "why": "ESM-2, an open-weight protein language model, matches plain amino-acid sequences exactly; 810 short sequences."},
+    "D2": {"score": 2, "why": "810 sequences of under 140 residues: embeddings cache once on CPU in well under an hour, then a linear head."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT, the data is CC-BY-4.0, the watermarking code is Apache-2.0; no restriction on this use."},
+    "E1": {"score": 0, "ok": true, "why": "Hold out whole design scaffolds; I verified the Backbone_ID column exists with 15 scaffolds in both arms."},
+    "E2": {"score": 0, "ok": true, "why": "15 scaffolds x 3 targets = 45 groups, each with 14-18 designs, counted in the files."},
+    "E3": {"score": 0, "ok": true, "why": "Majority class and 20-dimensional amino-acid composition logistic regression are both trivially computable here."},
+    "E4": {"score": 0, "ok": true, "why": "562 designs have 2+ KD replicates; median spread 0.10 log10 units, 90th percentile 0.27 (I computed this)."},
+    "E5": {"score": 0, "ok": true, "why": "Keyed g-values in the table separate the arms (0.79 watermarked vs 0.50 not), a known signal the pipeline must recover."},
+    "E6": {"score": 0, "ok": true, "why": "Label shuffling, composition-only ablation and within-scaffold shuffling all run in minutes on 810 rows."},
+    "E7": {"score": 0, "ok": true, "why": "The Apache-2.0 code regenerates matched watermarked/unwatermarked sequences for any PDB backbone on CPU."},
+    "E8": {"score": 0, "ok": true, "why": "The paper's near-perfect keyed detection can be recomputed with the released compute_g_values.py on the 810 designs."},
+    "G1": {"score": 1, "why": "Sequences present, but scaffolds are anonymised as 'Backbone 0-14'; only the 3 target names map to UniProt."},
+    "G2": {"score": 1, "why": "Plausible partners (PDB backbones; the 3,766-binder meta-analysis) but no key in the file links them directly."},
+    "G3": {"score": 1, "why": "Internal join is 1:1 (verified 810/810); linking scaffolds back to PDB entries would need reconstruction."},
+    "G4": {"score": 1, "why": "Combining with freshly generated sequences asks whether imperceptibility is a method property or a design-set property."},
+    "H1": {"score": 2, "why": "232 non-binding designs, 9 negative-control sequences and unwatermarked counterparts, all counted in the files."},
+    "H2": {"score": 0, "why": "One lab, one design model, one assay, 3 targets, 15 small helical scaffolds; no diversity of source."},
+    "H3": {"score": 2, "why": "The claim can be written in one sentence naming the temperature setting and the scaffold-held-out split."},
+    "H4": {"score": 1, "why": "README flags subsets and the omitted N-terminal methionine; the paper's own limitations are behind a paywall."},
+    "I1": {"score": 2, "why": "Named users: the SynthID Bio team at Google DeepMind and DNA-synthesis screening providers / IBBIS."},
+    "I2": {"score": 2, "why": "A working keyless detector would force a change to watermark strength and key schedule before deployment."},
+    "I3": {"score": 2, "why": "Screening decisions are flag/no-flag at a very low false-positive rate; that is exactly the metric proposed."},
+    "I4": {"score": 1, "why": "A 20-feature composition test may already work (glutamine Cohen's d = 1.04), which would itself be the finding."},
+    "J1": {"score": 2, "why": "Grouped splits, frozen-backbone transfer learning, calibration at low false-positive rate, adversarial evaluation."},
+    "J2": {"score": 2, "why": "The keyed g-value column is an in-table sanity check, and binding affinities are interpretable by inspection."},
+    "J3": {"score": 2, "why": "A harmonised single-table version of the three CSVs plus the composition analysis is shareable on its own."},
+    "J4": {"score": 1, "why": "I propose three weeks, but no budget has actually been written down anywhere yet."},
+    "J5": {"score": 1, "why": "Kill condition proposed below but not yet recorded in NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SynthIDBio-sequence (this paper; watermark embedder plus keyed g-value detector built into ProteinMPNN)",
+        "open_weights": true,
+        "score_and_split": "Paper's abstract claims near-perfect watermark detection accuracy; in the released table the mean keyed g-value is 0.79 for watermarked versus 0.50 for unwatermarked designs at sampling temperature 0.1 (I computed this from all_g_values.csv). The split is by generation condition, not by held-out scaffold.",
+        "authors_named_unsolved": "Robustness against deliberate tampering: an adversary who knows a watermark is present could mutate the sequence until the signal degrades. Stated in the abstract/blog as a challenge still to be met.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "FoldMark (watermarking for protein structure generative models, arXiv 2410.20354)",
+        "open_weights": null,
+        "score_and_split": "Search snippet reports near-100% bit accuracy for recovering 4-32 bit watermark codes with minimal loss of structural validity; split not stated in what I retrieved.",
+        "authors_named_unsolved": "Not retrieved; I only saw the abstract snippet, not the discussion.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "MARCO (radioactive watermark for protein generative models, arXiv 2610.08316)",
+        "open_weights": null,
+        "score_and_split": "Search snippet claims attack-resilient structures with negligible geometric deviation; no numbers or split retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Pattern-mark (watermark for order-agnostic language models, arXiv 2410.13805; evaluated on ProteinMPNN)",
+        "open_weights": null,
+        "score_and_split": "Search snippet reports evaluation on ProteinMPNN and a masked-language design model; no numbers retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Overath & Rygaard meta-analysis of 3,766 experimentally characterised de novo binders (bioRxiv 2025.08.14.670059) - relevant to the companion task of predicting whether a designed binder works",
+        "open_weights": null,
+        "score_and_split": "Search snippet: interface confidence scores derived from AlphaFold-3 (ipSAE) give a 1.4-fold increase in average precision over the commonly used interface predicted-aligned-error score, across 15 targets.",
+        "authors_named_unsolved": "Not retrieved from the full text.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model; the 150M or 650M parameter checkpoint)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM; 810 sequences of under 140 residues embed once and are cached",
+    "licence": "MIT (ESM-2); data CC-BY-4.0; watermarking code Apache-2.0"
+  },
+  "integration": {
+    "partner_dataset": "Freshly generated matched sequence pairs from the released Apache-2.0 watermarking code, run on monomer backbones drawn from the Protein Data Bank (PDB)",
+    "join_key": "Generation condition plus backbone structure identifier (the PDB entry used as the design template)",
+    "bigger_question_one_sentence": "Is the watermark's invisibility a property of the method itself, or only of the 15 small helical scaffolds and 3 targets in this release?"
+  },
+  "controls": {
+    "positive_control": "The keyed g-value column already in the released table must separate the two arms (0.79 versus 0.50 at temperature 0.1, verified by me); and a model predicting sequence length from embeddings must be near-perfect.",
+    "negative_control": "Shuffle the watermarked/unwatermarked labels and confirm detection collapses to AUROC 0.5; train on amino-acid composition alone to see how much of the signal is just composition; shuffle labels within scaffold to confirm the grouped split is working.",
+    "external_validation": "Regenerate matched watermarked and unwatermarked sequences with the released code on PDB backbones not among the 15 here, and test the detector trained only on the released designs."
+  },
+  "honest_claim_h3": "Among ProteinMPNN-designed mini-binders for three targets built on fifteen small scaffolds, a classifier that sees only the amino-acid sequence and never the secret key can (or cannot) identify watermarked designs at a 1-in-1,000 false-alarm rate when scaffolds are held out - and this is established only for the low-temperature, deliberately distribution-shifting watermark setting, because the release contains no temperature-matched unwatermarked control for the higher-temperature, distribution-preserving setting.",
+  "plain_idea": {
+    "one_liner": "Use a designed protein's amino-acid sequence alone to tell whether a hidden provenance mark was switched on during its generation.",
+    "train_on": "Each example is one designed binder protein: its amino-acid sequence (60-136 residues), plus which of 15 scaffolds and which of 3 targets it was designed for. 810 designs in total; 489 of them form a clean comparison because they were made at the same sampling temperature (267 with the mark on, 222 with it off).",
+    "predict": "A yes/no answer: was the watermarking switch on when this sequence was generated? The truth comes from the authors' own generation log, recorded as a column in the released tables, not from any model's guess.",
+    "why_worthwhile": "DNA-synthesis screening companies and biosecurity bodies are being asked to rely on this watermark; whether an outsider can spot it without the secret key decides both whether it can be stripped and whether non-key-holders could use it. Either answer is a useful result."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "The release is small (810 designs, 489 temperature-matched), far smaller than text-watermarking studies. But it is the only protein-watermark dataset I found that pairs watermarked sequences with measured laboratory binding data (564 dissociation constants, 232 confirmed non-binders), and the Apache-2.0 generation code lets us scale the sequence side without limit."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The binding side supports calibration: 562 designs have two or more replicate dissociation constants with a median spread of 0.10 log10 units (I computed this), which sets a real noise ceiling. The provenance label has no measurement noise, so per-sequence confidence would come from the null distribution of detector scores rather than from replicates."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "SynthIDBio's keyed detector is near-perfect and is not the thing to beat - it has the key. The open question is whether any key-free detector works at all, and I found no published one for protein sequences, so there is no strong incumbent. The encouraging early sign is a glutamine-frequency gap of Cohen's d = 1.04 between the two arms at matched temperature."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "There is no existing key-free baseline to run and beat, so the 'our model sees everything theirs sees plus more' condition cannot be met. The extra data would come from our own regeneration runs, not from an independent measurement of the same quantity."
+    }
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "No public resource lists protein sequences labelled by whether a generative model's watermark was switched on; I searched and found only method papers (FoldMark, MARCO, Pattern-mark), not labelled corpora. The companion binding-affinity label is widely available elsewhere - BindingDB and SKEMPI (known resources), plus the Overath & Rygaard meta-analysis of 3,766 experimentally characterised binders found by search.",
+    "approx_items": null,
+    "join_key": "Amino-acid sequence (for the provenance label there is no shared identifier at all; for the binding label, UniProt accession of the target)",
+    "why": "The provenance label exists only here or in sequences we generate ourselves, so there is no ready-made external test set - we have to build one with the released code, which is cheap but is our own work rather than independent evidence."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The two g-value columns are computed from the sequence using the secret key; including either as a feature would give a perfect score that means nothing.",
+      "Sequences designed on the same scaffold share most of their positions, so a random split would put near-identical sequences in both train and test.",
+      "The higher-temperature watermarked arm has no temperature-matched unwatermarked control, so a classifier trained across all subsets would learn sampling temperature rather than the watermark.",
+      "Plate identity and target identity are recorded and could correlate with the arm if the design counts are uneven, letting the model learn the experimental layout instead."
+    ],
+    "split": "Hold out whole design scaffolds using the Backbone_ID column, which I saw in all three binding CSVs with 15 values; verified that all 15 appear in both arms at temperature 0.1 (18 watermarked vs 15 unwatermarked per scaffold), so the split is balanced by construction. Also report a held-out-target split across the 3 targets.",
+    "checks": [
+      "Shuffle the watermarked/unwatermarked labels and confirm the area under the curve collapses to 0.5.",
+      "Train on the keyed g-value alone and confirm it is near-perfect, as the deliberately leaky reference point, then confirm it is excluded from the real feature set.",
+      "Train on 20 amino-acid frequencies alone and report that number separately, since glutamine already differs with Cohen's d = 1.04 - if composition explains everything, say so rather than crediting the language model.",
+      "Restrict to temperature 0.1 only, and separately check that a classifier cannot predict the arm from scaffold identity and target alone."
+    ],
+    "verdict": "Manageable: the scaffold column needed for a clean grouped split is present and perfectly balanced between arms, and the single dangerous feature (the keyed g-value) is obvious and easy to exclude."
+  },
+  "success_criteria": {
+    "metric": "True-positive rate at a 1-in-1,000 false-positive rate for calling a sequence watermarked, under a held-out-scaffold split. Screening providers act on a flag, and they can only tolerate a very low false-alarm rate, so the operating point is the decision.",
+    "baselines": "Chance = 0.001 true-positive rate at that threshold; a 20-feature amino-acid composition logistic regression (must be run first, and may already be strong given glutamine Cohen's d = 1.04 measured here); and the keyed g-value detector as the ceiling (mean 0.79 versus 0.50, computed by me from the released table).",
+    "success": "A key-free detector reaching 0.30 or better true-positive rate at a 1-in-1,000 false-positive rate on held-out scaffolds at matched sampling temperature, with the result holding on freshly generated sequences from unseen backbones. A clearly negative result - under 0.01 true-positive rate with both composition and language-model features - is equally publishable as support for the imperceptibility claim.",
+    "noise_ceiling": null,
+    "kill": "Stop if, after one week, the composition-only baseline already reaches the success threshold and the language-model features add nothing, or if the watermarking code cannot be made to run on a laptop CPU so the regenerated validation set is unobtainable."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature (Matters Arising)",
+      "why": "Nature publishes short, direct challenges to papers it printed; it would take a clear demonstration that the watermark is detectable without the key at a screening-relevant false-alarm rate, on both the released designs and freshly generated ones."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "Publishes independent benchmarks and evaluations of published methods; a careful held-out-scaffold evaluation of key-free detectability, positive or negative, with released code, fits its applications/evaluation format."
+    },
+    "fallback": {
+      "journal": "bioRxiv preprint plus an IEEE Conference on Secure and Trustworthy Machine Learning (SaTML) or NeurIPS watermarking workshop paper",
+      "why": "Even a negative result - no key-free detector beats composition - is a useful robustness data point for the generative-AI watermarking community, and these venues publish exactly that kind of short evaluation."
+    }
+  },
+  "pitch": {
+    "headline": "The only protein-watermark dataset with wet-lab proof: 810 designed binders, 564 measured affinities, 232 confirmed non-binders, watermark on/off recorded per design.",
+    "what_makes_the_data_unusual": "Verified in the files: all 15 design scaffolds appear in both the watermarked and unwatermarked arms with identical length distributions - a matched-pair design other watermarking papers lack - plus 562 designs with replicate affinity measurements. CC-BY-4.0, 0.4 MB.",
+    "the_win": "Show a key-free classifier flags watermarked designs at 0.30 true-positive rate for a 1-in-1,000 false-alarm rate on held-out scaffolds, against the keyed detector's 0.79-versus-0.50 g-value separation I measured.",
+    "even_if_it_fails": "A clean negative is the strongest independent support anyone has offered for the imperceptibility claim, and the matched-temperature gap I already found (glutamine Cohen's d = 1.04) must then be explained away, which is itself a finding.",
+    "who_wants_it": "The SynthID Bio team at Google DeepMind and DNA-synthesis screening providers deciding whether to rely on this watermark; a positive result would force a change to watermark strength before deployment."
+  },
+  "ml_idea": "Binary classification from amino-acid sequence alone: was SynthIDBio watermarking switched on during generation? Features are frozen ESM-2 embeddings (a protein language model) plus 20 amino-acid frequencies and n-gram counts; the head is logistic regression or gradient boosting. Train and evaluate with whole design scaffolds held out (15 groups), restricted to the temperature-matched arm (267 watermarked versus 222 unwatermarked), and report the true-positive rate at a 1-in-1,000 false-positive rate. Scale up by regenerating matched pairs for unseen PDB backbones with the released Apache-2.0 code on CPU. Companion analysis: use the 564 measured dissociation constants and 232 non-binders to calibrate an in-silico function proxy on this exact design distribution, then estimate how much measured-equivalent binding is lost by the mutations needed to erase the watermark signal.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.15,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 0.5,
+    "cv_run_minutes": 5,
+    "compute_note": "CSV loading and the composition analysis were timed implicitly - they ran instantly on 1,624 rows. Embedding time is an estimate: 810 sequences of about 110 residues at roughly 1.5 s each with the 650M-parameter ESM-2 checkpoint on a laptop CPU. The regeneration step (running the watermarking code to make more sequences) is untimed and is the main unknown.",
+    "cheapest_killing_check": "Already done, and it passed: count the temperature-matched designs (267 watermarked versus 222 unwatermarked) and confirm all 15 scaffolds appear in both arms so the classifier cannot just learn scaffold identity. The remaining cheap check is whether the released watermarking code installs and runs on a laptop CPU - without it there is no external validation set."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer was checked against the downloaded files, not the paper: 810 designs with sequences present, the provenance label already a column, 564 laboratory dissociation constants whose units I verified by checking KD = off-rate/on-rate to within 2%, replicate measurements that set a 0.10 log10 noise floor, 232 genuine negatives, and a 0.4 MB working set. The project - can anyone detect this watermark without the secret key? - is informative whichever way it resolves, has an in-table positive control (the keyed g-values), a perfectly balanced held-out-scaffold split, and an unlimited external validation set from the Apache-2.0 generation code. The honest caveats are that the clean comparison is only 489 sequences, that the distribution-preserving high-temperature setting has no matched control in the release, that the data comes from a single lab and a single design model, and that a plain amino-acid composition test may do most of the work - a glutamine frequency gap of Cohen's d = 1.04 is already visible, which is a finding rather than a failure."
+}

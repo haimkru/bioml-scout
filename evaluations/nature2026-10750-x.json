@@ -1,0 +1,57 @@
+{
+  "paper_id": "nature2026-10750-x",
+  "title": "Diet-microbiome synergy underlies obesity-associated immunotherapy efficacy.",
+  "doi": "10.1038/s41586-026-10750-x",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1468761",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Pulled the full NCBI SRA (Sequence Read Archive) run table for BioProject PRJNA1468761 and parsed it in pandas: exactly 752 runs, 752 unique BioSamples, 716 16S rRNA amplicon runs on Illumina MiSeq (mean 18 MB each, 12.9 GB total) and 36 shotgun metagenome runs on Illumina NovaSeq 6000 (mean 6.35 GB each, 223 GB total); 236 GB in all. Library names encode the 12 diets (WD, ASP, HF, INU, JAP, LF, VEG, PSY, PEC, MED, KET, AMER; 56-60 amplicon runs each) plus 5 human donors and a small M2 time-series. Read the full open-access text and its data availability statement. Tried three routes to processed data/labels and all failed: Europe PMC supplementaryFiles endpoint timed out twice, the NCBI PMC open-access package service returned HTTP 404 for PMC13558080, and no Zenodo/Dryad/figshare deposit matched the DOI.",
+    "what_came_from_paper_text_only": "That amplicon reads were turned into an ASV (amplicon sequence variant) abundance table with DADA2 and SILVA 138.2, and shotgun reads into counts with Kraken2; that tumour growth, body weight, body composition, glucose tolerance, serum insulin/leptin, immune profiling and metabolomics were measured. None of those processed tables were retrievable. The per-figure Source Data files are hosted only on the publisher's site, which project rules bar me from scraping."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Only raw sequencing is public. The data availability statement says 'All other data are available upon reasonable request' - that covers every processed table (ASV abundances, Kraken2 counts, metabolomics, immune phenotypes) and every outcome measurement. 'Available on request' is an explicit A1 fail. Europe PMC's supplementary endpoint timed out and the PMC open-access package 404'd, so I could not open a single processed file."},
+    "a2_label_is_a_column": {"pass": false, "note": "The label anyone would want - tumour growth or immune checkpoint inhibitor (ICI) response per mouse - is not a column in anything downloadable. It exists only inside per-figure Source Data spreadsheets and would have to be constructed by matching mouse identifiers parsed out of free-text SRA library names like 'WD 1 0 3' to rows in those spreadsheets. I could not verify that those identifiers even match. This is label construction across sources, the canonical A2 failure."},
+    "a3_inputs_present": {"pass": false, "note": "Inputs are raw paired-end FASTQ reads, not a feature table. Building features means downloading reads and re-running DADA2 plus SILVA taxonomy (amplicon) or Kraken2 (shotgun) yourself; the authors' processed matrices were not deposited."},
+    "a4_units_stated": {"pass": false, "note": "Could not check - no processed table was retrievable. The paper describes tumour volume in mm3 and relative abundances, but no file with a units column was ever opened."},
+    "a5_enough_rows": {"pass": false, "n_rows": 716, "note": "716 amplicon samples sounds adequate, but the modelling unit is the mouse and the label is per-mouse tumour outcome: roughly 15 mice per diet across 12 diets, well under the ~1,500-row bar and under 400 even for classification. The 36 shotgun samples are 3 per diet. Verified counts come from the SRA run table."},
+    "a6_fits_laptop": {"pass": false, "working_set": "12.9 GB (amplicon FASTQ only) to 236 GB (all runs)", "note": "Amplicon-only is 12.9 GB of raw reads, above the ~5 GB working-set limit; the shotgun set is 223 GB. Project rules also forbid downloading raw sequencing at all. DADA2 on 716 libraries plus Kraken2 on 36 metagenomes is days of laptop CPU before any model exists."},
+    "a7_counts_match_paper": {"pass": true, "note": "The 12 diet groups named in the text match the 12 library-name prefixes in the SRA run table, and group sizes (56-60 amplicon runs each) are consistent with the described cohorts. No contradiction found, though per-mouse n values live in Supplementary Table 12, which I could not open."},
+    "a8_label_provenance": {"pass": true, "note": "The intended label (tumour volume under anti-PD-1 treatment) is a direct physical measurement, not another model's output, and is not computable from microbiome features. A8 is the one killer this paper passes cleanly - but it is irrelevant because the label is not obtainable."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Lasso-based microbiome ICI (immune checkpoint inhibitor) response classifier, Lee et al., Nature Medicine 2022 (PRIMM-NL/PRIMM-UK melanoma cohorts)", "open_weights": null, "score_and_split": "AUC-ROC (area under the receiver operating characteristic curve) 0.64 on PRIMM-NL using 12-month progression-free survival, 0.78 on PRIMM-UK using objective response rate; cross-cohort, found from search abstract only", "authors_named_unsolved": "No single microbiome signature generalised across cohorts", "runnable_as_baseline": null},
+      {"name": "BioP-VAE, a deep variational autoencoder using gene-level microbiome signatures across cancer types (2026)", "open_weights": null, "score_and_split": "Mean AUC 0.97 within monotherapy cohorts; generalisation across cohorts reported as the harder case. From abstract only.", "authors_named_unsolved": "Cross-cancer-type and cross-treatment-setting generalisation", "runnable_as_baseline": null},
+      {"name": "SHAP-interpretable MetaCyc functional-pathway classifier for ICI response in non-small-cell lung cancer (Frontiers in Immunology 2026)", "open_weights": null, "score_and_split": "Functional pathway scores reported to beat taxonomic profiles on RECIST-based response; split not stated in abstract", "authors_named_unsolved": "Taxonomy alone is insufficient; function matters", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "None applicable - no sequence or molecule input a pretrained backbone consumes; microbiome count tables would go to gradient boosting, not a foundation model", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "n/a"},
+  "integration": {"partner_dataset": "curatedMetagenomicData / MetaPhlAn mouse gut catalogues could in principle join on taxon name", "join_key": "NCBI taxonomy ID or species name", "bigger_question_one_sentence": "Cannot be written usefully here: with no processed abundance table and no per-mouse outcome, there is nothing on this side of the join to combine."},
+  "controls": {"positive_control": "Would be recovering the paper's own reported finding that Lactobacillus johnsonii is enriched in responders - but not testable without the abundance table.", "negative_control": "Label shuffling, not reachable without labels.", "external_validation": "Human ICI-response microbiome cohorts exist (PRIMM-NL, PRIMM-UK) but are human stool against mouse stool, a species mismatch."},
+  "honest_claim_h3": "No honest claim is reachable: the only public data is 752 raw sequencing runs with no outcome measurements attached, so any model would be predicting diet group from reads the authors already labelled by design.",
+  "plain_idea": {
+    "one_liner": "Use gut bacterial composition from mouse stool to predict whether a tumour shrinks under immunotherapy.",
+    "train_on": "Per-mouse gut bacterial abundance profiles from 16S rRNA gene sequencing, across 12 controlled diets. The public deposit has 716 amplicon samples and 36 shotgun metagenomes, but the per-mouse count is roughly 15 per diet (about 180 mice), and I could not verify it.",
+    "predict": "Tumour growth or responder/non-responder status under anti-PD-1 immune checkpoint blockade, measured by calliper tumour volume in treated mice. That measurement is not in any public file.",
+    "why_worthwhile": "Oncologists and microbiome labs want to know which gut communities make immunotherapy work, so a model mapping community to response would guide which faecal transplants or diets to test. Here the idea is sound but the data to build it is not released."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Published ICI-microbiome classifiers train on hundreds of human patients with real clinical response endpoints; this offers roughly 180 mice whose outcomes are not downloadable."},
+    "confidence_score": {"answer": "no", "why": "Calibrated per-prediction confidence would need many mice per diet-outcome cell; there are about 15 mice per diet and 3 shotgun samples per diet, and no outcome column to calibrate against."},
+    "models_beatable": {"answer": "no", "why": "The 2026 BioP-VAE and SHAP pathway models are recent and report strong numbers; without the label data here there is no way to run a comparison at all, beatable or not."},
+    "guaranteed_improvement": {"answer": "no", "why": "The first condition fails outright: no existing model can be run as a baseline on this data because this data has no response labels to score against."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict anti-PD-1 tumour response from gut 16S community profile across 12 diets, with diet held out to test whether the microbiome signal is diet-independent. Dead on arrival because response measurements are request-only. The fallback task - predict which of 12 diets a mouse was fed from its 16S profile - is learnable but near-worthless: the diet is an experimental design variable confounded with cage and batch, and nobody acts on the answer.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 12.9, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Working set is the summed size_MB of the 716 amplicon runs from the SRA run table (12.9 GB); the 36 shotgun runs add 223 GB. No timing run because no feature table is obtainable. DADA2 over 716 libraries on a laptop CPU is realistically days, not hours.", "cheapest_killing_check": "Read the data availability statement: 'All other data are available upon reasonable request.' That one line, confirmed by a 404 from the PMC open-access package service and two timeouts from Europe PMC's supplementary endpoint, kills it in five minutes."},
+  "verdict": "reject",
+  "verdict_reason": "Only raw sequencing reads are public (752 runs, 236 GB). Every processed abundance table and every outcome measurement - the features and the label - are 'available upon reasonable request', failing A1. The label would additionally have to be constructed by matching free-text mouse IDs in SRA library names to figure source-data spreadsheets (A2), the amplicon-only working set is 12.9 GB of forbidden raw FASTQ (A6), and the real sample size is roughly 15 mice per diet (A5). Excellent biology, unusable as a modelling substrate."
+}

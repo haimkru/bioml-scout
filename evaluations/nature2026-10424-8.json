@@ -1,0 +1,146 @@
+{
+  "paper_id": "nature2026-10424-8",
+  "title": "Connecting single-cell transcriptomes to projectomes in the mouse visual cortex.",
+  "doi": "10.1038/s41586-026-10424-8",
+  "journal": "Nature",
+  "data_url": "https://github.com/AllenInstitute/exc_vis_manuscript (processed tables); https://dandiarchive.org/dandiset/001455 (electrophysiology); https://data.nemoarchive.org/other/grant/aibs_internal/zeng/transcriptome/scell/PATCHseq/mouse/raw/ (raw RNA sequencing); https://doi.org/10.35077/g.1177 (morphology images)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 13 CSV tables from the Allen Institute GitHub repo and counted rows/columns in pandas. ProjectionMatrix_tip_and_branch_roll_up.csv = 345 neurons x 220 brain-region columns, values 0-97,980 (axon length, unit not written in the file), 0 missing cells, 0 duplicate row names, median 10 target regions per neuron. FullMorphMetaData_Master.csv = 341 rows with a 'predicted_met_type' column plus its 'probability' column (mean 0.906, minimum 0.496) -- i.e. the cell-type label is a classifier's output. data_for_glm_lf.csv, the exact table behind the headline 'predict projection targets' claim, = 174 rows (all in primary visual cortex), largest subclass 87 cells, three subclasses with 2-5 cells. exc_mMET_ephys_features.csv = 1,528 cells x 255 electrophysiology features with 58.4% of entries missing. sparse_pca_components_mMET_exc_visp.csv = 1,528 cells x 62 unnamed numeric components (the only per-cell gene-expression representation in the repo). morph_features_mMET_exc_wide_normalized.csv = 389 cells. inferred_met_types.csv = 1,528 rows, but only 384 have a directly assigned cell type; 1,437 have a classifier-inferred one. I also fetched the NeMO archive directory listing (contains only a raw/ folder of per-cell .fastq.tar files, 35-57 MB each, ~1,528 of them, so roughly 60-80 GB and no processed count matrix), the DANDI API record for dandiset 001455 (1,528 NWB files, 52.2 GB, CC-BY-4.0, open), the repository LICENSE (2-clause BSD plus a non-commercial restriction), and the published Data Availability and Methods text on nature.com.",
+    "what_came_from_paper_text_only": "The Methods sentence describing how the projection models were fit (binomial generalized linear models per brain region, per subclass, using morphological latent factors derived from sparse reduced-rank-regression weights trained on the Patch-seq cells, plus cortical surface location, evaluated by leave-one-out pseudo-R-squared with AICc model selection). The random-forest cell-type classifier's reported >90% accuracy. The Brain Image Library morphology archive contents (the DOI resolved but I did not enumerate its files). I did not download any raw sequencing or imaging data."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified: all processed tables download anonymously from GitHub; DANDI dandiset 001455 is open CC-BY-4.0; NeMO and the Brain Image Library are open HTTP directories. No login, no access application."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified: the projection target is a column block already -- 220 brain-region columns of axon length in ProjectionMatrix_tip_and_branch_roll_up.csv. Only a threshold is needed to turn it into 'projects / does not project'."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL, verified. The input the project needs -- gene expression for the cells that have a projectome -- does not exist in any file. The 341 whole-neuron-morphology cells were never sequenced; their 'gene expression' predictors are morphology-derived latent factors. For the 1,528 Patch-seq cells the only per-cell transcriptomic table is 62 unnamed principal-component scores; gene-level counts exist only as ~60-80 GB of raw FASTQ at NeMO, which needs an alignment pipeline and is barred by the no-raw-sequencing rule."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "FAIL, verified. The 220 projection columns carry no unit anywhere in the file or repo (values 0-97,980, presumably micrometres of axon). Morphology features are z-scored with no original scale given. Electrophysiology feature names imply units (mV, ms, megaohms) but no units row exists."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 174,
+      "note": "FAIL, verified. The projectome exists for 345 neurons (341 with metadata), and the paper's own modelling table has 174 rows, split across 9 cell subclasses modelled separately -- largest 87 cells, three subclasses with 2-5. The checklist needs >=400 even for classification. The unit of analysis is the neuron, not the 345 x 220 = 75,900 cell-by-region entries."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~7 MB of processed CSV tables",
+      "note": "Verified: everything needed from GitHub is under 10 MB total. Only the optional raw layers (52 GB electrophysiology, ~70 GB FASTQ, terabyte-scale fMOST images) are large."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Verified: 1,528 Patch-seq cells in the files matches the abstract exactly (ephys table, PCA table, inferred-type table and DANDI asset count all = 1,528); 341 whole-neuron morphologies matches too (the projection matrix has 345, 4 extra rows, a minor and explainable discrepancy)."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL, verified in the files. The predictors standing in for gene expression on the 341 projectome cells are outputs of the authors' sparse reduced-rank-regression model, and 'predicted_met_type' is a random forest's output (its confidence column drops to 0.496). Modelling on these distils their classifiers rather than learning biology. The alternative input, whole-axon features, is computed from the very same reconstruction that defines the projection label -- leakage by construction."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "LangPatch (arXiv 2609.37024, 2026) -- a contrastive-learning model that links gene expression to electrical properties by embedding both as text with a frozen language model",
+        "open_weights": null,
+        "score_and_split": "Reports the highest mean transcriptome-to-electrophysiology prediction correlation among the foundation-model methods it compares, on held-out cells from mouse visual cortex, mouse motor cortex and human cortex; cross-modal alignment error (FOSCTTM) 0.107/0.135 versus 0.208/0.222 for JAMIE. Trained on mouse visual cortex, it keeps ~70% of its correlation in motor cortex and 47% in human cortex.",
+        "authors_named_unsolved": "Transfer to human cortex, where correlation retention falls to 47-58%, is the weak point they report.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Coupled autoencoders for Patch-seq (Gala et al., NeurIPS 2019 and follow-ups; code at github.com/AllenInstitute/coupledAE-patchseq)",
+        "open_weights": true,
+        "score_and_split": "Learns aligned low-dimensional representations of gene expression and electrical properties for 1,518 paired mouse cortical neurons and reports accurate cross-modal prediction of cell classes; evaluated on held-out cells.",
+        "authors_named_unsolved": "Consistency of cell-type definitions across modalities, and how much within-type variation is shared rather than modality-specific.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Sparse reduced-rank regression as used in this very paper (Kobak/Berens method; R code and all cross-validated fits are in the paper's own GitHub repo)",
+        "open_weights": true,
+        "score_and_split": "Cross-validated R-squared plus a 15%-held-out test set, reported per transcriptomic subclass for predicting electrophysiology and morphology from genes. The fitted objects (sparse_rrr_results/*.h5) are in the repo.",
+        "authors_named_unsolved": "Linking transcriptomic identity to long-range axonal projections -- which they address only indirectly, through morphology.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Bernaerts et al. statistical-biophysical model linking ion-channel gene expression to firing patterns (2025)",
+        "open_weights": null,
+        "score_and_split": "Combines biophysical neuron simulations with machine learning on Patch-seq data to relate ion-channel gene levels to firing behaviour; evaluated on held-out Patch-seq cells.",
+        "authors_named_unsolved": "Establishing causal, mechanistic links rather than correlations between gene levels and firing.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepManReg and JAMIE -- cross-modal manifold-alignment and imputation methods applied to mouse Patch-seq",
+        "open_weights": true,
+        "score_and_split": "Report improved phenotype classification and cross-modal imputation on mouse Patch-seq transcriptome-plus-electrophysiology data; JAMIE's alignment error is the number LangPatch beats.",
+        "authors_named_unsolved": "Alignment quality when the two modalities carry genuinely different information.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None usable. scGPT or Geneformer would be the natural single-cell backbone, but both need a gene-by-cell count matrix, and the only per-cell transcriptomic table released is 62 unnamed principal-component scores.",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a -- a backbone cannot be attached without gene-level expression",
+    "licence": "Allen Institute 2-clause BSD plus a non-commercial clause on the code repo (verified in LICENSE); DANDI electrophysiology is CC-BY-4.0; the Nature article itself is CC-BY-NC-ND-4.0"
+  },
+  "integration": {
+    "partner_dataset": "Allen Mouse Brain Connectivity Atlas (bulk anterograde tracing) and the Allen Common Coordinate Framework region ontology; also the MouseLight 1,000-neuron reconstruction set",
+    "join_key": "Common Coordinate Framework (CCF) brain-region acronyms, which are present as the 220 projection column names, plus CCF x/y/z soma coordinates",
+    "bigger_question_one_sentence": "Do single-neuron projection patterns in visual cortex decompose into the same region-to-region weights that bulk tracing measures, or do individual neurons target combinations that bulk averages hide? -- a good question, but it cannot rescue a dataset of 341 neurons whose transcriptomes were never measured."
+  },
+  "controls": {
+    "positive_control": "Available in principle: layer 5 extratelencephalic neurons must come out as the only class projecting to the superior colliculus and other midbrain targets, and layer 2/3 intratelencephalic neurons as cortex-only. Soma depth should also be near-perfectly recoverable from morphology features.",
+    "negative_control": "Label shuffling across the 345 neurons is cheap to run, but with 174 usable rows the dummy baseline (per-subclass projection frequency) is already close to the ceiling.",
+    "external_validation": "MouseLight and the Braintell single-neuron reconstruction sets cover other brain regions, and the Allen Mouse Brain Connectivity Atlas gives bulk projection strengths -- but none of them carry transcriptomes either, so they cannot validate the transcriptome-to-projection claim."
+  },
+  "honest_claim_h3": "Among 174 reconstructed excitatory neurons in mouse primary visual cortex, a per-subclass logistic model can say whether a neuron projects to a given brain region better than chance, using its soma position and features that a separate model guessed from its dendrite shape -- not using any gene expression actually measured in that neuron.",
+  "plain_idea": {
+    "one_liner": "Use a neuron's gene expression and position in cortex to predict which distant brain regions its axon reaches.",
+    "train_on": "The intended input is each neuron's gene-expression profile plus the three-dimensional position of its cell body in a standard mouse brain coordinate frame. In the actual files only 174 neurons (345 at the most generous) have the output measured, and none of those 174 were ever sequenced.",
+    "predict": "A yes/no answer for each of ~220 brain regions, from the axon length each neuron deposits there. The true answer comes from manually tracing the complete axon of a single fluorescently labelled neuron in a whole-brain light-sheet image and registering it to the reference atlas -- slow, expensive and genuinely hard to get.",
+    "why_worthwhile": "Neuroscientists building wiring diagrams of the brain would love to read a neuron's long-range wiring off a cheap single-cell sequencing experiment, which would turn a months-long reconstruction into a routine assay. Even a negative answer would tell the field how much of wiring is written in the transcriptome."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "For the transcriptome-to-electrophysiology task the existing models (LangPatch, coupled autoencoders, JAMIE) already train on mouse visual cortex Patch-seq cohorts of comparable size, and they use gene-level data while this release only publishes 62 unnamed principal components. For the projection task we have 174-345 neurons, which is not 'more data', it is very little data."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements -- each neuron is reconstructed once -- so the noise floor on the projection labels cannot be estimated. With 2-5 cells in three of the nine modelled subclasses, per-group uncertainty would be dominated by sampling noise rather than anything learnable."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "LangPatch is a 2026 model already evaluated across held-out mouse visual, mouse motor and human cohorts, which is an honest cross-cohort split, and the paper's own sparse reduced-rank regression used a 15% held-out test set with cross-validated hyperparameters. Nothing here is a weak 2019 random-split baseline."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on the first condition: we cannot run the existing models on the same inputs, because the gene-level expression matrix for these cells is not released. It also fails the 'same quantity, same assay' test -- any partner projection data (MouseLight, bulk tracing) comes from different animals and different labelling methods."
+    }
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: predict, for each of ~220 brain regions, whether a single excitatory neuron in mouse visual cortex sends an axon there, from its transcriptome and its soma position in the Allen Common Coordinate Framework. It dies because the two halves of the dataset come from different animals: the 1,528 sequenced Patch-seq neurons have no whole-brain axon reconstruction, and the 341 reconstructed neurons were never sequenced. The paper bridges them with a classifier, so any model built on the released tables would be learning that classifier's output. A secondary project -- predict the 255 measured electrophysiology features from the transcriptome across 1,528 cells -- clears the row-count bar but is squarely in the path of LangPatch, coupled autoencoders and JAMIE, and the only transcriptomic input released is 62 unnamed principal components that no pretrained single-cell backbone can consume.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, not timed beyond the downloads: the entire processed release is ~7 MB of CSV and loaded into pandas in under a second. Effort is trivially low -- the project fails on what the data contains, not on what it costs.",
+    "cheapest_killing_check": "Count the rows in data_for_glm_lf.csv and check whether any neuron appears in both the Patch-seq ID list and the whole-neuron morphology ID list. It is 174 rows, and the overlap is zero -- that one line kills the project in five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Three Part A killers fail, all verified by opening the files. A5: the projectome exists for only 345 neurons and the paper's own model table has 174 rows spread across nine separately fitted subclasses (three of them with 2-5 cells), far below the ~400 minimum. A3: the neurons with projections were never sequenced, so the gene expression that the headline task needs does not exist for them; for the 1,528 Patch-seq cells the only released transcriptomic table is 62 unnamed principal components, with gene-level counts available solely as ~60-80 GB of raw FASTQ. A8: the stand-in 'gene expression' predictors on the 341 reconstructed neurons are a sparse reduced-rank-regression model's outputs and the cell-type label is a random forest's output (confidence as low as 0.496), so a model fit on them distils Allen's classifiers rather than measuring biology; the obvious alternative input, whole-axon features, is computed from the same reconstruction that defines the label. A4 also fails: the 220 projection columns have no stated unit. The science is excellent and the data is admirably open -- it is simply not an ML training set."
+}

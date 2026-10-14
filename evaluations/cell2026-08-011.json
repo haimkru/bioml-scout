@@ -1,0 +1,193 @@
+{
+  "paper_id": "cell2026-08-011",
+  "title": "Oxygen-responsive bacterial glycosphingolipid links symbiont fitness and immune development in neonatal host.",
+  "doi": "10.1016/j.cell.2026.08.011",
+  "journal": "Cell",
+  "data_url": "https://doi.org/10.7910/DVN/WBSG7G",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed Table S1 (712 KB .xlsx, 4,130 rows x 18 columns), Table S3 (581 KB, 3,606 rows) and Table S2 (14 KB) from Harvard Dataverse doi:10.7910/DVN/WBSG7G (licence CC0 1.0, released 2026-07-17). Counted every label column, measured missingness, checked identifier uniqueness. Tested all 4,130 UniProt accessions: every one is DELETED from UniProtKB ('Not part of a reference proteome'), so they resolve to no sequence and to no AlphaFold structure. Recovered 4,089 of 4,130 protein sequences instead from NCBI RefSeq assembly GCF_000210835.1 by mapping locus_tag -> protein_id -> sequence. Ran the positive control myself on RefSeq annotations: of 21 aminoacyl-tRNA synthetase genes only 6 are called in-vitro essential, and of 55 ribosomal protein genes 18 are called 'Enriched' (fitness-GAINING) in the adult gut. Ran grouped 5-fold cross-validation (108 genome-position blocks of 50 kb) with dumb features: gene length gives ROC-AUC 0.543 and orthologue breadth 0.516 on the neonatal label (base rate 0.425). Confirmed the column 'log10(probability of Tn insertion)' perfectly separates the in-vitro essential class (max -5.666) from non-essential (min -5.663) with zero overlap.",
+    "what_came_from_paper_text_only": "Transposon library size (>160,000 mutants), the collapse of unique insertion sites from 160,965 in vitro to 43,816 in adults to 12,110 in neonates, the 80.8% open-reading-frame disruption rate, and the statistical pipeline (Trimmomatic, Bowtie2, FeatureCounts, DESeq2, zero-inflated negative binomial, PyMC Bayesian model plus Gaussian mixture cutoff). The existence of independent fitness data for other Bacteroidales species (LBL Fitness Browser, Bacteroides thetaiotaomicron INSeq) came from web search result summaries only; I did not download them. The 20 raw mass-spectrometry .raw files (~86 MB each) and 4 raw sequencing .fastq.gz files (~1.75 GB each) I listed by size but deliberately did not download."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "PASS, but only because I found the data myself. The paper's Data Availability statement gives only an unpublished Harvard Dataverse 'preview URL' with a token, which returns an empty HTTP 202. Searching Dataverse found the published record doi:10.7910/DVN/WBSG7G, licence CC0 1.0 (public domain), 28 files, released 2026-07-17; I downloaded three tables from it with no login."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "PASS, clearly. Table S1 ships the labels as named columns: 'Essentiality(In vitro)', 'Essentiality(Adult)', 'Essentiality(Infant)', plus the continuous 'log2FC(Adult/In vitro)' and 'log2FC(Infant/Adult)' with matching adjusted p-value columns. Nothing has to be constructed. Verified in the file."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "PASS with one extra step, verified working. No sequence column exists; the table carries only locus tags and UniProt accessions, and I confirmed all 4,130 UniProt accessions are deleted from UniProtKB so they resolve to nothing. One download of NCBI RefSeq assembly GCF_000210835.1 (1 MB protein FASTA + 1.6 MB coding-sequence FASTA) plus a locus_tag -> protein_id map recovered 4,089 of 4,130 sequences (99.0%). Note the table's own 'Length' column disagrees with the real sequence length for 512 of 4,089 genes, usually by 1-4 amino acids."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "PASS. Every quantitative column states its unit in its own name: log2 fold change, Benjamini-Hochberg adjusted p-value, log10 probability of transposon insertion, protein length in amino acids. No mixed or implied units found."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 4089,
+      "note": "PASS on raw count. 4,130 genes in the table, 4,089 with a recovered sequence. Usable rows per label, counted in the file: in-vitro essentiality 4,089 (778 essential); adult 3,925 determined; neonatal only 2,394 determined (992 Essential, 61 Enriched, 1,341 non-essential) because 1,717 rows are 'not determined'. All above the 1,500 bar."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~3 MB of spreadsheets plus ~2.6 MB of RefSeq FASTA",
+      "note": "PASS easily. The whole modelling set is under 10 MB. Total protein content is 1,550,146 amino acids across 4,089 proteins (mean length 379), so ESM-2 embeddings cache in about an hour on a laptop CPU. The 7 GB of raw sequencing and 1.7 GB of raw mass spectrometry in the same deposit are not needed and were not downloaded."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "SOFT PASS, with a discrepancy I could not resolve. The paper's Results say '963 and 973 genes required for B. fragilis fitness in the adult and neonatal gut'. The downloaded table gives 967 'Essential' for adult and 998 for neonatal. I tried to reconcile: adjusted p < 0.05 with log2 fold change < -1 yields 902 (adult) and 998 (neonatal). Nothing I tried produces 973. The gap is small (0.4% and 2.6%) and the table is internally self-consistent, so this is not the killer, but I cannot say which number is right."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "PASS technically, with a verified leakage trap. The labels trace to a physical measurement (sequencing read counts from a transposon mutant library passaged through mice), not to another model's prediction, so there is no circularity. BUT the in-vitro essentiality label was made by thresholding 'log10(probability of Tn insertion)', which ships as a column in the same table: I confirmed it separates the two classes with ZERO overlap (essential max -5.666, non-essential min -5.663), so it must be dropped or you get a perfect score for nothing. It also leaks into the neonatal label (ROC-AUC 0.746 alone). Gene length is a second partial leak, because longer genes offer more insertion sites and so more statistical power to call an effect."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One .xlsx, one sheet, 4,130 rows x 18 columns; verified in the file."},
+    "B2": {"score": 1, "why": "Three junk header rows (needs header=2) and '-' used for missing; otherwise parsed first try."},
+    "B3": {"score": 0, "why": "Three label columns from three different statistics, measured on near-disjoint gene sets; only 4/967 overlap."},
+    "B4": {"score": 0, "why": "1,717 of 4,130 neonatal labels 'not determined', missing-not-at-random; their log2FC reaches -94.65."},
+    "B5": {"score": 2, "why": "Zero duplicate locus tags, 4,130 unique accessions, one duplicate protein sequence of 4,089."},
+    "B6": {"score": 2, "why": "Every column names its quantity and unit; STAR Methods documents each statistical step."},
+    "C1": {"score": 1, "why": "Transfer question is informative either way, but a null result is uninterpretable given the failing control."},
+    "C2": {"score": 1, "why": "Several open models for the adjacent essentiality task; none for host-age-specific in-vivo fitness."},
+    "C3": {"score": 1, "why": "Real diversity angle (anaerobic gut symbiont, in-vivo neonatal label) but it rests on an unreliable label."},
+    "C4": {"score": 2, "why": "Label costs a germ-free pregnant-mouse screen with a >160,000-mutant library; paper-stated."},
+    "C5": {"score": 2, "why": "Dumb baselines computed by me (length ROC-AUC 0.543); DeeplyEssential and Geptop 2.0 are runnable."},
+    "D1": {"score": 2, "why": "ESM-2, a protein language model with open weights; 4,089 protein sequences recovered and checked."},
+    "D2": {"score": 2, "why": "1.55M amino acids total; embeddings cache once on laptop CPU, no GPU needed."},
+    "D3": {"score": 2, "why": "Data is CC0 1.0 (verified in Dataverse metadata); ESM-2 weights are MIT-licensed."},
+    "E1": {"ok": true, "why": "Grouped split by 50 kb genome-position block (operon proxy) works; I ran it with 108 groups."},
+    "E2": {"ok": true, "why": "108 position blocks, plus 9 Bacteroidales species in Table S3 for cross-species holdout."},
+    "E3": {"ok": true, "why": "I computed them: majority class 0.425, gene length ROC-AUC 0.543, orthologue breadth 0.516."},
+    "E4": {"ok": false, "why": "No replicates or standard errors in the released tables; noise floor needs the 7 GB raw fastq."},
+    "E5": {"ok": false, "why": "FAILS: only 6 of 21 tRNA synthetases called essential; 18 of 55 ribosomal mutants called fitness-gaining."},
+    "E6": {"ok": true, "why": "Label shuffling and dropping the leaky insertion-probability column are both trivial; I verified the leak."},
+    "E7": {"ok": true, "why": "Table S3 gives orthologues in 9 species (3,555/4,130 join, 86%); Fitness Browser holds independent data."},
+    "E8": {"ok": false, "why": "Could not reproduce the paper's 963/973 headline counts; table gives 967/998 under every threshold tried."},
+    "G1": {"score": 1, "why": "RefSeq locus tags resolve (4,089/4,130 verified), but all 4,130 UniProt accessions are deleted."},
+    "G2": {"score": 2, "why": "LBL Fitness Browser and DEG (Database of Essential Genes) both named; join via Table S3 orthologues."},
+    "G3": {"score": 1, "why": "Table S3 orthologues are DIAMOND best-hits above 40% identity, not strict orthogroups; 86% of rows join."},
+    "G4": {"score": 2, "why": "Real combined question: is the neonatal-colonisation gene set conserved across Bacteroidales or strain-private?"},
+    "H1": {"score": 2, "why": "Negatives systematic: 3,337 in-vitro, 2,096 adult, 1,341 neonatal non-essential, plus an 'Enriched' class."},
+    "H2": {"score": 0, "why": "One strain (638R), one transposon library, one gnotobiotic facility, two timepoints; verified in table."},
+    "H3": {"score": 2, "why": "The honest claim is statable precisely in one sentence; written out in honest_claim_h3."},
+    "H4": {"score": 1, "why": "Paper's Limitations names the sequential-selection confound, but not the 3-insertions-per-gene density."},
+    "I1": {"score": 2, "why": "Named: Oh and Kasper labs (Harvard/Brigham), Goodman lab (Yale), Deutschbauer/Arkin Fitness Browser group."},
+    "I2": {"score": 1, "why": "A ranked knockout shortlist would redirect their bench work, but only with a trustworthy label."},
+    "I3": {"score": 2, "why": "They need a ranked shortlist of genes to knock out; precision-at-k is literally that decision."},
+    "I4": {"score": 1, "why": "Dumb features sit at chance (0.516-0.547), so no lookup solves it, but that fits noise equally well."},
+    "J1": {"score": 2, "why": "Grouped splits, frozen-backbone transfer, cross-species holdout: real modelling, not just cleaning."},
+    "J2": {"score": 1, "why": "I caught the tRNA-synthetase failure unaided, but would want a microbiologist on the gnotobiotic design."},
+    "J3": {"score": 2, "why": "The label audit (deleted accessions, failing control) and the cleaned 4,089-row table are both shareable."},
+    "J4": {"score": 1, "why": "No budget stated anywhere; I would estimate about one week, but that is my guess not a commitment."},
+    "J5": {"score": 0, "why": "No kill date written down in NOTES.md for this candidate."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeeplyEssential (deep neural network predicting essential genes in microbes, BMC Bioinformatics 2020)",
+        "open_weights": true,
+        "score_and_split": "Score not retrieved; the abstract I saw states it uses only gene and protein primary sequence and outperforms classifiers that down-sample to balance classes or cluster out orthologues. Split details not retrieved.",
+        "authors_named_unsolved": "Reported as unsolved: class imbalance and orthologue redundancy between training and test organisms.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Geptop 2.0 (orthology- and phylogeny-based essential gene predictor, web server)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved. Referenced only as the state-of-the-art tool that DeepPEP reports beating.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepPEP (large-language-model framework for cross-organism prokaryotic essential protein prediction, 2026)",
+        "open_weights": null,
+        "score_and_split": "No number retrieved; the abstract summary states it outperforms Geptop 2.0 and identifies species-specific essential proteins, evaluated across distantly related organisms.",
+        "authors_named_unsolved": "Transferring essentiality annotations between distantly related organisms is named as the hard part.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "ProteomeLM (proteome-scale language model, PNAS; gene essentiality across taxa)",
+        "open_weights": null,
+        "score_and_split": "No number retrieved; the abstract states its embeddings significantly outperform ESM-C embeddings for supervised gene-essentiality prediction across diverse species.",
+        "authors_named_unsolved": "Implies protein-level (single-sequence) information alone is insufficient; whole-proteome context is needed.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "CNN4Essential (convolutional network for bacterial gene essentiality via multi-feature fusion, 2026)",
+        "open_weights": null,
+        "score_and_split": "No number retrieved; reported feature-ablation experiments showing every feature block (protein interactions, localisation, Gene Ontology, sequence) contributes.",
+        "authors_named_unsolved": "Dependence on annotation-derived features that do not exist for under-studied organisms.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "TTN-Fitness (machine-learning fitness estimation from transposon insertion counts, DeJesus group)",
+        "open_weights": null,
+        "score_and_split": "No number retrieved; described as distinguishing true biological fitness effects and classifying small genes previously left uncertain, in Mycobacterium tuberculosis.",
+        "authors_named_unsolved": "Short genes and low insertion density leaving fitness calls uncertain, which is exactly this dataset's problem.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model from Meta; the 35M- or 650M-parameter checkpoint)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU only. 4,089 proteins, 1,550,146 amino acids total, mean length 379; embeddings cache once in roughly 1-2 hours and the downstream classifier trains in seconds.",
+    "licence": "ESM-2 weights MIT; the dataset itself is CC0 1.0, so no licence obstacle. Backbone fit is the strongest part of this candidate and it is not the reason for rejection."
+  },
+  "integration": {
+    "partner_dataset": "The LBL Fitness Browser (fit.genomics.lbl.gov, thousands of genome-wide bacterial fitness experiments including Bacteroidales species) and DEG, the Database of Essential Genes. Table S3 in this paper supplies the bridge: best-hit orthologues of 3,606 B. fragilis 638R genes in 9 other Bacteroidales species.",
+    "join_key": "Old locus tag (BF638R_xxxx) into Table S3, then the partner species' own locus tags (e.g. MJ393_xxxxx for B. thetaiotaomicron); 3,555 of 4,130 rows join, i.e. 86%.",
+    "bigger_question_one_sentence": "Is the set of genes a gut symbiont needs to colonise the newborn gut conserved across the whole Bacteroidales family, or is it private to B. fragilis, and can a sequence model predict it in a species it has never seen?"
+  },
+  "controls": {
+    "positive_control": "Chosen in advance and RUN: housekeeping gene classes that every bacterium needs must come out essential. It failed. Only 6 of 21 aminoacyl-tRNA synthetase genes (the enzymes that load amino acids onto transfer RNA, indispensable in every organism) are called in-vitro essential, and only 23 of 64 core replication and transcription genes. Worse, on the in-vivo columns 18 of 55 ribosomal protein genes are called 'Enriched', meaning their mutants supposedly GAINED fitness in the adult gut, which is biologically impossible. A weaker secondary control passed: 37 of 55 ribosomal proteins are called in-vitro essential.",
+    "negative_control": "Label shuffling, plus dropping the leaky 'log10(probability of Tn insertion)' column (which alone gives ROC-AUC 0.746 on the neonatal label and separates the in-vitro classes perfectly), plus shuffling within genome-position block to confirm the grouped split is really grouping.",
+    "external_validation": "Table S3 orthologues let you test cross-species transfer against the LBL Fitness Browser and published B. thetaiotaomicron transposon screens. But no one has run a NEONATAL transposon screen in any other Bacteroidales species, so the one label that is novel here cannot be externally validated at all. I located these resources by search and did not download them."
+  },
+  "honest_claim_h3": "A protein language model could claim, at most, to predict which Bacteroides fragilis 638R genes were scored as fitness-required by a single transposon screen in one gnotobiotic mouse facility, among the 58% of genes whose insertion counts survived a bottleneck that left about 3 insertion sites per gene in neonates, excluding the 42% of genes whose counts fell to zero and were discarded as 'not determined'.",
+  "plain_idea": {
+    "one_liner": "Use a bacterial gene's protein sequence to predict whether a gut symbiont needs that gene to colonise newborn mice.",
+    "train_on": "One protein sequence per gene from Bacteroides fragilis strain 638R, recovered from NCBI RefSeq. I verified 4,089 sequences are obtainable; 2,394 of them carry a usable newborn-gut label and 3,925 carry an adult-gut label.",
+    "predict": "A yes/no call on whether disrupting the gene costs the bacterium fitness in the newborn gut. The true answer comes from counting sequencing reads for each of >160,000 transposon mutants before and after passage through germ-free mice, then comparing counts with a zero-inflated negative binomial model.",
+    "why_worthwhile": "Labs that build Bacteroides knockout libraries (the Oh, Kasper and Goodman groups) would get a ranked shortlist of which genes to delete first when studying how gut bacteria establish themselves in infants, replacing a screen that needs germ-free pregnant mice. Even a failure would quantify how much of in-vivo colonisation fitness is readable from sequence alone."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Our 4,089 genes are far smaller than the multi-organism DEG-derived training sets behind DeeplyEssential and ProteomeLM, so not bigger. But the newborn-versus-adult in-vivo fitness label is a genuinely uncovered area: those models predict in-vitro essentiality, and none covers host-age-specific colonisation of an obligate anaerobe."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "The released tables carry no replicate counts and no standard errors, only point estimates and adjusted p-values, so per-prediction uncertainty cannot be grounded in measurement noise. Only the 7 GB of raw sequencing (out of scope here) would allow it."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "DeeplyEssential is a 2020 sequence-only network with open code and no pretrained backbone, so it is beatable on in-vitro essentiality. But ProteomeLM (PNAS, 2025-26) and DeepPEP (2026) are recent and evaluated across distantly related organisms, which is the honest split; I retrieved no number for either, so I cannot claim they are weak."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Two conditions fail. The newborn-gut label exists in no other dataset, so no new data measures the same quantity the same way; and the partner fitness data (Fitness Browser, B. thetaiotaomicron screens) comes from different species, different media and different assays, so joining it adds cross-assay noise rather than guaranteed signal."
+    }
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Freeze ESM-2 embeddings for the 4,089 recovered B. fragilis 638R proteins and fit a light head to predict the neonatal-gut fitness call, with 50 kb genome-position blocks as cross-validation groups so that operon neighbours cannot leak between folds, the insertion-probability column dropped as a known giveaway, and cross-species transfer to Bacteroidales orthologues from Table S3 as the external test. The project is sound in design and dead in practice: the label it would learn fails its own positive control, calling 15 of 21 indispensable tRNA synthetases non-essential and 18 of 55 ribosomal protein mutants fitness-gaining, so a trained model could not be distinguished from one fitted to bottleneck noise.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 1.5,
+    "cv_run_minutes": 2,
+    "compute_note": "Not an estimate for the data handling: I actually built the feature/label table in this evaluation (three Dataverse downloads, one RefSeq download, a 40-line join) and timed the grouped 5-fold cross-validation of the dumb baselines at a few seconds. The 1.5 embedding hours is an estimate from 4,089 proteins at roughly 1 protein per second for ESM-2 650M on a laptop CPU.",
+    "cheapest_killing_check": "Count how many of the ~20 aminoacyl-tRNA synthetase genes the table calls in-vitro essential, and how many ribosomal protein genes it calls 'Enriched' in vivo. I ran it: 6 of 21 synthetases essential, and 18 of 55 ribosomal protein mutants supposedly gaining fitness. That is 10 minutes of work and it killed the candidate."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A passes and the data is genuinely attractive on paper: one 4,130-row CC0 table with the labels already in named columns, under 10 MB, a perfect fit for frozen ESM-2 embeddings, an expensive-to-generate label, and an orthologue table spanning 9 species. It dies on label quality, which I verified in the files rather than inferring from the text. The prediction target fails its pre-chosen positive control: only 6 of 21 aminoacyl-tRNA synthetases (enzymes no bacterium can live without) are called in-vitro essential, only 23 of 64 core replication and transcription genes, and on the in-vivo columns 18 of 55 ribosomal protein mutants are called fitness-GAINING in the adult gut, which cannot be true. The cause is visible in the paper's own numbers: unique insertion sites collapse from 160,965 to 12,110 in neonates, about 3 per gene, which is too sparse to call gene-level fitness, and the 1,717 genes (42%) whose counts hit zero are discarded as 'not determined' precisely where the real effect would be largest, with their log2 fold changes running to -94.65. My dumb baselines sit at chance on the neonatal label (ROC-AUC 0.543 from gene length), which is equally consistent with a subtle sequence signal and with pure noise, and because the table ships no replicates there is no way to tell those apart (E4 and E5 both fail, and E8 fails too since I could not reproduce the paper's 963/973 headline counts from the 967/998 in the table). Two further verified problems compound it: all 4,130 UniProt accessions are deleted from UniProtKB, killing the join to AlphaFold structures, and the three label columns are measured on nearly disjoint gene sets (only 4 of 967 adult-essential genes are in-vitro essential), so the train-on-essentiality-test-on-colonisation transfer story is structurally impossible. The one label that is novel, neonatal colonisation fitness, has been measured nowhere else, so it cannot be externally validated either. Reject, and record the two reusable findings: the deleted-accession trap, and the fact that this screen's housekeeping-gene recall is roughly 30%."
+}

@@ -1,0 +1,185 @@
+{
+  "paper_id": "nar2026-gkag672",
+  "title": "Characterizing RNA 3D structural features from DMS reactivity.",
+  "doi": "10.1093/nar/gkag672",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.6084/m9.figshare.27880434 (data.zip, 643 MB, CC BY 4.0); code https://github.com/YesselmanLabPublications/2025_char_3d_struct_features",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the 643 MB Figshare data.zip central directory by ranged GET, then inflated 12 members individually without downloading the whole archive. Loaded and counted: pdb_library_1_residues_avg.json (4,076 rows x 24 cols, 989 motif sequences, 733 rows with structures), sasa.csv (2,777), pairs.csv (1,327), b_factor.csv (2,571), wc_details_37C_2min.csv (30,816 rows but only 314 unique base pairs), non_canonical_atom_distances_with_ratio.csv (67,300 rows, 152 unique nucleotide pairs), the full non_wc_distances.csv (4,059,506 rows but only 104 unique measured motif sequences / 225 measured nucleotides), distances_all.csv (2,293,199 rows), the 37C residue table (4,073 rows), and data/README.md. Ran the three-way join myself: reactivity x solvent accessibility matched 733/733, plus pair features 695 rows / 169 motifs. Measured Spearman 0.624 (reactivity vs accessibility), -0.323 (vs hydrogen-bond count), 0.958 (25C vs 37C), replicate CV median 0.399, reactivity spanning 2.7 orders of magnitude.",
+    "what_came_from_paper_text_only": "The wet-lab protocol (DMS-MaPseq, 38,000 average reads per sequence, filters of >=2,000 reads and signal-to-noise >=4), the 7,500-construct library design, the >=3.5 Angstrom resolution cutoff on source structures, and the FARFAR (Rosetta) refinement result that one reactivity-derived restraint recovers A-G pair geometry in 99.5% of top models versus 0% without. I did not open the 1.35 GB farfar-models.zip, the raw sequencing data (SRA PRJNA1188187), or Supplementary Tables S1/S2 (Europe PMC supplementaryFiles endpoint timed out; not retrievable)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Figshare, CC BY 4.0, no login. Verified by actually inflating 12 members via ranged GET. Needs a browser-like User-Agent header or it returns 403; the repo README documents this."},
+    "a2_label_is_a_column": {"pass": true, "note": "Labels are existing columns, not constructed: r_avg (reactivity), sasa_0_1..sasa_3_0 (accessibility), no_of_interactions (hydrogen bonds), shear/stretch/stagger/buckle/propeller/opening (pair geometry), distance (Angstroms), r_type (3-class context). Spread over ~5 files joining on (m_sequence, pdb_r_pos); I ran the join and it matched 733/733 for accessibility, 695 with pair features."},
+    "a3_inputs_present": {"pass": true, "note": "Reactivity values, motif sequences (m_sequence), flanking base pairs and positions are all literal columns; 344 experimental and 352 rebuilt PDB coordinate files ship inside the archive. No identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Units are conventional and consistent per file but not given in a units column: reactivity is a mutation fraction (0-1), accessibility Angstrom-squared at named probe radii, distances Angstroms, pair parameters Angstroms/degrees. data/README.md says what each file holds. Main ambiguity is which reactivity normalization to use, not the units."},
+    "a5_enough_rows": {"pass": true, "n_rows": 4076, "note": "PASSES ONLY FOR THE LARGER TASK, AND THIS IS THE KEY CAVEAT. 4,076 motif-position rows across 989 motif sequences carry reactivity plus 3-class context. But the subset that also has crystal geometry is 695 nucleotides / 169 motifs / 172 parent structures, and the atomic-distance result rests on 104 motif sequences. Row counts in the big files are inflated 640-fold by replicate and structure-instance explosion (4,059,506 rows -> 225 measured nucleotides)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.2 GB (28 MB residue JSON + five sub-5 MB CSVs); ~0.3 GB if you add the 267 MB atomic-distance table", "note": "Verified on this laptop: I never downloaded the full 643 MB zip, only inflated individual members. Heaviest optional step is a 284 MB nested JSON. No GPU needed; the baseline is a tree model on <=4,076 rows."},
+    "a7_counts_match_paper": {"pass": true, "note": "Internally consistent: 7,500 constructs cover 989 distinct motifs, of which 172 have parent structures (172 files in full-structure-pdbs, 168-177 in my joins). The paper's phrase 'library of 7500 constructs containing two-way junctions with known 3D structures' is loose, since most motifs are engineered symmetrical junctions without structures."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are physical: reactivity from DMS-MaPseq sequencing, geometry from X-ray/cryo-EM structures at <=3.5 Angstrom. Not another model's output. THREE TRAPS TO AVOID AS FEATURES: the r2 column is a correlation computed from the label across the dataset; ratio/reactivity_ratio is derived from the reactivity label; and m_structure (designed dot-bracket) makes r_type exactly derivable. Also accessibility is computed on pdbs_w_2bp structures whose two flanking GC pairs were built by Rosetta FARFAR, so recompute on data/pdbs/ to confirm."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Five files joining on (m_sequence, pdb_r_pos); I ran the join, 733/733 and 695 matched."},
+    "B2": {"score": 1, "why": "pd.read_json/read_csv worked first try on every file, but JSONs carry list-valued replicate columns."},
+    "B3": {"score": 1, "why": "One assay, author-normalized, but archive holds raw, nomod- and denature-normalized variants; policy choice needed."},
+    "B4": {"score": 2, "why": "No censored values; 0.0% missing in every column I checked except one all-empty column."},
+    "B5": {"score": 1, "why": "Severe row inflation (4,059,506 rows -> 225 measured nucleotides); trivially fixed by groupby once known."},
+    "B6": {"score": 1, "why": "data/README.md documents every folder and file; column-level meanings of the 24-column JSONs undocumented."},
+    "C1": {"score": 2, "why": "Quantifies how much 3D geometry reactivity carries; informative either way, failure cases are the finding."},
+    "C2": {"score": 2, "why": "Searched: nothing maps reactivity to 3D geometry. RNAsnap/RNAsol go sequence->accessibility; RibonanzaNet sequence->reactivity."},
+    "C3": {"score": 2, "why": "Clear novel plus unique-application angle: inverting probing data into geometric restraints, never modelled."},
+    "C4": {"score": 2, "why": "Alternative is crystallography or cryo-EM; DMS probing is cheap and routine. From paper and literature."},
+    "C5": {"score": 2, "why": "I measured the baselines myself: accessibility Spearman 0.624 from reactivity alone, plus threshold dummy."},
+    "D1": {"score": 2, "why": "RibonanzaNet and RNA-FM have open downloadable weights; found HuggingFace and GitHub hosting in search."},
+    "D2": {"score": 2, "why": "Tabular features run in seconds on CPU; backbone embeddings of 7,500 short constructs cached once."},
+    "D3": {"score": 1, "why": "Data is CC BY 4.0, but I did not verify RibonanzaNet's or RNA-FM's weight licences in this evaluation."},
+    "E1": {"ok": true, "why": "Parent PDB ID is embedded in pdb_name/motif_name (172 values); m_sequence gives 989 clusters. Saw both columns."},
+    "E2": {"ok": true, "why": "172 parent structures and 989 motif sequences to hold out; well above the five-group minimum."},
+    "E3": {"ok": true, "why": "Majority class for the 3-class context task; single reactivity threshold and per-nucleotide mean for regression."},
+    "E4": {"ok": true, "why": "r_cv column present, median 0.399 over ~96 replicate constructs per point; three replicate libraries ship too."},
+    "E5": {"ok": true, "why": "I reproduced the paper's own correlations from its files: 0.624 with accessibility, -0.323 with hydrogen bonds."},
+    "E6": {"ok": true, "why": "Label shuffling plus the archive's real experimental negatives: pdb_library_nomod (no DMS) and pdb_library_denature."},
+    "E7": {"ok": true, "why": "Independent 37C/2min probing of the same library, 4,073 matched points, Spearman 0.958 (I computed it). Same lab though."},
+    "E8": {"ok": true, "why": "Already done: I recovered the paper's reactivity-accessibility and reactivity-hydrogen-bond correlations from its tables."},
+    "G1": {"score": 2, "why": "Standard PDB IDs embedded in motif names (e.g. 3J6B, 6NY2) plus residue numbers; saw them in the files."},
+    "G2": {"score": 2, "why": "RNA 3D Motif Atlas ships in the archive as non_redundant_motifs.csv, 108,309 motifs I counted; plus Ribonanza."},
+    "G3": {"score": 1, "why": "One motif sequence maps to many structure instances (104 -> 4,452); needs a collapse rule but manageable."},
+    "G4": {"score": 2, "why": "Which of 108,309 catalogued motif geometries are distinguishable from reactivity alone; neither dataset answers alone."},
+    "H1": {"score": 2, "why": "Both reactive and protected, WC and non-WC present, plus no-DMS and denatured experimental controls."},
+    "H2": {"score": 1, "why": "172 diverse parent structures, but one lab, one scaffold, one chemistry, in vitro, and A/C nucleotides only."},
+    "H3": {"score": 2, "why": "Stated precisely below; the scaffold, chemistry and nucleotide limits are all explicit in the data."},
+    "H4": {"score": 2, "why": "Paper is explicit about the ~10% WC/non-WC reactivity overlap, the A/C-only readout and the resolution cutoff."},
+    "I1": {"score": 2, "why": "Yesselman lab (Nebraska), Das lab (Stanford, FARFAR2/Ribonanza), Rouskin lab (DMS-MaPseq), Eterna community."},
+    "I2": {"score": 2, "why": "Tells structure modellers whether to generate distance restraints from probing data; that is a FARFAR2 user's decision."},
+    "I3": {"score": 2, "why": "Metric is precision of the top-k predicted restraints, which is literally what a modeller feeds to FARFAR2."},
+    "I4": {"score": 1, "why": "Honest: a single reactivity threshold already gives Spearman 0.624 with accessibility, which I measured."},
+    "J1": {"score": 2, "why": "Grouped splits, calibration, frozen-backbone transfer, a real inverse-problem framing; genuine modelling work."},
+    "J2": {"score": 1, "why": "RNA structural biology is specialised, but the paper supplies concrete reference numbers to sanity-check against."},
+    "J3": {"score": 2, "why": "The deduplicated reactivity-plus-geometry join table is a reusable resource even if the model is mediocre."},
+    "J4": {"score": 2, "why": "Four weeks: one week to the feature table, two to grouped models, one to the 37C external check."},
+    "J5": {"score": 1, "why": "Kill condition defined below but not yet written into NOTES.md, which the checklist requires on day one."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RibonanzaNet (He et al. 2024) - a transformer that predicts per-nucleotide DMS and 2A3 chemical reactivity from RNA sequence",
+        "open_weights": true,
+        "score_and_split": "Trained on the Ribonanza corpus of roughly two million chemically mapped sequences via the Kaggle Ribonanza competition; reported state-of-the-art on held-out sequence sets. I did not retrieve a single headline number.",
+        "authors_named_unsolved": "Tertiary-structure modelling: their own framing is that reactivity prediction has 'implications for modeling RNA tertiary structure', i.e. the geometric step is not done.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RNAsnap / RNAsol / RNAsnap2 - machine-learning predictors of RNA solvent accessibility from sequence",
+        "open_weights": null,
+        "score_and_split": "RNAsnap reported Pearson r = 0.37 against in vivo DMS accessibility when applied to mRNAs (from a Briefings in Bioinformatics review I retrieved, not the primary paper).",
+        "authors_named_unsolved": "Review notes these predictors take sequence as input and are only weakly consistent with experimental DMS accessibility; the experiment-to-geometry direction is unaddressed.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Bliss et al. CNN and Boyd et al. (2023) transformer - sequence-to-SHAPE/DMS reactivity predictors",
+        "open_weights": null,
+        "score_and_split": "Bliss et al. mapped local sequence and thermodynamic features to SHAPE data for ~200 mRNAs; Boyd et al. fitted a transformer to a large custom library. Numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved; known only from a review.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RibonanzaNet as a frozen RNA sequence encoder (open weights on GitHub Shujun-He/RibonanzaNet and HuggingFace via MultiMolecule), with RNA-FM as the alternative; a gradient-boosted tree on the tabular features is the no-backbone baseline",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM. Constructs are ~150 nucleotides and there are 7,500 of them, so embeddings are cached once in a few hours.",
+    "licence": "The data is CC BY 4.0 (verified on Figshare). I did NOT verify the weight licences of RibonanzaNet or RNA-FM; check before any commercial use."
+  },
+  "integration": {
+    "partner_dataset": "RNA 3D Motif Atlas / Protein Data Bank (the archive already ships non_redundant_motifs.csv with 108,309 non-redundant motifs, a count I verified), and secondarily the Ribonanza corpus of ~2 million chemically mapped sequences",
+    "join_key": "Four-character PDB entry ID plus residue number, both embedded in the motif_name and pdb_name strings (e.g. TWOWAY-1-1-AAA-UAU-3J6B-1 gives 3J6B); m_sequence for sequence-level joins to Ribonanza",
+    "bigger_question_one_sentence": "Across the 108,309 non-redundant RNA motifs catalogued in the RNA 3D Motif Atlas, which local 3D geometries are distinguishable from DMS reactivity alone, and can that mapping convert routine chemical probing into tertiary-structure restraints?"
+  },
+  "controls": {
+    "positive_control": "The model must recover the paper's own measured relationships, which I reproduced from its files: reactivity versus solvent accessibility Spearman 0.624, versus hydrogen-bond count -0.323, and helix-flanking WC positions ten times less reactive than non-WC (median 0.0017 versus 0.0170).",
+    "negative_control": "Shuffle labels within parent-structure groups and confirm collapse to the majority class or per-group mean. The archive also ships two real experimental negatives, pdb_library_nomod (no DMS added) and pdb_library_denature (denatured RNA), which must carry no geometric signal.",
+    "external_validation": "The independent 37C/2min probing of the same 7,500-construct library: 4,073 matched motif-positions, Spearman 0.958 against 25C (I computed this). Genuinely independent data would come from Ribonanza or the RNA Mapping Database for unrelated RNAs."
+  },
+  "honest_claim_h3": "Among adenine and cytosine nucleotides in two-way junctions, placed in one lab's hairpin scaffold and probed with DMS in vitro, measured reactivity predicts local solvent accessibility and hydrogen-bond count for junctions taken from parent structures the model never saw - a claim that does not extend to G or U nucleotides, to in-cell probing, or to motif geometries absent from the Protein Data Bank.",
+  "plain_idea": {
+    "one_liner": "Use a cheap chemical readout of RNA to predict the local three-dimensional shape around each nucleotide.",
+    "train_on": "Each example is one adenine or cytosine in an RNA internal loop: its measured reactivity to the chemical DMS (dimethyl sulfate, which attacks unprotected A and C), its identity, and its neighbouring sequence. 4,076 such nucleotides have reactivity and structural context; 695 of them, from 172 crystal or cryo-electron-microscopy structures, also have measured 3D geometry. Verified by loading the files.",
+    "predict": "How buried the nucleotide is (solvent-accessible area in square Angstroms), how many hydrogen bonds it makes, and the shape class of its base pair. The true answers are computed with standard structural software from experimental structures solved to better than 3.5 Angstrom resolution.",
+    "why_worthwhile": "Groups that model RNA 3D structure (the Das lab's FARFAR2, the Eterna community) currently use probing data only to guess which nucleotides are paired; if reactivity also pins down geometry, every routine probing experiment becomes a source of 3D distance restraints. If it fails, that tells the field the geometric signal is too weak to automate."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "For predicting reactivity we are far smaller: 4,076 motif-positions across 989 motifs versus RibonanzaNet's ~2 million sequences. But for the task that matters here, nucleotides with both measured reactivity and experimental 3D geometry, nothing comparable exists: 695 nucleotides from 172 parent structures, each with ~96 replicate measurements."},
+    "confidence_score": {"answer": "yes", "why": "Every nucleotide carries an r_cv column computed from ~96 replicate constructs (median coefficient of variation 0.399), plus three replicate libraries and a second probing condition agreeing at Spearman 0.958 - all of which I verified. RibonanzaNet and RNAsnap report point predictions without replicate-derived per-nucleotide uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "For reactivity-to-geometry there is nothing to beat, since no such model exists. RNAsnap-era sequence-based accessibility predictors are weak (r = 0.37 against in vivo DMS accessibility) and beatable. RibonanzaNet (2024, transformer, ~2M honestly split sequences) is not beatable on its own task with 4,076 rows."},
+    "guaranteed_improvement": {"answer": "no", "why": "RibonanzaNet can be run as a baseline and we would see everything it sees, but it predicts chemical reactivity whereas our label is geometry - so the 'same quantity measured the same way' condition fails outright, and the evaluation splits differ."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Solvent accessibility, hydrogen-bond counts and base-pair conformation are computable with standard tools (DSSR/3DNA, used by this paper) for every RNA structure in the Protein Data Bank, and the RNA 3D Motif Atlas catalogues them for non-redundant motifs - I counted 108,309 in the archive's own non_redundant_motifs.csv. On the input side, DMS reactivity is measured at scale in the Ribonanza corpus (~2 million sequences, from my search) and the RNA Mapping Database (known resource, not opened here).",
+    "approx_items": 108309,
+    "join_key": "Protein Data Bank entry ID plus residue number; RNA sequence for the reactivity resources",
+    "why": "The geometry label can be generated for roughly a hundred thousand further motifs, giving both a large external test set and a ready pool of candidates to predict on once the reactivity-to-geometry map is fitted."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Massive row inflation: the biggest table has 4,059,506 rows but only 104 distinct measured motif sequences, so a random row split would put the very same measured nucleotide in both train and test and produce a meaningless near-perfect score.",
+      "The r2 column in the distance tables is a correlation statistic computed from the reactivity label across the whole dataset; using it as a feature hands the model the answer.",
+      "The ratio and reactivity_ratio columns are arithmetic functions of the reactivity label itself.",
+      "For the structural-context classification, the m_structure column is the designed dot-bracket secondary structure, from which the r_type label is exactly derivable - leakage by construction.",
+      "The same junction motif recurs across related ribosomal structures, so near-identical sequences and geometries can straddle the split even after grouping by parent structure.",
+      "Solvent accessibility and distances were computed on data/pdbs_w_2bp coordinates whose two flanking GC base pairs were built by Rosetta FARFAR, so part of the geometric label is model-generated rather than experimental."
+    ],
+    "split": "Group by parent Protein Data Bank entry (172 values, parsed from the PDB ID inside pdb_name/motif_name - I confirmed the column is present and parseable) and additionally cluster on m_sequence (989 values, column present) so no motif sequence appears in two folds. Report both leave-one-structure-out and leave-one-motif-out.",
+    "checks": [
+      "Shuffle labels within parent-structure groups and confirm performance collapses to the majority class or per-group mean.",
+      "Train on measured reactivity alone and confirm the full model beats the 0.624 Spearman single-feature baseline I measured; if it does not, the extra features add nothing.",
+      "Assert no m_sequence value appears in both train and test, and report nearest-neighbour sequence identity between each test motif and the training set.",
+      "Recompute solvent accessibility on the purely experimental data/pdbs/ coordinates and check the label barely moves versus the FARFAR-rebuilt pdbs_w_2bp version."
+    ],
+    "verdict": "Manageable, because the grouping columns are present and clean - but a serious risk for anyone who does not deduplicate first, since the raw files invite a 640-fold inflated row count and an impressive meaningless number."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and experimentally derived solvent accessibility on held-out parent structures, plus precision of the top 50 predicted distance restraints - the latter because a modeller feeds a fixed small number of restraints to FARFAR2 and only cares whether those are right.",
+    "baselines": "Measured by me on the 695-row join: reactivity alone gives Spearman 0.624 with solvent accessibility and -0.323 with hydrogen-bond count. Dummy baselines are the per-nucleotide-type mean and the majority class. Published comparator from the literature: RNAsnap's r = 0.37 against in vivo DMS accessibility (different data, so indicative only).",
+    "success": "Spearman >= 0.72 for solvent accessibility under leave-one-parent-structure-out splitting, a clear gain on the 0.624 single-feature baseline, with the same correlations holding on the independent 37C/2min probing.",
+    "noise_ceiling": 0.958,
+    "kill": "If leave-one-parent-structure-out Spearman does not beat the 0.624 reactivity-only baseline by at least 0.05 within two weeks, stop - the geometric signal is already saturated by a single threshold."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Methods",
+      "why": "Publishes new experimental-restraint methods for structure determination; would need the predictor to measurably improve RNA 3D structure prediction on blind targets, not just correlate with geometry on 169 motifs."
+    },
+    "realistic": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes well-evaluated predictors and reusable resources in nucleic-acid informatics; a calibrated reactivity-to-geometry model with honest grouped splits on 695 nucleotides and a 37C external check is exactly its scope."
+    },
+    "fallback": {
+      "journal": "PLOS Computational Biology (or a bioRxiv preprint plus an MLCB workshop paper)",
+      "why": "Takes careful negative results; the finding that RibonanzaNet's predicted reactivity does not carry the geometric signal that measured reactivity does would be publishable there on its own."
+    }
+  },
+  "pitch": {
+    "headline": "695 RNA nucleotides with both a measured chemical reactivity and experimental 3D geometry - and nobody has ever fitted the map between them.",
+    "what_makes_the_data_unusual": "Each of 4,076 nucleotides carries ~96 replicate measurements (median variability 0.399), a no-chemical and a denatured control, and a second probing condition reproducing at Spearman 0.958. All CC BY 4.0, all verified by me in the files.",
+    "the_win": "Predict solvent accessibility at Spearman >= 0.72 on held-out parent structures, beating the 0.624 that reactivity alone achieves, then turn that into distance restraints for RNA 3D modelling.",
+    "even_if_it_fails": "We learn that a single reactivity threshold already extracts all the geometric information available, which tells the structure-prediction field to stop pursuing automated restraint generation from probing data. That is a real, useful answer.",
+    "who_wants_it": "The Das lab (Stanford, FARFAR2 and Ribonanza), the Yesselman lab, the Rouskin lab and the Eterna community - it decides whether their probing experiments can yield 3D restraints, not just pairing guesses."
+  },
+  "ml_idea": "Invert the usual direction of RNA chemical-probing models. Instead of predicting reactivity from sequence (which RibonanzaNet already does on ~2 million sequences), predict local 3D geometry FROM measured reactivity. Stage one: from reactivity plus nucleotide identity and flanking sequence - explicitly excluding the designed secondary structure, which would leak the answer - classify each of 4,076 adenines and cytosines into helix-interior Watson-Crick, junction-flanking Watson-Crick, or non-canonical. Stage two: on the 695 nucleotides from 172 experimental structures, regress solvent accessibility, hydrogen-bond count and base-pair conformation class, with calibrated per-nucleotide uncertainty from the replicate variability column. Evaluate with leave-one-parent-structure-out and leave-one-motif-out splits, externally check on the independent 37C/2min probing, and finish by generating restraints for motifs in the RNA 3D Motif Atlas that have no structure.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.3,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 4,
+    "cv_run_minutes": 2,
+    "compute_note": "Grounded in what I actually ran on this laptop: inflating individual zip members took seconds each, and the three-way join plus correlations ran in under a minute on the 28 MB residue table. Peak RAM reflects loading the optional 284 MB nested JSON. The 4-hour embedding figure is an estimate for 7,500 short constructs through a frozen RNA language model on CPU, not timed.",
+    "cheapest_killing_check": "Count the rows surviving deduplication to one measured nucleotide per parent structure. I already did it: 695 nucleotides, 169 motifs, 172 parent structures - down from 4,059,506 raw rows. Then check whether a leave-one-structure-out regression on those 695 beats the reactivity-only Spearman of 0.624. If not, stop."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "The data is real, open (CC BY 4.0) and I opened it: labels are existing columns derived from physical measurements, the joins work (733/733 for accessibility, 695 with pair features), the controls are unusually good (no-chemical and denatured controls, three replicate libraries, ~96 replicates per point, a second probing condition agreeing at Spearman 0.958), and the direction I propose - predicting 3D geometry FROM chemical reactivity - appears genuinely unmodelled, since RNAsnap-style tools go sequence-to-accessibility and RibonanzaNet goes sequence-to-reactivity. Two things hold it back from 'do it'. First, the headline geometry link rests on far less data than the files suggest: 4,059,506 rows collapse to 104 measured motif sequences, and the usable reactivity-plus-geometry table is 695 nucleotides from 169 motifs, below the regression bar even though the 4,076-row context-classification task clears it. Second, model-readiness is only 7/12 - nested JSON with list columns, three competing reactivity normalizations, and a row inflation that would hand a careless analyst a spectacular meaningless score. Verify in one sitting: confirm that leave-one-parent-structure-out regression on the 695 nucleotides beats the reactivity-only Spearman of 0.624 that I measured, and that recomputing accessibility on the purely experimental data/pdbs/ coordinates (rather than the Rosetta-rebuilt pdbs_w_2bp) leaves the label unchanged. If both hold, this is a strong, genuinely novel project."
+}

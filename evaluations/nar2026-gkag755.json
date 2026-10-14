@@ -1,0 +1,299 @@
+{
+  "paper_id": "nar2026-gkag755",
+  "title": "MiaA-mediated tRNA modifications couple tryptophan attenuation and changes in tRNA abundance to complex phenotypes in Pseudomonas aeruginosa.",
+  "doi": "10.1093/nar/gkag755",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE322698",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and extracted both GEO (Gene Expression Omnibus) archives: GSE322698 (1.3 MB, 10 samples) and GSE323095 (2.1 MB, 16 samples). Each file is a featureCounts table with 5,966 gene rows and columns Geneid/Chr/Start/End/Strand/Length/name/count; 0 duplicate gene IDs, 0 missing values. Built the count matrix, normalised to counts per million, and found 3,775 genes expressed above 10 counts per million in both assays. Measured replicate agreement (Pearson r on log2 counts per million: 0.989-0.994 for ribosome profiling, 0.937-0.966 for RNA), split-half reliability of the translation-efficiency change (r = 0.55), then downloaded the PA14 reference coding sequences from NCBI (2.0 MB), matched 5,476/5,966 features by exact genome coordinates, computed 61 codon frequencies and ran a 5-fold cross-validated ridge regression: R-squared = 0.027 (Pearson r = 0.16); shuffled labels gave R-squared ~0.",
+    "what_came_from_paper_text_only": "The tryptophan-attenuation mechanism, the LC-MS (liquid chromatography-mass spectrometry) modification measurements, the Galleria mellonella (wax moth larva) infection results, the nanopore transfer-RNA sequencing, and the claim that miaA expression tracks virulence across 77 clinical isolates (virulence values come from the authors' earlier paper, not deposited here). I confirmed the proteomics deposit PXD076088 exists and is public in PRIDE (Orbitrap/MaxQuant, 'PARTIAL' submission) but did not open its files. Europe PMC's supplementary-file endpoint timed out, so the supplementary tables (S1 strains, S2 primers, S3) were not retrieved."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified: both GEO archives downloaded anonymously over FTP (3.5 MB total) and extracted; no login, no application. Nanopore transfer-RNA data (ENA projects PRJEB83028/PRJEB111160) is raw signal and excluded by our own no-raw-sequencing rule."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Raw counts are columns; the label (change in translation efficiency = ribosome footprints divided by messenger RNA, mutant minus wild type) is a derived ratio computed within one series on a clean locus-tag key - a few hours, not cross-source inference. Important caveat: the codon-resolution stalling signal the paper is actually about is NOT deposited in processed form and would need raw read reprocessing."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Sequences are absent from the deposit. I fetched one 2.0 MB NCBI file (GCF_000014625.1) and mapped it by genome coordinates because the locus-tag namespaces differ (PA14_00010 in the counts vs PA14_RS00005 in RefSeq); 5,476 of 5,966 features matched exactly. One download, not thousands of lookups."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Verified in the files: raw read counts per feature, feature length in base pairs, and the full featureCounts command (strandedness, mapping quality 20, annotation file) recorded as a header comment in every file."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 3775,
+      "note": "5,966 gene rows per sample; 3,775 genes pass an expression filter and carry a label. Numerically fine, but the whole table comes from one knockout-versus-wild-type contrast with 2-3 replicates per group, so the biological replication is thin."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "3.5 MB of count tables plus a 2 MB genome file",
+      "note": "Verified: the entire analysis above, including ridge cross-validation, ran in about 2 seconds on a laptop CPU with well under 1 GB of RAM."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No row counts are claimed in the paper to check against; GEO sample titles match the described design (wild type, delta-miaA, trpL attenuator point mutants). Minor mismatch: methods say 'at least three biological replicates', but GEO holds only 2 wild-type ribosome-profiling and 2 delta-miaA RNA samples (replicate 2 missing), consistent with quality-control dropout."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels are measured sequencing counts from featureCounts, not another model's output. Features (codon composition from the reference genome) are independent of the measurement, so no leakage by construction; the only shared term is gene length, which normalisation to counts per million and frequencies removes."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "26 identically formatted per-sample files across two series; concatenating on Geneid worked first time, but it is not one table."
+    },
+    "B2": {
+      "score": 2,
+      "why": "Every file parsed first try with pandas (tab-separated, one comment header line); verified on all 26."
+    },
+    "B3": {
+      "score": 1,
+      "why": "Label mixes two assay types (ribosome footprints vs 3'-tag RNA) from one lab; comparable only after counts-per-million normalisation."
+    },
+    "B4": {
+      "score": 2,
+      "why": "No censored or qualitative values in the files; only low counts, removed by a simple expression filter."
+    },
+    "B5": {
+      "score": 2,
+      "why": "Verified: 0 duplicated gene IDs and 0 missing values in the 5,966-row count matrix."
+    },
+    "B6": {
+      "score": 1,
+      "why": "All columns documented by the featureCounts header, but sample labels like 'PL04' need the paper's methods to decode."
+    },
+    "C1": {
+      "score": 1,
+      "why": "I already ran the core question and got R-squared 0.027; a near-null result is weakly interesting, not informative either way."
+    },
+    "C2": {
+      "score": 1,
+      "why": "Riboformer, RiboMIMO, DeepRibo and Translatomer model ribosome profiling with open code, but none on this species or label."
+    },
+    "C3": {
+      "score": 1,
+      "why": "Diversity angle (non-model pathogen, transfer-RNA modification) is real, but the signal is absent in the deposited data."
+    },
+    "C4": {
+      "score": 1,
+      "why": "Ribosome profiling is expensive lab work, but a 3%-variance predictor would not replace it."
+    },
+    "C5": {
+      "score": 1,
+      "why": "Obvious dummy baselines (global mean, per-expression-bin mean) exist; no published number for this exact task."
+    },
+    "D1": {
+      "score": 2,
+      "why": "Open-weight DNA language models (DNABERT-2, HyenaDNA, Nucleotide Transformer) and ESM-2 for proteins all fit coding sequences."
+    },
+    "D2": {
+      "score": 2,
+      "why": "Only 3,775 coding sequences to embed once on CPU, then a linear head; no GPU needed."
+    },
+    "D3": {
+      "score": 2,
+      "why": "DNABERT-2 and HyenaDNA are Apache-2.0; ESM-2 is MIT. No licence blocks this use."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Operon/chromosomal-block holdout prevents neighbouring-gene leakage; coordinates are in the files, verified."
+    },
+    "E2": {
+      "ok": true,
+      "why": "Hundreds of chromosomal blocks and operons across the 6.5 Mb genome; plenty of groups to hold out."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Global mean and per-expression-decile mean are trivially computable; I used the global mean in the ridge cross-validation."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Measured it: split-half reliability of the translation-efficiency change is Pearson r = 0.55, so about 30% of variance is explainable."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Positive controls available: recover the paper's tryptophan-codon effect, and predict gene length or GC content from codon features."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Ran it: shuffling labels collapsed cross-validated R-squared to about 0, as it should."
+    },
+    "E7": {
+      "ok": false,
+      "why": "Searched; found no second delta-miaA translatome dataset in any bacterium to validate against."
+    },
+    "E8": {
+      "ok": false,
+      "why": "The paper's codon-occupancy numbers need per-codon read coverage, which the gene-level deposit does not contain."
+    },
+    "G1": {
+      "score": 1,
+      "why": "Identifiers are PA14 locus tags plus genome coordinates; RefSeq/UniProt mapping has to be built (I did it by coordinates)."
+    },
+    "G2": {
+      "score": 2,
+      "why": "BACTOME holds transcriptomes and phenotypes for hundreds of P. aeruginosa clinical isolates keyed on PA14 gene IDs."
+    },
+    "G3": {
+      "score": 1,
+      "why": "One-to-one on locus tag, but I measured about 8% loss (490/5,966) when mapping between the two PA14 annotations."
+    },
+    "G4": {
+      "score": 1,
+      "why": "Combination asks whether MiaA-sensitive genes vary across clinical isolates; the paper already reports a version of this for 77 isolates."
+    },
+    "H1": {
+      "score": 2,
+      "why": "All 5,966 genes measured; increases and decreases both recorded, no publication bias toward positives."
+    },
+    "H2": {
+      "score": 0,
+      "why": "One strain (PA14), one growth state (planktonic, optical density 0.4), one lab, one pipeline."
+    },
+    "H3": {
+      "score": 2,
+      "why": "The honest claim can be written precisely as one sentence with a number I measured."
+    },
+    "H4": {
+      "score": 2,
+      "why": "Growth conditions, strains and pipeline are spelled out in the methods and in the featureCounts headers."
+    },
+    "I1": {
+      "score": 2,
+      "why": "Named users: the Haussler group (Twincore/HZI) and the Dedon transfer-RNA-modification group."
+    },
+    "I2": {
+      "score": 0,
+      "why": "A model explaining 3% of variance would not redirect any experiment."
+    },
+    "I3": {
+      "score": 1,
+      "why": "Correlation on translation-efficiency change roughly matches 'which genes to test next', but not a decision threshold."
+    },
+    "I4": {
+      "score": 0,
+      "why": "A linear regression on 61 codon frequencies is the honest model and it explains 3%; nothing more complex is warranted."
+    },
+    "J1": {
+      "score": 1,
+      "why": "Mostly count wrangling plus a small regression; little real modelling, splits or transfer learning."
+    },
+    "J2": {
+      "score": 2,
+      "why": "Bacterial translation has textbook expectations (tryptophan/leucine codon effects) that make nonsense easy to spot."
+    },
+    "J3": {
+      "score": 1,
+      "why": "A tidy P. aeruginosa translation-efficiency table with a measured noise ceiling is shareable even though the model fails."
+    },
+    "J4": {
+      "score": 1,
+      "why": "A one-week budget is easy to state, but nothing forces it; most of the work is already done."
+    },
+    "J5": {
+      "score": 1,
+      "why": "Kill condition is statable (R-squared below 0.05 after three days) but no date is committed anywhere."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Riboformer (transformer that predicts codon-level ribosome density; Nature Communications 2024)",
+        "open_weights": true,
+        "score_and_split": "Reports accurate codon-resolution ribosome density prediction across conditions and species including bacterial datasets; evaluated on held-out genes/datasets, exact numbers not retrieved",
+        "authors_named_unsolved": "Separating true translation dynamics from experimental artefacts across laboratories and protocols",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "RiboMIMO (multi-input multi-output deep model of full-length ribosome density; PLOS Computational Biology 2021)",
+        "open_weights": true,
+        "score_and_split": "Trained and tested on Escherichia coli ribosome profiling datasets at codon resolution, held-out genes",
+        "authors_named_unsolved": "Generalising across datasets and capturing long-range dependencies in elongation",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "DeepRibo (neural network using prokaryotic ribosome profiling signal for gene annotation; Nucleic Acids Research 2019)",
+        "open_weights": true,
+        "score_and_split": "Gene-annotation task in bacteria, not translation-efficiency change; held-out genome evaluation",
+        "authors_named_unsolved": "Not retrieved",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Khaledi et al. 2020 (machine-learning classifier of antibiotic resistance from P. aeruginosa clinical-isolate transcriptomes and genomes, EMBO Molecular Medicine)",
+        "open_weights": null,
+        "score_and_split": "Reported resistance prediction on 414 clinical isolates with cross-validation; different label from ours",
+        "authors_named_unsolved": "Transferring classifiers to new isolate collections and new antibiotics",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 or HyenaDNA on coding sequences (DNA language models), or ESM-2 on the encoded proteins",
+    "freeze_and_head_viable": true,
+    "hardware": "laptop CPU; about 3,800 coding sequences to embed once",
+    "licence": "DNABERT-2 and HyenaDNA Apache-2.0; ESM-2 MIT - all permissive"
+  },
+  "integration": {
+    "partner_dataset": "BACTOME (transcriptomes and phenotypes of hundreds of P. aeruginosa clinical isolates, NAR 2019)",
+    "join_key": "PA14 locus tag (PA14_xxxxx)",
+    "bigger_question_one_sentence": "Do the genes whose translation depends on the MiaA transfer-RNA modification also show the most expression variation across clinical isolates, and does that variation track virulence?"
+  },
+  "controls": {
+    "positive_control": "Recover the paper's tryptophan-codon stalling effect; and predict gene length or GC content from the same codon features, which must be near-perfect.",
+    "negative_control": "Label shuffling - already run, cross-validated R-squared collapsed to about 0.",
+    "external_validation": "None found: no second delta-miaA translatome dataset exists in any bacterium, and no codon-resolution coverage is deposited here."
+  },
+  "honest_claim_h3": "Among 3,775 well-expressed Pseudomonas aeruginosa PA14 genes measured in a single planktonic culture at optical density 0.4, codon composition explains about 3% of the variance in the change in ribosome-footprint-to-messenger-RNA ratio caused by deleting miaA, against a replicate-based ceiling of roughly 30%.",
+  "plain_idea": {
+    "one_liner": "Use a gene's codon sequence to predict how much its translation drops when a transfer-RNA-modifying enzyme is deleted.",
+    "train_on": "One row per gene: the 61 codon frequencies (and optionally a sequence-model embedding) of its coding sequence. I verified 3,775 genes pass an expression filter out of 5,966 measured features.",
+    "predict": "The change in translation efficiency - ribosome-profiling reads divided by messenger-RNA reads, in the miaA deletion mutant minus wild type - measured by ribosome profiling and 3'-tag RNA sequencing in GEO series GSE322698.",
+    "why_worthwhile": "Bacterial translation researchers would learn which sequence features make a gene dependent on a transfer-RNA modification; even a failure quantifies how little of that dependence is readable from codon counts alone."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Riboformer and RiboMIMO train on codon-resolution ribosome profiling from many Escherichia coli, yeast and human datasets; we have gene-level counts from one knockout contrast with 2-3 replicates in one strain."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Replicates do let us estimate per-gene noise (I measured split-half reliability r = 0.55), which those models do not report, but with 3% explained variance a confidence estimate has nothing useful to qualify."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "They solve a different, higher-resolution task (per-codon density from raw reads) and cannot be run on gene-level counts, so there is no head-to-head comparison to win."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Improving would require reprocessing raw ribosome-profiling reads to codon resolution - excluded by our no-raw-sequencing rule - and no second dataset measures the same quantity the same way."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict per-gene change in translation efficiency on miaA deletion in Pseudomonas aeruginosa PA14 from coding-sequence features (61 codon frequencies, MiaA-dependent U-starting codon content, or a frozen DNA language-model embedding), with operon-block held-out splits. I built and tested exactly this: ridge regression gives cross-validated R-squared 0.027 (Pearson 0.16) on 3,542 genes, Spearman correlation between the change and U-starting codon fraction is only -0.064, and the replicate-based ceiling is r = 0.55 - so the task as posed on the deposited data has almost no learnable signal.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 3,
+    "cv_run_minutes": 1,
+    "compute_note": "Timed, not guessed: building the count matrix, coordinate-mapping the coding sequences, computing codon frequencies and running 5-fold ridge cross-validation together took about 2 seconds of wall clock on a laptop CPU with under 1 GB of RAM. The 3-hour embedding figure is an estimate for running a small DNA language model over 3,775 coding sequences on CPU.",
+    "cheapest_killing_check": "Regress the translation-efficiency change on the 61 codon frequencies and check the correlation with U-starting codon content - I ran it: cross-validated R-squared 0.027, Spearman -0.064. That kills the project in under an hour."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The data is genuinely clean, public and tiny (3.5 MB of featureCounts tables, 5,966 genes, no duplicates or missing values), and every Part A killer passes - but I ran the project's central check and the signal is not there: codon composition explains 2.7% of the variance in the miaA-dependent change in translation efficiency, and the correlation with MiaA-sensitive U-starting codons is Spearman -0.06 against a replicate ceiling of r = 0.55. The codon-resolution ribosome stalling the paper is actually about is not in the deposited processed data; recovering it means reprocessing raw reads, which our rules exclude, and even then it would remain one knockout contrast in one strain with no external validation set."
+}

@@ -1,0 +1,142 @@
+{
+  "paper_id": "nar2026-gkag453",
+  "title": "PockFlex: a web server for flexibility-aware binding site identification and prioritisation from structural ensembles.",
+  "doi": "10.1093/nar/gkag453",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://pockflex.rpbs.univ-paris-diderot.fr/assets/data/pdbFiles_nojump_noPBC_fit.zip",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the only public data file, the server's example archive (HTTP 200, 23,671,135 bytes, application/zip) and opened it: 501 PDB (Protein Data Bank) coordinate files, all snapshots of one protein, HIV-1 protease (entry 1HHP), written by GROMACS trjconv from a single 500 ns molecular dynamics run; 198 residues, one chain, protein atoms only, no ligands or waters, ~124 MB uncompressed, file sizes essentially identical (247,323-247,334 bytes). Also fetched the web server's work-sessions, tutorial and about pages and read the paper's data availability statement and methods. No label column, no table of outcomes, and no results file of any kind is in the archive.",
+    "what_came_from_paper_text_only": "That cluster-level druggability is a summary of PockDrug's per-pocket score (threshold 0.50 = druggable); that the example used 784 pockets found in the region of interest across the 501 frames; that 'the current validation of PockFlex is based on published application studies and supplementary robustness analyses' rather than a quantitative benchmark. The supplementary PDF (1.7 MB) could not be converted to text locally (no pdftotext installed), so its contents rest on the paper's captions."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Marginal pass, verified: the example ensemble zip downloads with no login (23.7 MB). But the paper's stated 'data underlying this article' is a results zip you must regenerate by running the server yourself, and anonymous sessions are deleted after 72 hours; nothing is deposited in any repository (no accession, no Zenodo/Dryad hit)."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL, verified in the files. The download contains only raw coordinate snapshots: no outcome column anywhere. Every candidate target (pocket location, druggability, pocket persistence) would have to be constructed by running Fpocket/PockDrug and the paper's own clustering, or by joining to outside ligand-bound structures. There is nothing to predict that is already written down."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are genuinely present: full 3D coordinates for all 501 conformations, no accession lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Coordinates are in angstroms by PDB format convention; druggability is a 0-1 score with a stated 0.50 cutoff. Not a failure, but moot given A2."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 501,
+      "note": "FAIL, verified. 501 frames look like rows but they are correlated snapshots of one protein from one trajectory; the independent unit is 1 protein, far below the ~400-1,500 threshold. The ~784 detected pockets mentioned in the paper are likewise all from that single target."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "124 MB uncompressed coordinates",
+      "note": "Comfortably fits 16 GB RAM; frames can be streamed one at a time. Size is the one thing that is not a problem here."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Verified: 501 PDB files in the archive, matching the paper's '501 frames extracted from a 500 ns molecular dynamics simulation'."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL, both ways the checklist warns about. The only label-like quantity is the druggability score from PockDrug, a 2015 linear discriminant model, so training on it is distilling that model (circularity). Worse, PockDrug computes that score from pocket geometry, hydrophobicity and aromaticity, which are exactly the features a new model would use, so the label is a function of the features (leakage by construction)."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "PockDrug / PockDrug-Server (the druggability model PockFlex wraps; linear discriminant analysis over 52 pocket descriptors, NAR 2015)",
+        "open_weights": true,
+        "score_and_split": "Reported ~87.9% +/- 4.7% average accuracy on its test set, and Matthews correlation coefficient (a balanced accuracy measure for two-class problems) above 0.65 across pocket-estimation methods; split details not re-verified by me, taken from search results on the 2015 papers.",
+        "authors_named_unsolved": "Robustness to uncertain pocket boundaries was their stated problem; PockFlex itself names conformational flexibility as the remaining gap.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PocketMiner (graph neural network predicting where cryptic pockets open, Nature Communications 2023)",
+        "open_weights": true,
+        "score_and_split": "ROC-AUC (receiver operating characteristic area under the curve) 0.87 for identifying cryptic pockets from a single structure, >1,000x faster than simulation; split details not verified by me.",
+        "authors_named_unsolved": "Recent benchmarks report that no current method, AI or physics-based, reliably predicts the absolute probability that a cryptic pocket is open.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "P2Rank / PrankWeb (machine-learning ligand binding site predictor, 2018-2019)",
+        "open_weights": true,
+        "score_and_split": "Standard benchmarks (COACH420, HOLO4K) are used in the field; I did not retrieve specific numbers in this evaluation.",
+        "authors_named_unsolved": "Single-structure prediction misses pockets that only appear in other conformations.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "fpocket / MDpocket and DoGSiteScorer (geometric pocket detection and druggability scoring; MDpocket already handles MD trajectories)",
+        "open_weights": true,
+        "score_and_split": "PockDrug's own comparison reported it beating fpocket score and DoGSiteScorer by >20 accuracy points on an identically estimated apo pocket set.",
+        "authors_named_unsolved": "Pocket-boundary uncertainty and ranking transient pockets.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable without labels; a structure-based graph network (e.g. PocketMiner-style) or ESM-2, a protein language model, would be the natural choice if a labelled set existed",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU laptop would suffice for the data volume, but there is no supervised target to fit a head to",
+    "licence": "Not applicable; PockFlex itself is a free web service with no source code or licence found"
+  },
+  "integration": {
+    "partner_dataset": "PDB (Protein Data Bank) ligand-bound HIV-1 protease structures, or the CryptoSite / PocketMiner cryptic-pocket benchmark sets",
+    "join_key": "PDB identifier plus residue number (the ensemble is all 1HHP, UniProt P03366 region)",
+    "bigger_question_one_sentence": "You could ask whether pockets that recur across a simulation correspond to sites where ligands are actually seen bound, but with one protein there is no way to answer it generally, so the join is decoration."
+  },
+  "controls": {
+    "positive_control": "The HIV-1 protease active site and flap residues (ILE47-ILE50, ILE84) must come out as the top recurrent pocket; this is recoverable but it is a sanity check on a tool, not a model result.",
+    "negative_control": "Shuffle frame order or residue identities and confirm clusters collapse; runnable but uninformative without labels.",
+    "external_validation": "None available: no second protein, no second trajectory, no experimental ligandability measurements are provided."
+  },
+  "honest_claim_h3": "With only this data, the strongest honest claim is 'a model reproduces PockDrug's druggability score for pockets found in 501 snapshots of one protein', which is a reimplementation of an existing model on a single target, not a biological finding.",
+  "plain_idea": {
+    "one_liner": "Use snapshots of a wobbling protein to predict which temporary surface pockets are worth aiming a drug at.",
+    "train_on": "What is actually downloadable is 501 three-dimensional snapshots of one protein, HIV-1 protease, from a single 500 ns simulation (verified by opening the archive). A real version of this project would need hundreds of different proteins, which this paper does not provide.",
+    "predict": "Intended output: a druggability score per candidate pocket. The 'true answer' here is not a measurement at all, it is the output of PockDrug, a 2015 statistical model computed from the same pocket shape and chemistry features a new model would use.",
+    "why_worthwhile": "If it worked on a real labelled set, structure-based drug designers could rank transient pockets before committing to an expensive screening campaign. As offered here, nothing is learned because there is no independent ground truth."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The public data is 501 frames of one protein (verified). PocketMiner was trained on simulations of many proteins and P2Rank on multi-thousand-protein benchmarks like COACH420 and HOLO4K."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements and no experimental outcomes, so per-prediction uncertainty could only describe variability of one model's score across frames of one trajectory."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "PockDrug (2015, linear discriminant analysis) is old and beatable in principle, but PocketMiner (2023, graph neural network) and P2Rank are recent, open and benchmarked; beating them needs a labelled multi-protein set this paper does not supply."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: there is no shared labelled evaluation set here, so the existing models cannot be run as a baseline on this data and no comparison exists."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a structure-based model to predict pocket druggability or pocket persistence from molecular dynamics conformations. The paper is a web server, not a dataset; the only download is raw coordinates for one protein, the target would have to be generated by running the authors' own tools, and that target is another model's output computed from the same features. If this direction is wanted, start instead from a labelled cryptic-pocket benchmark (CryptoSite, the PocketMiner training set) plus PDB holo/apo pairs, which have real ground truth across hundreds of proteins.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.13,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working set measured: the example archive is 23.7 MB compressed, 124 MB uncompressed across 501 PDB files, so RAM is trivial if frames are streamed. No embedding or cross-validation estimate given because there is no label to cross-validate against.",
+    "cheapest_killing_check": "Open the download and count distinct proteins and label columns. The answer is 1 protein, 501 correlated frames, 0 labels, and it took one command."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A at A2, A5 and A8, all verified by opening the files. The only public data is 501 molecular dynamics snapshots of a single protein (HIV-1 protease 1HHP) with no outcome column of any kind; the paper's 'data underlying this article' is a session results zip that users must regenerate themselves and that the server deletes after 72 hours. The one label-like quantity, druggability, is the output of PockDrug, a 2015 model, and is computed from the very pocket descriptors that would serve as features, so training on it would distill an existing model and leak by construction. One protein also means no held-out groups and no external validation. The underlying question (ranking transient pockets) is interesting, but it needs a labelled multi-protein benchmark, which this paper does not provide."
+}

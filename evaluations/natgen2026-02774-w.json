@@ -1,0 +1,42 @@
+{
+  "paper_id": "natgen2026-02774-w",
+  "title": "A human single-cell atlas identifies OLR1+ scar-associated macrophages as a potential therapeutic target for chronic liver disease.",
+  "doi": "10.1038/s41588-026-02774-w",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE298719",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO series GSE298719 (new data from this study, 41 samples): its file list shows a 5.9 GB RAW.tar holding only per-sample count matrices (matrix/barcodes/features) for 13 human biopsies (6 healthy, 7 MASLD, labelled only in the file names) plus mouse scRNA-seq and scATAC-seq (single-cell chromatin accessibility) files. There are no cell-annotation, metadata, h5ad or rds files (0 matches). I opened one human sample: 3,399 cell barcodes and 18,082 Ensembl-gene features. Reused GEO series: GSE243981 RAW.tar is 17 GB and GSE136103 RAW.tar is 416 MB. ENA (European Nucleotide Archive) PRJEB58625 (SteatoSITE bulk RNA) holds only raw fastq, about 1.6 GB per run. The Shiny browser has an expired SSL certificate. No CELLxGENE collection matches. The code is on GitLab (git.ecdf.ed.ac.uk/ramachandran-lab/olr1-paper), scripts only, with one folder per reused study.",
+    "what_came_from_paper_text_only": "From the abstract and bioRxiv preprint: 649,295 cells, 77 patients (42 healthy, 35 CLD, chronic liver disease), 125 cell states, the list of 7 reused GEO/ArrayExpress datasets, and the SteatoSITE outcome numbers (632 fibrosis, 446 decompensation, 508 mortality cases). I could not confirm whether the published version deposits the annotated atlas object; the Nature Genetics paper is paywalled and not in Europe PMC."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: the per-sample count matrices on GEO are open. But the SteatoSITE clinical outcomes (fibrosis stage, mortality) are not in any open file I found: ENA holds only raw reads, and outcomes likely need a data-access application (not verified)."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked the files: none of the deposited files carries the 125 cell-state annotations, a SAMac (scar-associated macrophage) label or patient clinical metadata. Disease status exists only in file names. Labels would have to be rebuilt by re-integrating 8 studies with the authors' GitLab pipeline."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: count matrices are present (18,082 Ensembl gene IDs per human sample), with no lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Checked: raw integer UMI (unique molecular identifier) counts in standard 10x matrix-market format, which is self-describing."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "From the paper: 649,295 cells, but the independent unit for any disease or outcome label is the patient, and there are only 77 (13 new in GEO). The cell count across all sources was not verified."},
+    "a6_fits_laptop": {"pass": false, "working_set": ">23 GB of compressed archives (17 GB + 5.9 GB + 0.4 GB seen, other 5 datasets not sized)", "note": "Checked the sizes on GEO FTP. Rebuilding a 649k-cell integrated atlas exceeds 16 GB RAM without heavy subsetting, and that subsetting would itself be the project."},
+    "a7_counts_match_paper": {"pass": false, "note": "Could not check: the integrated object is not deposited, so 649,295 cells and 125 states cannot be counted. The preprint mentions 210 samples from 81 patients in 8 studies, versus 77 patients in the abstract."},
+    "a8_label_provenance": {"pass": false, "note": "The cell-state labels (including OLR1+ SAMac) come from clustering the same expression matrix a model would take as input, so predicting them is circular. The only measured labels are patient outcomes, which sit in SteatoSITE behind an application."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models)", "freeze_and_head_viable": null, "hardware": "CPU embedding of 649k cells is many hours; not assessed further after Part A failure", "licence": "scGPT MIT; Geneformer Apache-2.0"},
+  "integration": {"partner_dataset": "SteatoSITE bulk liver RNA-seq with clinical outcomes (ENA PRJEB58625)", "join_key": "Ensembl gene ID (via deconvolution, not a row-level join)", "bigger_question_one_sentence": "Does the bulk-tissue abundance of OLR1+ scar-associated macrophages predict decompensation and death better than fibrosis stage alone? The outcome data needed to answer it is not openly available."},
+  "controls": {"positive_control": "Recover the known TREM2+/SPP1+ scar-associated macrophage expansion in cirrhosis (Ramachandran 2019).", "negative_control": "Shuffle the healthy/CLD labels at the patient level.", "external_validation": "None open: SteatoSITE outcomes appear to be controlled access."},
+  "honest_claim_h3": "At best: a classifier reproduces the authors' own clustering of 77 patients' liver cells, which says nothing about biology the clustering did not already encode.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from liver biopsies to predict liver scarring stage and patient outcomes.",
+    "train_on": "Gene expression of each cell, grouped by patient. 77 patients per the paper; I verified only 13 new biopsies in GEO.",
+    "predict": "Fibrosis stage or disease status for each patient. The labels would come from pathology scoring, which is not in the deposited files.",
+    "why_worthwhile": "Hepatologists could see whether a macrophage signature adds prognostic value beyond a biopsy fibrosis score. The undeposited labels and 77-patient size make this unanswerable here."
+  },
+  "pitch": null,
+  "ml_idea": "Rejected: deposited files are raw per-sample count matrices without cell annotations or clinical labels. Building any label means re-running an 8-study integration of more than 23 GB, and the outcome data is likely controlled access.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 23, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Archive sizes read from the GEO FTP listings; nothing was timed. RAM was not estimated because Part A failed.", "cheapest_killing_check": "Check whether the published Nature Genetics version deposits an annotated h5ad/rds with per-cell state labels and patient metadata (CELLxGENE or Zenodo). If not, the project is dead."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2/A8: the deposited GEO files are unannotated count matrices, and the cell-state labels are clustering outputs of the same features. Also fails A5 at the patient level (77) and A6 (more than 23 GB of archives). Clinical outcomes (SteatoSITE) appear to be controlled access, with only raw reads in ENA."
+}

@@ -1,0 +1,129 @@
+{
+  "paper_id": "gb2026-04277-7",
+  "title": "Population genomics; demography; and circum-Baltic connectivity of Early Medieval southwestern Finland.",
+  "doi": "10.1186/s13059-026-04277-7",
+  "journal": "Genome Biology",
+  "data_url": "https://doi.org/10.5281/zenodo.21991261",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the full Zenodo deposit metadata and three of its five files: POSEIDON.yml, the .ind sample list, the .janno metadata table, and the 48 MB .geno genotype matrix. Counted it directly: 1,233,013 SNP (single-nucleotide polymorphism) rows x 38 individuals, i.e. the standard '1240k' capture panel. Computed per-individual missing-genotype rate from the raw file: 34.7% to 98.2% missing, mean 67.4%. Parsed the .janno with pandas: 38 rows x 46 columns, but only 4 columns have any values (Poseidon_ID, Genetic_Sex, Group_Name, Nr_SNPs); Latitude, Longitude, all Date columns, Site, Country, Coverage, Contamination, haplogroups are 100% empty. For comparison I also downloaded a sibling package from the Poseidon community archive (2025_Nordfors_MedievalFinland) and confirmed those same columns are fully populated there, so the emptiness is specific to this deposit.",
+    "what_came_from_paper_text_only": "That the 38 individuals come from 17 archaeological sites split 17 coastal / 21 inland and span 800-1250 CE; that radiocarbon dates exist and are tabulated in Additional file 1 Table S1; that the modern Finnish comparison genomes come from THL Biobank. Europe PMC's supplementaryFiles endpoint timed out, so I never opened Additional file 1 and cannot confirm its contents or row count."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Ancient genotypes download freely from Zenodo under CC-BY-4.0, no login; I pulled 48 MB of it. Flag: the modern Finnish comparison cohort is THL Biobank, which needs an access application, so half the paper's analysis is not reproducible without that."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. In the deposited .janno, every column that could be a prediction target is 100% empty: Latitude, Longitude, Date_BC_AD_Start/Median/Stop, Date_C14_Uncal_BP, Site, Country. The only populated label-like column is Group_Name with three values (EM_Finland 34, LIA_Finland 3, one outlier). Date, coordinates and the coastal-vs-inland split would all have to be hand-built from a supplementary table I could not retrieve."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The genotype matrix itself is in the package, not referenced elsewhere: 1,233,013 rows x 38 columns of EIGENSTRAT codes, verified by reading the file. No identifier lookups needed for the features."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "EIGENSTRAT genotype coding (0/1/2 reference-allele count, 9 = missing) is a documented standard and POSEIDON.yml names the format explicitly. Date units would be calendar years CE, but no date values are present to carry units."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 38,
+      "note": "FAIL. The modelling unit here is the person, and there are 38 of them (I counted lines in the .ind and columns in the .geno). The checklist floor is ~1,500 rows, or ~400 for pure classification. 38 is two orders of magnitude short, and with 17 coastal / 21 inland it cannot support even a binary classifier."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~91 MB (48 MB .geno + 43 MB .snp)",
+      "note": "Trivially laptop-sized; I held the whole genotype matrix in a streaming pass with negligible memory. Size is the one thing this dataset gets right."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "The abstract says '34 ancient individuals', the Results say '38 ancient individuals found at 17 archaeological sites', and the files contain 38. Files agree with the body, not the abstract. The discrepancy is probably 4 previously published individuals, but nothing in the deposit says which, because the provenance columns are empty."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Not assessed in depth because A2 and A5 already fail. In principle the dates are physical measurements (radiocarbon) or archaeological context assignments, not another model's output, so there is no circularity; but none of them are present in the deposited files to check."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Locator (Battey et al., eLife 2020) - a deep neural network that predicts where a sample came from, directly from its genotypes",
+        "open_weights": true,
+        "score_and_split": "Reported as inferring sample location to within ~4.1 generations of dispersal in simulations; code is public at github.com/kr-colab/locator. I read the search summary and the project page, not the full paper.",
+        "authors_named_unsolved": "Uncertainty quantification and mosaic/admixed ancestry; they address it with per-genomic-window predictions.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "GeoGenIE (Bioinformatics Advances, 2025) - a successor to Locator that handles uneven geographic sampling",
+        "open_weights": true,
+        "score_and_split": "Published as an improvement over Locator on biodiversity SNP (single-nucleotide polymorphism) datasets; I did not retrieve specific numbers.",
+        "authors_named_unsolved": "Geographic sampling imbalance, which is their stated motivation.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TPS (Temporal Population Structure; Elhaik group, Cell Reports Methods 2022) - machine-learning dating of ancient genomes from genotypes alone",
+        "open_weights": null,
+        "score_and_split": "Trained/applied on 3,591 ancient and 1,307 modern samples; 60% of samples predicted within 400 years and 70% within 600 years of their published dates.",
+        "authors_named_unsolved": "They state TPS complements rather than replaces radiocarbon dating, i.e. accuracy is not yet good enough to stand alone.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Neural ADMIXTURE (Nature Computational Science, 2023) - neural-network ancestry clustering",
+        "open_weights": true,
+        "score_and_split": "Reproduces ADMIXTURE's clustering orders of magnitude faster; evaluated on large modern and ancient genotype panels.",
+        "authors_named_unsolved": "Choosing the number of ancestry components and interpreting them.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Graph transformer for ancient ancestry inference (2026, PMC13082007)",
+        "open_weights": null,
+        "score_and_split": "Retrieved as a title/abstract hit only; no numbers checked.",
+        "authors_named_unsolved": "Not checked.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate. DNA language models (Nucleotide Transformer, DNABERT-2, HyenaDNA) take nucleotide sequence, not sparse population-genotype matrices, so they do not apply to a 1240k SNP panel.",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "Allen Ancient DNA Resource (AADR) v66.0 - 17,634 ancient individuals genotyped on the same 1,233,013-SNP 1240k panel, with curated latitude, longitude and date columns; plus the Poseidon community archive (223 packages).",
+    "join_key": "Genomic coordinate (SNP position on the shared 1240k panel) for the features; Poseidon_ID / individual ID for the metadata.",
+    "bigger_question_one_sentence": "Does a model trained to predict where and when an ancient person lived from their genotype degrade gracefully on low-coverage, heavily missing individuals like these - i.e. how much genome do you actually need to place someone in space and time? That question is real, but it belongs to AADR, not to this 38-person paper."
+  },
+  "controls": {
+    "positive_control": "Would have been: recover the known Scandinavian-versus-Baltic ancestry gradient, or predict genetic sex from X/Y SNP coverage. Not runnable here - genetic sex is 'U' (unknown) for 36 of 38 individuals.",
+    "negative_control": "Label shuffling would be meaningless at n=38.",
+    "external_validation": "AADR holds ~17,600 other ancient individuals with dates and coordinates, so external validation exists in principle - but then AADR is the dataset and this paper is a 38-row test set, not a project."
+  },
+  "honest_claim_h3": "No honest modelling claim is available from this dataset alone: with 38 individuals, 67.4% average missing genotypes, and no date, coordinate or coastal/inland column in the deposit, any model fitted here would describe these 38 people and nothing else.",
+  "plain_idea": {
+    "one_liner": "Use ancient human genotypes to predict where and when the person lived.",
+    "train_on": "Genome-wide genotype calls at 1,233,013 standard marker positions per person. This paper supplies 38 people (verified by counting the file), with on average two-thirds of markers missing.",
+    "predict": "Calendar date and geographic coordinates of burial. True dates come from radiocarbon measurement of the bone or from archaeological context; coordinates from the excavation site record.",
+    "why_worthwhile": "Archaeologists and ancient-DNA labs would use a genetic date estimate when radiocarbon dating is impossible or has been exhausted; it would also flag mislabelled individuals in public archives. Even a failure would quantify how much genome coverage is needed before genetic dating becomes useless."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only sensible version of this idea is a project about the Allen Ancient DNA Resource (17,634 ancient individuals on the identical 1,233,013-SNP panel, with curated date and coordinate columns), using this paper's 38 Finnish individuals as a held-out test set to ask how prediction accuracy decays with genotype missingness. That is an AADR project with a 38-row appendix, not a project about this paper, and Locator, GeoGenIE and TPS already occupy the space.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Measured, not guessed: the whole deposit is 91 MB and I streamed the 48 MB genotype matrix in one pass with ~1 GB of memory. The 6 hours is the estimated hand-work to rebuild dates and coordinates from the supplementary table, since the deposited metadata table is empty.",
+    "cheapest_killing_check": "Count the rows. `wc -l` on the .ind file returns 38. That one command kills the project in five seconds."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails three Part A killers, all confirmed by opening the files. A5: 38 individuals, versus a floor of ~400 for classification. A2: the deposited Poseidon metadata table has every usable label column (latitude, longitude, all date fields, site, country) 100% empty, so date and the coastal/inland split would have to be reconstructed by hand from a supplementary table I could not even retrieve. A7: the abstract says 34 individuals, the Results say 38, the files have 38. The genotypes are also 67.4% missing on average (range 34.7-98.2%). The data is excellent population genomics and worthless as a standalone ML training set; the interesting version of the question belongs to the Allen Ancient DNA Resource (17,634 individuals on the same marker panel), where Locator, GeoGenIE and TPS already work."
+}

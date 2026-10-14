@@ -1,0 +1,126 @@
+{
+  "paper_id": "nature2026-10803-1",
+  "title": "Prior therapy defines mutation profiles in childhood cancer at relapse.",
+  "doi": "10.1038/s41586-026-10803-1",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.18807964 ; https://github.com/shlienlab/mutsigs_therapy",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 18807964 file list and README (CC-BY-NC 4.0): SNV calls 285 MB gz, indel calls 69 MB gz (both over the 50 MB cap, not downloaded), SV calls 4.1 MB (opened: 45,693 rows, 583 samples). GitHub source_data opened: Fig_2.tsv = 611 tumours with Thr_State (Advanced-Treated 256, Primary-Naive 249, Primary-Treated 93, Advanced-Naive 13), tumour type (97 types), age, purity, mutation burdens; ExFig_4a.tsv = 611 samples x 40 SBS signature activities with Pre/Post-Therapy label; ExFig_7a/7b = SBS96/SBS1536 profiles for only 111 samples; Fig_4a = 141 platinum-treated tumours with days since exposure and signature Y/N (81/60). Treated fraction varies strongly by tumour type (neuroblastoma 78/88 treated, high-grade glioma 21/54).",
+    "what_came_from_paper_text_only": "Per-drug exposure and cumulative dose per patient (the paper's core labels) are described but not found in any public file: the repo's ml_model.py loads KZM_therapy_classes_NY.txt and KZM_md.tsv, which are absent from the repo; Europe PMC supplementary files timed out (supplement not retrievable). The ensemble classifier's F1 of 0.89 and its split come from the text; Hartwig and PROFYLE data are on-request only; raw reads are in EGA/dbGaP (controlled)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Processed variant calls on Zenodo and per-sample tables on GitHub download without login (checked). Raw reads are controlled access (EGA, dbGaP) but not needed."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked: treated-vs-naive status is a column (Thr_State in Fig_2.tsv, Treatment in ExFig_4a.tsv) for all 611 tumours. The more interesting per-drug exposure label is NOT in any public file I found; it would need the unretrieved supplementary tables."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: 40 signature activities per tumour already tabulated; raw SNV positions with ref/alt are on Zenodo, but building 96-channel spectra for all 611 needs the GRCh37 reference genome to get flanking bases."},
+    "a4_units_stated": {"pass": true, "note": "Mutation counts and VAF (0-1) documented in Zenodo README; signature activities are mutation counts per signature (checked in file)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 611, "note": "611 tumours, binary classification (349 treated / 262 naive), just above the ~400 classification bar. Per-drug subsets are much smaller (e.g. 141 platinum-treated with timing)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<10 MB for signature table; ~355 MB compressed if rebuilding spectra from SNV/indel calls", "note": "Tabular; trees or logistic regression on CPU in seconds."},
+    "a7_counts_match_paper": {"pass": true, "note": "611 tumours in Fig_2 and ExFig_4a match the paper's 611; SV file has 583 samples, matching the 28 missing SV values in Fig_2."},
+    "a8_label_provenance": {"pass": true, "note": "Treatment state comes from harmonized clinical re-annotation, not from the mutations. But the paper's own classifier target (platinum signature present Y/N) is computed from the mutation spectra, so that label is circular and must not be used."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Label table (Fig_2) and signature table (ExFig_4a, long format) join on sample ID; 611/611 matched (checked)."},
+    "B2": {"score": 2, "why": "GitHub TSVs and SV file parsed first try with pandas (checked)."},
+    "B3": {"score": 1, "why": "Three programmes (KiCS, ZERO, MSK) sequenced separately; one shared pipeline per paper, batch effects unverified."},
+    "B4": {"score": 2, "why": "Binary treated/naive label, no censored values; 2 missing ages, 1 missing purity (checked)."},
+    "B5": {"score": 1, "why": "Patients can contribute multiple tumours (Fig_1c lists patients with up to 8 samples); needs patient grouping."},
+    "B6": {"score": 1, "why": "Zenodo README documents variant columns fully; GitHub source-data tables are undocumented figure exports."},
+    "C1": {"score": 1, "why": "Treated-vs-naive is easy from burden alone; only 'residual exposure signal beyond known signatures' is informative."},
+    "C2": {"score": 1, "why": "Paper's own open ensemble classifier (F1 0.89); Pich 2019 mapped therapy footprints on ~3,500 tumours."},
+    "C3": {"score": 1, "why": "Weak 'better evaluation' angle: re-test paper's classifier with patient- and tumour-type-grouped splits."},
+    "C4": {"score": 1, "why": "Exposure history is known clinically; value lies in detecting hidden mutagenic damage, not replacing records."},
+    "C5": {"score": 2, "why": "Published F1 0.89 and PR/ROC source data in repo; mutation-burden-only dummy is obvious."},
+    "D1": {"score": 0, "why": "No named open pretrained backbone for mutation-spectrum vectors identified or retrieved."},
+    "D2": {"score": 1, "why": "No embedding step needed; plain models on 96-1536 features run on CPU."},
+    "D3": {"score": 1, "why": "Zenodo data CC-BY-NC 4.0; paper CC BY-NC-ND; non-commercial use fine."},
+    "E1": {"ok": true, "why": "Hold out whole patients and whole tumour types; Type column present in Fig_2 (checked)."},
+    "E2": {"ok": true, "why": "15 tumour types with ≥10 samples per paper; 97 types in file."},
+    "E3": {"ok": true, "why": "Majority class (57% treated), per-tumour-type rate, and burden-only logistic regression are computable."},
+    "E4": {"ok": false, "why": "No replicate sequencing of the same tumour in public files."},
+    "E5": {"ok": true, "why": "Known: SBS31/SBS35 platinum signatures must rank top for platinum-exposed tumours."},
+    "E6": {"ok": true, "why": "Label shuffling and burden-only ablation are straightforward."},
+    "E7": {"ok": false, "why": "POG adult cohort is published but counts only; Hartwig is on-request; no year column seen."},
+    "E8": {"ok": true, "why": "Repo holds PR/ROC source data (pr_288.tsv, AP 0.95) and ml_model.py for the 111-sample classifier."},
+    "G1": {"score": 2, "why": "GRCh37 coordinates, HGNC IDs and gene symbols in Zenodo variant files (README checked)."},
+    "G2": {"score": 1, "why": "COSMIC signatures and Hartwig metastatic cohort plausible, but Hartwig is access-restricted."},
+    "G3": {"score": 2, "why": "Signature-to-COSMIC join is one-to-one by signature name."},
+    "G4": {"score": 1, "why": "Paediatric-vs-adult footprint transfer is a modest question; paper already tested cosine 0.72 on POG."},
+    "H1": {"score": 2, "why": "262 treatment-naive tumours as negatives alongside 349 treated (checked)."},
+    "H2": {"score": 1, "why": "Three programmes, 97 tumour types, but all high-risk/relapsed paediatric precision-medicine cases."},
+    "H3": {"score": 2, "why": "Claim stated precisely below, limited to high-risk paediatric tumours with mixed regimens."},
+    "H4": {"score": 1, "why": "Paper discusses cohort bias toward aggressive disease; tumour-type confounding not foregrounded."},
+    "I1": {"score": 1, "why": "Paediatric oncology genomics groups (Shlien lab, SickKids); no named user decision."},
+    "I2": {"score": 1, "why": "Could flag hidden platinum damage, but clinical decisions rest on exposure records."},
+    "I3": {"score": 1, "why": "Treated-vs-naive AUC is a proxy; the real decision (de-escalation) needs per-drug labels."},
+    "I4": {"score": 1, "why": "Mutation burden and SBS31/35 presence probably carry most signal; ML adds little."},
+    "J1": {"score": 1, "why": "Grouped-split evaluation and ablations, but small tabular data, no transfer learning."},
+    "J2": {"score": 1, "why": "Signature biology is well documented (COSMIC); clinical confounding needs an oncology collaborator."},
+    "J3": {"score": 1, "why": "A grouped-split re-evaluation note is shareable; little beyond that."},
+    "J4": {"score": 1, "why": "Roughly one week, not formally fixed."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "This paper's soft-voting ensemble (random forest, logistic regression, XGBoost, CatBoost) on SBS96/288/1536 features", "open_weights": true, "score_and_split": "F1 0.89 for platinum-signature-positive vs negative among 111 platinum-treated tumours; F1 0.81-0.82 after removing known platinum channels; split not stated in what I read. Code in scripts/ml_model.py, PR/ROC data in repo.", "authors_named_unsolved": "27% of platinum-treated tumours lack detectable platinum signatures; whether hidden platinum damage exists beyond known signatures, and tracking resistant clones before expansion.", "runnable_as_baseline": true},
+      {"name": "Pich et al. 2019, 'The mutational footprints of cancer therapies' (Nature Genetics), signature extraction on ~3,500 Hartwig metastatic tumours", "open_weights": null, "score_and_split": "Not a predictive classifier; signature-treatment association analysis in adult metastatic tumours.", "authors_named_unsolved": "Not retrieved beyond abstract-level summary.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "none identified (mutation-spectrum vectors have no standard open pretrained backbone)", "freeze_and_head_viable": false, "hardware": "CPU laptop", "licence": "Data CC-BY-NC 4.0"},
+  "integration": {"partner_dataset": "COSMIC mutational signature catalogue (open reference spectra); Hartwig metastatic cohort would be the large partner but needs a data request", "join_key": "signature name / 96-channel trinucleotide context", "bigger_question_one_sentence": "Do chemotherapy footprints learned in children transfer to adult metastatic tumours treated with the same drugs?"},
+  "controls": {"positive_control": "SBS31/SBS35/DBS5 activity must be the top features for platinum-exposed tumours; mutation burden should separate treated from naive.", "negative_control": "Shuffle treatment labels within tumour type; performance must fall to the per-tumour-type base rate.", "external_validation": "None openly available: POG adult cohort (published supplementary counts) is partial; Hartwig and PROFYLE are on request."},
+  "honest_claim_h3": "Among 611 high-risk paediatric tumours from three precision-medicine programmes, mutation-signature profiles separate previously treated from untreated tumours, but only to the extent the signal survives holding out whole tumour types and patients.",
+  "plain_idea": {
+    "one_liner": "Use the pattern of DNA mutations in a child's tumour to predict whether, and with which drugs, the tumour was previously treated.",
+    "train_on": "For each of 611 tumours (verified), the counts of mutations attributed to 40 known mutation patterns ('signatures'), or the full 96-category mutation spectrum rebuilt from the deposited variant calls.",
+    "predict": "Whether the tumour had prior chemotherapy or radiotherapy (treated vs untreated), taken from the clinical records re-annotated by the authors; per-drug exposure would need tables not found publicly.",
+    "why_worthwhile": "Would show how much treatment-caused DNA damage is detectable beyond the known platinum signatures; even a negative result shows the separation is mostly tumour type and mutation count."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Our data is the paper's own 611 tumours, the same set its classifier used; Pich 2019 had ~3,500 adult tumours."},
+    "confidence_score": {"answer": "no", "why": "No replicate sequencing, so per-prediction noise cannot be estimated from the data."},
+    "models_beatable": {"answer": "partly", "why": "The 2026 ensemble reports F1 0.89 on 111 samples with no stated grouped split; an honest patient/tumour-type split may lower it, but that is re-evaluation, not beating it."},
+    "guaranteed_improvement": {"answer": "no", "why": "No accessible new data measuring the same exposure the same way: Hartwig and PROFYLE are on request, and POG offers only partial published counts."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Hartwig Medical Foundation metastatic cohort has treatment histories (known resource, access by request); POG adult cohort supplementary data (cited in paper, not checked).", "approx_items": null, "join_key": "96-channel mutation spectrum / signature name", "why": "An external cohort with treatment labels would test whether paediatric therapy footprints generalise, but none is openly downloadable."},
+  "leakage_plan": {
+    "risks": [
+      "Several tumours from the same patient (up to 8 per patient in Fig_1c) could land in both train and test.",
+      "Treatment status is heavily tied to tumour type (neuroblastoma 78/88 treated, high-grade glioma 21/54), so the model may learn tumour type.",
+      "Treated tumours are mostly 'Advanced' relapses from specific programmes, so programme or sequencing batch may correlate with the label.",
+      "The paper's own signature Y/N label is computed from the same spectra and must not be used as a target."
+    ],
+    "split": "Hold out whole patients (patient ID partly visible in Fig_1c; sample IDs carry patient prefixes, not fully verified), plus leave-tumour-type-out evaluation using the Type column seen in Fig_2.tsv.",
+    "checks": [
+      "Shuffle labels within tumour type and confirm collapse to the per-type base rate.",
+      "Train on tumour type plus total mutation burden alone and compare with the full model.",
+      "Train on programme prefix (KiCS/zcc/I-H) alone to measure batch leakage."
+    ],
+    "verdict": "Manageable for patient leakage, but tumour-type and stage confounding is a serious risk that may explain most of the signal."
+  },
+  "success_criteria": {
+    "metric": "AUROC (area under the receiver-operating curve) for treated vs naive under leave-tumour-type-out, because the question is whether therapy damage is detectable independent of cancer type.",
+    "baselines": "Majority class 57% treated (computed from Fig_2); per-tumour-type rate and burden-only logistic regression (to compute); paper's F1 0.89 is for a different, circular target.",
+    "success": "AUROC at least 0.10 above the tumour-type-plus-burden baseline under leave-tumour-type-out; exact baseline value unknown until computed.",
+    "noise_ceiling": null,
+    "kill": "If signature features add under 0.05 AUROC over tumour type plus mutation burden on the first afternoon, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "NAR Cancer", "why": "Publishes cancer genomics methods; would need a clear demonstration of hidden therapy damage beyond known signatures that transfers to adult tumours."},
+    "realistic": {"journal": "Bioinformatics (application note) or PLOS Computational Biology", "why": "A grouped-split re-evaluation of therapy-exposure prediction from mutation spectra fits a short methods/benchmark note."},
+    "fallback": {"journal": "bioRxiv preprint", "why": "A negative result (signal is mostly tumour type and burden) is still worth a short preprint."}
+  },
+  "pitch": {
+    "headline": "611 childhood tumours, each labelled treated or untreated from clinical records, with 40 mutation-signature counts already tabulated and open.",
+    "what_makes_the_data_unusual": "Paediatric whole genomes with harmonized therapy annotation across 97 tumour types, 262 untreated negatives, and processed variant calls under CC-BY-NC; per-drug doses are described in the paper but not found in public files.",
+    "the_win": "Showing treated-vs-untreated is detectable at AUROC well above a tumour-type-plus-burden baseline when whole tumour types are held out.",
+    "even_if_it_fails": "We learn that the published classifier's signal is largely tumour type and mutation count, a useful caution for therapy-footprint claims.",
+    "who_wants_it": "Paediatric cancer genomics groups (the Shlien lab at SickKids, ZERO Childhood Cancer, MSK) weighing therapy de-escalation evidence."
+  },
+  "ml_idea": "Re-evaluate prediction of prior therapy exposure from tumour mutation signatures (611 paediatric genomes) with patient- and tumour-type-grouped splits, ablating mutation burden and tumour type, and running the authors' open ensemble as baseline.",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 0, "cv_run_minutes": 2, "compute_note": "Estimated: signature table is 611 x 40; rebuilding full 96-channel spectra from the 285 MB SNV file would add ~1 day and a GRCh37 reference download.", "cheapest_killing_check": "Fit treated-vs-naive with tumour type plus total mutation burden only, leave-tumour-type-out, and see how much 40 signature activities add."},
+  "verdict": "park",
+  "verdict_reason": "Part A passes for treated-vs-untreated (611 rows, verified), but that label is confounded by tumour type and easy from mutation burden, the per-drug exposure labels that would make it interesting are not public, there's no backbone, and the paper already ships an open classifier."
+}

@@ -1,0 +1,144 @@
+{
+  "paper_id": "nar2026-gkag825",
+  "title": "Synergistic interaction between the macrophage polarizing signals IL-4 and IFNγ is controlled by the STAT6/STAT1/IRF1 axis.",
+  "doi": "10.1093/nar/gkag825",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13507861/ (Supplementary Tables S1-S6 inside gkag825_supplemental_files.zip); raw sequencing in NCBI SRA PRJNA1366809 and PRJNA1481881; reused ChIP-seq in GEO GSE84520",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the 6.5 MB supplement and parsed all six Excel tables with pandas. Table S4 holds 2,244 co-bound peaks, 1,215 STAT6-only and 1,466 STAT1-only peaks with mm10 coordinates, Fold, -log10(p), -log10(FDR) and RPKM (reads per kilobase per million) columns; 0 missing values, 0 duplicate coordinate triples within or across classes; the H3K27Ac (histone H3 lysine-27 acetylation) and ATAC (chromatin accessibility assay) sheets join 1:1 to the co-bound sheet on coordinates (merge gave exactly 2,244 rows). Table S3 has 634 synergistically activated genes with Ensembl IDs, DESeq2 normalised counts for 4 conditions x 3 replicates, log2 fold changes and adjusted p-values. I computed the chromatin synergy target myself: log2(H3K27Ac co-stimulated / best single cytokine) has median -0.02, only 10.5% of peaks above 0.5 and 2.9% (65 peaks) above 1.0. I also verified that one peak's DNA sequence can be pulled from the mm10 reference via the UCSC REST API (chr1:131,068,200-131,068,300 returned 100 bases) and that mm10.2bit is 715 MB.",
+    "what_came_from_paper_text_only": "The peak-calling and alignment pipeline (bwa, MACS2, HOMER2, hisat2, DESeq2, GRCm38/mm10 build), the +/-100 kb window around synergistic genes used to select peaks, the HOMER motif-enrichment result that STAT6 motifs are enriched at co-bound sites, the CRISPR motif-disruption experiments, and the single-cell tumour-macrophage analysis. I did not download anything from SRA (raw FASTQ only, 58 runs, no processed matrices linked) or GEO GSE84520 (17 MB RAW.tar listed but not opened)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement opened directly from the public Europe PMC/PMC copy, no login. Note: the paper's own new RNA-seq, ATAC-seq and BRD4 ChIP-seq are in SRA as raw reads only (no processed count matrix), so only the supplementary tables are usable on a laptop."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the files: H3K27Ac and ATAC RPKM per condition and the K-means chromatin cluster (C1-C5) are literal columns; the three-way binding class is sheet membership, which becomes a column with one concatenation. No cross-source inference needed."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are not in the tables, but mm10 coordinates plus a stated genome build are, and I confirmed sequence retrieval for one region via the UCSC REST interface. One 715 MB genome download (or ~5,000 API calls) converts all peaks to sequence deterministically; the RPKM signal columns are also usable as features."},
+    "a4_units_stated": {"pass": true, "note": "Verified in the files: group header rows read 'RPKM values', 'Statistics' (Fold, -log10 p-value, -log10 FDR) and 'Normalized expression values' (DESeq2 normalised counts per methods). Units are explicit, not implied."},
+    "a5_enough_rows": {"pass": true, "n_rows": 4925, "note": "4,925 labelled peaks for the three-class binding task (2,244 + 1,215 + 1,466, counted in the files) and 2,244 rows with quantitative chromatin signals. Note the per-gene framing fails: only 634 synergistic genes with no background gene set in the supplement."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1 GB (all tables under 1 MB; mm10.2bit 715 MB one-time)", "note": "Tables are kilobytes; the only large item is the reference genome, read via an index so peak memory stays near 2 GB. No GPU needed for a frozen-embedding plus logistic-head baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Exact agreement, checked in the files: 1,215 STAT6-only + 2,244 co-bound = 3,459 STAT6 peaks and 1,466 + 2,244 = 3,710 STAT1 peaks, both numbers stated in the text; 634 gene rows match the stated 634 genes; cluster counts (605+242+750+254+393) sum to 2,244."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are peak calls and read counts from ChIP-seq and ATAC-seq, i.e. physical measurements, not another model's output. Two circularity traps to avoid, both seen in the files: the C1-C5 cluster labels were made by K-means on the same H3K27Ac RPKM columns present in the table, and the Fold/RPKM columns come from the same read pileups that defined the peaks, so the honest input is DNA sequence rather than those columns."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Six Excel files, multiple sheets; co-bound/H3K27Ac/ATAC sheets merged 1:1 on coordinates in my test."},
+    "B2": {"score": 1, "why": "xlsx with a two-row header (group row plus column row); needed header=1 and renaming of unnamed cluster columns."},
+    "B3": {"score": 2, "why": "All signals already RPKM-normalised by the authors from one pipeline; expression DESeq2-normalised."},
+    "B4": {"score": 2, "why": "No censored or qualitative entries anywhere in the peak or gene tables I parsed."},
+    "B5": {"score": 2, "why": "Zero duplicate coordinate triples within or across the three peak classes, checked in pandas."},
+    "B6": {"score": 1, "why": "Group headers name units and conditions, but replicate structure and Fold reference live only in methods."},
+    "C1": {"score": 1, "why": "Sequence-versus-motif question is informative either way, but partly re-derives the paper's own motif figure."},
+    "C2": {"score": 1, "why": "No model on this data, but open sequence models (ChromBPNet, gkm-SVM, BPNet family) cover the general task."},
+    "C3": {"score": 1, "why": "Unique application on never-modelled peaks, weakened because the paper already names motifs as the answer."},
+    "C4": {"score": 1, "why": "ChIP-seq/ATAC-seq per cytokine combination is costly, but 2,244 one-cell-type peaks won't replace it."},
+    "C5": {"score": 2, "why": "Obvious dummies exist: majority class (2,244/4,925) and a two-motif PWM logistic regression baseline."},
+    "D1": {"score": 2, "why": "DNABERT-2 and Nucleotide Transformer are open-weight DNA language models matching 500 bp mouse regions."},
+    "D2": {"score": 2, "why": "4,925 short sequences; embeddings cacheable once on CPU, head is a logistic regression."},
+    "D3": {"score": 2, "why": "DNABERT-2 weights are Apache-2.0; Nucleotide Transformer is non-commercial, so pick DNABERT-2 if licence matters."},
+    "E1": {"ok": true, "why": "chromosome_name column seen in the files supports held-out-chromosome splits, plus grouping by nearest synergistic gene."},
+    "E2": {"ok": true, "why": "20 chromosomes present; largest holds 532 peaks, so folds are reasonably sized."},
+    "E3": {"ok": true, "why": "Majority-class and global-mean dummies computable directly from the counted class sizes."},
+    "E4": {"ok": false, "why": "Peak tables give one RPKM per condition with no replicate columns, so no noise floor for chromatin signal."},
+    "E5": {"ok": true, "why": "Paper's HOMER result (STAT6 motif enriched at co-bound sites) plus trivial GC/width targets serve as positive controls."},
+    "E6": {"ok": true, "why": "Label shuffling, dinucleotide-shuffled sequences and feature-block ablation all runnable on this table."},
+    "E7": {"ok": true, "why": "ChIP-Atlas and ENCODE hold mouse STAT1/STAT6 peak sets from other labs and cell types (known resources, not fetched)."},
+    "E8": {"ok": false, "why": "Paper reports motif enrichment p-values and Jaccard overlap, never a prediction metric to reproduce."},
+    "G1": {"score": 2, "why": "mm10 genomic coordinates with build stated, plus Ensembl gene IDs in the expression tables."},
+    "G2": {"score": 2, "why": "ChIP-Atlas mouse transcription-factor peak sets and the SCREEN mouse candidate regulatory element registry join on coordinates."},
+    "G3": {"score": 1, "why": "Coordinate-overlap joins are inherently one-to-many; manageable with bedtools and a stated collapse rule."},
+    "G4": {"score": 2, "why": "Asks whether cooperative-enhancer sequence grammar transfers to other STAT pairs and cell types; neither dataset answers alone."},
+    "H1": {"score": 1, "why": "STAT6-only/STAT1-only peaks and non-responsive cluster C5 are matched negatives, but no genome-wide negatives."},
+    "H2": {"score": 0, "why": "One lab, one species, one cell type: mouse bone-marrow-derived macrophages, peaks confined to +/-100 kb of 634 genes."},
+    "H3": {"score": 2, "why": "Claim writes cleanly in one sentence, with the +/-100 kb window as the explicit scope limit."},
+    "H4": {"score": 2, "why": "The window, the cluster definitions and the reuse of GSE84520 ChIP-seq are all stated in the paper."},
+    "I1": {"score": 2, "why": "Named users: the Nagy/Czimmerer macrophage epigenomics group in Debrecen and the Ivashkiv lab on cytokine synergy."},
+    "I2": {"score": 1, "why": "Would nominate enhancers for CRISPR motif disruption, an assay they already run, so change is incremental."},
+    "I3": {"score": 1, "why": "Precision among top-ranked enhancers roughly matches the decision, but the decision itself is loose."},
+    "I4": {"score": 1, "why": "Two PWM motif scores may capture most signal; ML helps only if context beyond motifs matters."},
+    "J1": {"score": 2, "why": "Real modelling: frozen DNA-language-model embeddings, grouped splits, motif baselines, leakage controls."},
+    "J2": {"score": 1, "why": "Motif and enhancer intuition is checkable against the paper's figures, but no immunology collaborator on hand."},
+    "J3": {"score": 2, "why": "A curated 4,925-row BED-plus-label table with motif scores is shareable even if the model is mediocre."},
+    "J4": {"score": 1, "why": "Three weeks is a sensible budget but is not yet written down anywhere."},
+    "J5": {"score": 1, "why": "Kill condition is clear (no gain over the PWM baseline) but no date committed in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ChromBPNet (base-resolution deep model of chromatin accessibility, Kundaje lab)", "open_weights": true, "score_and_split": "Reported to outperform gkm-SVM (a gapped k-mer support vector machine) on ATAC-seq/DNase-seq across many cell types, evaluated on held-out chromosomes; I retrieved the paper and GitHub but not specific numbers.", "authors_named_unsolved": "Not retrieved in detail; the framing is that sequence syntax and transcription-factor footprints are inferred, not that cytokine-combination responses are predicted.", "runnable_as_baseline": false},
+      {"name": "coTRaCTE (predicts co-occurring transcription factors within cell-type-specific enhancers, PLOS Computational Biology 2018)", "open_weights": null, "score_and_split": "Statistical co-binding test rather than a trained predictor; reported recovering known pairs such as STAT1 with CEBPB in fibroblasts. No held-out split reported in the abstract I read.", "authors_named_unsolved": "Specificity of predicted co-occurrences against globally active regions is the stated difficulty.", "runnable_as_baseline": false},
+      {"name": "gkm-SVM / BPNet / Enformer / DeepSTARR family (sequence-to-regulatory-activity models, named in a 2025 Frontiers in Genetics review I retrieved)", "open_weights": true, "score_and_split": "Established open models for enhancer and transcription-factor-binding prediction, usually evaluated on held-out chromosomes; no number specific to STAT6/STAT1 co-binding exists.", "authors_named_unsolved": "The review names prediction of condition-specific enhancer activity and variant effects as open.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 (DNA language model, Apache-2.0) with Nucleotide Transformer v2-50M as an alternative", "freeze_and_head_viable": true, "hardware": "Laptop CPU: ~4,925 sequences of 500-1,000 bases embedded once and cached, logistic-regression head", "licence": "DNABERT-2 Apache-2.0 (permissive); Nucleotide Transformer is non-commercial, so avoid it for any commercial use"},
+  "integration": {"partner_dataset": "ChIP-Atlas mouse transcription-factor ChIP-seq peak sets (STAT1, STAT6, IRF1 across many cell types) plus the SCREEN mouse candidate cis-regulatory element registry", "join_key": "mm10 genomic coordinates (overlap join via bedtools; liftOver for any mm39/hg38 partner)", "bigger_question_one_sentence": "Is the sequence signature of a STAT6-STAT1 co-bound enhancer a general grammar for cooperative transcription-factor pairs, or is it specific to these 634 cytokine-synergy genes in macrophages?"},
+  "controls": {"positive_control": "The model must recover the paper's HOMER finding that STAT6 GAS-like motifs are enriched at co-bound over STAT6-only sites, and must trivially predict GC content and peak width from sequence.", "negative_control": "Shuffle the three-way class labels (performance must fall to the 45.6% majority-class rate), replace sequences with dinucleotide-preserving shuffles, and ablate the motif-score feature block.", "external_validation": "Mouse STAT1/STAT6 ChIP-seq peak sets from other labs and cell types in ChIP-Atlas or ENCODE (known resources; I did not fetch them), and the human macrophage equivalent as a cross-species test."},
+  "honest_claim_h3": "Among regulatory regions within 100 kb of the 634 genes synergistically induced by IL-4 plus IFNγ in mouse bone-marrow-derived macrophages from one laboratory, DNA sequence predicts whether STAT6 alone, STAT1 alone, or both bind, to a stated accuracy above a two-motif baseline; it says nothing about regions elsewhere in the genome, other cell types, or other species.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence of macrophage regulatory regions to predict which ones bind both STAT6 and STAT1 rather than one alone.",
+    "train_on": "4,925 mouse genome regions (counted in the files): 2,244 bound by both transcription factors, 1,215 by STAT6 only, 1,466 by STAT1 only, each represented by a few hundred bases of reference sequence around the peak summit.",
+    "predict": "Which of the three binding classes a region belongs to, and for the 2,244 shared regions the change in H3K27 acetylation (a mark of active regulatory elements) after cells see both cytokines. Both answers come from ChIP-seq read counts in bone-marrow macrophages.",
+    "why_worthwhile": "Macrophage epigenomics labs would get a ranked shortlist of regions to test by CRISPR motif disruption; if sequence alone fails, that bounds how much of cooperative enhancer behaviour is written in the DNA rather than in prior chromatin state."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "4,925 peaks from one lab and one cell type is tiny next to the genome-wide, multi-cell-type data behind ChromBPNet and Enformer, but no existing model covers IL-4 plus IFNγ co-stimulated mouse macrophages, and nobody has modelled these particular labelled regions."},
+    "confidence_score": {"answer": "no", "why": "The peak tables carry a single RPKM value per condition with no replicate columns, so per-region measurement noise cannot be estimated and calibrated per-prediction uncertainty would rest on nothing."},
+    "models_beatable": {"answer": "partly", "why": "gkm-SVM (2014) and BPNet (2021) are old enough to beat with a pretrained DNA language model, but ChromBPNet (2025) is modern and evaluated on held-out chromosomes; none of them has a published number on this three-class task, so there is no direct score to beat."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model can be run as a baseline on this split without retraining on raw reads from SRA, and the partner data (ChIP-Atlas peaks from other labs and cell types) measures binding under different conditions, so the same-quantity-same-way condition fails."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "ChIP-Atlas and ENCODE hold mouse and human STAT1, STAT6 and IRF1 ChIP-seq peak sets across many cell types and conditions, and the SCREEN registry holds mouse candidate regulatory elements (known resources; I confirmed only that mm10 sequence retrieval works, not their contents).",
+    "approx_items": null,
+    "join_key": "mm10 genomic coordinates (with liftOver to mm39/hg38 where needed)",
+    "why": "Transcription-factor binding is labelled genome-wide elsewhere, so a model trained here can be tested on independent peak sets from other labs and cell types instead of only on held-out chromosomes of this one experiment."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Peak width differs systematically by class (median 387 bases for co-bound versus 253 and 278 for single-factor peaks, measured in the files), so any width or signal-strength feature leaks the answer.",
+      "The class label was defined by overlapping peak calls derived from the same read pileups that produced the Fold and RPKM columns, so those columns are partly the label.",
+      "The chromatin cluster labels C1-C5 were produced by K-means on the very H3K27Ac RPKM columns sitting in the same table, so predicting cluster from those columns is circular by construction.",
+      "All peaks lie within 100 kb of 634 genes, so several regions share a target gene and are not independent observations.",
+      "Repeat-rich or homologous sequences can place near-identical regions in both training and test folds."
+    ],
+    "split": "Hold out whole chromosomes using the chromosome_name column (seen in the files, 20 chromosomes, largest 532 peaks), and additionally group regions by their nearest synergistic gene so all regulatory elements of one gene sit in the same fold.",
+    "checks": [
+      "Shuffle the class labels and confirm accuracy collapses to the 45.6% majority-class rate.",
+      "Train on peak width and RPKM alone to measure exactly how much the trivial features explain, and report it alongside the sequence model.",
+      "Use fixed 500-base windows centred on summit_position so width cannot leak, and compare against dinucleotide-shuffled sequence controls.",
+      "Measure nearest-neighbour sequence similarity between each test region and the training set to catch repeat-driven duplicates."
+    ],
+    "verdict": "Manageable, provided fixed-size summit windows and gene-grouped chromosome folds are used from the start; the width and same-pileup issues would otherwise produce an impressive and meaningless number."
+  },
+  "success_criteria": {
+    "metric": "Macro-averaged precision-recall area under the curve for the three-way binding class on held-out chromosomes, because the use is ranking regions for CRISPR motif-disruption experiments, plus precision among the top 100 ranked regions.",
+    "baselines": "Majority class = 2,244/4,925 = 45.6% (counted in the files); a logistic regression on JASPAR STAT6 and STAT1 position-weight-matrix maximum scores; and a width-plus-GC-content model that quantifies the trivial ceiling. No published prediction number exists for this task.",
+    "success": "Frozen DNA-language-model embeddings beat the two-motif position-weight-matrix baseline by at least 0.05 macro precision-recall area under the curve on held-out chromosomes, with the width/GC model showing no such gain.",
+    "noise_ceiling": null,
+    "kill": "Stop if after one week the sequence model is within 0.03 macro precision-recall area under the curve of the two-motif baseline, or if the H3K27 acetylation gain target is pursued at all: only 65 of 2,244 regions (2.9%) exceed a one-log2 gain over the best single cytokine, which I measured."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes regulatory-grammar methods; would need the sequence signature of cooperative STAT binding to transfer convincingly to independent ChIP-Atlas peak sets and to human macrophages."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes focused benchmark and re-analysis studies; a careful 4,925-region sequence-versus-motif comparison with honest chromosome-held-out splits fits, positive or negative."},
+    "fallback": {"journal": "bioRxiv preprint plus a machine-learning-for-genomics workshop", "why": "Even a null result plus the curated, de-duplicated region-label table with motif scores is a useful community artefact, and that is all a negative outcome supports."}
+  },
+  "pitch": {
+    "headline": "4,925 mouse enhancer regions labelled STAT6-only, STAT1-only or co-bound, with matched accessibility and acetylation in four cytokine conditions.",
+    "what_makes_the_data_unusual": "I opened the files: zero missing values, zero duplicate coordinates, units stated as RPKM, and peak counts matching the paper exactly (1,215+2,244=3,459; 1,466+2,244=3,710). Nobody has modelled these regions.",
+    "the_win": "Frozen DNA-language-model embeddings beat a two-motif position-weight-matrix baseline by 0.05 or more macro precision-recall area under the curve on held-out chromosomes for the three-way binding class.",
+    "even_if_it_fails": "A negative result bounds how much cooperative transcription-factor binding is sequence-encoded versus set by prior chromatin state, and the clean labelled region table stays useful.",
+    "who_wants_it": "The Nagy/Czimmerer macrophage epigenomics group in Debrecen and the Ivashkiv lab on cytokine synergy, who would use the ranking to pick regions for CRISPR motif disruption."
+  },
+  "ml_idea": "Pull fixed 500-base mm10 sequences centred on each peak summit for all 4,925 regions, embed once with a frozen DNA language model (DNABERT-2), and fit a logistic-regression head to the three-way binding class (STAT6-only / STAT1-only / co-bound) with chromosome-held-out, gene-grouped folds. Compare against a two-motif position-weight-matrix baseline and a width/GC trivial model. Secondary, weaker task: rank the 2,244 co-bound regions by H3K27 acetylation gain under co-stimulation; I measured that only 2.9% show a gain above one log2, so this target is thin.",
+  "effort": {
+    "hours_to_feature_table": 5,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 3,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed: tables are kilobytes and parsed in seconds in my probe; the only sizeable item is the 715 MB mm10.2bit I checked by HEAD; embedding time assumes roughly 0.5-1 sequence per second for a small DNA language model on CPU over 4,925 sequences.",
+    "cheapest_killing_check": "Already done: count co-bound regions with a real acetylation gain on co-stimulation. Only 65 of 2,244 (2.9%) exceed one log2 over the best single cytokine, and the median change is -0.02, so the synergy-regression framing is dead and only the three-class binding task survives."
+  },
+  "verdict": "park",
+  "verdict_reason": "Every Part A killer passes on the actual files, with counts matching the paper exactly, units stated and no duplicates or missing values, which is rare. But the surviving project is small and thin: 4,925 regions from one lab, one cell type and one 100 kb window around 634 genes, where the paper's own motif analysis already supplies the likely answer, and where the quantitative synergy target collapses (2.9% of regions show a real acetylation gain). Worth keeping as a clean, laptop-sized benchmark if a stronger candidate does not appear, but the expected payoff is a careful methods note, not a finding."
+}

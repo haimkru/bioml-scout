@@ -1,0 +1,55 @@
+{
+  "paper_id": "natgen2026-02654-3",
+  "title": "Genome-wide association analyses of borderline personality disorder identify 11 loci and highlight shared risk with mental and somatic disorders.",
+  "doi": "10.1038/s41588-026-02654-3",
+  "journal": "Nature Genetics",
+  "data_url": "https://doi.org/10.6084/m9.figshare.30777305",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the PGC (Psychiatric Genomics Consortium) download-page entry 'bpd2025' pointing to figshare 30777305 (licence CC BY 4.0). Listed all 13 files via the figshare API: five daner_*.gz summary-statistics files (~217-219 MB each; all, female, male, noUKBB, exBIP.SCZ), a PRS-CS polygenic score weights file (23 MB), five small metadata xlsx files and READMEs. Downloaded bpd15_2025_all_24b.xlsx: 15 cohorts whose case counts sum to exactly 12,339, controls listed per cohort, genome build GRCh37, HRC imputation, per-cohort logistic regression meta-analysed with METAL. Ranged-GET the first 200 KB of daner_bpd15_2025_all_24b.gz: tab-separated columns CHR, SNP, BP, A1, A2, allele frequencies, INFO, OR, SE, P, Direction, heterogeneity stats, Nca, Nco, Neff_half; parses cleanly.",
+    "what_came_from_paper_text_only": "Europe PMC and PMC full text were not retrievable (HTTP 500 / not in the open-access subset), so the paper itself was not read. The following come from the abstract and search snippets only: the 11 loci, 9 genes, 17.3% SNP heritability, PGS explaining 4.6% of liability variance, and that individual-level data are not public for ethical reasons. Total SNP row count not verified (each cohort's post-imputation SNP count is ~4.8-6.6M; full file over the 50 MB cap, not downloaded)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Summary statistics download openly from figshare under CC BY 4.0 (checked). Individual-level genotypes and diagnoses, which any per-person prediction task would need, are not public (from abstract/search snippet); that route would fail A1."},
+    "a2_label_is_a_column": {"pass": true, "note": "Per-SNP association statistics (OR, SE, P) are columns in the daner file (checked). But no per-person BPD (borderline personality disorder) label exists in the public data."},
+    "a3_inputs_present": {"pass": true, "note": "rsIDs and GRCh37 positions with alleles are present (checked); features such as functional annotations or sequence would come from external resources keyed on position."},
+    "a4_units_stated": {"pass": true, "note": "Odds ratio relative to A1, standard error of log-OR, and P are standard daner-format columns; build GRCh37 stated in the metadata sheet (checked)."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Millions of SNP rows (exact count unverified), but SNPs are tied together by LD (linkage disequilibrium, neighbouring variants inherited together), so the real number of independent signals is the 11 genome-wide significant loci. Same 'A5 in disguise' as scCT-DB: far too few independent positives for a supervised model."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~220 MB gzipped per summary-statistics file, roughly 1 GB uncompressed", "note": "Fits a laptop; not the binding constraint."},
+    "a7_counts_match_paper": {"pass": true, "note": "Case counts across the 15 cohorts in the xlsx sum to 12,339, matching the abstract (checked)."},
+    "a8_label_provenance": {"pass": true, "note": "Association statistics come from logistic regression of measured diagnoses on measured genotypes, not from another predictor, so not circular. They are, however, noisy estimates (effective N ~21,600) rather than per-item measurements."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PRS-CS polygenic score weights released with this paper (a Bayesian method that shrinks per-SNP effects to build a genetic risk score)", "open_weights": true, "score_and_split": "Abstract: PGS explains 4.6% of liability-scale variance in BPD, evaluated in held-out target cohorts (details not read; full text unavailable).", "authors_named_unsolved": "Not read; full text unavailable.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Enformer-style variant effect scores could annotate SNPs, but there is no supervised target with enough independent positives", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "Summary statistics CC BY 4.0; AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "Other PGC summary statistics (PTSD, depression, ADHD) and GTEx eQTLs, joinable on rsID/GRCh37 position", "join_key": "rsID / chromosome:position:alleles (GRCh37)", "bigger_question_one_sentence": "Which BPD risk loci are shared with PTSD and depression versus specific to BPD — a question for statistical genetics (colocalisation, genomic SEM), not supervised ML."},
+  "controls": {"positive_control": "Recovering the 11 reported loci and the positive genetic correlation with PTSD/depression.", "negative_control": "Shuffling SNP labels within LD blocks.", "external_validation": "Replication sample of 685 cases / 107,750 controls (not in the public files as far as checked)."},
+  "honest_claim_h3": "A model on these summary statistics could only claim to rank SNPs by BPD association among European-ancestry samples, with about 11 independent signals to learn from — a job already done by fine-mapping and heritability-partitioning methods.",
+  "plain_idea": {
+    "one_liner": "Use DNA-variant functional annotations to predict which genetic variants are associated with borderline personality disorder.",
+    "train_on": "Per-variant association statistics from 12,339 cases and 1,041,717 controls (variant count unverified, likely ~6 million), plus external annotations for each variant.",
+    "predict": "Each variant's association strength (odds ratio or z-score), estimated by logistic regression of clinical diagnoses on genotypes in 15 cohorts.",
+    "why_worthwhile": "Could prioritise likely causal variants for psychiatric geneticists, but with only 11 independent signals existing statistical fine-mapping tools are the right tool, not ML."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The released PRS-CS weights use exactly this GWAS; we would have nothing beyond it."},
+    "confidence_score": {"answer": "no", "why": "Per-SNP standard errors already give uncertainty; nothing extra to calibrate against."},
+    "models_beatable": {"answer": "no", "why": "Psychiatric polygenic scores are mostly additive; a search snippet of a deep-learning PGS study reports limited gains over linear models at current sample sizes, and without individual-level data we cannot even test it."},
+    "guaranteed_improvement": {"answer": "no", "why": "Evaluating any improved score needs individual-level genotypes with BPD diagnoses, which are not public."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Variant-level association prediction from annotations, or improved polygenic scores. Neither works: the first has ~11 independent positives tangled by LD, and the second needs controlled individual-level data to evaluate.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated; project rejected at Part A.", "cheapest_killing_check": "Count genome-wide significant independent loci after LD clumping: 11 per the abstract, far below the ~400 positives needed."},
+  "verdict": "reject",
+  "verdict_reason": "The public CC BY 4.0 summary statistics download and match the paper (12,339 cases checked), but the only open table is per-SNP association results with about 11 independent signals (A5 in disguise). Per-person prediction would need individual-level data, which is not public. This is statistical-genetics material, not an ML dataset."
+}

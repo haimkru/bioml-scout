@@ -1,0 +1,289 @@
+{
+  "paper_id": "gb2026-04131-w",
+  "title": "Comparing machine learning methods predicting transcriptome from epigenome with applications to association studies.",
+  "doi": "10.1186/s13059-026-04131-w",
+  "journal": "Genome Biology",
+  "data_url": "https://doi.org/10.5281/zenodo.13992023 (concept DOI; resolves to Zenodo record 20284905, licence CC0); code https://github.com/SchulzLab/EpiExpress (MIT)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Europe PMC search on the DOI returned exactly 1 hit (PMID 42444001, PMC13361598, open access); I downloaded the 297,658-byte full-text XML and read Background, all Results sections, Discussion, Methods and Data availability. The Zenodo concept DOI 10.5281/zenodo.13992023 resolves to record 20284905, licence CC0, 18 files totalling 123.4 GB. I downloaded all 13 files under 50 MB in full and inspected every one with real commands. Counts I computed myself: IHEC_H3K27ac_RNA_uuid_mapping.tsv has 965 rows with 965 unique EpiRR sample IDs, 965 unique H3K27ac ChIP-seq experiment IDs and 965 unique RNA-seq experiment IDs; partition0_train.csv has 792 samples and partition0_test.csv 173, zero overlap, union exactly the 965 in the mapping file; the two files together span 51 cell-type/tissue ontology terms, of which the three largest are monocyte 183, neutrophil 181 and T cell 178 (so 56% of samples are blood); test_partition_distinct_celltypes.csv holds 36 samples across 8 held-out cell types and training_partition_distinct_celltypes.csv 929, zero overlap. JointValidatedInteractions_hg38_500kb.txt has 36,959 rows (CRISPR-interference-tested enhancer-gene pairs) of which 1,552 are flagged Significant=True, across four screens (gasperini 25,351; gschwind 6,485; fulco 3,577; tap 1,546), covering 8,290 unique Ensembl genes of which 8,259 are in the modelled gene set. For the two files over 50 MB I used HTTP range requests (Zenodo returned HTTP 206 PARTIAL_CONTENT) instead of full downloads: (1) the first 3,000,001 bytes of genes_expected_count_DESeq2_H3K27acFormatted.tsv (368,574,464 bytes total) -> header has 974 fields = 1 id column + 973 sample columns, all unique, 209 complete gene rows in the slice, zero missing cells in 203,357 cells, values 0 to 15,537,716; (2) a 200,000-byte tail plus the 1,513,325-byte central directory of Provided_Input.zip (268,015,014 bytes) -> 11,733 entries, 0.267 GB uncompressed, from which I range-fetched and locally inflated four members: ModelPerformances.txt.gz (28,180 data rows, columns 'Ensembl ID', 'Binned-CNN', 'CRE-RF', zero missing), kept_genes_noIndex.txt (28,180 unique Ensembl IDs, identical set to ModelPerformances), MinMax_Binned_CNN.txt.gz (27,854 rows) and one per-gene min/max file (1,333 features). (3) The first 5,000,001 bytes of CRE_inputs.tar.gz (43,271,420,465 bytes) inflated to 5,002,136 bytes of tar, from which I extracted and gunzipped the first three per-gene tables. ENSG00000000003.txt: 966 lines = 1 header + 965 sample rows; 173 columns = 'Sample' + 171 candidate-regulatory-element columns named as GRCh38 coordinates (e.g. 'X-100700886-100701054') + a final column literally named 'Expression'; zero missing cells in 165,980 cells; feature values 0 to 123.088, median 0.457, 19.5% exactly zero; expression values 0 to 415,940, median 15.4. Label provenance check: for all three extracted genes I compared the 'Expression' column against the independently deposited DESeq2 count matrix for the same 965 samples - 2,895 of 2,895 cells agree to within 1e-6 relative error, zero mismatches. Published-number reproduction from ModelPerformances.txt: CRE-RF has 11,672 of 28,180 genes (41.4%) at Pearson correlation >= 0.7 and 341 (1.2%) below 0.3; Binned-CNN has 11,369 (40.3%) >= 0.7; CRE-RF beats Binned-CNN for 16,413 genes (58.2%). The paper states 41%, 1%, 40% and 57.91%. The two methods' per-gene scores correlate at r = 0.836. Dumb-baseline check I ran myself: for each of the three extracted genes I picked the single regulatory element with the strongest training-split correlation and scored it on the authors' own 173-sample test split - test r = 0.753, 0.410 and 0.306, against the paper's full-model numbers of 0.877, 0.658 and 0.559. Seekability check: a 3,000,001-byte slice taken from byte offset 20,000,000,000 of CRE_inputs.tar.gz contains zero gzip member headers, confirming one continuous DEFLATE stream with no restart points, so only a sequential prefix can be fetched. Measured bandwidth: 50,000,000 bytes in 58.3 s = 0.86 MB/s.",
+    "what_came_from_paper_text_only": "Units and provenance of the numbers: that features are the average H3K27ac ChIP-seq fold-change over background in a region, that expression is RSEM expected counts size-factor-normalised with DESeq2, that log2(x+1) is applied before modelling, that the candidate-element set is the 988,415 merged ENCODE SCREEN v3 candidate promoters and enhancers inside a 1 megabase window around the most 5-prime GENCODE v38 transcription start site, and that the gene filter was variance >= 2 plus 90% non-zero values. None of this appears in any file header or in the Zenodo file descriptions. Also paper-only: the median mean-squared errors (CRE-RF 3.8, Binned-CNN 3.85, CRE-MLP 4.19), the CRISPR-interference area under the precision-recall curve values (CRE-RF 0.38, STITCHIT 0.35, CRE-MLP 0.33 on 1,099 tested interactions with 198 positives), the GTEx eQTL enrichment results, the held-out-cell-type results, and the whole leukaemia and colon-adenocarcinoma analysis. I did not open the 43 GB feature tarball beyond its first 5 MB, the 75 GB random-forest model archive, the 3.7 GB neural-network model archive, or the 20-page supplementary PDF. I did not check whether the IHEC EpiATLAS portal itself needs an access application, because the authors' CC0 Zenodo deposit makes that route unnecessary. I verified that the first six tar entries are in ascending Ensembl-ID order but did not verify that the whole 28,180-entry tarball is globally sorted."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo record 20284905, licence CC0, no login and no application. I downloaded 13 files outright and pulled byte ranges from the two biggest (HTTP 206 confirmed). Nothing was behind a gate."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "In each per-gene table the last column is literally named 'Expression', sitting beside the 171 feature columns in the same 965-row file. Nothing has to be joined or constructed. Checked in the extracted ENSG00000000003.txt, ENSG00000000005.txt and ENSG00000000419.txt."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Features are actual numbers (H3K27ac signal per regulatory element per sample), not accessions; column names carry the GRCh38 coordinates, so no identifier lookup is needed. Verified 165,980 numeric cells in one gene table with zero missing."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "One assay and one pipeline throughout, so units are consistent: features are fold-change over background (dimensionless), labels are DESeq2 size-factor-normalised RSEM counts. But units appear only in the paper's Methods, never in a file header or the Zenodo description."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 27193700,
+      "note": "Pooled over genes there are 965 samples x 28,180 genes = 27,193,700 (gene, sample) examples; a laptop-sized ~950-gene slice still gives ~916,750. Caveat I verified: a single gene has only 965 rows (792 train / 173 test), so the per-gene framing on its own would fail this killer - which is exactly why the pooled framing is the project."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~1.5 GB prefix of the 43 GB feature tarball (~950 genes) plus ~0.9 GB GRCh38 FASTA plus derived arrays, about 3.5 GB total",
+      "note": "The full 43,271,420,465-byte tarball does not fit the rules, and I confirmed it cannot be randomly accessed (zero gzip restart points in a mid-file slice). But a sequential prefix works: I inflated the first 5 MB and extracted three complete per-gene tables, and at the 0.86 MB/s I measured a 1.5 GB prefix takes ~30 minutes and yields ~950 genes in Ensembl-ID order. No GPU needed."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "965 samples (uuid map rows, 792+173 partition union, and rows per gene table all agree) and 28,180 genes (ModelPerformances rows = kept_genes entries = paper's figure). I also reproduced 41.4% vs the paper's 41%, 40.3% vs 40%, 1.2% vs 1%. Two documented wrinkles: the count matrix carries 973 sample columns, 8 more than the 965 used (I listed them, all 965 used samples are present); and the stated '90% non-zero' gene filter is violated by 69 of 206 kept genes (33.5%) in my slice, while the variance >= 2 filter holds for all of them."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label is a physical measurement: RNA-seq reads quantified by RSEM. I verified the in-file 'Expression' column equals the separately deposited DESeq2-normalised count matrix for 2,895 of 2,895 gene-sample cells. Features come from a different assay (H3K27ac ChIP-seq), so no computation of label from features. Honest caveat: promoter and gene-body acetylation is partly a consequence of transcription, so part of the signal is downstream rather than causal - biology, not leakage."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "28,180 per-gene tables inside one tarball, but each is self-contained (features + label) and keys join cleanly; verified on 3 files."
+    },
+    "B2": {
+      "score": 2,
+      "why": "Plain tab-separated text, parsed first try, uniform 173-column width, zero missing cells in 165,980 checked."
+    },
+    "B3": {
+      "score": 2,
+      "why": "One assay, one IHEC harmonised reprocessing; expression already DESeq2 size-factor-normalised by the authors (paper Methods)."
+    },
+    "B4": {
+      "score": 2,
+      "why": "No censored or qualitative entries anywhere I looked; zeros are genuine zero signal, not 'not determined'."
+    },
+    "B5": {
+      "score": 2,
+      "why": "965 unique sample IDs, 171 unique element column names of 171, 28,180 unique gene IDs; no duplicates found in files."
+    },
+    "B6": {
+      "score": 1,
+      "why": "Zenodo gives one line per file, but per-gene column meanings and units are undocumented; I had to infer that 'Expression' is the label."
+    },
+    "C1": {
+      "score": 2,
+      "why": "A pooled-vs-per-gene transfer question: informative either way, and the per-gene baseline for all 28,180 genes is already in a file I opened."
+    },
+    "C2": {
+      "score": 1,
+      "why": "Open histone-to-expression models exist (DeepChrome, AttentiveChrome, CatLearning, CIPHER) but on far smaller data and never compared gene-by-gene against gene-specific models."
+    },
+    "C3": {
+      "score": 2,
+      "why": "The authors name pooled cross-gene modelling as 'an open research direction' in their Discussion, and ship the per-gene baseline to beat."
+    },
+    "C4": {
+      "score": 2,
+      "why": "The alternative is sequencing RNA in every cohort, or training 28,180 models per method; paper says models could cut that sequencing cost."
+    },
+    "C5": {
+      "score": 2,
+      "why": "ModelPerformances.txt gives published per-gene correlations for 28,180 genes; I reproduced the paper's 41%/40%/1% headline from it."
+    },
+    "D1": {
+      "score": 2,
+      "why": "Every feature column carries GRCh38 coordinates, so DNABERT-2 (an open-weight DNA language model) can embed each element's sequence."
+    },
+    "D2": {
+      "score": 2,
+      "why": "~120k element sequences of ~250 bases embedded once on CPU and cached, then a boosted-tree or small neural head; no fine-tuning."
+    },
+    "D3": {
+      "score": 2,
+      "why": "Dataset is CC0 (read from the Zenodo record), code MIT (read from the GitHub API); DNABERT-2 weights are permissively licensed, not re-verified here."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Grouped splits by gene (and by chromosome) plus the authors' own held-out-cell-type partition files, which I opened and counted."
+    },
+    "E2": {
+      "ok": true,
+      "why": "51 cell types, 8 of them already held out in the provided test partition, 4 independent CRISPR-interference screens, thousands of genes."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Per-gene mean expression, and the best-single-element baseline I actually computed (test r 0.753/0.410/0.306 on three genes)."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Many biological replicates per cell type (183 monocyte, 181 neutrophil, 178 T cell samples, counted) bound reproducible variance; no technical replicates though."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Three available: reproduce CRE-RF's 41.4% of genes at r >= 0.7 (done), predict a feature-derivable target, and recover promoter dominance."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Shuffle expression within gene, shuffle sample identity, replace element embeddings with random vectors, shuffle within chromosome group."
+    },
+    "E7": {
+      "ok": true,
+      "why": "36,959-row CRISPR-interference table with 1,552 positives across 4 named screens allows a held-out-screen split; plus GTEx eQTLs and two patient cohorts."
+    },
+    "E8": {
+      "ok": true,
+      "why": "Already done: I recomputed 41.4%, 40.3%, 1.2% and 58.2% from ModelPerformances.txt against the paper's 41%, 40%, 1%, 57.91%."
+    },
+    "G1": {
+      "score": 2,
+      "why": "Unversioned Ensembl gene IDs, GRCh38 coordinates in every feature column name, IHEC EpiRR sample IDs, UBERON/CL ontology terms in metadata."
+    },
+    "G2": {
+      "score": 2,
+      "why": "ENCODE SCREEN v3 candidate-element registry joins on coordinates; GTEx and Open Targets on Ensembl gene; the CRISPRi screens ship in the record."
+    },
+    "G3": {
+      "score": 1,
+      "why": "Gene-ID joins are clean and unversioned, but coordinate overlap against tested elements is inherently one-to-many and needs a stated collapse rule."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Whether a pooled model's element attributions match CRISPR-measured effects better than 28,180 separate models cannot be asked from either source alone."
+    },
+    "H1": {
+      "score": 2,
+      "why": "Negatives systematic: 19.5% of feature cells are zero signal, 33% of one gene's samples have zero expression, 35,407 non-significant CRISPRi pairs."
+    },
+    "H2": {
+      "score": 1,
+      "why": "51 cell types across several consortia, but 56% of the 965 samples are blood (monocyte, neutrophil, T cell), all human, one histone mark only."
+    },
+    "H3": {
+      "score": 2,
+      "why": "Claim writable in one sentence, naming the gene filter, the 173 held-out samples and the blood-heavy cell-type range; see honest_claim_h3."
+    },
+    "H4": {
+      "score": 2,
+      "why": "Discussion explicitly states models are 'confined to within-dataset explanations' and will degrade on cell types outside EpiATLAS."
+    },
+    "I1": {
+      "score": 2,
+      "why": "The Schulz lab's own EpiExpress users, the IHEC consortium, and groups running case-control H3K27ac cohorts such as the CLL cohort analysed here."
+    },
+    "I2": {
+      "score": 2,
+      "why": "A working pooled model replaces 28,180 per-gene models and covers the genes that currently get none; a failure closes a direction they named."
+    },
+    "I3": {
+      "score": 2,
+      "why": "The decision is 'can I trust this gene's model', and the metric is per-gene test correlation - exactly the published quantity in ModelPerformances.txt."
+    },
+    "I4": {
+      "score": 2,
+      "why": "I ran the dumb baseline: the best single element reached 0.75/0.41/0.31 against the paper's 0.88/0.66/0.56, so combining elements genuinely adds signal."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Grouped splits, held-out cell types, frozen DNA-language-model embeddings, ablations, and a published per-gene number to compare against."
+    },
+    "J2": {
+      "score": 2,
+      "why": "Promoter dominance, housekeeping genes being harder and tissue-specific genes easier are checkable expectations the paper itself reports."
+    },
+    "J3": {
+      "score": 2,
+      "why": "The tidy gene-subset feature table and the reproduction of the published per-gene distribution (already done) are shareable even if modelling flops."
+    },
+    "J4": {
+      "score": 1,
+      "why": "Four weeks is the right scope for a ~950-gene pooled benchmark, but no budget is written down anywhere yet."
+    },
+    "J5": {
+      "score": 0,
+      "why": "No kill date or condition in NOTES.md yet; must be written on day one alongside the single-element baseline check."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "CRE-RF and Binned-CNN (this paper's own gene-specific models, EpiExpress)",
+        "open_weights": true,
+        "score_and_split": "Per-gene Pearson correlation on a fixed random 792/173 sample split: I recomputed from the deposited file that CRE-RF reaches >= 0.7 for 11,672 of 28,180 genes (41.4%, median 0.669) and Binned-CNN for 11,369 (40.3%, median 0.657); paper reports median mean-squared error 3.8 and 3.85.",
+        "authors_named_unsolved": "Verbatim from their Discussion: 'A potential way to further improve prediction performance is to borrow information across genes by training a unified model over all ~28,000 genes and the whole genome... Exploring such genome-level modeling is an open research direction.' They also name inability to extrapolate to distinct cell types, and that 792 training samples per gene is too few for attention layers.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "STITCHIT (segmentation plus sparse linear regression, used as a comparator here)",
+        "open_weights": true,
+        "score_and_split": "Same split; the paper reports it produced no model at all for 11,547 of 28,180 genes because of its internal expression-discretisation filter, and a CRISPR-interference area under the precision-recall curve of 0.35.",
+        "authors_named_unsolved": "Cannot provide models for all genes; sensitive only to genes with clear acetylation-expression coupling.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "DeepChrome and AttentiveChrome (convolutional and attention models, histone marks to expression)",
+        "open_weights": true,
+        "score_and_split": "Published as binary high-versus-low expression from 10-kilobase windows around the transcription start site, evaluated on Roadmap cell types; I read the summaries and GitHub listings, not the numbers themselves.",
+        "authors_named_unsolved": "Narrow promoter window, binary target, and one profile per cell type rather than many samples per cell type.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "CatLearning (modified convolutional network, histone mark to expression up to 500 kilobases)",
+        "open_weights": true,
+        "score_and_split": "Reported to outperform AttentiveChrome, DeepChrome, GCMERGE and Chromoformer on the same dataset; code on GitHub and pretrained weights on Google Drive. I did not retrieve its numbers.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "CIPHER (gradient-boosted trees, epigenome to expression across glioblastoma patients)",
+        "open_weights": null,
+        "score_and_split": "Reported Pearson correlation 0.796-0.826 on 11 independent glioblastoma stem-cell samples without retraining; explicitly reports that cross-patient generalisation beats within-patient unseen-gene generalisation. One tumour type, few patients. No code repository found in my searches.",
+        "authors_named_unsolved": "Generalisation to unseen genes, which they report as the weaker of their two settings.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2, a DNA language model with open weights (HyenaDNA as a cheaper alternative)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM: embed roughly 120,000 regulatory-element sequences of ~250 bases once (about 7 hours), cache them, then fit gradient-boosted trees or a small neural head on cached vectors.",
+    "licence": "Dataset CC0 (read from the Zenodo record), analysis code MIT (read from the GitHub API), DNABERT-2 and HyenaDNA weights permissively licensed per their repositories (not re-verified here)."
+  },
+  "integration": {
+    "partner_dataset": "ENCODE SCREEN v3 registry of candidate cis-regulatory elements, plus the four CRISPR-interference screens already deposited in this record (36,959 tested enhancer-gene pairs, 1,552 significant)",
+    "join_key": "GRCh38 genomic coordinates, which are literally the feature column names (e.g. 'X-100700886-100701054'), together with unversioned Ensembl gene identifiers",
+    "bigger_question_one_sentence": "Do the regulatory elements a pooled epigenome-to-expression model relies on match the elements that CRISPR interference actually shows control that gene, and does pooling across genes agree with those experiments better than 28,180 separate per-gene models do?"
+  },
+  "controls": {
+    "positive_control": "Three, chosen in advance: (1) reproduce CRE-RF's published 41.4% of genes at correlation >= 0.7 on the authors' own split - I have already done this from the deposited file; (2) swap the real label for a quantity derivable from the features, such as mean acetylation signal in the window, which must come out near-perfect; (3) the model must rediscover that tissue-specific genes (many zero-expression samples) are easier than broadly expressed genes, which the paper reports as its strongest effect.",
+    "negative_control": "Shuffle expression across samples within each gene - performance must collapse to the per-gene mean; shuffle sample identity between the acetylation and expression tables; replace element embeddings with random vectors of the same shape; shuffle genes within chromosome group to confirm the grouped split is actually grouping.",
+    "external_validation": "Held-out-screen split over the four independent CRISPR-interference screens (gasperini 25,351, gschwind 6,485, fulco 3,577, tap 1,546 tested pairs, all counted by me); plus GTEx eQTL-gene pairs via the provided tissue matching; plus the 22-sample chronic lymphocytic leukaemia and 12-sample colon adenocarcinoma cohorts; plus the authors' 36-sample, 8-cell-type held-out-cell-type partition."
+  },
+  "honest_claim_h3": "Among the 28,180 human genes that vary enough across the IHEC EpiATLAS collection to be modelled at all, a single model pooled across genes predicts log-expression from H3K27ac acetylation signal in nearby candidate regulatory elements about as well as (or worse than) one model trained per gene, measured on 173 held-out samples drawn from the same 51 mostly-blood cell types - not on new cell types, not on other histone marks, and not on other assay platforms.",
+  "pitch": {
+    "headline": "965 matched epigenome-expression samples, label already the last column, plus the authors' own per-gene scores for all 28,180 genes.",
+    "what_makes_the_data_unusual": "One table per gene with 171 regulatory-element signal columns and an 'Expression' column side by side, 965 rows, zero missing cells in the 165,980 I checked, under CC0 with no application; the deposit also ships the authors' fixed 792/173 sample split and a per-gene score for every one of the 28,180 genes, so the number to beat exists before you write any code. What the features and labels physically are (acetylation fold-change over background; RSEM counts normalised with DESeq2) rests on the paper's Methods, not on any file header.",
+    "the_win": "A single pooled model that beats CRE-RF's 41.4% of genes at Pearson correlation >= 0.7 on the authors' own 792/173 split - a figure I recomputed myself from their deposited per-gene file - while also reporting a held-out-gene correlation from a chromosome-grouped split, a number 28,180 separate per-gene models cannot produce at all.",
+    "even_if_it_fails": "You get a clean negative on the exact question the authors call 'an open research direction' in their Discussion, measured against their own 28,180-gene baseline on their own split, which is the comparison anyone else attempting pooling would have to run first. The held-out-gene and held-out-cell-type numbers are new findings either way, and the 56% blood composition I counted bounds what any of it can claim.",
+    "who_wants_it": "The EpiExpress authors themselves, who named pooled cross-gene modelling as open in their Discussion and would learn whether to keep shipping one model per gene; and the groups behind the four CRISPR-interference screens in this same record (36,959 tested enhancer-gene pairs, 1,552 significant) who want to know whether a model's element attributions agree with their experiments."
+  },
+  "plain_idea": {
+    "one_liner": "Use histone-acetylation signal at regulatory elements near a gene to predict that gene's expression level in a sample.",
+    "train_on": "Each example is one (gene, sample) pair: the H3K27ac acetylation signal measured by chromatin immunoprecipitation sequencing in each candidate regulatory element inside a 1-million-base window around the gene's start, together with how far each element sits from that start. 965 samples x 28,180 genes = 27,193,700 pairs exist (both counts verified in the files); a laptop-sized slice of about 950 genes gives roughly 916,750.",
+    "predict": "The gene's expression level in that sample, as log2 of its normalised RNA sequencing read count. The true answer comes from the matched RNA sequencing experiment for the same biological sample, quantified with RSEM and size-factor-normalised with DESeq2 - I verified the label column in the feature file matches the separately deposited count matrix exactly for 2,895 gene-sample cells.",
+    "why_worthwhile": "The authors who built this resource write in their own Discussion that pooling information across all ~28,000 genes into one model is 'an open research direction', and they ship the per-gene scores to beat for every gene. If pooling works, one model replaces 28,180 of them and covers the genes that currently get none; if it does not, that is a clean negative result on a question a competent group named."
+  },
+  "ml_idea": "Train a single pooled model over (gene, sample) pairs instead of one model per gene. Represent each candidate regulatory element by its signed distance to the transcription start site, its acetylation signal, and a cached frozen DNABERT-2 embedding of its GRCh38 sequence (coordinates are in the column names); aggregate the elements of a gene with a permutation-invariant pooling layer or distance-binned summaries, then fit gradient-boosted trees and a small neural head. Evaluate three ways: per gene on the authors' own 792/173 sample split, so every number is directly comparable to the published per-gene correlations in ModelPerformances.txt; on held-out genes grouped by chromosome, which no per-gene model can do at all; and on the authors' 36-sample, 8-cell-type held-out-cell-type partition. Report where pooling wins and where it loses as a function of gene characteristics, then check whether the pooled model's element attributions recover the 1,552 significant CRISPR-interference enhancer-gene pairs better than per-gene models do, using a held-out-screen split.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 3.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 6,
+    "embedding_hours": 7,
+    "cv_run_minutes": 30,
+    "compute_note": "Timed on this machine: 50,000,000 bytes from Zenodo in 58.3 s (0.86 MB/s), so a 1.5 GB prefix of the feature tarball is about 30 minutes; inflating 5 MB of the tarball and parsing three per-gene tables took under a second each; parsing the 28,180-row performance file and the 36,959-row CRISPR table was instant. Estimated, not timed: the 7 CPU-hours for DNABERT-2 over roughly 120,000 element sequences at about 5 sequences per second; the 30-minute cross-validation figure for boosted trees on ~900,000 examples; and the 6 GB peak RAM, which assumes you build distance-binned summaries per gene while streaming rather than holding a dense gene-by-element matrix. working_set_gb is the 1.5 GB tarball prefix plus a ~0.9 GB GRCh38 FASTA plus derived arrays.",
+    "cheapest_killing_check": "Download only the first ~100 MB of CRE_inputs.tar.gz (about two minutes at the speed I measured), which yields roughly 65 complete per-gene tables. For each, pick the single regulatory element with the strongest correlation on the authors' 792-sample training split and score that one feature on their 173-sample test split, then compare to the published per-gene number in ModelPerformances.txt. I ran exactly this on the three genes I extracted: one element reached 0.753, 0.410 and 0.306 against the paper's 0.877, 0.658 and 0.559, so the gap is real. If across 65 genes the median gap turns out to be under about 0.03, then one feature already does the job, both the paper's models and any pooled model are near-saturated, and this is a one-page note rather than a project. Do this before downloading anything else."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes and I checked each one in the files rather than the paper: the label is literally the last column of the same table as the features, it equals the independently deposited RNA-seq counts to 1e-6 for all 2,895 cells I compared, and all the counts (965 samples, 51 cell types, 792/173 split, 28,180 genes) match the paper. I also reproduced the paper's headline 41%/40%/1% from the deposited per-gene performance file, which means the external-validation and published-number controls are already satisfied on day zero. The question is the best kind: the authors name pooled cross-gene modelling as an open direction in their own Discussion and hand over a per-gene baseline for all 28,180 genes, so the result is informative whichever way it goes. Two honest frictions, both verified rather than assumed: the feature tarball is 43 GB in a single non-seekable gzip stream, so you can only fetch a sequential prefix (~650 genes per gigabyte at the 0.86 MB/s I measured), and the sample set is 56% blood, which bounds what the model can claim. The stated '90% non-zero' gene filter also does not hold for a third of the kept genes in my slice - worth knowing, not fatal. Run the single-element baseline on ~65 genes first; it costs two minutes and is the only thing that could sink this."
+}

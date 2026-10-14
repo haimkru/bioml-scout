@@ -1,0 +1,157 @@
+{
+  "paper_id": "cell2026-07-051",
+  "title": "RNA structures regulate norovirus life cycle and enable rational attenuation in vivo.",
+  "doi": "10.1016/j.cell.2026.07.051",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE310315 (plus https://github.com/pylelab/MNV-RNA-Structure-SHAPE-MaP-fbDMS-MaP)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 4 of 8 GEO files (all four ShapeMapper 2.2 reactivity profiles) plus one .map file: each is 7,382 rows (one row per nucleotide of the 7,382-nt murine norovirus CW3 genome), 47-50 columns, gzipped tab-separated, read by pandas on the first try. Non-missing normalized reactivity: 7,313 / 7,303 (SHAPE 2A3 replicates 1/2) and 7,271 / 7,307 (fbDMS replicates). Measured replicate agreement myself: Pearson r = 0.970 between SHAPE replicates, 0.788 between fbDMS replicates, ~0.38 across reagents. Median sequencing depth 34,000-48,000 reads per nucleotide; only 57 nucleotides below 5,000. Also downloaded from the authors' GitHub: both secondary-structure CT files (7,382 rows each, 57.0% and 56.8% of nucleotides paired, 96.0% agreement on paired-versus-unpaired state between replicates) and two alignments (49 pan-norovirus and 18 murine norovirus ORF1 sequences, 5,061 aligned columns). Ran two positive controls on the files: DMS reactivity is highest at A and C and lowest at G (medians 0.581 / 0.328 / 0.119), and nucleotides unpaired in the structure model are ~3x more reactive than paired ones (SHAPE medians 0.455 versus 0.159). Total download 1.9 MB.",
+    "what_came_from_paper_text_only": "That ShapeMapper 2.2 and SuperFold were used with a 500-nt maximum base-pair distance; that probing was in BV2 murine microglial cells at multiplicity of infection 0.05 for 24 h; the mutant-virus and mouse-infection phenotypes (plaque titres, genome copies, weight loss), which appear only in figures and were not downloaded; the Ribonanza dataset size (~2 million sequences), which I read in search results and did not download. Europe PMC's supplementary-file endpoint returned a non-zip response, so the four supplementary tables (primers, alignment accessions, locked nucleic acid designs, mutant plasmid sequences) were read only as captions in the PubMed Central XML."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO series GSE310315 is public; I fetched five files over plain HTTPS with no login, and the GitHub repository named in the data-availability statement is public and complete."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is the existing column 'Norm_profile' (normalized per-nucleotide chemical reactivity), with 'Norm_stderr' beside it. No construction needed. Caveat: the paper's other interesting outcome, the fitness effect of disrupting a structure, is NOT a column - it exists only as plaque titres in figures for 13 mutant viruses."},
+    "a3_inputs_present": {"pass": true, "note": "Each row carries its own base in the 'Sequence' column, and the full reference genome FASTA (murine norovirus CW3, GenBank EF014462.1) is in the GitHub repository. No identifier lookups required."},
+    "a4_units_stated": {"pass": true, "note": "Reactivity is a unitless normalized ratio produced by ShapeMapper 2.2's standard box-plot normalization; the methods name the tool and version, and every raw ingredient (mutation counts, read depth, mutation rate) is present so the value can be recomputed. Marginal pass: the unit convention comes from the tool's documentation, not from a units column in the file."},
+    "a5_enough_rows": {"pass": true, "n_rows": 7313, "note": "7,313 nucleotides carry a normalized SHAPE reactivity value (I counted). LOUD CAVEAT: these rows all come from one RNA molecule in one cell line, so the number of independent biological units is one, not 7,313. Rows pass the literal threshold; the effective sample size does not support training a model, only testing one."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.01 GB", "note": "All four reactivity profiles plus both structure files and the alignments total 1.9 MB downloaded; the whole analysis is a few megabytes in memory."},
+    "a7_counts_match_paper": {"pass": true, "note": "All four profiles have exactly 7,382 rows, matching the murine norovirus CW3 reference genome length and the '7382 ConsensusModel' header of both CT structure files. No disagreement anywhere."},
+    "a8_label_provenance": {"pass": true, "note": "Reactivity is a direct chemical measurement: a reagent (2A3 or dimethyl sulfate) modifies flexible or unpaired bases, the modification is read out as a mutation during reverse transcription, and the rate is compared with an untreated control - all three count columns are in the file. CIRCULARITY WARNING for a different task: the CT secondary-structure files are SuperFold output computed FROM these same reactivities, so predicting the structure while using reactivity as a feature would be leakage by construction."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "Four flat tables, each keyed on an integer nucleotide position 1-7382; the join is exact and trivial (checked)."},
+    "B2": {"score": 1, "why": "Gzipped tab-separated, parsed first try, but has duplicated and blank trailing header names from ShapeMapper's appended histogram block."},
+    "B3": {"score": 2, "why": "Authors already normalized ('Norm_profile'); one lab, one cell line, one pipeline version, so profiles are directly comparable."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; 69 of 7,382 nucleotides are blank at low depth and drop trivially (counted)."},
+    "B5": {"score": 2, "why": "Nucleotide position is unique 1-7382 in every file; no duplicate rows (checked)."},
+    "B6": {"score": 2, "why": "ShapeMapper 2.2 column names are documented by the tool; methods state version and parameters; readme files in the repository."},
+    "C1": {"score": 1, "why": "Transfer question ('does a sequence-only reactivity model work in cells?') is informative either way, but one genome makes the answer anecdotal."},
+    "C2": {"score": 1, "why": "RibonanzaNet has open weights and was trained on the same two reagents at far larger scale, but never tested on long in-cell viral RNA."},
+    "C3": {"score": 1, "why": "Angle is diversity/unique application (in-cell, full-length, viral), but this paper contributes a single genome to it."},
+    "C4": {"score": 2, "why": "In-cell probing of a whole viral genome is months of wet-lab work: infection, two reagents, two replicates, amplicon libraries, deep sequencing."},
+    "C5": {"score": 2, "why": "RibonanzaNet is runnable as a published baseline; I already computed the dummy (per-base median reactivity) from the files."},
+    "D1": {"score": 2, "why": "RibonanzaNet and RNA-FM are open-weight RNA models on GitHub/HuggingFace and take exactly this input, raw RNA sequence."},
+    "D2": {"score": 1, "why": "Windowed CPU inference over 7,382 nucleotides is cheap, but there is no second genome to train a head on."},
+    "D3": {"score": 1, "why": "Both backbones are publicly distributed, but I did not open either licence file in this evaluation."},
+    "E1": {"ok": false, "why": "No leakage-free split: neighbouring nucleotides share structure, and all data come from one molecule."},
+    "E2": {"ok": false, "why": "At most six holdable groups (three open reading frames, VF1, two untranslated regions), all from the same genome."},
+    "E3": {"ok": true, "why": "Per-base median dummy computed from the files: SHAPE medians A 0.009, C 0.242, G 0.228, U 0.925."},
+    "E4": {"ok": true, "why": "Measured noise floor: replicate Pearson r = 0.970 (SHAPE) and 0.788 (fbDMS), plus a per-nucleotide standard-error column."},
+    "E5": {"ok": true, "why": "Two controls verified in the files: dimethyl sulfate reactive at A/C not G, and unpaired bases ~3x more reactive."},
+    "E6": {"ok": true, "why": "Label shuffling and base-identity ablation are one line each on a 7,382-row table."},
+    "E7": {"ok": true, "why": "Second reagent (fbDMS) is orthogonal in-house; published in-cell probing of other viral genomes exists, though I did not download it."},
+    "E8": {"ok": false, "why": "The paper reports no prediction-accuracy number; RibonanzaNet's published scores are on its own short-construct test set."},
+    "G1": {"score": 1, "why": "Identifiers are a GenBank accession (EF014462.1) plus nucleotide coordinate; standard, but cross-virus joins need sequence alignment."},
+    "G2": {"score": 2, "why": "Named partners: the Ribonanza chemical-mapping dataset and the RNA Mapping Database, joinable on RNA sequence."},
+    "G3": {"score": 1, "why": "Within-genome key is clean one-to-one; aligning this genome to other viruses' probing data is manageable but not automatic."},
+    "G4": {"score": 2, "why": "Combined question: do reactivity models trained on short in-vitro RNA hold up on long RNA probed inside cells?"},
+    "H1": {"score": 2, "why": "Reactivity is continuous and reported genome-wide, so both reactive and unreactive nucleotides are systematically present (verified distribution)."},
+    "H2": {"score": 0, "why": "One virus strain, one cell line (BV2 microglia), one time point, one lab - stated in the paper and the GEO record."},
+    "H3": {"score": 2, "why": "The honest claim can be written precisely in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 2, "why": "The paper has an explicit 'Limitations of the study' section naming the generalizability gap to human norovirus."},
+    "I1": {"score": 2, "why": "Named users: the Pyle lab (Yale), the Das lab / Eterna-RibonanzaNet community, and virology groups designing structure-targeting antisense oligos."},
+    "I2": {"score": 1, "why": "A clear transfer failure would tell probing labs not to trust in-silico reactivity in cells, but one genome is thin evidence."},
+    "I3": {"score": 1, "why": "Per-nucleotide correlation is roughly right, but the real decision is which 40-nt element to target, an element-level call."},
+    "I4": {"score": 1, "why": "Base identity alone explains a lot (verified per-base medians) and thermodynamic folding is a strong simple baseline."},
+    "J1": {"score": 1, "why": "Mostly zero-shot inference and evaluation plumbing; no training set means little real model fitting."},
+    "J2": {"score": 2, "why": "Sanity checks are textbook and I already ran two of them successfully on the files."},
+    "J3": {"score": 2, "why": "Shareable at every stage: the strong per-base reactivity skew I found (SHAPE median A 0.009 versus U 0.925) is a note on its own."},
+    "J4": {"score": 1, "why": "Roughly one to two weeks, but not a number committed anywhere."},
+    "J5": {"score": 0, "why": "No kill date or condition written down."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RibonanzaNet (deep network predicting per-nucleotide chemical reactivity from RNA sequence, Das lab / Stanford)",
+        "open_weights": true,
+        "score_and_split": "Trained on chemical-mapping measurements for roughly two million RNA sequences using the same two reagents as this paper (2A3 for SHAPE, dimethyl sulfate for DMS); evaluated on held-out short synthetic constructs from the Kaggle Ribonanza competition, not on long RNA probed inside cells. I read this from search results and the model card, and did not rerun it.",
+        "authors_named_unsolved": "Generalization beyond the short, mostly in-vitro constructs the training library contains - long natural RNAs and the in-cell context are named as open.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RNA-FM (RNA foundation model, self-supervised on ~23 million non-coding RNA sequences)",
+        "open_weights": true,
+        "score_and_split": "Reported as the strongest single-sequence RNA language model across structure and function benchmarks; a 2025 Briefings in Bioinformatics benchmark of RNA language models found their advantage largely disappears out of distribution, and all methods scored below 0.15 on the longest-sequence family. Read from search results only.",
+        "authors_named_unsolved": "Out-of-family and long-sequence generalization.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RiNALMo (general-purpose RNA language model)",
+        "open_weights": true,
+        "score_and_split": "Published in Nature Communications 2025 as generalizing well on secondary-structure prediction tasks; splits are RNA-family based, not viral in-cell data. Read from search results only.",
+        "authors_named_unsolved": "Low-homology and cross-family generalization.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SuperFold with RNAstructure (thermodynamic folding constrained by experimental reactivity) - the method the authors themselves used",
+        "open_weights": true,
+        "score_and_split": "No accuracy number is reported here; it produced the consensus structure model (57.0% of nucleotides paired, replicates agreeing on paired state at 96.0%, both counted by me from the CT files).",
+        "authors_named_unsolved": "Whether the modelled structures are functionally conserved in human norovirus; whether structure-guided attenuation transfers.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RibonanzaNet (primary; predicts 2A3 and dimethyl sulfate reactivity from sequence) with RNA-FM as an embedding alternative",
+    "freeze_and_head_viable": false,
+    "hardware": "Laptop CPU is enough for windowed inference over 7,382 nucleotides (minutes), but freeze-and-head training is not viable because there is only one genome to fit a head on.",
+    "licence": "Both are publicly distributed on GitHub/HuggingFace; I did not open either licence file, so treat terms as unverified."
+  },
+  "integration": {
+    "partner_dataset": "The Ribonanza chemical-mapping dataset (~2 million RNA sequences probed with the same 2A3 and dimethyl sulfate reagents) and the RNA Mapping Database, plus published in-cell genome-wide probing of other RNA viruses (SARS-CoV-2, HIV-1, dengue).",
+    "join_key": "RNA sequence itself, or nucleotide coordinate within a reference accession (here GenBank EF014462.1).",
+    "bigger_question_one_sentence": "Does a reactivity predictor trained on short, mostly in-vitro RNA constructs still work on long RNA probed inside living infected cells, and if not, does the error grow with distance from the training distribution (length, in-cell protein coating, genome region)?"
+  },
+  "controls": {
+    "positive_control": "Two, both already verified on the files: dimethyl sulfate reactivity must be high at A and C and low at G (measured medians 0.581, 0.328, 0.119), and nucleotides called unpaired in the authors' structure model must be clearly more reactive than paired ones (measured SHAPE medians 0.455 versus 0.159).",
+    "negative_control": "Shuffle the reactivity labels and confirm collapse to the per-base median dummy; ablate base identity to see how much of any prediction is just 'U is reactive, A is not'.",
+    "external_validation": "The orthogonal fbDMS reagent profiles in the same deposit (cross-reagent Pearson r = 0.38, measured), and published in-cell probing of other viral genomes, which I did not download."
+  },
+  "honest_claim_h3": "On a single 7,382-nucleotide murine norovirus CW3 genome probed in BV2 mouse microglial cells 24 h after infection, a sequence-only reactivity predictor trained on short in-vitro RNA constructs achieves per-nucleotide correlation X with measured in-cell 2A3 reactivity, which is Y relative to the trivial per-base-median baseline - a statement about one genome, one cell line and one time point, not about viral RNA in general.",
+  "plain_idea": {
+    "one_liner": "Use a viral RNA genome's sequence to predict how chemically reactive each of its bases is inside infected cells.",
+    "train_on": "There is no training set in this paper: the model would be trained elsewhere (the Ribonanza collection of chemical-mapping measurements on roughly two million RNA sequences) and only tested here. This deposit provides 7,313 labelled nucleotides (verified count) from one genome.",
+    "predict": "A reactivity value per nucleotide. The true answer is a direct chemical measurement: the reagent 2A3 (or dimethyl sulfate) sticks to bases that are flexible or unpaired, that modification is converted into a mutation during reverse transcription, and the mutation rate is compared with an untreated control.",
+    "why_worthwhile": "Labs that design antisense drugs against RNA viruses currently need months of wet-lab probing per genome; knowing whether a free sequence-only predictor matches in-cell measurements tells them whether that work can be skipped. Even a clear failure is useful, because it marks in-cell probing as irreplaceable."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This deposit is one genome with 7,313 labelled nucleotides; RibonanzaNet was trained on chemical-mapping data for about two million sequences using the same two reagents. Our only edge is the setting (full-length viral RNA probed inside cells), not the volume."},
+    "confidence_score": {"answer": "partly", "why": "Two biological replicates per reagent and a per-nucleotide standard-error column let us state the measurement noise floor (replicate Pearson r = 0.970 for SHAPE, 0.788 for fbDMS, both measured by me), which bounds any model's achievable accuracy - but the Ribonanza data also carries replicate error, so this is not a unique capability."},
+    "models_beatable": {"answer": "no", "why": "RibonanzaNet (2024) is a convolution-plus-transformer network trained on ~2 million sequences, and RiNALMo is 2025; with one genome we cannot train a competitor at all, only run theirs and report where it fails."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition 'our model sees everything theirs sees plus the new data' fails outright: with one genome there is no 'our model' to train, and no shared evaluation split exists."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Ribonanza (2A3 and dimethyl sulfate reactivity for roughly two million RNA sequences, Das lab, open - found by search, not downloaded); the RNA Mapping Database and RASP, which aggregate chemical-probing profiles (known resources); published genome-wide in-cell probing of SARS-CoV-2, HIV-1 and dengue (known literature).",
+    "approx_items": 2000000,
+    "join_key": "RNA sequence, or nucleotide coordinate within a reference accession (GenBank EF014462.1 here)",
+    "why": "The same measurement exists at vastly larger scale elsewhere, which means this genome's best role is as a held-out in-cell test case rather than as training data."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Nucleic Acids Research", "why": "Publishes RNA structure methods and benchmarks; would need a cross-virus in-cell benchmark of five or more probed genomes showing a specific, characterized failure mode of sequence-only reactivity models, not a single-genome figure."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes short benchmark and re-evaluation notes; a careful zero-shot test of RibonanzaNet and RNA-FM on this one in-cell viral genome against a per-base-median baseline is exactly that size of result."},
+    "fallback": {"journal": "bioRxiv preprint plus a machine-learning-in-computational-biology workshop", "why": "Even a negative result ('the predictor does no better than knowing the base identity on long in-cell RNA') plus the per-base reactivity skew observation is worth posting, and costs little."}
+  },
+  "pitch": {
+    "headline": "A whole 7,382-nucleotide virus genome's chemical structure map, measured inside infected cells by two reagents, two replicates, 1.9 MB total.",
+    "what_makes_the_data_unusual": "Verified in the files: two orthogonal reagents, replicate agreement of 0.970 (SHAPE) and 0.788 (fbDMS), median depth above 34,000 reads per base, and an author-built structure model whose replicates agree 96% on paired state.",
+    "the_win": "A number like 'RibonanzaNet reaches per-nucleotide Spearman 0.4 against in-cell 2A3 reactivity, versus 0.3 for a per-base-median baseline and a 0.97 replicate ceiling' - the first honest in-cell, full-length-genome score for that model.",
+    "even_if_it_fails": "You learn the measurement ceiling (replicate r = 0.970) and that base identity alone carries much of the signal: verified SHAPE medians are 0.009 at A and 0.925 at U, a skew that any reported correlation must be corrected for.",
+    "who_wants_it": "The Pyle lab (Yale), who built this data and design structure-targeting antisense oligos, and the Das lab / Eterna community, who would learn whether RibonanzaNet needs in-cell training data."
+  },
+  "ml_idea": "Zero-shot benchmark rather than a training project: run RibonanzaNet (open weights, trained on ~2 million short RNA sequences probed with the same 2A3 and dimethyl sulfate reagents) in sliding windows over the 7,382-nucleotide murine norovirus CW3 genome and compare its predictions with the measured in-cell reactivities, against two baselines I already computed - a per-base median dummy and the replicate noise ceiling (Pearson r = 0.970). Report how accuracy varies by genome region, local structure and sequencing depth. The project only becomes a real paper when pooled with five or more other published in-cell viral probing datasets (SARS-CoV-2, HIV-1, dengue) so that held-out-genome splits exist.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.2,
+    "cv_run_minutes": 5,
+    "compute_note": "Measured, not guessed: the whole deposit is 1.9 MB, all four profiles parse in seconds with pandas, and I already built and queried the merged nucleotide table. Inference cost is estimated at roughly 30-60 windows of a few hundred nucleotides through a small transformer on CPU; nothing was timed for the model itself.",
+    "cheapest_killing_check": "Count the independent RNA molecules carrying a label. The answer is one (7,382 nucleotides of a single murine norovirus CW3 genome, verified), so there is no group to hold out and nothing to train - do this count before anything else."
+  },
+  "verdict": "park",
+  "verdict_reason": "The files are genuinely excellent and everything in Part A passes on inspection: one clean 7,382-row table per replicate, the label already a column, a direct chemical measurement, replicate agreement of 0.970, documented columns, 1.9 MB total, and two positive controls that already pass. The project dies on sample size in disguise: 7,313 labelled rows are 7,313 positions on a single genome from one cell line, so there is no leakage-free split (E1 and E2 both fail) and nothing to train a head on, while RibonanzaNet already exists with open weights trained on the same two reagents across roughly two million sequences. Park it as an external-validation genome: if someone assembles in-cell probing data for five or more viruses so that held-out-genome splits exist, this is a high-quality member of that benchmark, and the useful single-genome result meanwhile is a short note on how far a sequence-only predictor gets beyond knowing the base identity."
+}

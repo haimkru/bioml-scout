@@ -1,0 +1,56 @@
+{
+  "paper_id": "nature2026-10877-x",
+  "title": "Human brain organoids record the passage of time over multiple years.",
+  "doi": "10.1038/s41586-026-10877-x",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE333707",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO file lists for GSE333707 (single-cell RNA-seq, 34 libraries, 592 MB tar, 10x matrix/genes/barcodes per library) and GSE333708 (whole-genome methylation, 15 bigWig files of ~230-260 MB each, hg19, 3.5 GB tar). Downloaded one library's barcodes and genes: 4,454 cells, 47,134 gene symbols (no Ensembl IDs), and cell barcodes carry a batch date ('CDM4_9mo_July2023'). GEO sample metadata has 'time in_vitro: 9mo', 'cell line: 11a', 'treatment: CDM4'. Estimated about 70,700 cells in total, scaling from barcode file sizes (not counted directly).",
+    "what_came_from_paper_text_only": "The 129 organoids / 6 cell lines (GEO series design text), 110 organoids / ~425,000 cells (press coverage, which includes earlier published data), the epigenetic clock correlation r = 0.88-0.90, and the fact that Mito210 data are withheld and one CW50037 organoid is only in dbGaP (controlled access). The supplement was not retrievable (Europe PMC timed out), and the Broad Single Cell Portal SCP3697 metadata was not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: GEO processed counts and methylation bigWigs download openly. Raw reads are in dbGaP (controlled access), and some donor lines are not shared at all."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked: time in culture (months) is a GEO sample characteristic and appears in every file name. No construction needed."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: count matrices with gene symbols are present. No lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Checked: age is given in months ('9mo', '60mo') or days ('15day')."},
+    "a5_enough_rows": {"pass": false, "n_rows": 34, "note": "Checked: there are about 70k cells, but the age label belongs to the organoid library, and only 34 libraries exist (spread over about 10 time points and 4-5 cell lines). The methylation data has only 15 samples. Like the scCT-DB case, the true number of independent labels is tiny."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.6 GB compressed single-cell matrices", "note": "Estimated from file sizes; would fit in memory as sparse matrices."},
+    "a7_counts_match_paper": {"pass": false, "note": "The GEO design text says 129 organoids, GEO has 34 libraries, and press coverage says 34 organoids at 8 time points (110 including earlier data). Some libraries pool demultiplexed organoids, so the per-organoid count can't be settled without the SCP metadata."},
+    "a8_label_provenance": {"pass": true, "note": "Checked: age is a recorded experimental fact (time in culture), not a model output. Caveat: it is confounded with sequencing batch date, which is embedded in the barcodes."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "NeuroDevTime (Venkatesan, Werner, Li & Gillis, PLOS Biology 2026): an elastic-net transcriptomic clock using 462 genes", "open_weights": true, "score_and_split": "Median error 2.65-2.86 gestational weeks with leave-study-out and leave-cell-type-out validation, trained on 2.89M fetal brain cells from 13 studies and 151 donors.", "authors_named_unsolved": "Accuracy is lowest in the third trimester. Variability persists across organoid batches, and estimates are limited by the age range of the training data.", "runnable_as_baseline": true},
+      {"name": "Horvath pan-tissue methylation clock and cortex-specific methylation clock (as applied in this paper)", "open_weights": true, "score_and_split": "The paper reports r = 0.88-0.90 between predicted methylation age and time in culture, on 15 organoid samples (from the paper text and press, not reproduced).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "Geneformer or scGPT (single-cell foundation models)", "freeze_and_head_viable": true, "hardware": "CPU embedding of ~70k cells is feasible but slow (hours)", "licence": "Geneformer Apache-2.0; scGPT MIT"},
+  "integration": {"partner_dataset": "Developing human cortex atlases (Velmeshev 2023 Science, Herring 2022 Cell, GSE162170)", "join_key": "gene symbol", "bigger_question_one_sentence": "Does a developmental clock trained on real human brain tissue still track time in organoids grown for years, past the fetal ages it was trained on?"},
+  "controls": {"positive_control": "Predicted age should rise monotonically from 15 days to 60 months (the paper's own maturation-module result).", "negative_control": "Shuffle age across libraries; also predict age from batch date alone to measure confounding.", "external_validation": "Earlier Arlotta-lab organoid series (SCP1756, SCP1129, SCP282) and in vivo cortex atlases."},
+  "honest_claim_h3": "With 34 libraries over about 10 time points from 4-5 cell lines, the most a model could claim is whether an existing clock ranks these organoid ages correctly. A new age predictor can't be trained here without age being confounded with batch and cell line.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from brain organoids to predict how many months each organoid has been grown in culture.",
+    "train_on": "Gene expression counts for about 70,000 cells (estimated) from 34 organoid libraries, sampled from 15 days to 60 months of culture.",
+    "predict": "Time in culture in months, a recorded experimental fact listed in the GEO sample metadata.",
+    "why_worthwhile": "Organoid labs would get a standard maturity readout. But the 34 libraries over about 10 time points are too few to train one, so this data only works as a test set for existing clocks."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "These data reach 60 months of culture, far past NeuroDevTime's fetal training range. But that is 34 libraries against its 2.89M cells from 151 donors."},
+    "confidence_score": {"answer": "no", "why": "With roughly 2 replicate libraries per time point and cell line, there is too little data to calibrate confidence per age."},
+    "models_beatable": {"answer": "no", "why": "NeuroDevTime (2026) is open and evaluated leave-study-out. The methylation clocks already reach r = 0.88-0.90 here."},
+    "guaranteed_improvement": {"answer": "no", "why": "Adding 34 organoid libraries to the clock's training data mixes in another system (organoids, not tissue), and there are no shared held-out samples, so improvement is not guaranteed by construction."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Train an organoid age clock on single-cell data. Rejected because the only usable form is applying the open NeuroDevTime clock to these 34 libraries as an out-of-range test set.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 0.6, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from GEO file sizes (610 MB of compressed matrices); nothing was timed.", "cheapest_killing_check": "Count distinct (time point × cell line) groups in the GEO metadata: about 10 time points and 34 libraries. That count already kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 in disguise: the age label belongs to 34 organoid libraries (about 10 time points, confounded with batch date and cell line), not to the ~70k cells. The 15 methylation samples are fewer still. The open NeuroDevTime clock already covers the task, so this data is at best a test set."
+}

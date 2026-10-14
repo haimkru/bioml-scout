@@ -1,0 +1,49 @@
+{
+  "paper_id": "cell2026-08-045",
+  "title": "CD4 T cells convert transient responses to KRAS inhibition to durable remissions in pancreatic cancer.",
+  "doi": "10.1016/j.cell.2026.08.045",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE307192",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the deposit myself (GEO series GSE307192, BioProject PRJNA1314729) since the paper is paywalled with no accession in the abstract. Listed the public FTP directory: 6 gene-expression matrices (65-134 MB gzipped each), 6 barcode lists, 6 feature lists, 6 raw T-cell-receptor contig tables, 1 hashtag reference. Downloaded and parsed all 6 T-cell-receptor CSV files, the feature list, the barcode list and the GEO series metadata table. Counted: 697,403 barcodes x 32,290 features per library (raw, unfiltered CellRanger output, including 5 antibody-hashtag features); across all 6 libraries only 841 cells carry a productive high-confidence T-cell receptor, 398 of those with paired alpha+beta chains, 519 unique beta-chain CDR3 (the variable antigen-contacting loop) protein sequences, largest clone 36 cells, 566 library-scoped clonotype IDs. Vehicle arm has 2 T-cell-receptor cells.",
+    "what_came_from_paper_text_only": "The biology (interleukin-21 mimic 21h10 plus KRAS inhibitor MRTX1133 gives durable remissions; T-helper-1 CD4 T cells, type-2 dendritic cells, interferon-gamma, macrophage phagocytosis; human ex vivo experiments) comes from the abstract and the GEO series description only. No full text, no supplementary tables and no data-availability statement were retrievable: Europe PMC reports the article as not open access with no PMC identifier. Whether the published figures used extra filtering, hashtag demultiplexing or cell-type annotation files that were never deposited is therefore unverifiable."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO series GSE307192 is public on the NCBI FTP site, no login; I downloaded the small files and listed sizes for the large ones."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. Nothing in the deposit is a label. The only annotation is one treatment name per library in the series metadata. Every biologically meaningful target (cell type, T-helper-1 polarization, regulatory-T-cell identity, which of the 5 pooled mice a cell came from) would have to be constructed from raw unfiltered counts by cell calling, hashtag demultiplexing, clustering and manual annotation. No filtered matrix, no per-cell metadata, no Seurat/AnnData object was deposited."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are present: raw count matrices in MatrixMarket format with Ensembl gene identifiers, and CDR3 nucleotide plus protein sequences in the T-cell-receptor tables."},
+    "a4_units_stated": {"pass": true, "note": "Units are unambiguous: unique-molecular-identifier counts per gene per barcode, and read/UMI counts per receptor contig; mm10 genome build and CellRanger v7.0.0 stated in GEO."},
+    "a5_enough_rows": {"pass": false, "n_rows": 841, "note": "FAIL. Counted in the files: 841 cells with a productive T-cell receptor in total (519 unique beta CDR3 sequences), spread as 2 / 246 / 489 / 15 / 25 / 64 across the six arms. The unit for any treatment-response question is the library (6) or the mouse (30, and mouse identity is not resolved in the deposit), not the cell."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.6 GB gzipped download; roughly 2-4 GB in memory as sparse matrices before cell filtering", "note": "Technically fits a 16 GB laptop if loaded one library at a time, but the preprocessing pipeline (cell calling, hashtag demultiplexing, integration of 6 batches) is days of work, not hours."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked. The paper is paywalled, so the cell counts, cluster counts and clonotype counts it reports are invisible; the 841 receptor-bearing cells I counted cannot be reconciled with any published figure."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL by construction for the obvious framings. 'T-helper-1 CD4 cell' or 'exhausted' labels would come from our own clustering of the same expression matrix used as features, i.e. the label would be derived from the features. Clone size is a genuine measurement, but see A5."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scXpand (pan-cancer detection of T cell clonal expansion from single-cell RNA sequencing)", "open_weights": null, "score_and_split": "Reported in search results as trained and tested on a human pan-cancer database of paired single-cell RNA and T-cell-receptor profiles covering ~2.6 million T cells; I read the search-result abstract only, not the paper, so I did not verify the metric or split.", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": null},
+      {"name": "TRIM (multimodal joint analysis of single-cell RNA and T-cell-receptor sequencing)", "open_weights": null, "score_and_split": "Search-result abstract states it predicts intra-tumor T-cell clonal expansion and transcriptional state from blood or normal tissue before treatment; no number or split verified by me.", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell transcriptome foundation models) would be the natural backbone, and TCR-BERT/ESM-2 for receptor sequences", "freeze_and_head_viable": null, "hardware": "not assessed; project rejected at Part A", "licence": "not assessed"},
+  "integration": {"partner_dataset": "Not pursued. A plausible partner would be a human pan-cancer paired single-cell RNA + T-cell-receptor atlas, joined on CDR3 sequence, but mouse-to-human receptor joins essentially never match.", "join_key": "CDR3 amino-acid sequence (would not join across species)", "bigger_question_one_sentence": "Could not be written for this deposit; the join is decoration."},
+  "controls": {"positive_control": "Would have been: recover Cd4/Cd8a/Foxp3 marker separation and the published loss of regulatory T cells under treatment. Not reachable without constructing the labels first.", "negative_control": "Label shuffling would be meaningless when treatment arm and 10x library are the same variable.", "external_validation": "No second deposit from this paper: the human ex vivo and patient-blood experiments appear to be flow cytometry/cytokine assays, and I found no human sequencing series linked to this work."},
+  "honest_claim_h3": "With one 10x library per treatment arm, any model distinguishing treated from untreated cells would be claiming only 'I can tell which of six single-cell libraries a cell came from', since batch and treatment are perfectly confounded.",
+  "plain_idea": {
+    "one_liner": "Use a tumor-infiltrating immune cell's gene expression to predict whether its T-cell receptor clone expanded under treatment",
+    "train_on": "What I considered: per-cell gene-expression counts (32,290 genes) from mouse pancreatic tumors treated with a KRAS inhibitor, an interleukin-21 mimic, both, or controls. Verified count of usable examples: 841 cells with a productive receptor across all six arms.",
+    "predict": "Whether the cell's receptor clone is expanded (more than one cell sharing the same CDR3 sequence). The true answer comes from 10x single-cell receptor sequencing in the same cells; largest clone I measured is 36 cells, and 427 of 519 receptor sequences are seen exactly once.",
+    "why_worthwhile": "Labs combining KRAS inhibitors with cytokine therapy would want to know which T cells drive durable remission, but this deposit is far too small to answer it and a human pan-cancer model (scXpand, ~2.6 million T cells) already addresses the general version."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 0, "sources": "", "approx_items": null, "join_key": "", "why": "Not filled for a reject."},
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rejected idea: predict T-cell-receptor clonal expansion, or T-helper-1 polarization, from single-cell transcriptomes of mouse pancreatic tumors treated with a KRAS inhibitor plus an interleukin-21 mimic. Dies because the deposit is six raw unfiltered 10x libraries, one per treatment arm, with no cell labels and only 841 receptor-bearing cells.",
+  "effort": {"hours_to_feature_table": 30, "working_set_gb": 3.0, "needs_gpu": false, "peak_ram_gb": 6.0, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated, not timed: ~0.6 GB of gzipped MatrixMarket files per-library-loadable, but reaching a labelled table needs cell calling, hashtag demultiplexing of 5 pooled mice per library, batch integration of 6 libraries and manual cluster annotation, which is several days of work rather than 30 hours of compute.",
+  "cheapest_killing_check": "Count cells with a productive T-cell receptor per treatment arm in the deposited contig tables. I did it: 2 / 246 / 489 / 15 / 25 / 64. That alone kills every per-clone or per-arm modelling framing."},
+  "verdict": "reject",
+  "verdict_reason": "No labels in the deposit and far too few cells: six raw unfiltered 10x libraries, one per treatment arm (so treatment and batch are the same variable), 841 T cells with a receptor and 519 unique receptor sequences in total. A2, A5, A7 and A8 all fail on the files, and the nearest real ML task is already covered by human models trained on millions of T cells. This is a mouse pharmacology paper whose data supports the paper's claims but not an independent machine-learning project."
+}

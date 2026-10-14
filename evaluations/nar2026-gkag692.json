@@ -1,0 +1,57 @@
+{
+  "paper_id": "nar2026-gkag692",
+  "title": "ETTAS: a modular aptamer-recruited platform for programmable translational activation.",
+  "doi": "10.1093/nar/gkag692",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.20849391 (raw western blot images); Europe PMC supplementary zip (Supplementary Materials.docx + Supplementary Table S5.xlsx)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked the Europe PMC supplement: it contains only 'Supplementary Materials.docx' (9.5 MB, plasmid maps and sequences, text only) and 'Supplementary Table S5.xlsx'. I parsed S5 with openpyxl: one sheet, 96 data rows (149 rows of grid, the rest blank), 12 used columns (Aptamer_ID, Aptamer_Rename, Sequence, Total_Reads, P2, P4, P6, 'airosol', Nucleotides, P6/P2, P6/P4, P6/MIX), 96 unique 34-37 nt DNA sequences, read totals 43 to 88,456. I also queried the Zenodo record: it is a single 113 KB PDF of original western blot gels, CC-BY-4.0.",
+    "what_came_from_paper_text_only": "That six rounds of SELEX (an iterative test-tube selection of binding DNA) were sequenced, that surface plasmon resonance and bio-layer interferometry affinity measurements were made on a few candidates, and that label-free mass-spectrometry proteomics was run. None of these raw or processed datasets is deposited anywhere I could find: no sequencing archive accession, no ProteomeXchange/PRIDE/iProX accession, and Europe PMC reports no database cross-references for this paper."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement zip and the Zenodo gel-image PDF both download without login. But the only numeric table is Table S5; the SELEX sequencing pool and the proteomics quantification behind the paper's figures were never deposited."},
+    "a2_label_is_a_column": {"pass": true, "note": "Enrichment ratios (P6/P2, P6/P4) are already columns in Table S5, computed from the read-count columns in the same file."},
+    "a3_inputs_present": {"pass": true, "note": "Full 34-37 nt DNA sequences are in column 3 of Table S5; no identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Columns are raw read counts (integers) and dimensionless ratios, which is unambiguous, but the 'airosol' column is undocumented and the 'P6/MIX' ratio divides by a 'MIX' column that is not in the file."},
+    "a5_enough_rows": {"pass": false, "n_rows": 96, "note": "KILLER. Table S5 holds 96 aptamer sequences. The checklist floor is ~1,500 labelled rows, or ~400 for classification. The underlying sequencing pool (millions of reads) that would have made this modellable was not deposited."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.5 MB Excel file", "note": "Trivially small; irrelevant given A5."},
+    "a7_counts_match_paper": {"pass": false, "note": "Methods say the library had a 40-nucleotide random region; the S5 header says 36 and the actual sequences are 34-37 nt. The paper never states how many sequences S5 contains, so there is nothing to check 96 against."},
+    "a8_label_provenance": {"pass": true, "note": "Read counts come from real sequencing of selection rounds, so not another model's output; but the ratio labels are arithmetic on the feature-adjacent count columns, so only the ratio-versus-sequence task is meaningful."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepAptamer (convolutional plus bidirectional long short-term memory network for aptamer affinity from SELEX sequencing)", "open_weights": null, "score_and_split": "Abstract retrieved via search (Molecular Therapy Nucleic Acids 2024, PMC11787022): reported to beat prior models on SELEX data with experimental follow-up; exact metric and split not retrieved.", "authors_named_unsolved": "Identifying high-affinity sequences from early, unenriched SELEX rounds; not read in full.", "runnable_as_baseline": null},
+      {"name": "Restricted Boltzmann machine scoring of SELEX pools (generative, interpretable aptamer design)", "open_weights": null, "score_and_split": "Abstract retrieved (PMC9553063): scores from one selection round correlate with experimental enrichment ratios at later rounds; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DL-SELEX / AptaVAE + AptaClux (variational autoencoders over SELEX next-generation sequencing pools)", "open_weights": null, "score_and_split": "Abstract retrieved (PMC12713628, steroid-family aptamers); metrics and split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM or a small k-mer/one-hot convolutional net (36 nt is far shorter than any nucleotide language model's useful context)", "freeze_and_head_viable": false, "hardware": "CPU only would suffice", "licence": "n/a"},
+  "integration": {"partner_dataset": "UTexas Aptamer Database / Apta-Index and published SELEX sequencing pools in the Sequence Read Archive", "join_key": "none present; aptamer sequences would have to be matched as free strings, and these are novel 36-nt sequences against a different protein target", "bigger_question_one_sentence": "Cannot be written: the 96 sequences were selected against dCas13a specifically and share no identifier with any public aptamer resource, so the join would be decoration."},
+  "controls": {"positive_control": "Aptamer2, the one candidate the authors validated by surface plasmon resonance and bio-layer interferometry, should score high; but one positive example is not a control.", "negative_control": "Label shuffling is computable on 96 rows but would be uninformative at that sample size.", "external_validation": "None. The affinity measurements for candidate aptamers are shown only in figures, with no numeric table."},
+  "honest_claim_h3": "At best: 'among the 96 most abundant sequences in one six-round SELEX experiment against one protein, sequence composition explains some of the round-6 enrichment ratio' - a statement about one selection run that no one could act on.",
+  "plain_idea": {
+    "one_liner": "Use a short DNA sequence to predict how strongly it was enriched during test-tube selection against a Cas13a protein.",
+    "train_on": "The 34-37 nucleotide DNA sequence of each selected aptamer, for the 96 sequences listed in Supplementary Table S5 (count verified by opening the file).",
+    "predict": "The enrichment ratio between selection round 6 and round 2, which comes from high-throughput sequencing read counts of the DNA pool at each round.",
+    "why_worthwhile": "Groups engineering CRISPR-Cas13 tools would like to pick strong protein-binding aptamers without running six rounds of selection; but with 96 sequences from one experiment, nothing learned here would transfer."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "96 summary rows against models such as DeepAptamer and the restricted Boltzmann machine work, which train on whole SELEX sequencing pools of millions of reads. Our table is a tiny top-abundance excerpt of one run."},
+    "confidence_score": {"answer": "no", "why": "No replicate selections and no per-sequence affinity measurements in the files, so there is no way to estimate measurement noise or calibrate a confidence."},
+    "models_beatable": {"answer": "no", "why": "The named models are 2022-2025 neural networks trained on far larger pools; 96 rows cannot support a competitive model, let alone an honest held-out evaluation."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model targets dCas13a-binding aptamers, nothing joins on a shared key, and the evaluation split could not be matched - every condition fails."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only modellable table is 96 SELEX-selected 36-nucleotide DNA aptamer sequences with round-by-round sequencing read counts and enrichment ratios; the task would be predicting enrichment from sequence. At 96 rows from a single selection run against a single protein, this is roughly 4x below the classification floor and 15x below the regression floor in the checklist. The paper's other quantitative assets - label-free mass-spectrometry proteomics and SELEX sequencing pools - were not deposited, and the only repository record is a 113 KB PDF of western blot gel images.",
+  "effort": {"hours_to_feature_table": 0.5, "working_set_gb": 0.001, "needs_gpu": false, "peak_ram_gb": 0.1, "embedding_hours": 0.01, "cv_run_minutes": 1, "compute_note": "Estimated from the actual file: a 468 KB Excel sheet with 96 rows, parsed in under a second with openpyxl. Compute was never the constraint here.", "cheapest_killing_check": "Count the rows in Supplementary Table S5 - I did, and it is 96, which kills the project in one command."},
+  "verdict": "reject",
+  "verdict_reason": "A5 fails hard: the only numeric data file holds 96 aptamer sequences, and the sequencing pool and proteomics behind the paper's figures were never deposited."
+}

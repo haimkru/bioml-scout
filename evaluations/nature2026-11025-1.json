@@ -1,0 +1,57 @@
+{
+  "paper_id": "nature2026-11025-1",
+  "title": "Breaking timescales with generative sampling of conformational transitions.",
+  "doi": "10.1038/s41586-026-11025-1",
+  "journal": "Nature",
+  "data_url": "https://github.com/Tangcyu/Gen-COMPAS",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Europe PMC: no PMCID, no full text, no supplement, no accessions, no NCBI links. Listed the full file tree of the official GitHub repo (Tangcyu/Gen-COMPAS) via the GitHub API and read its README: the only data is one demo trajectory for the Trp-cage miniprotein (0th.Iteration.noh.dcd, 22.6 MB binary coordinate file) plus NAMD (a molecular dynamics engine) input and force-field files. Searched Zenodo for Gen-COMPAS: no matching deposit. Did not download the DCD.",
+    "what_came_from_paper_text_only": "That the method was applied to systems from a miniprotein to a pentameric ligand-gated ion channel, and that committors, transition states and free-energy landscapes were recovered (abstract only; Nature full text is paywalled and not in Europe PMC)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Code and one demo trajectory are on GitHub (checked the file tree). No deposit of trajectories for the other systems was found on Zenodo; the paper's data statement was not readable (paywalled)."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked the repo: there is no label table. The committor (probability a structure reaches the end state before the start state) is not a column anywhere; it would have to be computed by running simulations and training a committor network on raw coordinate trajectories."},
+    "a3_inputs_present": {"pass": true, "note": "Atomic coordinates are present as a binary DCD trajectory with matching topology (PSF) for the Trp-cage demo; seen in the file listing, not opened."},
+    "a4_units_stated": {"pass": false, "note": "No tabular measurements exist; trajectory coordinates are in angstroms by NAMD convention but there is no outcome quantity with units."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "The unit of generalisation is the molecular system: a handful of systems in the paper and only one (Trp-cage) in the repo. Frame count of the demo DCD not checked."},
+    "a6_fits_laptop": {"pass": false, "working_set": "22.6 MB demo; full workflow needs new MD simulations", "note": "Reproducing labels needs NAMD targeted and unbiased MD runs and diffusion-model training, which are GPU/cluster jobs for anything beyond the miniprotein."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot compare: paper full text unavailable and the per-system trajectory data are not deposited where I could find them."},
+    "a8_label_provenance": {"pass": false, "note": "Committor values here are outputs of a trained Variational Committor Network (a neural network) fitted to simulation frames, i.e. model predictions from simulated physics, not a physical measurement. Learning them would distil that model."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Gen-COMPAS (this paper: diffusion model plus Variational Committor Network)", "open_weights": true, "score_and_split": "Validated per system against long reference simulations (abstract only); no train/test split in the ML sense. Code open on GitHub (MIT-style LICENSE file present).", "authors_named_unsolved": "Not read (paywalled); README warns that new systems need stepwise manual checking of generated structures and committor slices.", "runnable_as_baseline": true},
+      {"name": "Committor-guided rate estimation (JCTC 2024, arXiv 2408.05879)", "open_weights": null, "score_and_split": "Neural committor via semigroup objective with adaptive sampling; evaluated on toy and small molecular systems (from search snippet).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Graph neural network committor from atomic coordinates (arXiv 2507.17700)", "open_weights": null, "score_and_split": "Geometric vector perceptron network predicting committor directly from coordinates (from search snippet); split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "none suitable; per-system trajectory data, not a sequence/molecule/cell table", "freeze_and_head_viable": false, "hardware": "GPU/cluster for MD", "licence": "Repo has a LICENSE file (1 KB, likely MIT; not opened)"},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "Any model would only reproduce committor-network outputs on one simulated miniprotein, which says nothing beyond that system.",
+  "plain_idea": {
+    "one_liner": "Use simulated protein structures to predict how likely each one is to finish a shape change rather than revert.",
+    "train_on": "Frames from molecular dynamics simulations of one small protein (Trp-cage) with atomic coordinates; number of frames unknown (not opened).",
+    "predict": "The committor, the probability a structure goes on to the end shape first; here it comes from a trained neural network on simulations, not a lab measurement.",
+    "why_worthwhile": "Simulation groups studying protein folding and ion channels would get transition states cheaper, but that is the paper's own method, and the released data covers one system."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Only one demo system's trajectory (22.6 MB) is released, versus the paper's own multi-system results; no new data."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements or label table; committors are already probabilities produced by the paper's network."},
+    "models_beatable": {"answer": "no", "why": "Gen-COMPAS is a 2026 Nature method validated against reference simulations; beating it needs new MD on a cluster."},
+    "guaranteed_improvement": {"answer": "no", "why": "No accessible new data measures the same quantity the same way and joins to this paper."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rejected: train a committor predictor on released trajectories. Data is one demo trajectory, labels are network outputs, and producing more needs MD simulation on GPUs.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.02, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated; generating committor labels requires running NAMD simulations and training the paper's networks, untimed.", "cheapest_killing_check": "List the repo for deposited per-system trajectories with committor values: done, only one demo DCD exists."},
+  "verdict": "reject",
+  "verdict_reason": "Computational MD (molecular dynamics) method paper: no label table exists (A2), committors are neural-network outputs on simulations (A8), only one demo system is released (A5), and making more data needs GPU simulation (A6)."
+}

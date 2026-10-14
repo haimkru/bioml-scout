@@ -1,0 +1,134 @@
+{
+  "paper_id": "nar2026-gkag712",
+  "title": "Detecting extracellular G4 DNA motifs in biofilms through energy transfer between DNA-binding dyes TOTO™-1 and SYTO™60",
+  "doi": "10.1093/nar/gkag712",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.erda.au.dk/archives/4763c9cc9fe0aef08011b1029dc96fe9/published-archive.html",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the full file manifest of the public ERDA (Electronic Research Data Archive, Aarhus University) frozen archive: 250 files, 111.9 MB total (192 .txt, 49 .png, 5 .czi microscopy, 2 gel images, 1 ImageJ macro, 1 CSV of 446 bytes). Opened five files directly: three metadata READMEs, one fluorescence spectrum (311 wavelength rows x 3 repeat columns, no header), one circular-dichroism spectrum (222 rows, JASCO header), one dye-titration matrix (19 wavelengths x 12 dye concentrations), and the only CSV (6 rows of ImageJ measurements for 2 test images). Counted per-directory file numbers myself: 190 spectrum/titration .txt files and 46 confocal image files (24 doping + 13 hemin + 9 immunolabelling).",
+    "what_came_from_paper_text_only": "That only four synthetic DNA species were used (single-stranded, double-stranded, a single G-quadruplex-forming oligo and a four-repeat version), taken from Table 1 of the paper; the biofilm species and growth conditions; and the claim that G-quadruplex signal is enriched after DNase I treatment. I did not re-derive any figure number or statistic."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Public ERDA frozen archive, no login. I fetched the manifest and five individual files successfully; whole archive is 111.9 MB."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "No label column exists anywhere, but the class (single-stranded / double-stranded / G-quadruplex, or nuclease treatment) is encoded in folder and file names and is a cheap parse, so this is not the killer."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Raw measurements are present as numeric matrices (wavelength vs intensity) and as image files; nothing needs an external lookup."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Metadata.txt files state units explicitly: nanometres for wavelength, micromolar for dye concentration, arbitrary units for fluorescence, millidegrees for circular dichroism, degrees Celsius for temperature."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 190,
+      "note": "FAIL. I counted 190 spectrum/titration text files and 46 confocal images, and those come from only four synthetic DNA sequences plus a handful of biofilm samples. The independent unit is the DNA species or the biofilm, so the true example count is single digits to low tens — far under the ~400 needed even for classification."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.11 GB",
+      "note": "Entire archive is 111.9 MB and would load into memory trivially."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "File structure matches the methods: three experimental repeats, dye titration series, potassium and caesium chloride buffers. The paper states no overall row count to contradict."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Any label would be the experimenter's assigned sample identity or nuclease treatment, i.e. a physical fact about what was pipetted, not another model's output."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepG4 (convolutional neural network predicting active G-quadruplex regions from genomic DNA sequence; PLOS Computational Biology 2021)",
+        "open_weights": true,
+        "score_and_split": "Not verified by me; retrieved only the abstract/landing page, which claims high accuracy on cell-type-specific active G-quadruplex regions.",
+        "authors_named_unsolved": "Not read — I did not retrieve the discussion.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "G4-Attention (convolutional network with bidirectional long short-term memory and attention, for G-quadruplex-forming sequence prediction; arXiv 2403.02765, later Phys Chem Chem Phys)",
+        "open_weights": null,
+        "score_and_split": "Not verified; abstract claims state-of-the-art on class-imbalanced human genome data with cross-species transfer.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Spectral classification of DNA secondary structures by machine learning (PubMed 41708241): combines circular dichroism, fluorescence and thermal difference spectra with principal component analysis plus linear discriminant analysis, k-nearest neighbours and support vector machines",
+        "open_weights": null,
+        "score_and_split": "Abstract reports ~95% accuracy separating G-quadruplex, i-motif and double-stranded DNA; split not verified by me.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate. The data are fluorescence/circular-dichroism curves and confocal images, not sequences; a DNA language model such as DNABERT-2 has nothing to read here because only four oligonucleotides exist.",
+    "freeze_and_head_viable": false,
+    "hardware": "Laptop CPU would suffice, but there is nothing to train.",
+    "licence": "Not checked — moot."
+  },
+  "integration": {
+    "partner_dataset": "None usable. G4 sequence resources (G4-seq, the G-quadruplex sequence database G4LDB) key on genomic coordinates or oligonucleotide sequence; this archive contains four sequences, so the join would produce four rows.",
+    "join_key": "oligonucleotide sequence (four values)",
+    "bigger_question_one_sentence": "Cannot be written — with four sequences any join is decoration."
+  },
+  "controls": {
+    "positive_control": "The archive does contain real controls as experiments: buffer-only circular dichroism spectra, dye-without-DNA spectra, single-stranded and double-stranded DNA as negative structures, and BG4 antibody immunolabelling as an orthogonal G-quadruplex detector. These are good lab controls but do not create training examples.",
+    "negative_control": "Single-stranded and double-stranded DNA spectra, and S1-nuclease/micrococcal-nuclease treated biofilms.",
+    "external_validation": "The companion paper Minero et al. (Nucleic Acids Res) and Seviour et al. (npj Biofilms Microbiomes 2021) report extracellular G-quadruplexes in Pseudomonas aeruginosa biofilms, but their data are different assays and would not share a feature table."
+  },
+  "honest_claim_h3": "A model trained on this archive could at best claim: 'two-dye fluorescence spectra can separate one synthetic G-quadruplex-forming oligonucleotide from one single-stranded and one double-stranded oligonucleotide, measured on one instrument in one laboratory' — which is what the paper's own figures already show by eye, and which cannot generalise to new sequences because no new sequences exist in the data.",
+  "plain_idea": {
+    "one_liner": "Use two-dye fluorescence spectra to tell apart folded four-stranded DNA from ordinary single- and double-stranded DNA.",
+    "train_on": "Each example would be one fluorescence emission spectrum (intensity at ~300 wavelengths) or one confocal image of a bacterial biofilm. I counted 190 spectrum/titration files and 46 image files, but they derive from only four synthetic DNA sequences and a small number of biofilm samples.",
+    "predict": "Which DNA structure class the sample is (single-stranded, double-stranded or G-quadruplex), or which nuclease treatment a biofilm received. The true answer is simply what the experimenters put in the tube, recorded in the file name.",
+    "why_worthwhile": "If it worked on many sequences it would give microbiologists a cheap dye-based readout for non-canonical DNA in biofilm matrix, replacing antibody staining. With four sequences, nothing generalisable can be learned."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Four synthetic oligonucleotides against published spectral-classification work that used 89 oligonucleotides (the intrinsic-fluorescence typing study in Nucleic Acids Research 2020) and genome-scale G4-seq datasets behind DeepG4."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Three experimental repeats per condition would let you estimate instrument noise, but with four sequences there is no population over which a per-prediction confidence would mean anything."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The relevant published models (DeepG4 2021, G4-Attention 2024, and a ~95%-accuracy spectral classifier) operate on data types this archive cannot supply, so there is no shared benchmark to beat."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "No existing model could be run as a baseline on these files and the evaluation split could not be matched, so the strict conditions fail at the first step."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: classify fluorescence resonance energy transfer (FRET) spectra into DNA structure classes, or segment G-quadruplex-positive regions in confocal biofilm images. Both die on sample size — four distinct DNA sequences and ~46 images, with the structure class trivially separable by the published dye-ratio rule the authors already provide as an ImageJ macro.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.11,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated, not timed: 190 small text matrices and 46 PNG images total 112 MB, so any parse and cross-validation is seconds to minutes on a laptop CPU. Compute was never the constraint here."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A5 on sample size, verified in the files: the public archive is well documented with units stated, but it holds 190 spectra and 46 confocal images derived from just four synthetic DNA sequences and a few biofilm samples, so the independent-example count is in the single digits to low tens rather than the ~400 minimum. It is a careful single-method assay-development paper, not a dataset. The authors already supply the decision rule (an ImageJ dye-ratio macro), so a model would at best relearn a published threshold, and the related published work (DeepG4, G4-Attention, and a ~95%-accurate spectral classifier built on 89 oligonucleotides) uses far larger data of types this archive does not contain."
+}

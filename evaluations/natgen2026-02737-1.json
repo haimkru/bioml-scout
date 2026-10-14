@@ -1,0 +1,44 @@
+{
+  "paper_id": "natgen2026-02737-1",
+  "title": "Human and mouse adrenal glands are characterized by species-specific steroidogenic states and tissue turnover.",
+  "doi": "10.1038/s41588-026-02737-1",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE253852",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE253852 (a gene expression archive series) file list: 7.0 GB RAW tar, 259 GB Seurat (an R single-cell format) archive, per-sample 10x raw count matrices (.h5, 4-150 MB). The 11 human scRNA-seq (single-cell RNA sequencing) donors are named by sex and age in the file names. Downloaded and opened one 4.2 MB mouse raw matrix (GSM8028752): 32,285 genes x 458,847 barcodes, only 162 barcodes with 500 or more detected genes, Ensembl mouse IDs on mm10. Raw matrices carry no cell-type labels. HEAD on the lab's 9 annotated AnnData (.h5ad) files: all 256 MB to 4.6 GB, so none were opened.",
+    "what_came_from_paper_text_only": "That human raw reads sit in EGA (European Genome-phenome Archive, controlled access); the cell-state annotations, mosaic lineage inference and age/sex effects; the number of cells per atlas. The contents of the annotated .h5ad obs (cell metadata) tables were not seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Processed count matrices are public in GEO and annotated .h5ad files download from the lab's server without login (HEAD returned 200). Human raw reads are EGA controlled access, but they aren't needed."},
+    "a2_label_is_a_column": {"pass": false, "note": "No measured outcome exists. The only per-cell labels are the authors' cluster and cell-state annotations, which sit in the .h5ad files (over 50 MB, not opened). Any donor-level target (age, sex) is a sample attribute, not a per-cell label."},
+    "a3_inputs_present": {"pass": true, "note": "Gene-by-cell count matrices are present (verified in one mouse .h5 file, Ensembl IDs)."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI (unique molecular identifier) counts, the standard 10x format; seen in the file."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "There are many cells, but the independent unit for any biologically meaningful label (age, sex, species) is the donor: 11 human scRNA-seq donors in the GEO file names, plus a few mouse samples. Far below 400."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 0.8-1.2 GB for one annotated atlas .h5ad", "note": "A single atlas fits in 16 GB RAM. The 259 GB Seurat archive and the Stereo-seq (a spatial transcriptomics method) files are out of scope."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checked: cell counts per atlas weren't verified because the annotated files are over the cap. The sample count in GEO is consistent with the paper's design."},
+    "a8_label_provenance": {"pass": false, "note": "Cell-type and cell-state labels come from clustering and marker genes applied to the same expression matrix. Predicting them from expression is circular: it learns the authors' clustering, not a physical measurement."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "SATURN (cross-species cell embedding using protein language model gene embeddings)", "open_weights": true, "score_and_split": "Not checked for this paper; a NAR 2025 cross-species benchmark ranked it among the top three integration methods.", "authors_named_unsolved": "Not checked.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "Geneformer or scGPT (single-cell foundation models)", "freeze_and_head_viable": true, "hardware": "CPU feasible for a subsample of cells", "licence": "Apache-2.0 / MIT"},
+  "integration": {"partner_dataset": "GTEx adrenal bulk RNA-seq (tissue expression from many donors)", "join_key": "Ensembl gene", "bigger_question_one_sentence": "Do the human-specific adrenal cortex cell states deconvolve out of GTEx adrenal samples and vary with donor age? This is a deconvolution analysis, not a supervised ML task."},
+  "controls": {"positive_control": "Recover the known zona glomerulosa (CYP11B2) versus zona fasciculata (CYP11B1) split.", "negative_control": "Shuffle cell labels.", "external_validation": "Previously published adrenal atlases (GSE134355, GSE161751; Altieri 2024)."},
+  "honest_claim_h3": "A model could only reproduce these authors' cluster labels for adrenal cells from 11 human donors, which is not an independent biological prediction.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from adrenal glands to predict cell type, or whether a cell is human or mouse.",
+    "train_on": "Gene counts for individual adrenal cells from 11 human donors and a few mice; the number of cells wasn't verified.",
+    "predict": "The authors' cell-type annotations, which they derived by clustering the same expression data, so there is no independent measured answer.",
+    "why_worthwhile": "Little. Cross-species label transfer is already well benchmarked, and donor-level questions have only 11 human donors."
+  },
+  "pitch": null,
+  "ml_idea": "Cross-species cell-type label transfer (human to mouse adrenal) with frozen single-cell foundation model embeddings. The label is circular and the field is benchmarked, so this was rejected.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 1.2, "needs_gpu": false, "peak_ram_gb": 10, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from the .h5ad sizes (HEAD only); nothing was timed.", "cheapest_killing_check": "Count independent donors per label: 11 human scRNA-seq donors, already seen in the GEO file names."},
+  "verdict": "reject",
+  "verdict_reason": "A descriptive atlas with no measured outcome: the per-cell labels are the authors' own clustering of the same expression data (fails A2 and A8). Donor-level targets have only 11 human donors (fails A5)."
+}

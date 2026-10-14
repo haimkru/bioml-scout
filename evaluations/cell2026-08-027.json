@@ -1,0 +1,296 @@
+{
+  "paper_id": "cell2026-08-027",
+  "title": "A high-confidence plant mitochondrial proteome via protein correlation profiling.",
+  "doi": "10.1016/j.cell.2026.08.027",
+  "journal": "Cell",
+  "data_url": "https://sites.broadinstitute.org/files/mitocarta/files/documents/arabidopsis.mitocarta.xlsx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "DOI resolves in Crossref (Cell 189:6267-6284.e9, CC-BY 4.0) and PMID 42822425 in Europe PMC. Found the data portal mitocarta.org (Broad Institute MitoCarta Tree of Life) via a news article, downloaded arabidopsis.mitocarta.xlsx (21,495,613 bytes, HTTP 200, no login) and parsed all four sheets with a stdlib reader: tab A holds 27,559 data rows x 101 columns, one row per Araport11 transcript, all IDs and GeneIDs unique. I counted MitoViaPCP==1 -> 1,462 and AtMitoCarta==1 -> 1,609 (both match the abstract exactly), mtDNA==1 -> 35, PCP score != -1 (protein detected) -> 12,645, LiteratureMito PMIDs present -> 494, BenchmarkLabel = goldp 457 / possible_mito 3,450 / goldm 23,652, DeepLoc2.1 score present for 27,542 rows, Human.TopHit present for 20,975 rows and Human.MitoCarta3.0_List==1 for 2,304. I read all 101 column definitions, the 30 sample names and the abbreviation glossary in the Description tab. I then downloaded the Ensembl Plants TAIR10 protein FASTA (9,698,724 bytes) and verified the sequence join: 27,475/27,559 IDs matched (99.7%) and the table's 'Protein length' column agreed with the FASTA sequence length for all 27,475 with zero disagreements. I also downloaded babesia.mitocarta.xlsx (2,732,344 bytes) and confirmed it uses the identical four-tab schema (4,132 genes, 'BdMitoCarta'), and confirmed Human.MitoCarta3.0.xls/.fasta are listed and sized on the Broad file index.",
+    "what_came_from_paper_text_only": "Only the abstract; the paper has no PMCID, is not in Europe PMC full text, and per instructions I did not fetch the publisher page, so I never saw the data availability statement or methods. The abstract's '236 newly defined proteins', '147 proteins of unknown function' and '15% of families are plant specific' are unverified by me (I independently counted 185 AtMitoCarta positives carrying neither a literature PMID nor a SUBA5 mitochondrial annotation, which is a different quantity). I found no PRIDE, ProteomeXchange or MassIVE accession for the underlying raw mass-spectrometry runs despite searching all three by title keywords, lab names, DOI and PMID; the processed table is the only data I located. No licence statement appears on the download page, so I am inferring CC-BY 4.0 from the article's Crossref licence record."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Direct HTTP download of a 21.5 MB .xlsx from mitocarta.org, no login, no application, HTTP 200. I opened the file."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "'AtMitoCarta' and 'MitoViaPCP' are literal 0/1 columns in tab A; I counted 1,609 and 1,462 positives. Nothing has to be constructed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Tabular features (protein length, Pfam list, transmembrane-helix count, TargetP class) are in the file. Amino-acid sequences are not, but one bulk 9.7 MB FASTA joins on transcript ID at 99.7% coverage, verified, not thousands of lookups."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Description tab defines every unit: log10(normalized total intensity) after column-sum normalization, Z-score, Pearson correlation, amino-acid length. I read all 101 definitions."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 27559,
+      "note": "27,559 labelled rows counted in the file, 1,609 positives, 12,645 proteins with complete 30-sample profiles."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.03 GB of downloads; ~0.2 GB table in memory; ~0.07 GB of cached embeddings",
+      "note": "No GPU needed. The only real cost is one-time CPU embedding of 27,475 sequences with a small protein language model."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "1,462 and 1,609 reproduce the abstract exactly from tab A. One internal wrinkle: tab B is described as 1,462 rows but actually holds 1,609, and its AtMitoCarta column reads 1 for only 1,462 of them; tab A is self-consistent and authoritative."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Label traces to physical measurement: mass-spectrometry abundance across 30 serial mitochondrial-enrichment fractions, plus tagging/microscopy (25 proteins) and curated literature PMIDs (494). No model output in the label. Two traps I verified and would avoid: (1) the PCP score is a Pearson correlation computed from the 30 intensity columns in the same table, so using those columns as features is leakage by construction - the project must use sequence only; (2) 'BenchmarkLabel' and 'DeepLoc2.1 Mitochondrion score' are partly or wholly another model's output and can only ever be baselines, never labels."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 2,
+      "why": "One sheet, 27,559 x 101, holds labels and features; optional FASTA join verified at 99.7% in the files."
+    },
+    "B2": {
+      "score": 1,
+      "why": "Excel .xlsx with a 64 MB sheet XML, not csv; I needed a custom reader because openpyxl was absent."
+    },
+    "B3": {
+      "score": 2,
+      "why": "One lab, one pipeline; authors already column-sum normalized and Z-scored; single binary label column."
+    },
+    "B4": {
+      "score": 1,
+      "why": "14,914 undetected proteins coded as sentinel PCP = -1 and 65% of intensity cells blank; policy is obvious but needed."
+    },
+    "B5": {
+      "score": 2,
+      "why": "Counted 27,559 unique IDs and 27,559 unique GeneIDs in the file: no duplicates."
+    },
+    "B6": {
+      "score": 2,
+      "why": "Read a Description tab defining all 101 columns, 30 sample names and every abbreviation."
+    },
+    "C1": {
+      "score": 2,
+      "why": "Framed as cross-species transfer, any outcome is informative; six sibling organism files make decay measurable."
+    },
+    "C2": {
+      "score": 1,
+      "why": "DeepLoc 2.1, MU-LOC, MULocDeep, TargetP 2.0, AtSubP-2.0 all open with published numbers, but all evaluated on curated annotations, not this experimental ground truth."
+    },
+    "C3": {
+      "score": 2,
+      "why": "Clear better/unique-application angle: first honest test of existing predictors on experimentally defined plant mitoproteome."
+    },
+    "C4": {
+      "score": 2,
+      "why": "Ground truth cost serial density gradients, a transgenic tagging line, proteinase K, 30 LC-MS/MS runs, microscopy and manual curation."
+    },
+    "C5": {
+      "score": 2,
+      "why": "DeepLoc2.1 score and TargetP2.0 class are already columns I counted; MU-LOC published plant-mito AUC 0.8408."
+    },
+    "D1": {
+      "score": 2,
+      "why": "ESM-2, a protein language model with open weights on HuggingFace, matches amino-acid sequence input exactly."
+    },
+    "D2": {
+      "score": 2,
+      "why": "Mean-pooled embeddings cached once on CPU for 27,475 sequences, then a linear head; no fine-tuning."
+    },
+    "D3": {
+      "score": 2,
+      "why": "ESM-2 weights are MIT licensed; article carries CC-BY 4.0 in its Crossref licence record."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Sequence-identity clustering, Pfam-family holdout and held-out-organism splits are all available from in-file columns."
+    },
+    "E2": {
+      "ok": true,
+      "why": "21,788 rows carry Pfam lists giving thousands of families; seven organisms have sibling MitoCarta files."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Majority class is 94.2% negative (25,950 of 27,559, counted); protein-length-only threshold is a second dummy."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Three replicates per fraction plus five alternative PCP score columns (WT, TG, no-PK, no-WholePlant) bound label stability."
+    },
+    "E5": {
+      "ok": true,
+      "why": "35 mtDNA-encoded proteins and the three marker orthologs must rank top; predicting protein length from embeddings checks plumbing."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Label shuffling within Pfam family, feature-block ablation and random-noise features are all trivially runnable on this table."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Human MitoCarta3.0 (.xls + .fasta) and five protist MitoCarta files with identical schema; I opened the Babesia one."
+    },
+    "E8": {
+      "ok": true,
+      "why": "DeepLoc2.1 mitochondrion score is a column, so its area under the curve on this set is directly computable."
+    },
+    "G1": {
+      "score": 2,
+      "why": "Araport11/TAIR locus IDs, NCBI Entrez human gene IDs in 20,975 rows, yeast gene IDs, Pfam IDs: all counted in the file."
+    },
+    "G2": {
+      "score": 2,
+      "why": "Human MitoCarta3.0 joins on the Human.TopHit Entrez gene ID; 2,304 rows already flagged as human-mitochondrial."
+    },
+    "G3": {
+      "score": 1,
+      "why": "BLASTP top hit is many-to-many, but a Human.BBH==1 flag (4,164 rows, counted) gives a ready collapse rule at reduced coverage."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Asks whether sequence-encoded mitochondrial targeting is conserved across the eukaryotic tree; neither dataset answers alone."
+    },
+    "H1": {
+      "score": 2,
+      "why": "All 27,559 genes get a 0/1 call; 25,950 negatives, including ~11,000 proteins detected but non-mitochondrial."
+    },
+    "H2": {
+      "score": 1,
+      "why": "One species, one lab, one growth context, one instrument platform; breadth only comes from the sibling organism files."
+    },
+    "H3": {
+      "score": 2,
+      "why": "The honest claim writes out in one sentence, naming the single lab and the single enrichment experiment."
+    },
+    "H4": {
+      "score": 2,
+      "why": "Description tab spells out every threshold, every PCP score variant and how BenchmarkLabel was built."
+    },
+    "I1": {
+      "score": 2,
+      "why": "Named users: the MitoTOL consortium at the Broad, the SUBA/ASURE plant curators, and the DeepLoc and MU-LOC authors."
+    },
+    "I2": {
+      "score": 2,
+      "why": "A calibrated shortlist redirects which of the unknown-function positives get tagged and imaged next."
+    },
+    "I3": {
+      "score": 2,
+      "why": "Decision is 'which candidates to image', so precision at top-100 is the metric, committed up front, not area under the curve."
+    },
+    "I4": {
+      "score": 2,
+      "why": "Best simple rule, TargetP's mitochondrial-presequence class, flags only 1,121 of 27,559; published single-rule AUC is 0.74."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Frozen-backbone embeddings, grouped splits, class imbalance, calibration and cross-species transfer: all real ML."
+    },
+    "J2": {
+      "score": 2,
+      "why": "mtDNA-encoded proteins, respiratory-chain subunits and human orthology columns make predictions easy to sanity-check."
+    },
+    "J3": {
+      "score": 2,
+      "why": "A parsed sequence+label CSV plus an honest re-scoring of DeepLoc2.1 is shareable even if the new model is mediocre."
+    },
+    "J4": {
+      "score": 1,
+      "why": "I propose three weeks but no budget is committed anywhere yet."
+    },
+    "J5": {
+      "score": 1,
+      "why": "Kill condition is nameable (homology lookup not beaten on novel positives) but is not yet written in NOTES.md."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepLoc 2.0 / 2.1 (protein-language-model subcellular localization predictor, DTU)",
+        "open_weights": true,
+        "score_and_split": "Authors report ~79% accuracy across nine sorting-signal types and best accuracy and Matthews correlation coefficient on an independent Human Protein Atlas benchmark, using homology-partitioned SwissProt cross-validation. A separate 2025 paper reports its Arabidopsis accuracy as 81.42%.",
+        "authors_named_unsolved": "They report no gain from the newer ESM-2 protein language model over ESM-1b for membrane-type prediction, and all evaluation is against curated database annotations rather than experimentally measured organelle proteomes.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MU-LOC (plant mitochondrial protein predictor, deep neural network and support vector machine versions)",
+        "open_weights": true,
+        "score_and_split": "Reported area under the curve 0.8408 (neural network) and 0.8322 (support vector machine) for plant mitochondrial prediction, versus TargetP 0.7444, YLoc 0.7493, MitoFates 0.7050, MitoProt II 0.6870 and Predotar 0.6851. Split details not retrieved.",
+        "authors_named_unsolved": "Predicting plant mitochondrial proteins that lack an N-terminal targeting presequence, which they state is the motivation for the tool.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MULocDeep (subcellular and suborganellar localization, deep learning)",
+        "open_weights": true,
+        "score_and_split": "Covers 44 suborganellar annotations across 10 compartments; a 2025 third-party comparison reports 85.57% Arabidopsis accuracy. I did not verify the split.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TargetP 2.0 (targeting-peptide predictor)",
+        "open_weights": true,
+        "score_and_split": "Reported area under the curve 0.7444 for plant mitochondrial prediction in the MU-LOC benchmark. Its prediction class is already a column here (1,121 mitochondrial-presequence calls among 27,559, counted by me).",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AtSubP-2.0 (Arabidopsis-specific deep-learning localization server, 2025)",
+        "open_weights": null,
+        "score_and_split": "Its own authors report 91.85% accuracy versus MULocDeep 85.57% and DeepLoc 81.42%, on their own Arabidopsis benchmark; I did not verify the split and the labels there come from annotation databases.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "pRoloc / BANDLE (Bioconductor frameworks for classifying proteins from organelle fractionation profiles)",
+        "open_weights": true,
+        "score_and_split": "Established support-vector-machine and Bayesian classifiers benchmarked on 16 annotated datasets in pRolocdata; no number on this dataset exists.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model), esm2_t12_35M or esm2_t30_150M checkpoint",
+    "freeze_and_head_viable": true,
+    "hardware": "16 GB laptop CPU; embed 27,475 sequences once, cache, then fit a logistic-regression or gradient-boosting head",
+    "licence": "ESM-2 weights MIT; data inherits CC-BY 4.0 from the article's Crossref licence record (no licence file on the download page)"
+  },
+  "integration": {
+    "partner_dataset": "Human MitoCarta3.0 (1,136 human mitochondrial genes, with .xls and .fasta on the same Broad file index) plus the five protist MitoCarta tables on mitocarta.org",
+    "join_key": "NCBI Entrez human gene ID in the 'Human.TopHit' column, present in 20,975 of 27,559 rows; collapse one-to-many with the 'Human.BBH' best-bidirectional-hit flag (4,164 rows)",
+    "bigger_question_one_sentence": "Is the sequence signal that sends a protein to the mitochondrion the same across the eukaryotic tree, so that a model trained on one plant transfers to humans and to single-celled parasites, or does each lineage encode targeting its own way?"
+  },
+  "controls": {
+    "positive_control": "The 35 mitochondrial-DNA-encoded proteins and the three marker orthologs used to define the score (counterparts of human TOM40, ISCU and HSPD1) must rank at the very top; separately, predicting protein length from the embeddings must be near-perfect as a plumbing check.",
+    "negative_control": "Shuffle the AtMitoCarta label within Pfam family and confirm performance collapses to the 5.8% positive base rate; ablate feature blocks; replace embeddings with same-shape random noise.",
+    "external_validation": "Human MitoCarta3.0 (.xls plus .fasta) and the five protist MitoCarta tables (Babesia divergens, Giardia lamblia, Leishmania tarentolae, Trypanosoma brucei, Acanthamoeba castellanii), all on mitocarta.org with the identical four-tab schema; I opened the Babesia file and confirmed the schema matches."
+  },
+  "honest_claim_h3": "A frozen protein-language-model embedding plus a linear head predicts, from amino-acid sequence alone, whether an Arabidopsis protein was called mitochondrial by one laboratory's serial density-gradient enrichment experiment on whole seedlings backed by curated literature, across the 27,559 Araport11 proteins - not whether that protein is mitochondrial in every plant tissue, developmental stage or stress condition.",
+  "pitch": {
+    "headline": "27,559 Arabidopsis proteins in one 101-column table with a measured 0/1 mitochondrial label from 30 purification fractions; 1,609 positives.",
+    "what_makes_the_data_unusual": "The label is not a database annotation: the Description tab I read defines it as thresholded mass-spectrometry abundance across 30 progressively purified fractions, backed by 494 literature PMIDs and 25 tagging experiments I counted, with real negatives for all 25,950 non-mitochondrial genes. Two published baselines already sit in the file as columns (a DeepLoc 2.1 score for 27,542 rows, a TargetP 2.0 class with 1,121 mitochondrial calls), sequences join from one 9.7 MB FASTA at 27,475/27,559, and six sibling organism tables share the identical four-tab schema (I opened the Babesia file); the CC-BY 4.0 licence is inferred from the article's Crossref record, as no licence file appears on the download page.",
+    "the_win": "A precision-at-top-100 number for a frozen ESM-2 embedding plus a linear head on the 185 AtMitoCarta positives that carry neither a literature PMID nor a SUBA5 mitochondrial annotation (a count I verified), alongside the first scores for DeepLoc 2.1 and TargetP 2.0 measured against experimentally defined plant ground truth rather than curated annotations. Second number: how far that model's accuracy falls when tested on human MitoCarta3.0 and the five protist tables.",
+    "even_if_it_fails": "You still publish the first honest evaluation of DeepLoc 2.1 and TargetP 2.0 against a measured plant mitochondrial proteome instead of database labels, and a failure quantifies how much of mitochondrial targeting is simply not in the amino-acid sequence. The cross-kingdom test is informative either way: transfer that collapses from Arabidopsis to human and protist tables is itself the finding.",
+    "who_wants_it": "Plant mitochondrial biologists, who get a ranked shortlist of unknown-function candidates and decide which protein to image next (hence precision at top-100), and the authors of DeepLoc, MU-LOC, MULocDeep and AtSubP-2.0, whose plant accuracy figures all rest on annotation-derived labels. The paper's own framing of newly defined and unknown-function proteins comes from the abstract alone, which I could not verify."
+  },
+  "plain_idea": {
+    "one_liner": "Use a protein's amino-acid sequence to predict whether that protein lives inside the plant cell's mitochondrion.",
+    "train_on": "27,559 Arabidopsis thaliana proteins, one row each, with the amino-acid sequence attached from a bulk protein file (27,475 of 27,559 matched, which I verified) plus in-table features: length, Pfam domain list, predicted transmembrane-helix count.",
+    "predict": "A probability that the protein is mitochondrial. The true answer is the AtMitoCarta column, 1,609 positives, built from measured mass-spectrometry abundance across 30 progressively purified mitochondrial fractions, plus fluorescent-tagging microscopy for 25 proteins and curated literature for 494.",
+    "why_worthwhile": "Plant mitochondrial biologists and the authors of localization predictors would get the first test of those tools against experimentally defined plant ground truth instead of against database annotations, plus a ranked shortlist of unknown-function proteins worth imaging next. Even a failure tells us how much of mitochondrial targeting is not in the sequence."
+  },
+  "ml_idea": "Join the 27,559-row AtMitoCarta table to TAIR10 protein sequences (verified 99.7% join, with the table's protein-length column independently confirming every match), embed each sequence once on CPU with a small ESM-2 protein language model, and fit a linear head to the AtMitoCarta 0/1 label under sequence-identity-clustered and Pfam-family-held-out splits. Never use the 30 intensity or Z-score columns as features: the label is a thresholded correlation of those very columns, so including them is leakage by construction. Three experiments, in order: (1) honestly re-score the DeepLoc2.1 mitochondrion column and the TargetP2.0 class that already sit in this table against the new experimental ground truth, and separately against the 185 positives that carry no prior literature or SUBA5 mitochondrial annotation - these tools never saw those, so it is a clean held-out set; (2) beat the homology baseline, which is simply 'is the best human ortholog in MitoCarta3.0' using the Human.TopHit and Human.BBH columns; (3) train on Arabidopsis and test on human MitoCarta3.0 and the five protist MitoCarta tables to measure how targeting-signal prediction decays with evolutionary distance. Report precision at top-100 because the decision being served is which protein to image next.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 2.0,
+    "cv_run_minutes": 5,
+    "compute_note": "Timed: the 21.5 MB xlsx downloaded instantly and parsed in about 40 seconds with a stdlib reader, and the 9.7 MB FASTA took roughly five minutes from the EBI mirror. Estimated, not timed: ESM-2 150M on an Apple-silicon CPU at roughly 4-5 sequences per second over 27,475 sequences of median length 347 amino acids gives about two hours; the 35M checkpoint would be about a quarter of that. Cross-validation time assumes a linear head on cached embeddings.",
+    "cheapest_killing_check": "Count the AtMitoCarta positives that have no prior annotation AND no human MitoCarta3.0 ortholog. I already verified 185 positives lack both a literature PMID and a SUBA5 mitochondrial annotation; intersect that set with Human.MitoCarta3.0_List==0 or a missing Human.TopHit. If fewer than about 50 survive, there is no genuinely novel test set and the task collapses into a homology lookup - do this before anything else."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes with the files actually opened, and both headline counts (1,462 MitoViaPCP, 1,609 AtMitoCarta) reproduce exactly from the download. One fully documented 101-column table, no duplicates, units stated for every column, the label already a column traceable to physical mass-spectrometry measurement rather than a model, real negatives for all 25,950 non-mitochondrial genes, two published baselines (DeepLoc2.1 and TargetP2.0) sitting in the file as columns, a verified 99.7% sequence join from a single 9.7 MB file, and six sibling organism tables with identical schema for external validation. ESM-2 freeze-and-head runs on a laptop CPU in an afternoon of compute. The one real risk is C2 crowding - DeepLoc, MU-LOC, MULocDeep and AtSubP-2.0 all exist and are open - so the project must be framed as honest re-evaluation on new experimental ground truth plus cross-kingdom transfer, not as beating a published number. Two traps to respect: do not use the 30 intensity columns as features (the label is computed from them), and do not use BenchmarkLabel or the DeepLoc score as a label."
+}

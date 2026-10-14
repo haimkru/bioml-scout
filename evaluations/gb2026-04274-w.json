@@ -1,0 +1,218 @@
+{
+  "paper_id": "gb2026-04274-w",
+  "title": "Genolator enables protein function interpretation using a multimodal large language model fusing genomic and structural interpretation with natural language interaction.",
+  "doi": "10.1186/s13059-026-04274-w",
+  "journal": "Genome Biology",
+  "data_url": "https://huggingface.co/datasets/CHGGM-Aachen/genolator-v1-qa",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded all three 42 MB sample Parquet files and read the full train/validation/test Parquet splits over HTTP range requests with column pruning (~20 MB, 19 s). Confirmed row counts 345,927 / 36,521 / 35,387 and 14,186 / 1,773 / 1,773 genes; confirmed zero gene overlap between splits; confirmed all 12 columns and embedding widths (DNA 4096, protein 2560, structure 1280) with no nulls or non-finite values in the rows I read. Verified coding-DNA length equals 3x protein length plus 3 (stop codon) for 200/200 rows, and that the three embeddings are byte-identical across all rows of the same gene (600/600 column-groups over 200 repeated genes), so the data deduplicates exactly to one row per gene. Trained a bag-of-words logistic regression on the 230,226 real training-split confirm/deny questions and scored it on the 30,406 gene-disjoint test questions: accuracy 0.9716, F1 0.9720, MCC (Matthews correlation coefficient) 0.9432, ROC-AUC 0.9962, using no gene name, no sequence and no embedding. Ran the matching negative control (shuffled labels -> MCC 0.000) and an embeddings-only control (ROC-AUC 0.506). Counted that only 47 question strings (168 rows) ever carry both labels. Downloaded the 15 MB Gene Ontology Annotation human file and verified 17,644/17,732 (99.5%) of gene symbols join, giving 739 GO terms with at least 50 annotated genes. Fitted a positive control (protein embedding -> log10 protein length, r = 0.786 on held-out genes). Listed both Genolator model repositories via the HuggingFace API.",
+    "what_came_from_paper_text_only": "The paper's Table 1 numbers (Genolator Evo2+PST MCC 0.959 and F1 ~0.98; Evo2+ESM2 MCC 0.948; XGBoost MCC 0.913; projector-only ablations MCC 0.924 and 0.895; GPT-4.1 MCC 0.179) were read from the full text, not recomputed. The embedding recipes (Evo2 7B layer blocks.28.mlp.l3; ESM-2 via ESMFold 3B last hidden layer; PST on AlphaFold structures) and the claim that embeddings are complete across all 417,835 rows come from the dataset card, not from my own full-file scan. The manual quality review of 56 genes by two blind reviewers is from the paper. Europe PMC's supplementary-file listing timed out, so Additional file 2 (the 'KMeans Split Test Set' Excel sheet) was not retrieved; I used the HuggingFace release instead."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Public HuggingFace dataset, API reports gated=false, no login. I downloaded three sample files and streamed all three full splits. Code is MIT on GitHub, archived on Zenodo; both model repositories (LoRA adapters) are public."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Two routes, both checked. The in-file label is the 'kind' column (confirmation/denial, 15,463/14,943 in test) - no construction. For the clean modelling arm the label is the gene's Gene Ontology terms, which are NOT in the file and come from one external file joined on gene symbol; I verified that join at 99.5% coverage (17,644/17,732 genes), so it is a single standard key against the canonical source, not an inference."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Strongest point of the dataset. Coding DNA, full transcript and amino-acid sequences are present as literal strings, plus three precomputed embedding vectors per gene (Evo2 7B 4096-d, ESM-2 2560-d, PST structure 1280-d). Zero accession lookups needed; no GPU needed to recompute anything."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Embeddings are unitless mean-pooled hidden states with the source model, layer and width documented per column. Label is categorical with documented meaning. I confirmed the stated sequence semantics independently (coding-DNA length = 3x protein length + 3 for 200/200 rows)."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 417835,
+      "note": "417,835 question-answer rows verified, of which 292,014 are the balanced confirm/deny binary task; 30,406 of those are the held-out test split. The modelling unit is the gene: 17,732 genes, 17,644 of which carry Gene Ontology labels. All counts read from the files."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.6 GB (one deduplicated row per gene: 17,732 x 7,936 floats)",
+      "note": "Full dataset is 8.1 GB on disk, but I verified embeddings are byte-identical within a gene, so it deduplicates exactly to ~0.56 GB. Column-pruned range reads fetched the text columns of all three splits in 19 s and ~20 MB. Train Parquet is written in 20,000-row groups (max 0.45 GB decompressed), so peak RAM stays ~3 GB. No GPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Unusually good agreement: the paper's confirm/deny test counts (15,463 and 14,943) match the file exactly, and the dataset card's split table matches the Parquet row counts exactly. One minor unexplained gap: the paper calls the test set '34,743 questions' while the file holds 35,387 (30,406 confirm/deny + 4,981 generic), a 644-row difference that does not touch the binary task."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The crux, and it cuts both ways. The label traces to Gene Ontology curator assignments, not to a model's prediction, and can be restricted to non-electronic evidence codes (576 terms with >=50 genes survive dropping IEA). BUT the question text shipped as the input feature was written by GPT-4.1 while it knew the answer, so the feature is derived from the label: I measured MCC 0.943 from wording alone, and only 47 question strings in the whole dataset ever carry both labels. So the as-shipped benchmark is contaminated by construction; the clean task must drop the question text as a feature (or use it only as the control arm) and take Gene Ontology labels from the external join."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three identical-schema Parquet splits keyed on gene symbol, plus one external Gene Ontology file; join verified at 99.5%."},
+    "B2": {"score": 2, "why": "Clean Parquet; read first try with pyarrow, and column pruning works over HTTP range reads."},
+    "B3": {"score": 1, "why": "Gene Ontology mixes evidence codes needing a policy; Evo2 embeddings bf16-rounded at 300x the scale of ESM-2, so standardisation needed."},
+    "B4": {"score": 1, "why": "No nulls or non-finite values in rows I read, but negatives are 'not annotated', an open-world censoring needing a decision."},
+    "B5": {"score": 1, "why": "Zero duplicate (gene, prompt, kind) rows verified; per-gene repeats are byte-identical so dedupe is exact; card documents 188 duplicate generic rows."},
+    "B6": {"score": 2, "why": "Best dataset card I have seen in this queue: every column typed, sourced to model and layer, with limitations stated."},
+    "C1": {"score": 2, "why": "Informative either way: 'how much is wording versus protein' and 'does DNA add over protein' both yield a result."},
+    "C2": {"score": 1, "why": "GO-prediction field saturated with open honest models (DeepGO-SE, GOBeacon); nobody has audited this benchmark or compared Evo2 against ESM-2 here."},
+    "C3": {"score": 2, "why": "Clear 'better' plus 'unique application': a verified artifact audit, and precomputed Evo2 7B embeddings nobody else has."},
+    "C4": {"score": 2, "why": "GO curation is manual and slow; computing Evo2 7B embeddings for 17,732 genes needs GPUs this dataset already spent."},
+    "C5": {"score": 2, "why": "Six published MCC numbers on the exact released test split, plus CAFA3 Fmax figures for DeepGOPlus and GOBeacon."},
+    "D1": {"score": 2, "why": "ESM-2 and Evo2 embeddings are shipped precomputed; ESM-2 weights also openly downloadable for extension to other species."},
+    "D2": {"score": 2, "why": "Zero embedding cost: fit a head on a 0.56 GB matrix. My text-only run took 29 s wall-clock on CPU."},
+    "D3": {"score": 1, "why": "Code MIT and Gene Ontology CC-BY, but the dataset repo carries no licence tag and the models say 'license:other'."},
+    "E1": {"ok": true, "why": "Gene-disjoint splits provided and verified (0 overlap train/test and validation/test); amino-acid sequences present so identity clustering can be added."},
+    "E2": {"ok": true, "why": "17,732 genes, three provided splits, and 739 Gene Ontology terms usable as held-out targets."},
+    "E3": {"ok": true, "why": "Computed it: majority-class accuracy 0.509 on the binary task; per-term prevalence available for the multi-label task."},
+    "E4": {"ok": true, "why": "No replicates, but Gene Ontology evidence codes and annotation dates let you measure annotation churn as a floor."},
+    "E5": {"ok": true, "why": "Already ran one: protein embedding predicts log10 protein length at r=0.786 on held-out genes."},
+    "E6": {"ok": true, "why": "Already ran two: shuffled labels collapse to MCC 0.000; embeddings-only on the contaminated task gives AUC 0.506."},
+    "E7": {"ok": true, "why": "Gene Ontology annotation dates give a free temporal split; non-electronic-evidence-only labels give an independent-curation split."},
+    "E8": {"ok": true, "why": "Paper's Table 1 MCCs are on the exact released test split, and the LoRA adapters are public on HuggingFace."},
+    "G1": {"score": 2, "why": "HGNC gene symbols plus MANE Select transcripts; I verified 99.5% join to the Gene Ontology human annotation file."},
+    "G2": {"score": 2, "why": "Gene Ontology Annotation human (906,445 annotations, 15 MB, download verified); also AlphaFold DB, GTEx, DepMap on the same key."},
+    "G3": {"score": 2, "why": "Clean one-to-many: median 12 Gene Ontology terms per gene (max 227), collapsed to a multi-label matrix; 99.5% coverage."},
+    "G4": {"score": 2, "why": "Neither alone answers whether a DNA foundation model carries gene-function signal beyond protein-sequence and structure models."},
+    "H1": {"score": 1, "why": "Binary task is balanced by construction (15,463 vs 14,943), but negatives mean 'not annotated', not measured absence."},
+    "H2": {"score": 1, "why": "Human only, one canonical transcript per gene; no isoforms, no non-coding genes, structures all predicted."},
+    "H3": {"score": 2, "why": "Written out below as one sentence, and the contaminated-versus-clean distinction is quantified, not guessed."},
+    "H4": {"score": 2, "why": "Card states all four gaps explicitly: answers are model-generated, negatives are absence of evidence, MANE-only, structures predicted."},
+    "I1": {"score": 2, "why": "The Genolator authors at IHGGM Aachen, the protein-chat-model groups (Evolla, Prot2Text, FAPM), and CAFA organisers."},
+    "I2": {"score": 2, "why": "Would change how protein-language benchmarks are generated (label-blind questions) and what reviewers accept as evidence of multimodal benefit."},
+    "I3": {"score": 2, "why": "Same metric and same split as the paper, reported as change in MCC over a no-protein baseline - exactly the decision."},
+    "I4": {"score": 1, "why": "For the audit a bag of words suffices, which is the finding; only the multi-label task from embeddings genuinely needs ML."},
+    "J1": {"score": 2, "why": "Multi-label heads, grouped and identity-aware splits, modality ablation, calibration - real modelling, no cleaning slog."},
+    "J2": {"score": 2, "why": "Human gene function is interpretable and the positive control already works, so nonsense would be visible."},
+    "J3": {"score": 2, "why": "A shareable result already exists: the verified prompt-only MCC 0.943 stands alone as a short note."},
+    "J4": {"score": 1, "why": "Three weeks is realistic given the feature table is hours away, but I have not committed that in writing."},
+    "J5": {"score": 1, "why": "Condition is obvious (stop if DNA adds <0.01 macro-AUC over protein by week two) but not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Genolator (this paper; two LoRA adapters on Bio-Medical-Llama-3-8B)",
+        "open_weights": true,
+        "score_and_split": "MCC 0.959 (Evo2+PST) and 0.948 (Evo2+ESM2), F1 ~0.98, on the released gene-disjoint test split of 30,406 confirm/deny questions. My no-protein bag of words reaches MCC 0.943 on the identical split.",
+        "authors_named_unsolved": "Their discussion names three: hyperparameters were never tuned for cost reasons, the token-projector architecture and fusion strategy were not optimised, and performance on open-ended 'generic' questions is 'not yet optimal'.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "XGBoost on PST structure embeddings plus BioBERT question embeddings (this paper's own specialist baseline)",
+        "open_weights": false,
+        "score_and_split": "MCC 0.913 on the same test split - lower than my no-protein bag of words (0.943), which is the single most damaging number I found.",
+        "authors_named_unsolved": "Authors note it was hyperparameter-tuned while Genolator was not, so the comparison favoured it.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepGO-SE (protein function prediction as approximate semantic entailment, Nature Machine Intelligence 2024)",
+        "open_weights": true,
+        "score_and_split": "Reported to improve over prior methods across all three Gene Ontology sub-ontologies using ESM-2 embeddings; I read the abstract and search snippet only, not a specific number.",
+        "authors_named_unsolved": "Not retrieved - I did not open the discussion.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "GOBeacon (contrastive-learning ensemble, Protein Science 2025)",
+        "open_weights": null,
+        "score_and_split": "Highest average Fmax on the CAFA3 benchmark per the retrieved snippet: biological process 0.561, cellular component 0.651, molecular function 0.583, against DeepGOPlus 0.469 on biological process.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Evolla (protein-language generative model, open on GitHub)",
+        "open_weights": true,
+        "score_and_split": "Trained on 546 million protein-text pairs with preference optimisation; reported to beat general LLMs on functional inference and match a supervised state-of-the-art model zero-shot. From the retrieved repository and snippet, no split detail.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Prot2Text / Prot2Text-V2, Prot2Chat, FAPM, OPUS-PLLM (protein function text generation and QA)",
+        "open_weights": true,
+        "score_and_split": "OPUS-PLLM reports a 29.90% average F1 gain over the next-best knowledge-integrated LLM on Gene Ontology term prediction; the others report function-text generation metrics. All from retrieved abstracts, none on this dataset's split.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model), Evo2 7B (DNA foundation model) and PST (structure-infused protein transformer) - all three already mean-pooled and shipped in the file",
+    "freeze_and_head_viable": true,
+    "hardware": "16 GB CPU laptop; no GPU at any stage because the embeddings are precomputed. My full text-only train-and-test cycle took 29 s wall-clock including the network read.",
+    "licence": "Code MIT; Gene Ontology annotations CC-BY 4.0; ESM-2 weights open. The dataset repository itself carries no licence tag in the HuggingFace metadata I fetched, and the two model repositories declare 'license:other' - worth an email before publishing."
+  },
+  "integration": {
+    "partner_dataset": "Gene Ontology Annotation human release (906,445 non-negated annotation lines, 38,822 symbols, 15 MB gzipped - I downloaded and parsed it). Secondary partners on the same key: AlphaFold DB, GTEx, DepMap, Open Targets.",
+    "join_key": "HGNC gene symbol (gene_name column); verified 17,644 of 17,732 genes join, 99.5%, giving 739 Gene Ontology terms with at least 50 annotated genes (576 if electronic-only annotations are dropped)",
+    "bigger_question_one_sentence": "Does a DNA foundation model trained on genomes carry information about what a human gene does that a protein language model and a predicted-structure model do not already supply?"
+  },
+  "controls": {
+    "positive_control": "Already run: the protein embedding predicts log10 protein length at r = 0.786 on 1,209 held-out genes, so the features and plumbing are sound. Second control: well-annotated housekeeping genes with many curated Gene Ontology terms must be the easiest predictions.",
+    "negative_control": "Already run: shuffling training labels collapses the task to MCC 0.000, and embeddings alone on the confirm/deny task give ROC-AUC 0.506 (as expected, since embeddings are constant within a gene). Third control: ablate each of the three modality blocks separately.",
+    "external_validation": "Temporal split on Gene Ontology annotation dates (free, one column in the annotation file); an independent-curation split training on electronic annotations and testing on curated ones; and CAFA benchmark proteins for comparison against DeepGO-SE and GOBeacon."
+  },
+  "honest_claim_h3": "Two claims, both narrow and both verified-ready: first, that 97% of the published accuracy on this benchmark's confirm/deny task (MCC 0.943 of 0.959) is obtainable from the wording of the GPT-4.1-written question alone, with no gene, sequence or structure, so the paper's evidence for a multimodal benefit does not survive that control; second, that from frozen DNA, protein-sequence and predicted-structure embeddings of one canonical transcript per human gene we can rank which of 739 Gene Ontology terms a held-out gene is *annotated* with - annotation status in one release, not biological truth, for human protein-coding genes only.",
+  "plain_idea": {
+    "one_liner": "Use precomputed DNA, protein and structure fingerprints of 17,644 human genes to predict which gene functions each gene is annotated with.",
+    "train_on": "One row per gene: a 7,936-number fingerprint built by stacking a DNA-model vector (4,096), a protein-model vector (2,560) and a structure-model vector (1,280), all shipped precomputed. 17,732 genes verified in the files, 17,644 of which carry function labels.",
+    "predict": "For each gene, which of 739 standard function categories it belongs to. The true answer comes from the Gene Ontology Annotation human release - decades of curator reading of published experiments, which I downloaded and joined on gene symbol at 99.5% coverage.",
+    "why_worthwhile": "Groups building protein chatbots would learn whether feeding a model DNA on top of protein adds anything, which nobody can currently test because the DNA embeddings cost GPU time this dataset already spent. Even a null result is useful, and the free side-finding - that the published benchmark is ~96% solvable from question wording - changes how such benchmarks should be built."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "The function labels are the same Gene Ontology everyone uses, so no advantage there. What is genuinely unavailable elsewhere is mean-pooled Evo2 7B DNA embeddings for all 17,732 human MANE Select genes; DeepGO-SE, GOBeacon and DeepGOPlus all work from protein sequence only."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "739 terms each have at least 50 annotated genes, enough for per-term reliability estimates, and annotation dates plus evidence codes let you measure how often today's negative becomes tomorrow's positive. But there are no replicate measurements, so the floor is annotation churn, not assay noise."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "Not for general Gene Ontology prediction: DeepGO-SE (2024) and GOBeacon (2025) are evaluated honestly on CAFA3. But on this paper's own benchmark I already beat its XGBoost baseline (MCC 0.913) and both projector-only ablations (0.924, 0.895) with a bag of words that never sees the protein."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the same-split condition. The Gene Ontology join supplies labels, not better features, and DeepGOPlus or DeepGO-SE can only be run on their own CAFA splits and label sets, not on this dataset's gene-disjoint split. The comparison has to be rebuilt, so no improvement is guaranteed by construction."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Gene Ontology Annotation (I downloaded the human release and parsed 906,445 annotation lines over 38,822 symbols), QuickGO and UniProt which serve the same annotations across all species, and the CAFA benchmark sets - GOA verified by download, the others known resources.",
+    "approx_items": 906445,
+    "join_key": "HGNC gene symbol in this dataset; UniProt accession in the wider resources",
+    "why": "Because the same label exists for essentially every annotated protein in every species, the model trained on these 17,644 human genes has a ready-made external test set and can be checked against known answers before anyone trusts it on an unannotated gene."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology (Matters Arising or correspondence)",
+      "why": "It published Genolator, and a Matters Arising is the natural home for a controlled re-evaluation; it would take the prompt-only result holding up against the authors' own model run on the same split, which I have already reproduced at MCC 0.943."
+    },
+    "realistic": {
+      "journal": "Bioinformatics (or Briefings in Bioinformatics)",
+      "why": "Publishes benchmark audits and corrected evaluation protocols; a paper combining the measured wording artifact, a label-blind benchmark design, and an honest DNA-versus-protein modality comparison on 17,644 genes is squarely in scope."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Takes negative and partial results, so even 'the DNA foundation model adds nothing over the protein model on human gene function' is publishable there, alongside the released per-gene embedding table as a reusable resource."
+    }
+  },
+  "pitch": {
+    "headline": "A bag of words that never sees the protein scores MCC 0.943 on this paper's benchmark, where the published multimodal model scores 0.959.",
+    "what_makes_the_data_unusual": "It ships mean-pooled Evo2 7B DNA embeddings for all 17,732 human MANE Select genes alongside protein and structure embeddings - GPU work nobody else has published - and 99.5% of its gene symbols join to Gene Ontology. All verified by opening the files.",
+    "the_win": "Two numbers: the no-protein baseline at MCC 0.943 versus Genolator's published 0.959 on the identical split, and the change in macro-averaged AUC from adding DNA embeddings to protein embeddings across 739 Gene Ontology terms.",
+    "even_if_it_fails": "You still learn whether a genome foundation model encodes human gene function beyond what a protein model gives - a clean negative result - and the artifact finding stands on its own regardless.",
+    "who_wants_it": "The Genolator group at IHGGM Aachen, the protein-chat-model community (Evolla, Prot2Text, FAPM, OPUS-PLLM), and CAFA organisers deciding whether LLM-written question-answer benchmarks can be trusted at all."
+  },
+  "ml_idea": "Two arms on one download. Arm 1 (the audit, essentially complete): quantify how much of the published confirm/deny performance comes from the wording of GPT-4.1-written questions rather than from the protein - measured at accuracy 0.9716 and MCC 0.9432 on the official gene-disjoint test split of 30,406 items, above the paper's own XGBoost baseline (0.913) and both projector-only ablations (0.924, 0.895) - then show why the in-file fix fails (only 47 question strings ever carry both labels) and propose label-blind question generation. Arm 2 (the real model): deduplicate the file to one row per gene (17,732 x 7,936 floats, 0.56 GB, verified byte-identical within gene), join Gene Ontology labels on symbol at 99.5% coverage, and fit frozen-embedding heads for 739 terms with at least 50 genes each, ablating the DNA, protein-sequence and structure blocks separately under gene-disjoint and sequence-identity-clustered splits, with a temporal split on annotation dates as external validation.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.6,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 0,
+    "cv_run_minutes": 10,
+    "compute_note": "Timed, not guessed: the text-only train-and-evaluate cycle including streaming both splits took 29 s wall-clock on CPU, and the three split text-column reads took 19 s for ~20 MB. The 4 hours is dominated by one streamed 8.1 GB pass to deduplicate embeddings to 0.56 GB; peak RAM of 3 GB follows from the card's row-group sizes (train 0.45 GB per group, validation and test 0.8 GB as single row groups) and was consistent with what I observed. Embedding hours are zero because Evo2, ESM-2 and PST vectors are shipped.",
+    "cheapest_killing_check": "Both already run. (1) Gene Ontology join coverage: 17,644/17,732 genes = 99.5%, with 739 terms at >=50 genes, so arm 2 is viable. (2) Prompt-only MCC on the official test split: 0.9432, so arm 1's finding is real and the as-shipped label must never be modelled from the question text."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Everything material is verified, and the central result is already in hand: on the paper's own gene-disjoint test split of 30,406 questions, a bag-of-words model that sees no gene, no sequence and no structure reaches MCC 0.943 against Genolator's published 0.959, beating the paper's XGBoost baseline (0.913) and both of its ablations (0.924, 0.895) - so the evidence offered for a multimodal benefit does not survive a no-protein control. That is a publishable finding obtained in 30 seconds of compute and 20 MB of transfer. The same download then supports a clean second arm that the authors did not do: 17,732 human genes with precomputed Evo2 7B DNA, ESM-2 protein and PST structure embeddings (0.56 GB after exact deduplication, verified byte-identical within gene) joined to Gene Ontology at 99.5% coverage, giving 739 labels with at least 50 genes each and a free temporal split. The honest caveats are that the shipped question text must be excluded as a feature (A8 leakage, measured not assumed), that negatives mean 'not annotated' rather than absent, that coverage is human and MANE-only, and that the dataset repository carries no licence tag."
+}

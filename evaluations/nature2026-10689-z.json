@@ -1,0 +1,303 @@
+{
+  "paper_id": "nature2026-10689-z",
+  "title": "Universal cell embedding provides a foundation model for cell biology.",
+  "doi": "10.1038/s41586-026-10689-z",
+  "journal": "Nature",
+  "data_url": "https://cellxgene.cziscience.com/census-models (precomputed UCE/scGPT/Geneformer/scVI cell embeddings, Census version 2023-12-15, public S3 bucket cellxgene-contrib-public); model weights at https://figshare.com/articles/dataset/Universal_Cell_Embedding_Model_Files/24320806; code at https://github.com/snap-stanford/UCE; paper's own replication data at https://doi.org/10.5281/zenodo.19462110",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I installed cellxgene-census 1.18.0 in a throwaway virtual environment and opened the CELLxGENE Census (a public, no-login TileDB database of single-cell gene-expression data) at version 2023-12-15 directly from Amazon S3. Verified by running code, not reading: the human cell table has 62,998,417 rows and 26 metadata columns including cell_type and cell_type_ontology_term_id (Cell Ontology identifiers such as CL:0005009); 36,227,903 of those rows are flagged is_primary_data=True (non-duplicate) and span 286 datasets, 610 distinct cell types, 20 assays and 53 broad tissues. I listed the hosted embedding catalogue: UCE (Universal Cell Embedding) 1,280 numbers per cell for 62,996,451 human cells and 5,684,805 mouse cells, scGPT 512, fine-tuned Geneformer 512, scVI 50, plus NMF 200. I fetched all four embedding matrices for one specific 6,044-cell kidney dataset (f801b7a9-80a6-4d09-9161-71474deb58ae) in about 5 seconds each: no missing values, no duplicate cell identifiers, UCE rows are unit-length (mean L2 norm 1.000) while Geneformer rows are not (standard deviation 1.04). I then ran a complete miniature version of the proposed project on 20,380 human lung cells from 9 datasets and 14 cell types: a logistic-regression head on UCE embeddings scored 0.951 accuracy / 0.940 macro-F1 under a random 5-fold split but only 0.783 +/- 0.135 accuracy / 0.514 macro-F1 under leave-one-dataset-out; Geneformer 0.942/0.928 -> 0.714/0.417; scGPT 0.922/0.869 -> 0.593/0.383; scVI 0.875/0.870 -> 0.699/0.417; majority-class accuracy 0.183; shuffled-label leave-one-dataset-out collapsed to 0.166 (negative control works). Measured peak memory 4.2 GB for that run and 5.4 GB for reading five metadata columns over all 63 million rows. I downloaded Supplementary Table 16 (41586_2026_10689_MOESM4_ESM.xlsx, 122,600 bytes) and read it: 313 training datasets with CELLxGENE identifiers, 36,238,416 cells total, 274 of them human covering 30,993,741 cells, 285 taken from the Census and 28 from elsewhere. Joining that manifest against the Census, 254 of the 286 human primary datasets were in UCE's training corpus (28,105,402 cells) and 32 datasets with 8,122,501 cells were NOT (221 cell types, 22 tissues, 8 assays, 490 donors; 178 cell types shared with the training datasets; 158 of those have at least 200 held-out cells). I also read the file listings for the paper's Zenodo deposit (5 files, 157.2 GB total, smallest 13.3 GB, CC BY 4.0) and the figshare model files (14.9 GB total: 33-layer model 5.69 GB, gene-token table 2.98 GB, protein embeddings 2.74 GB, CC BY 4.0), and the GitHub repository (MIT licence, 345 stars).",
+    "what_came_from_paper_text_only": "Unverified, read in the text only: that UCE was trained self-supervised on the Integrated Mega-scale Atlas of 36 million cells from 8 species; that genes are tokenised using ESM2-15B protein embeddings of size 5,120; that the Census snapshot used for training was version 2023-07-10 (that exact version is not a public release, so my seen/unseen split rests on Supplementary Table 16's dataset list instead); all reported silhouette scores, the green monkey / naked mole rat / chicken cross-species results, the developmental-lineage and Norn-cell findings, and the claim that UCE beats Geneformer by 13.9% on the integration benchmark. I did not download the Zenodo replication archive (smallest file 13.3 GB, far over the project's 50 MB limit) and did not run the UCE model itself on new data."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified by downloading. No login, no application. The Census and the four embedding matrices came off public Amazon S3 buckets through the cellxgene-census library; Supplementary Table 16 came off the publisher's open-access content server. Caveat recorded: the paper's own Zenodo deposit is unusable here (5 files, 157 GB, smallest 13.3 GB), but the CELLxGENE route makes it unnecessary."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Nothing has to be constructed. cell_type (free text) and cell_type_ontology_term_id (Cell Ontology identifier) are both columns of the Census cell table; I printed them for a real 6,044-cell slice (21 distinct types) and counted 610 distinct types across all 36.2 million primary human cells. Tissue, assay, donor, disease, sex and ethnicity are columns too."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Strongest point of this candidate. The model input is already computed: 1,280 floating-point numbers per cell for 62,996,451 human cells, fetched by integer cell identifier in seconds. No gene-name mapping, no accession lookups, no forward pass through any neural network."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Mostly not applicable and documented where it is. The label is a categorical Cell Ontology term, so no units. Embedding coordinates are unit-less latent values; the hosted metadata file records dimension counts and provenance, and I confirmed the convention empirically (UCE rows length 1, Geneformer rows unnormalised), which is the thing that would otherwise bite silently."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 36227903,
+      "note": "Counted, not read: 36,227,903 non-duplicate human cells over 286 datasets, 610 cell types and 490+ donors; 271 datasets have at least 5,000 cells. Even the grouping unit (the dataset) numbers 286, far above the 5 needed to hold out. Mouse adds 5,684,805 embedded cells."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~2 GB for a 200,000-cell, four-model feature table (200k x 2,354 numbers x 4 bytes); 104 MB for the 20,380-cell run I actually did",
+      "note": "Measured, not estimated: peak memory 4.2 GB for the full four-model leave-one-dataset-out run and 5.4 GB for the heaviest metadata read. No graphics card needed anywhere, because the embeddings are already computed and hosted. Running UCE itself on new data would need a graphics card (the authors quote batch sizes per 80 GB card) but the proposed project never does that."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Checked three ways and they agree. Supplementary Table 16's cell counts sum to 36,238,416, matching the paper's '36 million cells'; the Census has 36,227,903 primary human cells; 274 human training datasets covering 30,993,741 cells. One small undocumented gap I found myself: the UCE embedding array covers 62,996,451 cells against 62,998,417 cell-table rows, so 1,966 cells (0.003%) have no embedding."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label is a human judgement, not a model output. Cell types were assigned by the original study authors from marker genes and then mapped to Cell Ontology terms by CELLxGENE curators; it is not computable from the UCE embedding except through real biology. Two honest caveats: a minority of CELLxGENE datasets had their cell types assigned by automated label-transfer tools, and UCE saw 254 of the 286 datasets during self-supervised pretraining, so there is input-side exposure even though no labels leaked. The 32 datasets absent from Supplementary Table 16 give a clean, exposure-free test set."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 2,
+      "why": "Verified: cell table plus four embedding arrays all keyed on the integer soma_joinid, join is index-based and lossless."
+    },
+    "B2": {
+      "score": 2,
+      "why": "Parsed on the first attempt on an Apple-silicon laptop; returns float32 arrays and a pandas table, no fixing needed."
+    },
+    "B3": {
+      "score": 1,
+      "why": "Cell Ontology harmonised by curators, but granularity is wildly uneven: 'neuron' (2.8M cells) beside 20-word subtypes; needs a policy."
+    },
+    "B4": {
+      "score": 1,
+      "why": "Verified zero missing values in all four embedding matrices; but 1,011,949 cells labelled 'native cell' plus 'unknown' must be dropped."
+    },
+    "B5": {
+      "score": 1,
+      "why": "Zero duplicate cell identifiers verified, but 26.8M of 63M rows are duplicate cells; one documented boolean column removes them."
+    },
+    "B6": {
+      "score": 2,
+      "why": "Every cell-table column documented in the Census schema; embedding provenance, size and dimension in a public metadata file I read."
+    },
+    "C1": {
+      "score": 2,
+      "why": "'How much accuracy is lost on a dataset the backbone never saw' is informative either way; I already measured 0.94 -> 0.51 macro-F1."
+    },
+    "C2": {
+      "score": 0,
+      "why": "Several open, reproducible models with honest published evaluation: VCBench, scContam, two 2026 zero-shot benchmarks, CZI's own."
+    },
+    "C3": {
+      "score": 1,
+      "why": "Residual angle only: nobody used Supplementary Table 16 to build a Census-wide exposure-free split, but scContam audits the same idea."
+    },
+    "C4": {
+      "score": 2,
+      "why": "Alternative is manual expert annotation from marker genes per dataset, which is slow, costly and the reason these models exist."
+    },
+    "C5": {
+      "score": 2,
+      "why": "Published numbers exist (paper's silhouette scores, CZI's 60/40 benchmark) plus a dummy I computed: 0.183 majority-class accuracy."
+    },
+    "D1": {
+      "score": 2,
+      "why": "UCE weights open on figshare (5.69 GB, CC BY 4.0) and, better, its embeddings are precomputed for 63M human + 5.7M mouse cells."
+    },
+    "D2": {
+      "score": 2,
+      "why": "Freeze-and-head is already done for you: I fitted a logistic head over 20,380 x 1,280 embeddings in 6.2 seconds on a laptop processor."
+    },
+    "D3": {
+      "score": 2,
+      "why": "Code MIT, model files CC BY 4.0, hosted embeddings CC BY 4.0; only the paper text is non-commercial, which does not bind the data."
+    },
+    "E1": {
+      "ok": true,
+      "why": "I ran leave-one-dataset-out myself; also leave-one-donor-out and the manifest-based seen/unseen split exist."
+    },
+    "E2": {
+      "ok": true,
+      "why": "Counted in the files: 286 human datasets with non-duplicate cells, 271 with over 5,000 cells, 490+ donors."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Computed: majority-class accuracy 0.183 on my 14-class lung subset; per-dataset class priors also available."
+    },
+    "E4": {
+      "ok": true,
+      "why": "26.8M of 63M rows are duplicate copies of cells kept elsewhere, so cross-lab annotation disagreement is measurable."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Pilot already recovered the paper's ordering UCE > Geneformer > scGPT on honest splits; assay and sex give a plumbing check."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Run and passed: shuffled-label leave-one-dataset-out accuracy 0.166, at or below the 0.183 dummy."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Three verified-reachable sources: 32 non-manifest datasets (8.1M cells), 5.68M mouse cells, Tabula Sapiens v2 on Zenodo."
+    },
+    "E8": {
+      "ok": true,
+      "why": "CZI's public Census-embedding benchmark and the paper's Supplementary Table 20 silhouette scores use these same hosted embeddings."
+    },
+    "G1": {
+      "score": 2,
+      "why": "Verified present: Cell Ontology, UBERON tissue and EFO assay identifiers, Ensembl gene identifiers, dataset UUIDs, donor identifiers."
+    },
+    "G2": {
+      "score": 2,
+      "why": "Named and verified live: the mouse Census UCE embeddings (5,684,805 cells, 1,280 dimensions) joinable on Cell Ontology term."
+    },
+    "G3": {
+      "score": 2,
+      "why": "One cell to one embedding row, verified zero duplicate identifiers; Cell Ontology joins are clean many-to-one, no ambiguity."
+    },
+    "G4": {
+      "score": 1,
+      "why": "Human-to-mouse head transfer is a real question, but the paper itself already tests cross-species transfer, so only marginally new."
+    },
+    "H1": {
+      "score": 1,
+      "why": "All classes observed and confusions fully visible, but cells the original authors could not annotate were dropped before deposit."
+    },
+    "H2": {
+      "score": 2,
+      "why": "Counted: 286 datasets, 20 assays, 53 tissues, hundreds of donors, two species embedded; brain and blood still dominate heavily."
+    },
+    "H3": {
+      "score": 2,
+      "why": "Written out precisely below; the exposure-free 32-dataset split lets the claim be stated sharply rather than hedged."
+    },
+    "H4": {
+      "score": 2,
+      "why": "Unusually explicit: the paper publishes its full training manifest (Supplementary Table 16) and Census documents the duplicate flag."
+    },
+    "I1": {
+      "score": 2,
+      "why": "Named: the CZI CELLxGENE / Virtual Cells team who host these embeddings, and Human Cell Atlas groups annotating new tissue atlases."
+    },
+    "I2": {
+      "score": 1,
+      "why": "Would inform zero-shot-versus-train-your-own decisions, but four 2026 benchmarks already told that audience the same thing."
+    },
+    "I3": {
+      "score": 1,
+      "why": "Real decision is per-cell 'trust this label?'; macro-F1 and per-class recall are roughly aligned but not the decision itself."
+    },
+    "I4": {
+      "score": 1,
+      "why": "Mapping is non-trivial, but nearest-centroid lookup on the same embeddings does much of the work, as the paper's own method shows."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Grouped splits, four frozen backbones, negative controls, cross-species transfer: exactly the transfer-learning skills wanted."
+    },
+    "J2": {
+      "score": 2,
+      "why": "Errors are interpretable: T-cell/NK-cell confusion is plausible, T-cell/pneumocyte confusion means the pipeline is broken."
+    },
+    "J3": {
+      "score": 2,
+      "why": "Useful output at every stage; the seen/unseen manifest join and the random-versus-grouped gap table are already results."
+    },
+    "J4": {
+      "score": 1,
+      "why": "No budget stated by anyone; from the 8 minutes the pilot took, 2-3 weeks is realistic, but nothing is written down."
+    },
+    "J5": {
+      "score": 0,
+      "why": "No kill date or condition exists in NOTES.md or anywhere else for this candidate."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "UCE (Universal Cell Embedding), the paper's own model: a 33-layer transformer that turns one cell's gene counts into 1,280 numbers, with genes tokenised by ESM2-15B protein embeddings",
+        "open_weights": true,
+        "score_and_split": "Paper reports it beats Geneformer by 13.9% on the overall single-cell integration benchmark score and has the best silhouette score for 67% of cell types; read in the text, not reproduced. My own measurement on 20,380 lung cells: 0.940 macro-F1 under a random split, 0.514 under leave-one-dataset-out.",
+        "authors_named_unsolved": "Read in the paper: fine-grained cell-type transfer across large evolutionary distances remains hard, and the model is transcriptome-only with no other data types.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Geneformer, scGPT and scVI, three other single-cell representation models whose embeddings CZI hosts for the same Census cells",
+        "open_weights": true,
+        "score_and_split": "Measured by me on the same 20,380 lung cells and 14 cell types, random 5-fold then leave-one-dataset-out accuracy: Geneformer 0.942 -> 0.714, scGPT 0.922 -> 0.593, scVI 0.875 -> 0.699; majority class 0.183.",
+        "authors_named_unsolved": "Not retrieved; I did not re-read those three papers.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "VCBench, a 2026 benchmark preprint scoring five single-cell foundation models against pre-registered simple baselines",
+        "open_weights": null,
+        "score_and_split": "Abstract retrieved: evaluates Geneformer, scGPT, UCE, TranscriptFormer and Arc State across five testable capability dimensions; simple linear and nearest-neighbour baselines match or beat every foundation model on four of five.",
+        "authors_named_unsolved": "Stated in the abstract: no foundation model publishes a complete cell-level training manifest, so data contamination is undetectable to users. Note UCE does publish a dataset-level manifest, which is the one opening left here.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "scContam (arXiv 2607.20572, July 2026), a per-cell audit of whether benchmark cells were in a model's pretraining corpus",
+        "open_weights": null,
+        "score_and_split": "Abstract retrieved from the arXiv application programming interface: applied to Geneformer, scGPT and UCE across four integration benchmarks; 80.4% and 77.0% of cells in two of the most-cited benchmarks show pretraining-overlap evidence, versus 0% for post-cutoff datasets AIDA v2 and Tahoe-100M.",
+        "authors_named_unsolved": "Abstract states production models resist cell-level memorisation but distributional contamination must be detected separately.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "'Benchmarking single-cell foundation models in a zero-shot setting' (2026 preprint)",
+        "open_weights": null,
+        "score_and_split": "Abstract retrieved via Europe PMC: scGPT, SCimilarity, UCE and Transcriptformer over four tasks; conventional baselines were strongest on cell-type annotation across most datasets, and scVI was strongest on integration.",
+        "authors_named_unsolved": "Abstract states effectiveness remains application- and evaluation-dependent, with no universal replacement for task-specific methods.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "'Cross-Tissue Generalization of Rare Cell-Type Representations in Single-Cell Foundation Models' (2026 preprint)",
+        "open_weights": null,
+        "score_and_split": "Abstract retrieved via Europe PMC: frozen embeddings plus nearest-neighbour classification for Geneformer, scGPT and UCE over 17 rare cell types in 8 human tissues; UCE best with mean cross-tissue F1 0.74, the other two collapse to tissue-of-origin signal.",
+        "authors_named_unsolved": "Abstract names generalisation collapse for rare cell types with tissue-specific adaptation (for example resident macrophages) as the key limitation.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "'Zero-shot evaluation reveals limitations of single-cell foundation models', Genome Biology 2025 (10.1186/s13059-025-03574-x)",
+        "open_weights": null,
+        "score_and_split": "From search-result summaries only, not the full paper: Geneformer and scGPT clustered cell types worse than scVI, Harmony, a highly-variable-gene baseline, and in some cases worse than randomly initialised versions of themselves.",
+        "authors_named_unsolved": "Not retrieved; I only read summaries, so I will not attribute a sentence to them.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "UCE (Universal Cell Embedding), used purely as a frozen feature extractor, with Geneformer, scGPT and scVI as three further frozen backbones for comparison",
+    "freeze_and_head_viable": true,
+    "hardware": "16 GB laptop, processor only, zero graphics card: the embeddings are already computed and hosted, so a logistic head over 20,380 cells by 1,280 features trained in 6.2 seconds (measured)",
+    "licence": "Code MIT; model weight files CC BY 4.0 on figshare; hosted embeddings CC BY 4.0; underlying CELLxGENE datasets mostly CC BY; the Nature article text itself is CC BY-NC-ND, which does not restrict the data"
+  },
+  "integration": {
+    "partner_dataset": "The mouse half of the same CELLxGENE Census, which carries UCE embeddings for 5,684,805 cells (catalogue entry CxG-contrib-3, 1,280 dimensions) - verified present, same embedding model, same access route",
+    "join_key": "cell_type_ontology_term_id (Cell Ontology term, for example CL:0005009), with tissue joined on UBERON identifier",
+    "bigger_question_one_sentence": "Does a cell-type classifier head fitted on human cells transfer to mouse cells carrying the same Cell Ontology term without any retraining, and does the size of the drop track how conserved that cell type is across the two species?"
+  },
+  "controls": {
+    "positive_control": "Two, chosen in advance. First, plumbing: predict the sequencing assay or the donor's sex from the embedding, both of which must be easily learnable. Second, biology: immune cell types with textbook marker genes (B cell versus natural-killer cell) must be among the easiest predictions, and the model must reproduce the paper's reported ordering UCE > Geneformer > scGPT - which my pilot already did (leave-one-dataset-out macro-F1 0.514 > 0.417 > 0.383).",
+    "negative_control": "Already run and passed: shuffling cell-type labels and refitting dropped leave-one-dataset-out accuracy to 0.166, at or below the 0.183 majority-class baseline. Also planned: shuffle labels within dataset to confirm the grouping is real, and replace embeddings with same-shaped random noise.",
+    "external_validation": "Three independent options, all verified reachable: (1) the 32 Census datasets with 8,122,501 primary human cells that are absent from UCE's published training manifest, sharing 178 cell types with the training datasets; (2) the mouse Census, 5,684,805 cells with the same embeddings, for cross-species testing; (3) the paper's own Zenodo deposit of Tabula Sapiens v2 embeddings, and the post-cutoff atlases AIDA v2 and Tahoe-100M named by the scContam preprint."
+  },
+  "honest_claim_h3": "A model here could honestly claim: 'given a frozen UCE embedding of a single human cell, I assign one of about 150 Cell Ontology types with macro-F1 around 0.5 on datasets that were not in UCE's published pretraining manifest, versus about 0.94 when train and test cells come from the same datasets' - and nothing about cells whose type the original authors could not annotate, about tissues outside the brain-and-blood-dominated Census, or about ancestries beyond the mostly-unrecorded donors.",
+  "pitch": {
+    "headline": "62,996,451 human cells ship with precomputed 1,280-number UCE embeddings, free and loginless; my laptop pilot went 0.940 to 0.514 macro-F1 across studies.",
+    "what_makes_the_data_unusual": "Four frozen backbones cover the identical cells under one access route — UCE 1,280-d, Geneformer 512-d, scGPT 512-d, scVI 50-d over 36,227,903 non-duplicate human cells, 286 datasets, 610 curated Cell Ontology types, CC BY 4.0, no login — so swapping backbones changes nothing but the feature matrix. UCE also publishes a dataset-level training list (Supplementary Table 16, which I downloaded and joined against the Census: 254 of 286 datasets seen, 32 datasets and 8,122,501 cells unseen), which VCBench's abstract says no other foundation model does; the exact pretraining snapshot version, however, is stated in the paper text only and is not a public release, so the split rests on that table rather than on the snapshot.",
+    "the_win": "A publishable noise ceiling for this whole benchmark genre: the rate at which two labs assign different Cell Ontology terms to the same cell, measured over the 26.8 million duplicate-cell rows, and how much of the 0.940-to-0.514 macro-F1 drop I measured between random and leave-one-dataset-out splits sits below that ceiling rather than above it. None of the five benchmark papers in the C2 audit reports this number.",
+    "even_if_it_fails": "If the noise ceiling comes out uninformative, almost nothing is learned — scContam already audited pretraining contamination for Geneformer, scGPT and UCE, and VCBench plus the 2026 zero-shot benchmark already showed simple baselines matching or beating these models on cell-type annotation, so the headline result would be a replication. What survives regardless is a cached table of four models' embeddings with curated labels, split by UCE's published manifest, reusable by any later single-cell candidate, plus two recorded traps: 14 of the first 15 small datasets I sampled have zero non-duplicate cells, and within human lung only 1 of 21 datasets with 4,000+ cells falls outside UCE's training corpus.",
+    "who_wants_it": "The single-cell benchmarking groups behind VCBench, scContam and the 2026 zero-shot evaluation, who currently report foundation-model F1 scores with no stated label-noise ceiling to compare them against, and the CELLxGENE curation team whose ontology mappings the ceiling would quantify. The decision it changes is the one every new-atlas author faces: trust an off-the-shelf model's automatic annotations, or spend weeks annotating by hand — a cross-study macro-F1 of 0.514 against 0.940 within-study is the number that answers it."
+  },
+  "plain_idea": {
+    "one_liner": "Use a precomputed numeric fingerprint of one cell to predict which cell type it is, testing on studies the fingerprint model never saw.",
+    "train_on": "One row per cell: 1,280 numbers summarising that cell's whole gene-expression profile, already computed and hosted for 62,996,451 human cells (count verified by reading the catalogue). A practical study would use 100,000 to 500,000 cells drawn from the 254 source studies the fingerprint model was trained on.",
+    "predict": "Which of roughly 600 named cell types the cell is, as a standard Cell Ontology term. The true answer comes from the biologists who published each original study: they clustered their cells, read off marker genes, named each cluster by hand, and curators then mapped those names onto the shared ontology.",
+    "why_worthwhile": "Anyone publishing a new tissue atlas has to decide whether to trust an off-the-shelf model's automatic labels or spend weeks annotating by hand, and the honest number is the gap between same-study and different-study performance, which I measured as 0.94 versus 0.51. Even a failure is informative, because it would quantify how much of a foundation model's apparent skill comes from having already seen the test studies."
+  },
+  "ml_idea": "Treat the four CZI-hosted Census embeddings (UCE 1,280-d, Geneformer 512-d, scGPT 512-d, scVI 50-d) as four frozen backbones over the same cells, fit identical logistic-regression or small multilayer-perceptron heads to predict the Cell Ontology cell type, and report the same number under three progressively honest splits: random, leave-one-dataset-out, and leave-out-the-32-datasets-absent-from-UCE's-published-training-manifest. Then transfer the human-trained head unchanged onto the 5.68M mouse cells joined on Cell Ontology term. Pilot already run end to end in 8 minutes on a laptop.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 2.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 5.0,
+    "embedding_hours": 0.6,
+    "cv_run_minutes": 25,
+    "compute_note": "Timed, not guessed. Fetching UCE embeddings ran at about 100 cells per second (20,380 cells in 211 seconds), so a 200,000-cell feature table is about 35 minutes of download and no computation at all, because the embeddings are precomputed. Peak memory measured at 4.2 GB for the four-model run and 5.4 GB for the heaviest metadata read; one leave-one-dataset-out sweep over 20,380 cells took 6.2 seconds, so scaling to 200,000 cells and 32 held-out datasets across four models is roughly 25 minutes.",
+    "cheapest_killing_check": "Already done: count how many CELLxGENE Census datasets with non-duplicate human cells are absent from Supplementary Table 16, because that is the only uncontaminated test set. Answer: 32 datasets, 8,122,501 cells, 221 cell types, 178 of them shared with the training datasets - comfortably enough, so this check does not kill it. The thing that does kill it is the literature count, not a data count."
+  },
+  "verdict": "park",
+  "verdict_reason": "Everything about the data is excellent and verified: Part A passes on all eight killers, the features are precomputed and free, the labels are human-curated ontology terms already sitting in a column, and I ran the entire proposed experiment end to end on this laptop in eight minutes with a working negative control. What sinks it is Part C2, scored 0. In the twelve months to October 2026 at least five independent groups published open, reproducible, honestly-split evaluations of exactly this: VCBench pre-registered simple baselines against five foundation models including UCE and found the baselines match or beat them on four of five dimensions; a 2026 zero-shot benchmark covering scGPT, SCimilarity, UCE and Transcriptformer found conventional baselines strongest on cell-type annotation; a cross-tissue rare-cell-type benchmark already reports UCE's frozen-embedding transfer F1 at 0.74; Genome Biology 2025 reported Geneformer and scGPT losing to a highly-variable-gene baseline; and scContam (arXiv 2607.20572) already built a per-cell pretraining-contamination audit for Geneformer, scGPT and UCE, which is precisely the one angle I thought was left. The most likely outcome of doing this is a careful replication of a conclusion that is already the field's consensus, which is exactly the 'marginal performance gain in a crowded subfield' the project brief says to score down. Park rather than reject, for two concrete reasons. First, as a warm-up it is close to ideal and it is honest about it: real transfer learning, grouped splits, four backbones, a noise floor that is genuinely measurable (the 26.8 million duplicate-cell rows let you quantify how often two labs annotate the same cell differently, which nobody in the papers above does), and a laptop cost of hours. Second, the artifact outlives the question: a cached table of four models' embeddings plus curated labels, split by UCE's published training manifest, is reusable infrastructure for any later single-cell candidate in this queue. If it is ever revived, the live angle to chase is the annotation noise floor via the duplicate-cell flag, not the contamination split. Two traps worth recording for whoever picks this up: 14 of the first 15 small datasets I sampled contain zero non-duplicate cells, so forgetting the is_primary_data filter silently yields empty slices, and within a single tissue the manifest-based holdout nearly vanishes (only 1 of 21 human lung datasets with 4,000+ cells is outside UCE's training corpus), so the exposure-free split only exists at Census-wide scale."
+}

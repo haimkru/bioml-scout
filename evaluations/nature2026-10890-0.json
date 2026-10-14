@@ -1,0 +1,337 @@
+{
+  "paper_id": "nature2026-10890-0",
+  "title": "ZFP36L2 orchestrates stress-adaptive plasticity in regeneration and cancer.",
+  "doi": "10.1038/s41586-026-10890-0",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE336781",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed all five GEO (Gene Expression Omnibus) subseries folders and downloaded and parsed 8 processed CSVs (<4 MB each). HyperTRIBE (RNA-editing binding assay) site tables: MSK107LI 57,803 sites / 8,401 genes, OKG146LI 111,139 sites / 10,769 genes, both unfiltered (padj up to 1); OKG146N (7,016 rows) and OKG146P (18,947) contain only padj<0.05 sites. Gene-level 3' UTR binding calls agree across lines: 756 of 775 MSK107LI-bound genes are also bound in OKG146LI (7,236 shared genes). Actinomycin D decay tables contain only significant genes (5,152 and 2,833 rows, all padj<0.05); MSK107LI file has 15,317 blank rows; cross-line Spearman of decay_diff = 0.13 on 1,381 shared genes. SLAM-seq (metabolic-labelling half-life) table: 5,888 genes by symbol only, 5,133 with fit R2>0.5 in both arms; some knockdown half-lives are absurd fit failures (up to 4.4e21). Bulk RNA-seq counts: 78,986 genes x 12 samples. The 2.0 GB scRNA-seq h5ad was not downloaded.",
+    "what_came_from_paper_text_only": "That half-lives are in hours (column has no unit; median 5.0 fits hours), the HyperTRIBE design (wild-type versus RNA-binding-dead ZFP36L2 fused to ADAR), the 5 h actinomycin D chase, and the paper's 379-gene shared decay-target count, which I did not reproduce. Supplementary tables were not retrievable from Europe PMC."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Checked in files: all processed CSVs download openly from the GEO FTP (file transfer) site, no login needed."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Checked in files: the binding label is site-level padj/diff_mean in one file, so a per-gene 'bound in the 3' UTR' call is a groupby inside one table, not inference across sources. The stabilisation label is log2 of two half-life columns in the same table."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Checked in files: no sequences are included. Inputs come from one bulk GENCODE/Ensembl 3' UTR FASTA joined on ENSG IDs, which is one download, not thousands of lookups. The SLAM-seq table has gene symbols only, so it needs symbol-to-ID mapping."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Checked in files: editing fractions are proportions from 0 to 1. Half-life columns carry no unit; the paper implies hours and the median of 5.0 is consistent with that. Marginal pass."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 10769,
+      "note": "Checked in files: 10,769 genes with HyperTRIBE calls in OKG146LI (6,067 significant), 7,236 genes shared with MSK107LI, and 5,133 well-fitted SLAM-seq half-life pairs."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~10 MB of CSVs plus ~50 MB of 3' UTR FASTA",
+      "note": "Tabular data and sequence embeddings fit easily on a CPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Partly checked: the GEO subseries match the data statement. Exact gene counts were not compared because the paper's supplementary tables could not be retrieved, but nothing contradicts the paper."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels are wet-lab measurements: ADAR editing frequencies and 4sU (4-thiouridine) labelling half-lives, not model outputs. One caveat: whether an edit is detected depends on how highly the gene is expressed, so expression is a confounder, though not circular."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "Several per-line CSVs join on ENSG; SLAM-seq table joins only by gene symbol (seen in files)."
+    },
+    "B2": {
+      "score": 1,
+      "why": "Parse fine but need fixes: trailing empty column, 15,317 blank rows, half-lives up to 4.4e21 (seen)."
+    },
+    "B3": {
+      "score": 1,
+      "why": "Same lab and assay, but four organoid lines have different depth; per-line normalisation needed (seen)."
+    },
+    "B4": {
+      "score": 1,
+      "why": "No censoring, but failed half-life fits (~13% with R2<0.5) must be dropped (seen in files)."
+    },
+    "B5": {
+      "score": 2,
+      "why": "No duplicate genes in decay or SLAM-seq tables; HyperTRIBE is one row per edit site (seen)."
+    },
+    "B6": {
+      "score": 1,
+      "why": "No README; column names are mostly self-explanatory, but half-life units and test direction are undocumented (seen)."
+    },
+    "C1": {
+      "score": 1,
+      "why": "Whether sequence models add anything beyond counting AU-rich motifs is informative, but the result could just be 'motif count suffices'."
+    },
+    "C2": {
+      "score": 2,
+      "why": "No ZFP36L2-specific predictor found; general RBP (RNA-binding protein) and half-life models exist but weren't trained on this. Likely novel."
+    },
+    "C3": {
+      "score": 2,
+      "why": "Novel: HyperTRIBE and SLAM-seq on human colorectal cancer organoids, published August 2026, never modelled."
+    },
+    "C4": {
+      "score": 1,
+      "why": "HyperTRIBE needs cloning, transduction and sequencing per cell type; a predictor would only partly replace it."
+    },
+    "C5": {
+      "score": 2,
+      "why": "Obvious dummy baselines: UAUUUAU 7-mer count, AREScore (AU-rich element score), 3' UTR length, expression level."
+    },
+    "D1": {
+      "score": 2,
+      "why": "RNA-FM and Orthrus (RNA/mRNA language models) have downloadable open weights."
+    },
+    "D2": {
+      "score": 2,
+      "why": "Embed ~11k 3' UTRs once on CPU, then fit logistic or ridge head; chunk long UTRs."
+    },
+    "D3": {
+      "score": 1,
+      "why": "Licences not checked for this evaluation; assume research use is acceptable."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Hold out 3' UTR sequence-similarity clusters or whole chromosomes; edit-site coordinates are in event_id."
+    },
+    "E2": {
+      "ok": true,
+      "why": "Thousands of genes; 22+ chromosomes or many clusters available as groups."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Majority class, 7-mer count and expression-only logistic baselines computable from the files."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Two lines give a replicate ceiling: 756/775 bound-gene agreement, versus decay Spearman 0.13 (computed)."
+    },
+    "E5": {
+      "ok": true,
+      "why": "UAUUUAU / AUUUA motif enrichment in bound 3' UTRs is the known ZFP36 family signal."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Label shuffling, and fitting on expression or UTR length alone, are runnable."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Mouse ZFP36L2 target sets (NAR 2022, RNA Biology 2026) and ZFP36 PAR-CLIP give outside validation."
+    },
+    "E8": {
+      "ok": false,
+      "why": "Paper reports overlaps and enrichments, not a predictive metric to reproduce."
+    },
+    "G1": {
+      "score": 2,
+      "why": "Ensembl gene IDs and hg38 coordinates of edit sites present in files."
+    },
+    "G2": {
+      "score": 2,
+      "why": "GENCODE 3' UTR sequences and the Saluki half-life compendium (39 human datasets) join on Ensembl gene."
+    },
+    "G3": {
+      "score": 1,
+      "why": "Gene-to-many 3' UTR isoforms; need a collapse rule, e.g. longest or most-expressed transcript."
+    },
+    "G4": {
+      "score": 1,
+      "why": "Linking binding to half-life across cell types is somewhat bigger, but only one cancer type is measured here."
+    },
+    "H1": {
+      "score": 1,
+      "why": "HyperTRIBE in two lines includes non-significant sites; decay tables keep only significant genes."
+    },
+    "H2": {
+      "score": 1,
+      "why": "Four organoid lines from two colorectal cancer patients; one tissue, one lab."
+    },
+    "H3": {
+      "score": 2,
+      "why": "Claim is precise: predicts ZFP36L2 3' UTR binding in expressed genes of colorectal cancer organoids."
+    },
+    "H4": {
+      "score": 1,
+      "why": "Paper says organoid-specific, but the filtering of the decay tables is visible only in the files."
+    },
+    "I1": {
+      "score": 1,
+      "why": "RNA-binding protein and mRNA decay researchers; no specific named user group."
+    },
+    "I2": {
+      "score": 1,
+      "why": "Could prioritise candidate targets for validation, but only marginally over motif scanning."
+    },
+    "I3": {
+      "score": 1,
+      "why": "PR-AUC (precision-recall area under the curve) roughly matches 'which genes to validate'."
+    },
+    "I4": {
+      "score": 1,
+      "why": "Motif counting may capture most signal; tissue specificity suggests context adds something."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Embeddings, grouped splits, confounder control, cross-species transfer."
+    },
+    "J2": {
+      "score": 1,
+      "why": "AU-rich biology is intuitive, but separating expression bias needs care."
+    },
+    "J3": {
+      "score": 2,
+      "why": "A cleaned gene-level binding and half-life table plus a motif baseline is shareable alone."
+    },
+    "J4": {
+      "score": 1,
+      "why": "Roughly two weekends; not formally fixed."
+    },
+    "J5": {
+      "score": 1,
+      "why": "Kill condition proposed below but not yet written in NOTES.md."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "AREScore (rule-based AU-rich element score, used in prior ZFP36L2 papers)",
+        "open_weights": true,
+        "score_and_split": "Heuristic with no trained split; scores pentamer count, spacing and AU context.",
+        "authors_named_unsolved": "The 2026 RNA Biology mouse study says ZFP36L2 targeting is tissue-specific and depends on more than AU-rich elements.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RBPNet / iDeepB (deep models of RBP binding at single-base resolution, trained on eCLIP (enhanced crosslinking and immunoprecipitation) data)",
+        "open_weights": null,
+        "score_and_split": "Reported on eCLIP data for many RBPs; I did not confirm that ZFP36L2 is among them, and saw no split details.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Saluki (Agarwal & Kelley 2022, Genome Biology; mRNA half-life from sequence)",
+        "open_weights": true,
+        "score_and_split": "r=0.77 for half-life across a compendium of 39 human datasets; not ZFP36L2-dependent change.",
+        "authors_named_unsolved": "Not retrieved beyond the abstract.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM or Orthrus (RNA/mRNA language models) on 3' UTR sequences",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; ~11k UTRs chunked to 1 kb",
+    "licence": "Not verified; assumed open for research use"
+  },
+  "integration": {
+    "partner_dataset": "GENCODE 3' UTR sequences plus the Saluki half-life compendium and mouse ZFP36L2 target sets",
+    "join_key": "Ensembl gene ID (and hg38 coordinates for edit sites)",
+    "bigger_question_one_sentence": "Does 3' UTR sequence context beyond the AU-rich motif determine which transcripts ZFP36L2 binds and destabilises, and does this transfer between human cancer organoids and mouse tissues?"
+  },
+  "controls": {
+    "positive_control": "UAUUUAU 7-mer count must separate bound from unbound 3' UTRs (AUC well above 0.5); predicting 3' UTR length from embeddings should be near-perfect.",
+    "negative_control": "Shuffled labels collapse to majority class; a model on expression level alone sets the confounder floor.",
+    "external_validation": "Mouse ZFP36L2 targets (NAR 2022 and RNA Biology 2026 papers) and the ZFP36 PAR-CLIP targets in HEK293 cells (Genome Biology 2014)."
+  },
+  "honest_claim_h3": "Predicts which expressed genes ZFP36L2 binds in their 3' UTR in two human colorectal cancer liver-metastasis organoid lines, among genes deep enough to detect editing.",
+  "plain_idea": {
+    "one_liner": "Use the RNA sequence after a gene's coding region to predict whether the cancer-mutated protein ZFP36L2 binds it and speeds its decay.",
+    "train_on": "The 3' untranslated region sequence of each gene, plus its expression level, for 10,769 genes measured in one organoid line (7,236 measured in two lines).",
+    "predict": "Whether ZFP36L2 binds the gene, as measured by HyperTRIBE (a fused RNA-editing enzyme marks bound RNAs), and secondarily how much the gene's half-life changes when ZFP36L2 is knocked down (SLAM-seq).",
+    "why_worthwhile": "Researchers studying ZFP36L2 in cancer and regeneration could rank candidate targets in new cell types without running an editing experiment, and we'd learn whether simple motif counting already explains binding."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "This is the first human-organoid ZFP36L2 binding set with negatives (~10.8k genes); general RBP models use eCLIP from K562/HepG2 cell lines, and I didn't confirm they include ZFP36L2."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Two independent lines give per-gene agreement (756/775 concordant), usable to flag uncertain genes; AREScore gives no confidence."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The closest baseline is a hand-crafted motif score (AREScore); Saluki (2022) predicts absolute half-life rather than ZFP36L2-dependent change."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "No existing ZFP36L2-specific model sees a subset of our inputs on the same split, so improvement isn't guaranteed by construction."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Mouse ZFP36L2 target sets (NAR 2022; RNA Biology 2026, found by search); ZFP36 PAR-CLIP targets (Genome Biology 2014, found by search); POSTAR3 CLIP database (known resource, ZFP36L2 coverage unverified).",
+    "approx_items": null,
+    "join_key": "Ensembl gene ID / gene symbol (mouse via orthologs)",
+    "why": "Small outside target sets allow an external transfer test, but give little extra training data."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Paralogous genes with similar 3' UTRs placed in both train and test.",
+      "Detecting editing depends on read depth, so highly expressed genes look 'bound'; the model may learn expression, not binding.",
+      "Long 3' UTRs have more chances to be edited, so length alone may predict the label.",
+      "The decay and OKG146N/P files contain only significant genes, so using them as labels removes the negatives."
+    ],
+    "split": "Hold out whole chromosomes (from event_id coordinates, seen in files), or cluster 3' UTRs at ~80% identity with MMseqs2 and hold out clusters; train on OKG146LI and test on MSK107LI as a second axis.",
+    "checks": [
+      "Shuffle labels and confirm collapse to the majority-class baseline.",
+      "Fit expression-only and UTR-length-only models; the sequence model must beat both, and be evaluated within expression-matched bins.",
+      "Nearest-neighbour UTR identity between test and train genes."
+    ],
+    "verdict": "Manageable: duplicates are easy to handle, but expression and length confounding is a serious risk that needs explicit stratification."
+  },
+  "success_criteria": {
+    "metric": "PR-AUC (precision-recall area under the curve) for 3' UTR binding on held-out chromosomes within expression-matched bins, because the use is picking genes to validate.",
+    "baselines": "Majority class (prevalence ~0.56 of genes in OKG146LI, computed: 6,067 of 10,769 significant at any site); UAUUUAU 7-mer count, AREScore and expression-only logistic regression (to be computed; no published number exists).",
+    "success": "PR-AUC at least 0.05 above the best of the motif-count and expression baselines on held-out chromosomes, and transfer to MSK107LI calls; no published target number exists.",
+    "noise_ceiling": "Cross-line agreement: 756 of 775 MSK107LI-bound genes also bound in OKG146LI; 2,516 bound only in OKG146LI (mostly depth-driven).",
+    "kill": "Embedding model under 0.03 PR-AUC better than 7-mer count plus expression after one weekend."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nucleic Acids Research",
+      "why": "Publishes RBP target-specificity work (including the 2022 ZFP36L2 paper); needs sequence context beyond the motif that transfers to mouse."
+    },
+    "realistic": {
+      "journal": "RNA",
+      "why": "Takes focused analyses of RBP targeting rules; fits a 'motif plus context' result on one dataset."
+    },
+    "fallback": {
+      "journal": "bioRxiv preprint / NAR Genomics and Bioinformatics",
+      "why": "A negative result ('motif count explains binding') with a cleaned table is publishable as a short note."
+    }
+  },
+  "pitch": {
+    "headline": "Organoid-measured ZFP36L2 binding for 10,769 genes, with 756 of 775 bound genes reproduced in a second line, never used for ML.",
+    "what_makes_the_data_unusual": "Unfiltered HyperTRIBE site tables (padj up to 1, so negatives included) from human colorectal cancer metastasis organoids, paired with SLAM-seq half-lives for 5,133 well-fitted genes with and without knockdown.",
+    "the_win": "A sequence model beating UAUUUAU motif count plus expression by at least 0.05 PR-AUC on held-out chromosomes and transferring to mouse target sets.",
+    "even_if_it_fails": "A clean statement that ZFP36L2 binding in these organoids is explained by AU-rich motif count and expression, plus a deduplicated gene-level table.",
+    "who_wants_it": "Groups studying ZFP36 family RNA decay in cancer and immunity, deciding which predicted targets to validate."
+  },
+  "ml_idea": "Gene-level classifier: GENCODE 3' UTR sequence (frozen RNA-FM/Orthrus embeddings, plus k-mer counts) and expression predict ZFP36L2 HyperTRIBE binding in OKG146LI; test on held-out chromosomes, transfer to MSK107LI and mouse target sets; secondary regression on log2 SLAM-seq half-life ratio.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.06,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 2,
+    "cv_run_minutes": 3,
+    "compute_note": "Estimated, not timed: ~11k UTRs chunked to 1 kb at ~2 chunks/s on CPU for embeddings; logistic regression CV is seconds.",
+    "cheapest_killing_check": "Compute PR-AUC of UAUUUAU count plus log expression for OKG146LI gene-level binding; if it is already near the cross-line ceiling, stop."
+  },
+  "verdict": "park",
+  "verdict_reason": "Open, small and never-modelled binding and half-life tables pass Part A, but model-readiness is 7/12 (filtered decay tables, failed fits, no README). The dataset covers one tissue from two patients, and expression and motif-count confounding may leave nothing for a sequence model to add."
+}

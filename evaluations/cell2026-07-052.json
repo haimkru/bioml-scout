@@ -1,0 +1,106 @@
+{
+  "paper_id": "cell2026-07-052",
+  "title": "Predicting cellular responses to perturbation across diverse contexts with State.",
+  "doi": "10.1016/j.cell.2026.07.052",
+  "journal": "Cell",
+  "data_url": "https://huggingface.co/datasets/arcinstitute/PIE_tahoe100m",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Hugging Face (HF) API listings: arcinstitute/State-Replogle-Filtered is one 30.0 GB h5ad (single-cell file) plus split .toml files (opened k562_zeroshot.toml: whole cell line held out as test). arcinstitute/PIE_tahoe100m: 50 per-cell-line DE (differential expression) parquets totalling 23.5 GB (~470 MB each), plus preprocessed matrices (fold_changes.npy 4.13 GB, fdr.npy 4.13 GB, tested.npy 1.03 GB). Opened meta.json: 56,827 rows (cell line x drug-dose), 18,151 genes, 50 cell lines (Cellosaurus IDs), 1,137 drug-dose conditions named by compound name + dose. Fetched the last 2 MB of one parquet: valid PAR1 footer. SE-600M weights are public (not gated), under a non-commercial licence. GitHub repo ArcInstitute/state is public. tahoebio/Tahoe-100M is CC0 and not gated.",
+    "what_came_from_paper_text_only": "No full text (paywalled, no PMCID); only the abstract. Column meanings, cell counts per line (95.6M cells total) and DE method (Mann-Whitney U vs DMSO controls) come from the PIE_tahoe100m README, not from opening the parquet rows or the .npy matrices. I did not open any fold-change values, so missingness and value ranges are unchecked. ST-Tahoe model repo returned 401 (likely gated or renamed)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "HF datasets State-Replogle-Filtered, PIE_tahoe100m and Tahoe-100M (CC0) list files publicly without login; checked via the HF API. The Virtual Cell Challenge dataset returned 401 (unauthorized)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Label = per-gene log2 fold change of drug-treated vs DMSO (solvent control) cells, already computed per (cell line, drug-dose, gene) in the PIE DE parquets and as a dense matrix fold_changes.npy. Seen in the README and meta.json shapes, not in the values."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are a cell-line ID (Cellosaurus, 50) and a drug-dose string (1,137). Drug structure (SMILES, the text encoding of a molecule) needs a lookup for ~379 compounds; Tahoe-100M ships drug metadata, which I did not open. Small lookup, not thousands."},
+    "a4_units_stated": {"pass": true, "note": "README states log2 fold change, CP10k (counts per 10,000) normalisation, dose in uM (micromolar) in the condition name. From the README only."},
+    "a5_enough_rows": {"pass": true, "n_rows": 56827, "note": "56,827 (cell line x drug-dose) response profiles over 18,151 genes, read from meta.json. Unit of independence is closer to 379 drugs x 50 cell lines."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.5-1 GB after subsetting to ~2,000 genes; full fold_changes.npy is 4.13 GB", "note": "Full dense matrix is 4.13 GB float32 (memory-mappable). Subsetting to highly variable genes keeps it well under 16 GB RAM; the raw 30 GB h5ad and 23.5 GB parquets are not needed. Download of 4.1 GB is still required."},
+    "a7_counts_match_paper": {"pass": true, "note": "meta.json 56,827 rows is consistent with 50 lines x 1,137 conditions minus the 23 missing pairs the README lists (1,133-1,136 per line). Could not compare with the State paper's own counts (no full text)."},
+    "a8_label_provenance": {"pass": true, "note": "Fold changes are computed from measured single-cell RNA counts (treated vs DMSO), not from another model. Not derived from the model inputs (cell-line ID, drug identity)."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One dense matrix fold_changes.npy (56,827 x 18,151) with row index files; seen in HF listing and meta.json."},
+    "B2": {"score": 1, "why": ".npy and parquet formats, valid parquet footer checked; values not loaded, 4.1 GB download needed."},
+    "B3": {"score": 2, "why": "One platform, one lab (Tahoe Mosaic), one DE pipeline against per-line DMSO controls, per README."},
+    "B4": {"score": 1, "why": "Untested genes set to 0 with a tested.npy mask; needs masking policy, documented in README."},
+    "B5": {"score": 2, "why": "One row per (cell line, drug-dose) by construction of the matrix; per meta.json vocabularies."},
+    "B6": {"score": 2, "why": "README documents every parquet column and every .npy array shape and meaning."},
+    "C1": {"score": 1, "why": "Held-out-cell-line transfer is informative, but mostly meaningful only if it beats strong baselines."},
+    "C2": {"score": 0, "why": "State, PIE, Tahoe-x1, scGPT, CPA/chemCPA, GEARS, VCC winners; several open with honest held-out evaluation."},
+    "C3": {"score": 1, "why": "Weak angle: re-test linear/DepMap-informed baselines against State on unseen cell lines; already actively studied."},
+    "C4": {"score": 2, "why": "Measuring each drug x cell line response by single-cell sequencing is costly lab work."},
+    "C5": {"score": 2, "why": "State's published numbers plus obvious dummies (per-drug mean across cell lines, zero change)."},
+    "D1": {"score": 2, "why": "SE-600M State embedding weights public on HF (checked, not gated); ChemBERTa/MolFormer for drugs."},
+    "D2": {"score": 1, "why": "Embedding cells needs raw counts and SE-600M (715M parameters), slow on CPU; pseudobulk features avoid this."},
+    "D3": {"score": 1, "why": "State model licence is non-commercial (read MODEL_LICENSE.md); Tahoe-100M data CC0."},
+    "E1": {"ok": true, "why": "Hold out whole cell lines or whole drugs; State's own toml configs do zero-shot cell-line holds."},
+    "E2": {"ok": true, "why": "50 cell lines and ~379 drugs are enough groups to hold out."},
+    "E3": {"ok": true, "why": "Per-drug mean across training cell lines and zero-change baseline are trivially computable."},
+    "E4": {"ok": true, "why": "Three doses per drug and many cells per condition; replicate plates per README are not confirmed."},
+    "E5": {"ok": true, "why": "Known effects: proteasome or HDAC inhibitors give large, shared signatures; dose-response monotonicity should be recovered."},
+    "E6": {"ok": true, "why": "Shuffle cell-line labels, ablate drug features; straightforward on a matrix."},
+    "E7": {"ok": true, "why": "LINCS L1000 drug signatures and sci-Plex give independent drug x cell line responses."},
+    "E8": {"ok": false, "why": "No full text seen; cannot confirm which State number is reproducible on which split."},
+    "G1": {"score": 2, "why": "Cellosaurus cell-line IDs and gene symbols in meta.json; drug names need mapping to InChIKey."},
+    "G2": {"score": 2, "why": "DepMap expression/dependency (cell line) and LINCS L1000 (compound + cell line)."},
+    "G3": {"score": 1, "why": "Cellosaurus to DepMap is near one-to-one; drug name to InChIKey has salt-form ambiguity."},
+    "G4": {"score": 1, "why": "Baseline omics predicting drug response is a known question; marginal over State's context features."},
+    "H1": {"score": 2, "why": "Every drug-dose measured in every line, including non-responding genes and weak drugs."},
+    "H2": {"score": 1, "why": "50 cancer cell lines, one lab and platform; no primary tissue or normal cells besides hTERT-HPNE."},
+    "H3": {"score": 2, "why": "Claim stated precisely below: cancer cell lines, one platform, 24h-style screen doses."},
+    "H4": {"score": 1, "why": "Cell-line-only scope obvious; dose/time limits and plate effects only partly documented in README."},
+    "I1": {"score": 2, "why": "Arc Institute virtual-cell team, Tahoe Therapeutics, Virtual Cell Challenge community."},
+    "I2": {"score": 1, "why": "Marginal: a better unseen-line predictor would only shift screen design if gains are large."},
+    "I3": {"score": 1, "why": "Correlation of fold changes vs. the real need (ranking drugs/hit genes per line) is roughly aligned."},
+    "I4": {"score": 1, "why": "Published work shows linear/mean baselines are hard to beat here; ML gain uncertain."},
+    "J1": {"score": 2, "why": "Real modelling: grouped splits, transfer to unseen cell lines, embeddings, calibrated metrics."},
+    "J2": {"score": 1, "why": "Some intuition on drug classes; perturbation-metric pitfalls need expert check."},
+    "J3": {"score": 2, "why": "A baseline-vs-State table on held-out lines is shareable at any stage."},
+    "J4": {"score": 1, "why": "No time budget stated yet."},
+    "J5": {"score": 0, "why": "No kill date written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "State (this paper; SE-600M embedding + ST transition model)", "open_weights": true, "score_and_split": "Abstract: >30% better perturbation discrimination and better DE-gene recovery than baselines on large datasets; zero-shot cell-line holds per its toml configs. Exact numbers not seen (no full text).", "authors_named_unsolved": "Generalising to cellular contexts with no perturbations observed during training (abstract framing).", "runnable_as_baseline": true},
+      {"name": "PIE (Arc Institute perturbation effect model, ArcInstitute/pie)", "open_weights": null, "score_and_split": "Not retrieved; HF card says Tahoe is a training set of its cross-dataset experiment.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Linear baselines vs GEARS/scGPT/scFoundation/CPA (Ahlmann-Eltze et al., Nature Methods 2025)", "open_weights": true, "score_and_split": "No deep model beat simple linear baselines on single/double genetic perturbations (Norman, Replogle).", "authors_named_unsolved": "Deep models do not yet beat linear baselines for unseen perturbations.", "runnable_as_baseline": true},
+      {"name": "Calibrated-metric re-evaluation (Nature Biotechnology 2026, 'Deep learning perturbation models can outperform baselines on calibrated metrics')", "open_weights": null, "score_and_split": "Argues deep models beat uninformative baselines under calibrated metrics; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Virtual Cell Challenge 2025 winners (BioMap xTrimoSCPerturb, Altos flow matching, TransPert)", "open_weights": null, "score_and_split": "Held-out H1 stem-cell CRISPRi perturbations (300 perturbations); hybrid statistical+DL models won.", "authors_named_unsolved": "2026 challenge targets cell contexts never seen in training.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "SE-600M (State embedding model) for cell context; ChemBERTa or MolFormer for drug structure", "freeze_and_head_viable": true, "hardware": "Laptop CPU for pseudobulk/fold-change features plus molecule embeddings; SE-600M cell embedding over raw cells would want a GPU", "licence": "State: Arc non-commercial licence; Tahoe-100M data CC0"},
+  "integration": {"partner_dataset": "DepMap (baseline expression and gene dependency of the same cancer cell lines) and LINCS L1000", "join_key": "Cellosaurus accession (to DepMap model ID); drug name to InChIKey", "bigger_question_one_sentence": "Does a cell line's untreated expression and dependency profile predict how its transcriptome responds to a drug it was never screened with, as well as State does?"},
+  "controls": {"positive_control": "Recover strong shared signatures of proteasome/HDAC inhibitors and monotonic dose-response across the three doses.", "negative_control": "Shuffle cell-line identities across rows and replace drug embeddings with noise; performance must fall to the per-drug mean.", "external_validation": "LINCS L1000 or sci-Plex signatures for overlapping drug x cell line pairs."},
+  "honest_claim_h3": "Predicts the pseudobulk gene-level fold change of a drug at one of three doses in a cancer cell line held out of training, among the 50 lines and ~379 compounds Tahoe chose to screen on one platform.",
+  "plain_idea": {
+    "one_liner": "Use a cancer cell line's untreated profile plus a drug's structure to predict how the drug changes that line's gene activity.",
+    "train_on": "Each example is one cell line x drug-dose pair, described by the line's baseline expression and the drug's chemical structure; 56,827 pairs (from meta.json).",
+    "predict": "The change in activity of each of ~18,000 genes (log fold change vs solvent-treated cells), measured by single-cell RNA sequencing in the Tahoe-100M screen.",
+    "why_worthwhile": "Drug-screen teams could skip screening some cell lines if simple baselines transfer; if they fail, it quantifies how much State adds over cheap features."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "State itself was trained on this exact Tahoe-100M data plus Replogle and Parse PBMC (167M cells for embeddings); we would have strictly less."},
+    "confidence_score": {"answer": "partly", "why": "Three doses and per-condition cell counts allow noise estimates, but I did not check whether State or PIE already report uncertainty."},
+    "models_beatable": {"answer": "no", "why": "State is a 2026 Cell model with open code evaluated on held-out cell lines; Virtual Cell Challenge drew 300+ final teams."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new data joins that State did not already see; DepMap adds a different assay, so improvement is not guaranteed by construction."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "LINCS L1000 (known resource: compound x cell line expression signatures), sci-Plex (known resource), Tahoe-100M raw counts (checked on HF).", "approx_items": null, "join_key": "Cellosaurus ID / cell line name; InChIKey for drugs", "why": "Independent drug-response signatures allow testing whether a model trained on Tahoe transfers to another lab and assay."},
+  "publication_target": {
+    "ambitious": {"journal": "Nature Methods", "why": "Publishes perturbation-model benchmarks; would need a clear result that cheap baselines match or beat State on unseen cell lines."},
+    "realistic": {"journal": "Bioinformatics", "why": "Fits a focused benchmark note comparing simple transfer baselines to State on held-out Tahoe cell lines."},
+    "fallback": {"journal": "bioRxiv preprint plus a NeurIPS/ICML biology workshop", "why": "A negative or partial baseline comparison is still a useful workshop contribution in this active community."}
+  },
+  "pitch": {
+    "headline": "A ready matrix of 56,827 drug x cancer-cell-line responses over 18,151 genes, CC0 source data, no single-cell processing needed.",
+    "what_makes_the_data_unusual": "Every one of 1,137 drug-dose conditions measured in each of 50 cell lines (95.6M cells, per README), so whole lines or drugs can be held out cleanly.",
+    "the_win": "Show a DepMap-baseline linear model matches State's correlation on held-out cell lines (State's exact numbers not seen; paper paywalled).",
+    "even_if_it_fails": "A measured gap between cheap baselines and State on held-out cell lines, which the field is actively disputing.",
+    "who_wants_it": "Arc Institute virtual-cell team, Tahoe Therapeutics, and Virtual Cell Challenge entrants deciding whether large cell-embedding models are worth their cost."
+  },
+  "ml_idea": "Hold out whole cell lines in the PIE Tahoe fold-change matrix; compare per-drug mean, ridge regression on DepMap baseline expression + drug fingerprints, and State predictions on the top ~2,000 variable genes.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 1.0, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 0.1, "cv_run_minutes": 20, "compute_note": "Estimated, not timed: memory-map 4.1 GB fold_changes.npy, slice ~2,000 genes, ridge on 56,827 rows; molecule embeddings for ~379 drugs take minutes.", "cheapest_killing_check": "Download fold_changes.npy + tested.npy and count how many (line, drug) rows have a non-trivial response (e.g. >50 genes FDR<0.05); if most are near zero, the task collapses to the mean."},
+  "verdict": "park",
+  "verdict_reason": "Data is clean and open (56,827 profiles, CC0 source) but the task is saturated: State was trained on this very data, with open code and held-out cell-line evaluation, alongside PIE, linear-baseline benchmarks and the Virtual Cell Challenge. Only a baseline re-evaluation remains, and the paywalled text prevents checking State's numbers."
+}

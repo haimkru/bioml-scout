@@ -1,0 +1,52 @@
+{
+  "paper_id": "nature2026-11089-z",
+  "title": "Global mangrove distribution on the open coast is controlled by waves.",
+  "doi": "10.1038/s41586-026-11089-z",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.19325516",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 19325516 (CC-BY-4.0) holds one 106 MB zip (Code4repository.zip), which is over the 50 MB cap. I read its file index with range requests and pulled out only the small files: readme, four site GeoJSON files, the presence/absence site pickles, the thresholds pickle and min_vals_per_month_allsites.pkl. Verified: 200 mangrove-present plus 200 mangrove-absent open-coast points, with coordinates, coastline angle, marine ecoregion/province/realm, latitude zone, tide class and mangrove genus. Two absent sites share identical coordinates (199 unique). The site points fall into 52 ecoregions, 19 provinces and 6 realms. The derived wave-feature table for present sites is 4,338 rows (21 years × durations) × 197 sites, so 3 sites lack features. Raw 20-year wave hindcast files are included for only 10 example sites. Tide class alone separates the two classes a lot: 93 of 135 microtidal sites are absent.",
+    "what_came_from_paper_text_only": "That the 78.2% accuracy comes from a leave-one-out evaluation of the mechanistic model. My count of 152 of 200 present and 159 of 200 absent sites predicted correctly comes from the success/failure pickles and roughly agrees. Also from the paper and abstract only: how the absent sites were chosen, and which mangrove map defined presence. I read only the abstract and the data/code availability statement; there is no open full text in Europe PMC. I did not open the absent-site feature pickle (min_vals_per_month_nm_allsites.pkl)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo zip downloads without login, licence CC-BY-4.0 (checked). Rebuilding the wave features for new sites needs a free Copernicus Marine account (a registration step)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Presence (1) or absence (0) is set by which file a site is in (present vs not-present GeoJSON). Joining the two files gives a label column, nothing has to be inferred. Checked in files."},
+    "a3_inputs_present": {"pass": true, "note": "Per-site minimum wave-height-exceedance values per year and duration are in a pickle for the present sites (checked, 197 of 200). The matching absent-site pickle exists in the zip but was not opened."},
+    "a4_units_stated": {"pass": true, "note": "Wave heights are in metres and durations are pandas time spans in days (seen in the files). Feature definitions (EWH, effective wave height) are described only in the notebooks and the paper."},
+    "a5_enough_rows": {"pass": false, "n_rows": 400, "note": "400 hand-picked sites (199 unique absent coordinates, and only 197 present sites with wave features), clustered into 52 ecoregions. That sits at or below the ~400-row classification floor, and the effective sample size under a spatial split is far smaller. Checked in files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~16 MB of derived pickles", "note": "Small. Only the raw hindcast for all 400 sites would be large: about 20 MB per site, 10 included."},
+    "a7_counts_match_paper": {"pass": true, "note": "400 sites matches the abstract. Success/failure pickles give about 77.8% correct against the reported 78.2%; the gap is plausibly the 3 sites missing features."},
+    "a8_label_provenance": {"pass": true, "note": "Presence most likely comes from satellite mangrove mapping, which is itself a classifier output but a mature one. Absence sites were chosen by the authors, a case-control design. Neither is computed from the wave features. Provenance was not confirmed in the full text."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "This paper's mechanistic wave-threshold presence/absence model (windows of opportunity for seedling establishment)", "open_weights": true, "score_and_split": "78.2% accuracy, reported as leave-one-out over 400 sites (abstract and code notebook name process_presenceabsence_data_LOOCV)", "authors_named_unsolved": "Abstract points to future region-specific wave-climate change shifting distributions; the discussion was not read.", "runnable_as_baseline": true},
+      {"name": "Random-forest global mangrove forestation-potential framework (PubMed 41621565)", "open_weights": null, "score_and_split": "Uses 48 climatic, topographic, soil and marine layers with SHAP (a feature-attribution method) explanations; score and split not retrieved", "authors_named_unsolved": "Not retrieved", "runnable_as_baseline": null},
+      {"name": "MaxEnt (maximum-entropy) species distribution models for mangroves, e.g. Record et al. 2013 Ecosphere, global species projections", "open_weights": null, "score_and_split": "Not retrieved", "authors_named_unsolved": "Not retrieved", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "None fits well. Time-series foundation models (e.g. Chronos) could embed the wave series, but nothing standard is proven for this. Satellite-image backbones would leak the label, because mangroves are visible in the imagery.", "freeze_and_head_viable": false, "hardware": "CPU", "licence": "Data CC-BY-4.0"},
+  "integration": {"partner_dataset": "Global Mangrove Watch extent plus the global biophysical mangrove typology (open-coast class, Zenodo 8340259), with Copernicus WAVERYS wave hindcast", "join_key": "latitude/longitude coordinates", "bigger_question_one_sentence": "Does a wave-climate rule learned at 400 sites predict open-coast mangrove presence along every mapped tropical coastline? Testing that would need thousands of newly constructed absence points."},
+  "controls": {"positive_control": "Tide class alone (microtidal sites are mostly absent: 93 of 135) should give above-chance accuracy, as seen in the files.", "negative_control": "Shuffle presence labels within ecoregion; accuracy should fall to 50%.", "external_validation": "None packaged. Would require new sites drawn from Global Mangrove Watch with authors' selection rules."},
+  "honest_claim_h3": "Among 400 open-coast sites the authors hand-picked as clearly mangrove-present or mangrove-absent, wave-climate summaries separate the two groups about 78% of the time. That accuracy does not hold for a random stretch of coast.",
+  "plain_idea": {"one_liner": "Use 20 years of wave-height history at a coastal point to predict whether mangroves grow there.", "train_on": "For each of 400 open-coast sites (about 397 usable), yearly minimum wave heights sustained over windows from 1 to 364 days, plus tide class and region.", "predict": "Whether mangroves are present (1) or absent (0) at the site, as mapped from satellite imagery and selected by the authors.", "why_worthwhile": "Coastal restoration planners could screen candidate planting sites by wave climate, but 400 curated points are too few to beat the paper's own mechanistic rule convincingly."},
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same 400 sites as the paper's own 78.2% model. Random-forest suitability models use 48 global layers over far more pixels."},
+    "confidence_score": {"answer": "no", "why": "One label per site with no replicates, so there is no way to estimate label noise."},
+    "models_beatable": {"answer": "partly", "why": "The 2026 mechanistic model is a simple threshold rule evaluated leave-one-out, which a gradient-boosted model might match. With 400 points and spatial clustering, though, any gain would be within noise."},
+    "guaranteed_improvement": {"answer": "no", "why": "Adding tide, temperature or salinity layers is not the same quantity measured the same way, and more sites would need newly constructed absences."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Gradient-boosted classifier on per-site wave-exceedance features plus tide class, compared with the paper's mechanistic threshold model under leave-one-ecoregion-out cross-validation.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.02, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated from verified pickle sizes (7.7 MB per class); nothing timed.", "cheapest_killing_check": "Leave-one-ecoregion-out accuracy of tide class plus realm alone; if it is near 78%, waves add little that ML could exploit."},
+  "verdict": "reject",
+  "verdict_reason": "A5: only 400 hand-picked sites (about 397 with wave features), spatially clustered into 52 ecoregions, at or under the classification floor. No pretrained backbone fits, and the paper's own open mechanistic model already scores 78.2% on the same points. Scaling up would mean constructing absence labels and downloading hindcasts behind a Copernicus registration."
+}

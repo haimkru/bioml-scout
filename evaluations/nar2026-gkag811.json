@@ -1,0 +1,338 @@
+{
+  "paper_id": "nar2026-gkag811",
+  "title": "Targeting epigenetic regulators induces transcription-replication conflicts to overcome ATR inhibitor resistance.",
+  "doi": "10.1093/nar/gkag811",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13490953/supplementaryFiles (Supplementary Data 1.xlsx); raw reads: ENA PRJEB96732 (CRISPR screen), PRJEB113825 (ChIP-seq), PRJEB96733 (DRIP-seq)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the 7.7 MB Europe PMC supplement bundle, unzipped it, and parsed all four sheets of Supplementary Data 1.xlsx with pandas: 'WT ATRi vs DMSO' 19,363 rows x 10 columns, 'CDK8 KO ATRi vs DMSO' 19,363 x 10, 'WT NT vs DMSO' 24,642 x 10, 'CDK8 KO NT vs DMSO' 23,547 x 10; zero missing values anywhere; 2 duplicated gene symbols per ATRi sheet; normZ standard deviation exactly 1.00; 91 (wild-type) and 115 (CDK8-knockout) genes at FDR < 0.1 for sensitisation, 28 and 64 for suppression; positive controls present in the file (ATM normZ -3.23 and NBN normZ -4.52 with FDR 0.002 in wild-type; HDAC3 -15.25, EED -6.10, EZH2 -5.17 in CDK8-knockout); Spearman correlation between the two ATR-inhibitor screens' normZ is only 0.094. Also checked ENA: project PRJEB96732 metadata is PUBLIC but the read_run file report returns no rows, so no raw FASTQ is currently listed.",
+    "what_came_from_paper_text_only": "Screen design details (Brunello genome-wide single-guide RNA library at 500-fold coverage, AZD6738 at a 20% inhibitory concentration for 10 population doublings, off-target guide filtering with Exorcise, gene-level scoring with DrugZ), and everything about the ChIP-seq, DRIP-seq, drug-combination and mouse tumour experiments, none of which is in a processed table."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Supplementary Data 1.xlsx (4.6 MB) downloaded and opened, no login. Raw sequencing sits in ENA but is not needed and is off-limits by policy."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The label is literally the 'normZ' column (plus p-value, rank and false-discovery-rate columns) for each gene, in every sheet. Verified in the file, not inferred."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Only the gene symbol is present; every model input (protein sequence, pathway membership, DepMap essentiality profile) must be brought in from outside. Gene symbol is a standard key, so this is one bulk join per source, not thousands of lookups - but the dataset itself contains no features."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "normZ is a dimensionless normalised Z score (guide Z scores summed per gene, divided by the square root of the number of guides); the file carries no readme, the definition comes from the DrugZ paper, and I confirmed the standard deviation is 1.00."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 19363,
+      "note": "19,363 gene rows per ATR-inhibitor screen (19,361 unique symbols). Caveat recorded in C/H: only 91 and 115 genes pass FDR < 0.1, so the informative signal is ~200 genes across two screens in one cell line."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "4.6 MB spreadsheet; ~0.5 GB with DepMap and a public screen compendium added",
+      "note": "Trivial on a 16 GB laptop; no GPU needed for a gradient-boosting or linear baseline."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The paper states no row counts, so nothing contradicts. The sheets disagree with each other (19,363 vs 24,642 vs 23,547) because the untreated-versus-DMSO sheets also contain non-targeting control pseudo-genes such as 'exo_Non-targeting_646'; the filtering that removed ~5,000 entries from the ATR-inhibitor sheets is undocumented."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "normZ is a statistic computed by DrugZ from sequenced single-guide RNA read counts - a physical measurement, not another model's output, and not computable from any feature we would use."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "One spreadsheet, four sheets joining cleanly on gene symbol; all features must be joined in from outside (seen in file)."
+    },
+    "B2": {
+      "score": 2,
+      "why": "Parsed on the first try with pandas/openpyxl; no missing values in any of the 86,915 rows."
+    },
+    "B3": {
+      "score": 1,
+      "why": "normZ already normalised by the authors, but the project needs merging with other labs' screens (different libraries, cell lines)."
+    },
+    "B4": {
+      "score": 2,
+      "why": "No censored or qualitative values; p-values and false-discovery rates are numeric throughout (checked in file)."
+    },
+    "B5": {
+      "score": 1,
+      "why": "Two duplicated gene symbols per ATR-inhibitor sheet; non-targeting pseudo-genes in the untreated sheets. Trivially removable."
+    },
+    "B6": {
+      "score": 1,
+      "why": "No readme; column meanings come from the DrugZ paper; the per-gene guide-count filtering is undocumented."
+    },
+    "C1": {
+      "score": 1,
+      "why": "Transfer framing is informative either way, but a null result could be screen noise: cross-background Spearman is only 0.094 (measured)."
+    },
+    "C2": {
+      "score": 1,
+      "why": "Virtual CRISPR (2025) predicts screen hits with open code/weights; synthetic-lethality predictors exist; splits unlikely to be complex-level."
+    },
+    "C3": {
+      "score": 1,
+      "why": "Angle is 'unique application' - these two screens are a fresh held-out test set, but the training data lives elsewhere."
+    },
+    "C4": {
+      "score": 2,
+      "why": "Genome-wide chemogenomic screens cost months of work plus NovaSeq sequencing per drug and cell line."
+    },
+    "C5": {
+      "score": 1,
+      "why": "Obvious dummies (random, DepMap essentiality rank) plus Hustedt 2019's published 117-gene ATR-inhibitor consensus list as a lookup baseline."
+    },
+    "D1": {
+      "score": 2,
+      "why": "ESM-2 protein language model gives sequence embeddings per knocked-out gene; Geneformer gives gene-token embeddings. Both open weights."
+    },
+    "D2": {
+      "score": 2,
+      "why": "19,361 human proteins embedded once on CPU with a small ESM-2 checkpoint, then cached; head training takes minutes."
+    },
+    "D3": {
+      "score": 2,
+      "why": "ESM-2 is MIT-licensed; the screen table is in an open-access NAR supplement."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Hold out whole protein complexes/pathway groups and whole screens; complex IDs come from CORUM, not from these files."
+    },
+    "E2": {
+      "ok": true,
+      "why": "Hundreds of CORUM complexes as gene groups; 2,217 screens in BioGRID ORCS as screen-level groups. Only 2 screens here."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Random-gene precision is 115/19,361 = 0.6% for the CDK8-knockout screen (computed from the file)."
+    },
+    "E4": {
+      "ok": false,
+      "why": "No per-replicate normZ in the supplement; only aggregated sumZ and guide counts, so the noise floor is not estimable."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Verified in the file: ATM (-3.23) and NBN (-4.52, FDR 0.002) score as wild-type sensitisers, exactly as known biology requires."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Label shuffling is straightforward, and the untreated sheets contain real non-targeting control pseudo-genes."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Independent ATR-inhibitor screens exist: Hustedt 2019 (RPE1, 117-gene consensus) and BioGRID ORCS; gene-level overlap not yet checked."
+    },
+    "E8": {
+      "ok": true,
+      "why": "Virtual CRISPR's F1 of 0.84 is reproducible from its public code and weights; Hustedt's consensus list re-derivable from normZ < -2.5."
+    },
+    "G1": {
+      "score": 1,
+      "why": "Only bare gene symbols in the file - standard but needing mapping to Ensembl/UniProt, with alias and deprecation risk."
+    },
+    "G2": {
+      "score": 2,
+      "why": "DepMap (gene essentiality across ~1,100 cell lines) and BioGRID ORCS (2,217 screens) both join on gene symbol."
+    },
+    "G3": {
+      "score": 1,
+      "why": "Gene symbol to DepMap/ORCS is mostly one-to-one, but aliases and withdrawn symbols will silently lose rows."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Combination asks whether chemogenetic sensitivity transfers across cell lines and genetic backgrounds - neither resource answers this alone."
+    },
+    "H1": {
+      "score": 2,
+      "why": "Genome-wide screen reports all 19,361 genes including non-hits, plus suppressor scores in both directions."
+    },
+    "H2": {
+      "score": 0,
+      "why": "One near-haploid cell line (HAP1), one drug (AZD6738), one dose, one lab - verified from the file's four sheets."
+    },
+    "H3": {
+      "score": 2,
+      "why": "The claim can be written precisely in one sentence (see honest_claim_h3)."
+    },
+    "H4": {
+      "score": 1,
+      "why": "The paper is explicit about using HAP1, but the supplement's guide filtering and row-count differences are undocumented."
+    },
+    "I1": {
+      "score": 2,
+      "why": "The Jackson lab (CRUK Cambridge) and the AstraZeneca ceralasertib/AZD6738 combination programme are named users."
+    },
+    "I2": {
+      "score": 1,
+      "why": "A ranked sensitiser list could prioritise combination partners, but a two-screen test in one cell line changes few decisions."
+    },
+    "I3": {
+      "score": 2,
+      "why": "Precision in the top 100 predicted genes matches the real decision: which knockouts a lab validates next."
+    },
+    "I4": {
+      "score": 1,
+      "why": "A lookup table (Hustedt's 117-gene list plus DepMap essentiality) may already capture most predictable signal."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Grouped splits, frozen-backbone embeddings, leakage controls and a transfer question - real modelling practice."
+    },
+    "J2": {
+      "score": 1,
+      "why": "DNA-damage-response genetics is interpretable (ATM, NBN, PRC2 members act as sanity checks) but needs a domain reader."
+    },
+    "J3": {
+      "score": 2,
+      "why": "A harmonised cross-cell-line ATR-inhibitor chemogenomic table is useful even if no model beats the lookup list."
+    },
+    "J4": {
+      "score": 1,
+      "why": "Scopeable to roughly three weeks, but no time budget written down yet."
+    },
+    "J5": {
+      "score": 1,
+      "why": "A kill condition is statable (lookup list wins on top-100 precision) but not yet committed to a date."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Virtual CRISPR (Song et al., BioNLP workshop at ACL 2025) - large-language-model embedding classifier that predicts whether a gene is a hit in a CRISPR screen",
+        "open_weights": true,
+        "score_and_split": "F1 score 0.84 and false-positive rate 0.15 on a benchmark built from BioGRID ORCS (a repository of 2,217 curated CRISPR screens); the paper's split design was not visible in the search result, so I could not confirm it holds out whole screens or gene families.",
+        "authors_named_unsolved": "Framed direct prompting as too weak and scalable prediction as the open problem; the specific unsolved item was not retrievable from the abstract-level text I read.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Hustedt et al. 2019 (Open Biology) ATR-inhibitor consensus vulnerability set - not a model but a published 117-gene lookup list (normZ below -2.5 in at least two screens)",
+        "open_weights": true,
+        "score_and_split": "No predictive score; it is a gene list derived from genome-scale CRISPR screens in RPE1-hTERT TP53-null cells, with 6 of 8 validated genes confirmed against VE-821 and AZD6738 in two cell lines.",
+        "authors_named_unsolved": "Cross-cell-line consistency: hits agreed poorly between individual screens, which is why they needed a consensus across screens at all.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SLIDE-VIP (Scientific Reports 2023) - statistical framework predicting synthetic-lethal gene pairs in DNA repair, chromatin remodelling and cell cycle from multi-omics",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the abstract; predicts gene-gene synthetic lethality rather than drug-gene chemogenetic scores, so it is adjacent rather than the same task.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model, small 35M/150M checkpoints) for the knocked-out gene's protein sequence, optionally Geneformer gene embeddings",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; embed 19,361 human proteins once and cache",
+    "licence": "ESM-2 is MIT-licensed; Geneformer weights are open on Hugging Face with a more restrictive licence"
+  },
+  "integration": {
+    "partner_dataset": "DepMap gene essentiality across ~1,100 cell lines, plus BioGRID ORCS (2,217 curated CRISPR screens) and the Olivieri 2020 chemogenomic screen set (31 screens, DrugZ normZ, on Mendeley Data)",
+    "join_key": "HGNC gene symbol (the only identifier in this file), mapped onward to Ensembl/UniProt",
+    "bigger_question_one_sentence": "Do gene-level features learned from hundreds of public CRISPR drug screens predict which knockouts sensitise cells to a replication-stress drug in a cell line and genetic background the model has never seen?"
+  },
+  "controls": {
+    "positive_control": "ATM and NBN must rank among the top wild-type sensitisers (verified present: normZ -3.23 and -4.52, FDR 0.002), and a model must recover HDAC3 and the PRC2 complex (EED, EZH2, SUZ12, MTF2) in the CDK8-knockout screen without their own literature annotation in training.",
+    "negative_control": "Shuffle normZ within each screen and confirm top-100 precision collapses to the 0.6% random rate; also score the non-targeting control pseudo-genes present in the untreated sheets, which must look null.",
+    "external_validation": "Hustedt et al. 2019 RPE1 ATR-inhibitor screens / 117-gene consensus list, and other ATR-inhibitor screens in BioGRID ORCS - independent labs, cell lines and guide libraries."
+  },
+  "honest_claim_h3": "Among the 19,361 genes targeted by the Brunello library, the model ranks which knockouts sensitise cells to the ATR inhibitor AZD6738 - in near-haploid HAP1 cells, at one dose, as scored by one lab's single screen per genetic background, where only ~100 genes per screen reach statistical significance.",
+  "plain_idea": {
+    "one_liner": "Use public gene-knockout drug screens to predict which gene knockouts make cancer cells sensitive to an ATR-blocking drug.",
+    "train_on": "Gene-level sensitivity scores from public CRISPR drug screens (BioGRID ORCS holds 2,217 curated screens; the Olivieri 2020 set holds 31 scored the same way), with each gene represented by its protein sequence embedding, pathway and complex membership, and its essentiality profile across ~1,100 DepMap cell lines.",
+    "predict": "For each gene, the normZ score - a normalised Z score computed by the DrugZ tool from how much each knockout's guide RNAs drop out of a drug-treated cell population relative to a solvent-treated one. The truth here comes from this paper's two genome-wide screens, verified in the file.",
+    "why_worthwhile": "Drug-developers choosing combination partners for ATR inhibitors (for example the AZD6738/ceralasertib programme) currently run a separate months-long screen per cell line; knowing whether sensitiser rankings transfer across cell lines at all would tell them whether that is avoidable."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper adds 2 screens (19,363 genes each) to a field where BioGRID ORCS already curates 2,217 screens; its value is as a held-out test set in a new genetic background (CDK8-knockout), not as more training data."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "The supplement gives only aggregated sumZ and guide counts, no per-replicate scores, so per-gene uncertainty cannot be estimated from these files; the measured Spearman of 0.094 between the two screens suggests the uncertainty is large."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "Virtual CRISPR is from 2025 with open code and weights and reports F1 0.84, which is recent and not obviously weak; but its benchmark is binary hit-calling across mixed screens, so an honest complex-level, held-out-screen evaluation of it is itself a legitimate project."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The new data (DepMap, ORCS, Olivieri) comes from other labs, libraries and cell lines and measures a different drug in most cases, so it does not measure the same quantity the same way; the evaluation split also would not match Virtual CRISPR's."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "BioGRID ORCS (searched: 2,217 curated CRISPR screens, 825 cell lines, scores and hit calls per gene), the Olivieri 2020 Cell chemogenomic set (searched: 31 screens against 27 genotoxins, DrugZ normZ, deposited on Mendeley Data), Hustedt 2019 ATR-inhibitor screens (searched), and DepMap for the related essentiality label (known resource).",
+    "approx_items": null,
+    "join_key": "HGNC gene symbol",
+    "why": "The same kind of label - a DrugZ normZ chemogenetic score per gene - exists for hundreds of other drug/cell-line combinations, giving both a training set far larger than this paper and a ready external test."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Protein-complex leakage: PRC2 members EED, EZH2, SUZ12 and MTF2 are all hits in the CDK8-knockout screen, so training on one member makes the others trivially predictable without any real generalisation.",
+      "Annotation leakage: pathway and Gene Ontology features are written from literature that already records many of these genes as replication-stress or ATR-inhibitor sensitisers, so the feature encodes the answer.",
+      "Shared control arm: the DMSO arm is common to the drug comparison and the essentiality comparison in the same experiment, so DepMap-style essentiality features partly predict normZ through the denominator rather than through biology.",
+      "Screen-level batch effects: a model trained on public screens may learn library and cell-line artefacts (guide efficiency, copy-number effects) that correlate with normZ magnitude rather than drug response."
+    ],
+    "split": "Hold out whole CORUM protein complexes and whole paralogue families for gene-level splits, and hold out entire screens (this paper's two HAP1 screens never appear in training). Both grouping columns are external - CORUM complex ID and ORCS screen ID - and neither is present in the supplement, which contains only gene symbol.",
+    "checks": [
+      "Shuffle normZ within each screen and confirm top-100 precision falls to the measured random rate of 0.6%.",
+      "Train on literature-annotation features alone and report that score as the annotation-leakage floor.",
+      "For each held-out gene, report the maximum DepMap co-essentiality correlation and sequence identity to any training gene, and check whether performance is concentrated in the most similar bin.",
+      "Score the non-targeting control pseudo-genes present in the untreated sheets; they must be predicted as null."
+    ],
+    "verdict": "Serious risk - annotation and complex-membership leakage would both inflate results, and only complex-level plus screen-level splits with an annotation-only ablation would expose them."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 100 predicted sensitiser genes in this paper's held-out CDK8-knockout screen, because a lab validating hits tests tens of genes, not a ranked list of 19,000.",
+    "baselines": "Random = 115/19,361 = 0.6% (computed from the file, FDR < 0.1 sensitisers). Lookup baseline = Hustedt 2019's published 117-gene ATR-inhibitor consensus list. Third baseline = ranking genes by DepMap pan-cell-line essentiality.",
+    "success": "Top-100 precision at least three times the Hustedt lookup-list baseline on the held-out CDK8-knockout screen, with HDAC3 and at least two PRC2 members recovered while their own literature annotations are withheld from training.",
+    "noise_ceiling": "Not estimable from these files - no per-replicate normZ is provided. The measured Spearman of 0.094 between the wild-type and CDK8-knockout ATR-inhibitor screens bounds how much cross-context transfer is even possible.",
+    "kill": "Stop if the Hustedt 117-gene lookup list matches or beats the model's top-100 precision, or if normZ from a public ATR-inhibitor screen correlates with this paper's wild-type normZ at Spearman below ~0.15 on shared genes."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology",
+      "why": "Publishes methods that make screens cheaper; would need a model that predicts sensitisers in an unseen cell line well enough to replace a pilot screen, validated on several held-out screens."
+    },
+    "realistic": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes careful re-evaluations and cross-dataset benchmarks; a complex-level, held-out-screen evaluation of chemogenomic hit prediction with this paper's screens as the test set fits directly."
+    },
+    "fallback": {
+      "journal": "Bioinformatics (Applications Note) or a bioRxiv preprint plus a machine-learning-for-biology workshop",
+      "why": "Even a negative result - that cross-screen normZ correlation is too low for transfer, with the harmonised table released - is publishable as a resource and caution note."
+    }
+  },
+  "pitch": {
+    "headline": "Two genome-wide drug screens, 19,363 genes each, with the known ATR-inhibitor sensitisers ATM and NBN verified in the file as positive controls.",
+    "what_makes_the_data_unusual": "It scores the same 19,361 genes in two genetic backgrounds (wild-type and CDK8-knockout HAP1 cells) against the same drug, so it directly measures whether sensitiser rankings transfer - the two agree at Spearman 0.094, which I computed.",
+    "the_win": "Top-100 precision at least three times the Hustedt 2019 117-gene consensus list on the held-out CDK8-knockout screen, while recovering HDAC3 and PRC2 without their own annotations.",
+    "even_if_it_fails": "The measured cross-background Spearman of 0.094 would be quantified properly against public screens, telling the field how much of any chemogenomic hit list is context-specific noise - a useful number on its own.",
+    "who_wants_it": "DNA-damage-response drug-discovery groups choosing ATR-inhibitor combination partners (the Jackson lab at CRUK Cambridge, the AZD6738/ceralasertib programme), who would otherwise run a fresh screen per cell line."
+  },
+  "ml_idea": "Train a gene-level ranker on public chemogenomic CRISPR screens (BioGRID ORCS, Olivieri 2020) using frozen ESM-2 protein embeddings plus DepMap essentiality profiles and complex/pathway membership, then test on this paper's two held-out HAP1 ATR-inhibitor screens to ask how well sensitiser rankings transfer to an unseen cell line and an unseen genetic background (CDK8-knockout). Report top-100 precision against a published-gene-list lookup baseline, with complex-level splits and an annotation-only ablation to bound leakage.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 10,
+    "cv_run_minutes": 10,
+    "compute_note": "The spreadsheet itself parsed in seconds (timed implicitly); the 10-hour embedding figure is an untimed estimate for ~19,400 human proteins through a small ESM-2 checkpoint on a laptop CPU, and the 10-hour table figure covers symbol mapping plus downloading and harmonising DepMap and a public screen compendium.",
+    "cheapest_killing_check": "Download one public ATR-inhibitor screen (Hustedt 2019 or a BioGRID ORCS ATRi screen) and compute the Spearman correlation of its gene-level normZ with this paper's wild-type normZ on shared symbols. If it is as low as the 0.094 I measured between this paper's own two screens, no cross-screen model can be validated and the project is dead."
+  },
+  "verdict": "park",
+  "verdict_reason": "The files are real, clean and verified: one 4.6 MB spreadsheet, 19,363 genes per screen, normZ already a column, no missing values, and known sensitisers ATM and NBN confirmed as positive controls. But the dataset is a test set, not a training set - it holds two screens in one near-haploid cell line with only 91 and 115 significant genes, contains no model inputs at all, and the two screens agree at Spearman 0.094, so the training data and most of the project's weight would live in BioGRID ORCS and DepMap. Park it as the held-out validation screen for a chemogenomic-transfer project, and run the cross-screen correlation check before committing."
+}

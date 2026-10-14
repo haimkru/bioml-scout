@@ -1,0 +1,153 @@
+{
+  "paper_id": "gb2026-04280-y",
+  "title": "dicast: a machine learning method for accurate structural variant detection from short-read sequencing data.",
+  "doi": "10.1186/s13059-026-04280-y",
+  "journal": "Genome Biology",
+  "data_url": "https://zenodo.org/records/19794240",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed all 6 Zenodo files via the API (1.997 GB total) and downloaded the two small ones: 00_ground_truth.zip (74 KB, 56 files) and 01_variant_database.zip (55 KB, 27 files) are pure pipeline code, zero data rows. Read the index of the 1.84 GB 02_dicast.zip with a ranged request without downloading it: 42 entries, all code, five trained XGBoost model files (0.6-1.2 MB JSON each) and hg38 annotation tracks (hg38_gc_content.bw 1.76 GB, hg38_repeatmasker.tsv 485 MB). Listed the whole GitHub repo tree: the only alignment data is tests/data/demo.bam, 1.5 MB, chr21 only, with a 28-line manta VCF and a 20-call delly VCF as demo input. No labelled feature table exists in any public location.",
+    "what_came_from_paper_text_only": "All counts about the ground truth (122,133 insertions, 104,099 deletions, 11,511 manually curated structural variants, ~3.9 million filtered caller calls, nine samples, >100 features per candidate) come from the article text; none could be checked against a file. The runtime and memory figures (48 min wall clock, 5.0 CPU-hours over 70 threads, 2.8 GB peak RAM for HG002) are also the authors' claims. The 560 GB size of the public GIAB HG002 Illumina alignment file is from the repository's own tests/data/README.md."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL. The labelled data is patient sequencing, 'available upon reasonable request': email a named custodian, sign a Data Transfer Agreement (DTA), wait 2-4 weeks for review. The open Zenodo deposit I opened holds only code, trained models and reference annotation tracks, no structural variant (SV) callset and no feature table."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. No true-positive/false-positive column is published anywhere. On the only public route (Genome in a Bottle HG002 benchmark) the label must be built by running truvari to match each caller's call against the benchmark SV set, i.e. constructed by matching across sources."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL. The >100 inputs are alignment statistics (read depth, discordant pairs, split reads, insert-size outliers) that exist only inside BAM alignment files. No feature matrix is deposited; the sole public BAM is a 1.5 MB chr21 demo with 20 calls."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Moot but not a blocker: feature definitions are documented in dicast/collect_illumina.py and the annot/README.md I listed, and genomic coordinates carry an explicit build (hg38/GRCh38). There is no data table on which to check units."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 0,
+      "note": "FAIL on what is obtainable. The paper claims 122,133 insertions and 104,099 deletions in the ground truth, but zero labelled rows are downloadable. The public demo set has 20 SV calls."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": ">560 GB (GIAB HG002 alignment file) plus a 2.1 GB hg38 annotation bundle",
+      "note": "FAIL. Rebuilding anything usable means downloading a 560 GB short-read alignment file (raw sequencing, which this project's rules forbid), running five SV callers, then feature collection the authors ran on 70 threads. Far over the ~5 GB working-set limit."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No contradiction found, but also nothing to check: there is no download whose rows can be counted against the paper's 122,133 / 104,099 figures."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Label provenance is actually good: a call is true if confirmed by an orthogonal technology (PacBio long reads, 10x and TELL-Seq linked reads, Bionano optical mapping) or by public catalogues, with 11,511 calls hand-curated by four people. Not another model's output and not computable from the alignment features. This is the one Part A item this paper passes well."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepSVFilter (2021, Briefings in Bioinformatics) - a convolutional neural network that turns read-alignment signals into images and classifies SV calls as real or artefact",
+        "open_weights": true,
+        "score_and_split": "Reported large false-positive reductions with little sensitivity loss on well-characterised Genome in a Bottle (GIAB) samples; exact numbers not retrieved, only the abstract-level summary.",
+        "authors_named_unsolved": "Not retrieved - I only saw abstract-level summaries, so I am not quoting a discussion sentence.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CSV-Filter (2024, Bioinformatics) - deep-learning SV filter covering both short and long reads",
+        "open_weights": true,
+        "score_and_split": "Reported to recognise more false-positive calls than DeepSVFilter; precise metric and split not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Cue (2023, Nature Methods, Popic lab) - a stacked-hourglass convolutional network that calls and genotypes SVs directly from alignment images",
+        "open_weights": true,
+        "score_and_split": "Reported to beat the state of the art on several SV classes on synthetic and real short-read data; synthetic benchmark data, training data, trained models and configs are all on GitHub.",
+        "authors_named_unsolved": "Not retrieved beyond the framing that hand-engineered features do not scale to SV diversity.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "samplot-ML (2021, Genome Biology) - a convolutional network that genotypes deletions from samplot images",
+        "open_weights": true,
+        "score_and_split": "91.28% of one-copy and 97.26% of two-copy deletions genotyped correctly on GIAB HG002 at 20x coverage; 47% false-positive reduction keeping 97% of true positives across GIAB and HGSVC samples.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "A systematic assessment of machine learning for structural variant filtering (2026 preprint/paper, retrieved as a search hit only)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - title only. Its existence shows the benchmarking of this exact task has itself already been done once.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "forestSV and SV2 - earlier random-forest and support-vector approaches, named by the dicast authors themselves as prior work",
+        "open_weights": true,
+        "score_and_split": "The dicast paper reports SV2 needing 21 h wall clock and 7.5 GB on HG002 versus dicast's 48 min and 2.8 GB; no accuracy number extracted.",
+        "authors_named_unsolved": "The dicast authors say these 'remain limited in SV-type scope, detection performance, or computational scalability'.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate. The data type is read-alignment summary statistics, not sequence; a DNA language model such as DNABERT-2 or Nucleotide Transformer sees reference sequence and cannot see the read evidence that decides whether a call is an artefact.",
+    "freeze_and_head_viable": false,
+    "hardware": "Not applicable - the blocker is data access and a 560 GB alignment file, not model size.",
+    "licence": "dicast code and trained models are GPLv3 (open); the underlying patient sequencing data is not licensed for redistribution at all."
+  },
+  "integration": {
+    "partner_dataset": "Genome in a Bottle HG002 Tier 1 v5.0q and the Challenging Medically Relevant Genes v1.00 benchmark, joinable on hg38 genomic coordinates - but these supply only truth labels, not the alignment features.",
+    "join_key": "hg38 genomic coordinates plus SV type and length (fuzzy matching via truvari, not an exact key)",
+    "bigger_question_one_sentence": "Does an SV artefact classifier trained on one set of samples and callers still work on a different population, caller version or coverage depth? - a good question that cannot be asked here because neither the training features nor the training labels are public."
+  },
+  "controls": {
+    "positive_control": "Would have been strong if the data existed: deletions inside segmental duplications and short tandem repeats are known to be enriched for artefacts, so the model must score them lower; and reproducing the authors' HG002 numbers with their own released models is a clean check.",
+    "negative_control": "Label shuffling and feature-block ablation (alignment features versus genomic-context features) would be trivial to run - on a feature table that does not exist.",
+    "external_validation": "GIAB HG002 and the Challenging Medically Relevant Genes benchmark are genuinely independent and public, which is the one genuinely attractive part of this candidate."
+  },
+  "honest_claim_h3": "With only public resources, no claim is possible: the honest statement is that dicast's trained models can be downloaded and run, but nothing about their training data, their failure modes, or their transfer to new cohorts can be checked without a signed Data Transfer Agreement and a 560 GB alignment download.",
+  "plain_idea": {
+    "one_liner": "Use read-alignment evidence around a candidate genome rearrangement to predict whether the call is real or a sequencing artefact.",
+    "train_on": "Each example would be one candidate structural variant (a deletion, insertion or duplication of at least 50 base pairs) described by >100 numbers summarising read depth, oddly-spaced read pairs, split reads and repeat content near its breakpoints. The paper reports 122,133 insertions and 104,099 deletions in its ground truth, but I verified 0 downloadable labelled rows.",
+    "predict": "A score from 0 to 1 that the call is a real variant. The true answer comes from confirming the same variant with an orthogonal technology - PacBio long reads, linked reads, or Bionano optical mapping - followed by human inspection of the read pileup.",
+    "why_worthwhile": "Clinical genetics labs use short-read sequencing and currently discard most structural-variant calls as noise or review them by eye; a better filter means fewer missed diagnoses and less manual curation. Even a negative result would tell those labs how far such filters transfer between cohorts."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "We would have strictly less data than the existing models, not more: Cue, samplot-ML and DeepSVFilter all ship public training data and trained weights, while dicast's 226,000-variant ground truth is behind a Data Transfer Agreement and only a 20-call demo set is public."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "dicast already outputs a 0-1 confidence per variant, and so do the comparable tools; we have no replicate measurements to estimate the noise floor because we have no measurements at all."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Cue is a 2023 Nature Methods convolutional model with released weights and training data, CSV-Filter is 2024, and a 2026 systematic benchmark of machine learning for SV filtering already exists. dicast itself, from 2026, is the new strong entrant with open GPLv3 models."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: we cannot even construct the feature table the baseline consumes without the restricted alignment files, so there is no shared split, no shared inputs and no join key to add data on."
+    }
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The intended project would have been to retrain or stress-test a structural-variant artefact classifier: take the per-call alignment and genomic-context features, train a gradient-boosted tree, and measure how accuracy decays on held-out samples, held-out callers and held-out repeat classes. The question is good and the transfer framing cannot produce a useless answer, but it is unreachable: the feature table and the true/false labels are both absent from every public deposit, and reconstructing them requires a 560 GB alignment download plus five SV callers. A salvageable fragment, worth noting but not worth a project: dicast's five trained XGBoost models are open GPLv3 JSON files, so their feature importances could be inspected and compared against DeepSVFilter and Cue without any data access at all - that is a blog post, not a paper.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 560.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 2.8,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Peak RAM and the 5.0 CPU-hour feature-collection cost are the authors' reported figures for HG002 on 70 threads, not timings I made; on a laptop that step alone would be roughly 5 CPU-hours per sample before any modelling. The 560 GB working set is the GIAB HG002 alignment file size quoted in the repository's own tests/data/README.md. Hours-to-feature-table is null because the path is blocked, not merely long.",
+    "cheapest_killing_check": "List the Zenodo deposit's files and look for a labelled variant table - takes two minutes and kills the project: six archives, 1.997 GB, all code, trained models and hg38 annotation tracks, zero labelled rows."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A fails on four killers at once, and the field is already well served. A1: the labelled structural variants come from nine patients plus three disease cohorts and need an emailed request, a signed Data Transfer Agreement and a 2-4 week review; I opened the open Zenodo deposit and the GitHub repository and confirmed they contain only pipeline code, five trained XGBoost models and hg38 annotation tracks, with no variant callset and no feature matrix. A3: the >100 inputs live inside BAM alignment files, and the only public alignment is a 1.5 MB chr21 demo with 20 calls. A2: on the one public route (Genome in a Bottle HG002) the true/false label would have to be constructed by truvari matching rather than read from a column. A6: that route needs a 560 GB alignment download, which breaks both the laptop limit and the rule against raw sequencing. Separately, C2 would score 0 anyway - samplot-ML (2021), DeepSVFilter (2021), Cue (2023, Nature Methods), CSV-Filter (2024) and a 2026 systematic benchmark of ML for SV filtering are all open and already honestly evaluated on GIAB. The paper's label provenance (orthogonal-technology confirmation plus 11,511 hand-curated calls) is genuinely excellent, which is precisely what makes it a shame the data is locked."
+}

@@ -1,0 +1,99 @@
+{
+  "paper_id": "nar2026-gkag799",
+  "title": "Cross-species R-DeeP profiling reveals a conserved core of RNA-dependent proteins in yeast.",
+  "doi": "10.1093/nar/gkag799",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21296814",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the Zenodo record 21296814 (CC-BY-4.0, github.zip, 29 MB) and parsed the output tables. Sc_allFrax_profileStats_RDI.csv: 2,339 rows / 2,315 unique UniProt IDs (budding yeast), with per-fraction control and RNase intensities for 3 replicates plus amp, dist, ED (= RDI, the RNA dependence index) columns; 4 rows lack ED. Sp_allFrax_profileStats_RDI.csv: 1,991 unique PomBase gene IDs (fission yeast), 13 lack ED. Hs_allFrax_profileStats_RDI.csv: 4,968 human proteins (re-analysed 2019 HeLa data). Sc/Sp_allShifting_withAnnot.csv have a TRUE/FALSE shift column: 658 of 2,238 shifting (budding yeast), 472 of 1,991 (fission yeast). S2_conservedShifting.csv: 303 ortholog pairs.",
+    "what_came_from_paper_text_only": "How the shift call was made (statistical criteria), that RDI is the Euclidean distance between control and RNase curves, that RDIs of orthologs show no global linear correlation between the two yeasts, and the counts 658 (30%) and 472 (24%), which match the files. PRIDE PXD058607 raw mass-spec not opened. No amino-acid sequences in the files; they would come from the UniProt/PomBase proteome FASTA."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo zip downloaded without login, CC-BY-4.0; checked in files."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: ED (the RNA dependence index, continuous) and shift (TRUE/FALSE) are columns per protein; no construction needed."},
+    "a3_inputs_present": {"pass": true, "note": "Only identifiers (UniProt for budding yeast, PomBase systematic names for fission yeast, UniProt for human); sequences come from one proteome FASTA download per species, a single join, not thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "RDI is a unitless distance between normalised profiles (defined in paper); shift is boolean; fraction intensities are raw mass-spec intensities. Columns are not documented in a codebook."},
+    "a5_enough_rows": {"pass": true, "n_rows": 4306, "note": "2,315 + 1,991 yeast proteins with labels (plus 4,968 human); for classification, 658 + 472 positives. Above the 400 classification floor, borderline for regression on one species."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~30 MB tables + ~9,000 protein sequences", "note": "ESM-2 small-checkpoint embeddings for ~9,000 proteins are feasible on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Shifting counts 658 and 472 in files match the paper; profile table has 24 duplicate UniProt rows (2,339 vs 2,315) and 2,238 vs 2,315 rows between the two budding-yeast tables, a minor ID-mapping discrepancy."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a physical measurement: sedimentation shift in sucrose gradients after RNase treatment, quantified by mass spectrometry. Features (sequence) are independent of it; the RNP/GO annotation columns must not be used as features if the label is compared to them."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Per-species tables keyed by UniProt or PomBase ID; sequences need a separate proteome FASTA join (seen in files)."},
+    "B2": {"score": 2, "why": "All output CSVs parsed first try with Python csv module."},
+    "B3": {"score": 1, "why": "Same assay across species, but paper warns RDI comparisons across experimental conditions need caution; human data from different lab run."},
+    "B4": {"score": 2, "why": "No censored values; only 4 and 13 missing RDI values (files)."},
+    "B5": {"score": 1, "why": "24 duplicate UniProt rows in budding-yeast profile table; easy to dedupe (files)."},
+    "B6": {"score": 1, "why": "Readme describes folders only; column meaning (ED = RDI, dist = offset) inferred from paper figure."},
+    "C1": {"score": 2, "why": "Cross-species transfer (train human/budding yeast, test fission yeast) is informative whether it works or not."},
+    "C2": {"score": 1, "why": "Many open RNA-binding protein predictors (HydRA etc.), but none trained on RNA-dependence sedimentation labels; found by search."},
+    "C3": {"score": 1, "why": "Unique-application angle: new label (RNA dependence) distinct from direct binding; weak because related to RBP annotation."},
+    "C4": {"score": 2, "why": "Each R-DeeP screen needs gradient ultracentrifugation plus ~150 mass-spec runs per species."},
+    "C5": {"score": 2, "why": "Obvious baselines: GO 'RNA binding' annotation alone, and HydRA's RNA-binding score."},
+    "D1": {"score": 2, "why": "ESM-2 protein language model, open weights."},
+    "D2": {"score": 2, "why": "~9,000 sequences; embeddings cached once on CPU, logistic/ridge head."},
+    "D3": {"score": 2, "why": "ESM-2 MIT licence; data CC-BY-4.0."},
+    "E1": {"ok": true, "why": "Held-out species split, plus sequence-identity clusters within species."},
+    "E2": {"ok": true, "why": "Three species, and protein families/complexes give many clusters."},
+    "E3": {"ok": true, "why": "Majority class (70-76% non-shifting) and GO-annotation-only baseline."},
+    "E4": {"ok": true, "why": "Three control and three RNase replicates per fraction in files allow replicate-level RDI noise."},
+    "E5": {"ok": true, "why": "Ribosomal proteins and RNP complex members must score high (paper Fig 1G)."},
+    "E6": {"ok": true, "why": "Label shuffling and embedding ablation straightforward."},
+    "E7": {"ok": true, "why": "Second species (fission yeast) and human HeLa R-DeeP table included in deposit."},
+    "E8": {"ok": false, "why": "No published predictive model score on these labels to reproduce."},
+    "G1": {"score": 2, "why": "UniProt accessions (budding yeast, human) and PomBase IDs present in files."},
+    "G2": {"score": 2, "why": "UniProt proteomes/AlphaFold DB on UniProt; RBP2GO RNA-binding screens on UniProt."},
+    "G3": {"score": 1, "why": "Mostly one-to-one; 24 duplicate IDs and ortholog one-to-many in the conserved table."},
+    "G4": {"score": 1, "why": "Combined with RBP2GO: does RNA dependence add information beyond direct-binding screens; marginal over paper's own RIC comparison."},
+    "H1": {"score": 2, "why": "Non-shifting proteins (~70%) recorded alongside shifting ones."},
+    "H2": {"score": 1, "why": "One lab, one growth condition per yeast; human data from one cell line."},
+    "H3": {"score": 2, "why": "Claim stated precisely below."},
+    "H4": {"score": 1, "why": "Paper notes detection limited to ~2,000 abundant proteins and condition-specific RDI; low-abundance bias implicit."},
+    "I1": {"score": 1, "why": "R-DeeP labs (Kilchert, Diederichs/Caudron-Herger) and RNA-biology community."},
+    "I2": {"score": 1, "why": "Could prioritise candidates for R-DeeP validation in unmeasured species; marginal."},
+    "I3": {"score": 1, "why": "Shift call is the decision; RDI regression only roughly aligned."},
+    "I4": {"score": 1, "why": "GO RNA-binding annotation likely explains much; ML adds value only for unannotated proteins."},
+    "J1": {"score": 2, "why": "Embeddings, grouped splits, cross-species transfer."},
+    "J2": {"score": 1, "why": "Ribosome/RNP positives give sanity checks; deeper interpretation needs RNA-biology input."},
+    "J3": {"score": 2, "why": "Cleaned three-species RDI table and GO-baseline result are useful on their own."},
+    "J4": {"score": 1, "why": "Roughly one to two weeks; not formally set."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "HydRA (hybrid SVM/CNN/protein language model RNA-binding predictor, Molecular Cell 2023)", "open_weights": null, "score_and_split": "Trained on human; reported ROC-AUC (area under the receiver-operating curve) ~0.8 on yeast, mouse and fly RNA-binding proteins (search snippet).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Seq-RBPPred (sequence-based RNA-binding protein classifier using ESM-1b and other embeddings, ACS Omega)", "open_weights": null, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Deep-RBPPred (CNN RNA-binding protein predictor, Scientific Reports 2018)", "open_weights": null, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model), 35M or 150M checkpoint", "freeze_and_head_viable": true, "hardware": "Laptop CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "RBP2GO (compendium of RNA-binding proteome screens) and UniProt proteomes", "join_key": "UniProt accession (PomBase ID for fission yeast)", "bigger_question_one_sentence": "Is a protein's dependence on RNA for its complex membership predictable from sequence, and does that transfer across 1 billion years of yeast and human divergence?"},
+  "controls": {"positive_control": "Ribosomal and annotated RNP-complex proteins must get high predicted RDI; predicting protein length from embeddings as a plumbing check.", "negative_control": "Shuffle shift labels within species; performance must fall to the 70-76% majority baseline.", "external_validation": "Train on human + budding yeast, test on fission yeast (deposited table)."},
+  "honest_claim_h3": "Predicts whether an abundant, mass-spec-detectable yeast or human protein changes its sucrose-gradient sedimentation after RNase treatment under standard lab growth, not whether it binds RNA directly.",
+  "plain_idea": {
+    "one_liner": "Use a protein's amino-acid sequence to predict whether its position in cellular complexes depends on RNA, testing transfer between two yeasts and human.",
+    "train_on": "Protein sequences for ~2,315 budding-yeast, 1,991 fission-yeast and 4,968 human proteins measured in these screens (counts verified in files).",
+    "predict": "Whether the protein shifts in a sucrose density gradient when RNA is digested (yes/no, 658 and 472 yeast positives) and how much (the RNA dependence index), measured by mass spectrometry of gradient fractions.",
+    "why_worthwhile": "RNA-biology labs could prioritise unannotated proteins for follow-up in species never screened; if transfer fails, it shows RNA dependence is species-specific, as the paper's weak ortholog correlation hints."
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Human HeLa R-DeeP (Caudron-Herger 2019, included in deposit); further R-DeeP screens exist for mitotic cells, Plasmodium and cyanobacteria (cited in paper, not retrieved); RBP2GO collects RNA-binding screens but a different label (known resource).",
+    "approx_items": 9274,
+    "join_key": "UniProt accession",
+    "why": "The three deposited species already give ~9,300 labelled proteins and a ready cross-species test set; other R-DeeP screens are small and scattered."
+  },
+  "pitch": {
+    "headline": "One CC-BY download holds the same RNase-sedimentation measurement for 2,315 budding-yeast, 1,991 fission-yeast and 4,968 human proteins.",
+    "what_makes_the_data_unusual": "Same assay across three species with replicate-level fraction intensities (3 control, 3 RNase), and a label of RNA dependence rather than direct binding; 658 and 472 yeast shifters verified in files.",
+    "the_win": "A sequence model trained on human and budding yeast that predicts fission-yeast shifters better than GO 'RNA binding' annotation alone on unannotated proteins.",
+    "even_if_it_fails": "Quantifies how species-specific RNA dependence is, and whether it adds anything beyond existing RNA-binding annotations; the paper already reports no global ortholog RDI correlation.",
+    "who_wants_it": "The Kilchert lab and the Diederichs/Caudron-Herger R-DeeP group, choosing which proteins to validate or which organism to screen next."
+  },
+  "ml_idea": "Embed each protein with frozen ESM-2, fit a logistic head for shift and ridge for RDI; evaluate leave-one-species-out and within-species sequence-cluster splits, against GO-annotation and HydRA baselines, reporting performance separately on proteins without RNA annotations.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.1, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 1.5, "cv_run_minutes": 2, "compute_note": "Estimated, not timed: ~9,300 sequences with ESM-2 35M on CPU at ~2 seq/s; heads on 480-dim embeddings are seconds.", "cheapest_killing_check": "Fit a GO 'RNA binding'/'ribonucleoprotein complex' annotation-only classifier for shift in fission yeast; if it already reaches near-ceiling, and unannotated shifters are under ~150, the model has nothing to add."},
+  "verdict": "verify_first",
+  "verdict_reason": "Clean, open, three-species measured label passes Part A, but ~2,000 proteins per species, a noisy RDI (no ortholog correlation) and likely dominance by GO annotation must be checked first."
+}

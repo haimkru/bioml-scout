@@ -1,0 +1,40 @@
+{
+  "paper_id": "nature2026-10926-5",
+  "title": "Family genetic designs in MoBa provide insights into health and functioning.",
+  "doi": "10.1038/s41586-026-10926-5",
+  "journal": "Nature",
+  "data_url": "https://www.fhi.no/en/ch/studies/moba/for-forskere-artikler/gwas-data-from-moba/ (open summary statistics); individual-level data via https://helsedata.no (controlled access, NIPH / TSD p299)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Read the NIPH README for the trio GWAS (genome-wide association study) summary statistics. Sent HEAD requests for all 8 files: they download openly with no login, 172-292 MB gzip each. Pulled the first 200 KB of the height 'basic' and 'trios' files with a ranged GET: they are tab-separated, one row per SNP (single-letter DNA variant), GRCh37 coordinates, and the columns match the README. Effect sizes are in standard-deviation units. No full text, no supplement, and no Zenodo record turned up for the DOI.",
+    "what_came_from_paper_text_only": "Cohort size (about 230,000 genotyped people), trio counts per trait (41,761 educational achievement, 23,786 height, 24,376 sleep, 18,701 depressive symptoms; these also appear in the README), and the fact that individual-level genotypes and phenotypes need a helsedata.no application plus ethics approval (from the NIPH web pages). Total SNP count per file was not checked."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Controlled access: individual-level MoBa genotypes and phenotypes need an application through helsedata.no to NIPH (Norwegian Institute of Public Health), the TSD p299 secure server, and Norwegian ethics (REK) approval. The only open data are per-SNP summary statistics, which download without login but are 172-292 MB per file, over the 50 MB cap."},
+    "a2_label_is_a_column": {"pass": false, "note": "With the open summary statistics, any ML label (for example 'is this SNP's population effect inflated compared with its within-family direct effect?') would have to be built from the difference between two noisy regression estimates. It is not a measured column."},
+    "a3_inputs_present": {"pass": true, "note": "SNP coordinates (GRCh37) and alleles are present (checked in the file headers), so sequence or annotation features could be attached."},
+    "a4_units_stated": {"pass": true, "note": "The README says all phenotypes were standardised, so effects are in standard-deviation units. Confirmed that the effect columns are present."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "There are probably millions of SNP rows (total not counted), but the real unit is the independent locus with a true signal. At 19k-42k trios, only a few dozen loci per trait reach significance, so the labelled examples are far fewer than the row count suggests."},
+    "a6_fits_laptop": {"pass": true, "working_set": "About 1.8 GB gzip for all 8 files; one trait pair is about 0.47 GB gzip", "note": "Can be streamed with pandas chunks. Fine on a laptop, but over the per-file download cap."},
+    "a7_counts_match_paper": {"pass": true, "note": "The README sample sizes match the trio counts reported for the paper. SNP counts were not verified."},
+    "a8_label_provenance": {"pass": false, "note": "Per-SNP effects are regression estimates whose standard errors (for example SE 0.054-0.083 for height) are as large as the effects themselves. Any label built from them is mostly estimation noise rather than a physical measurement."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "AlphaGenome (DNA variant-effect model) could in principle supply SNP features", "freeze_and_head_viable": null, "hardware": "CPU for cached features", "licence": "AlphaGenome non-commercial; MoBa summary statistics limited to health-related research in the public interest"},
+  "integration": {"partner_dataset": "AlphaGenome Atlas or GWAS Catalog summary statistics from unrelated-individual cohorts", "join_key": "chromosome:position (GRCh37) plus alleles", "bigger_question_one_sentence": "Do functional DNA annotations predict which population GWAS signals shrink once family structure is controlled for? This is not answerable with the few significant loci here."},
+  "controls": {"positive_control": "Height direct and population effects should agree closely, while educational achievement effects should shrink in the trio model (as the paper reports).", "negative_control": "Shuffle SNP labels across loci.", "external_validation": "Published within-sibship GWAS (Howe et al. 2022, Nature Genetics) was found in search but not opened."},
+  "honest_claim_h3": "At best, the model would predict which of a few dozen genome-wide significant childhood-trait SNPs in Norwegian trios differ between population and within-family estimates, and those estimates are dominated by sampling noise.",
+  "plain_idea": {
+    "one_liner": "Use DNA-variant annotations to predict which genetic associations shrink once parents' genotypes are accounted for in family data.",
+    "train_on": "Per-variant summary rows from the open MoBa trio GWAS (variant position, alleles, frequency), with DNA annotation features added. The number of informative variants is unknown and probably only dozens per trait.",
+    "predict": "The gap between a variant's ordinary population association and its within-family direct effect, both estimated by regression in about 19,000-42,000 Norwegian parent-child trios.",
+    "why_worthwhile": "Statistical geneticists would learn which kinds of variants carry family-level confounding, but the open data are too noisy per variant to train on."
+  },
+  "pitch": null,
+  "ml_idea": "Treat the trio and population summary statistics as a per-SNP table and predict the attenuation of each SNP's effect (from population model to direct-effect model) from DNA annotations. This was rejected: individual-level data are controlled access, and the per-SNP labels are too noisy and too few.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 1.8, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from HEAD file sizes and a 200 KB ranged sample (about 6,900 rows per 200 KB compressed). Nothing was timed.", "cheapest_killing_check": "Count SNPs per trait with trio Offspring_P < 5e-8, and the number of independent loci after clumping (grouping correlated nearby SNPs). If there are fewer than a few hundred, there is nothing to train on."},
+  "verdict": "reject",
+  "verdict_reason": "The MoBa individual-level data are controlled access: they need a helsedata.no application, the TSD p299 server and ethics (REK) approval. The open trio GWAS summary statistics do download, but they give per-SNP regression estimates as large as their standard errors, with only a few significant loci, so an ML label would be built from noise (A2, A5, A8). A C2 prior-work search was not run because Part A failed."
+}

@@ -1,0 +1,268 @@
+{
+  "paper_id": "cell2026-08-036",
+  "title": "Single-cell-resolved genome atlas of prokaryoplankton inhabiting the ocean's interior.",
+  "doi": "10.1016/j.cell.2026.08.036",
+  "journal": "Cell, Sep 2026 (PMID 42743927; no PMCID; Europe PMC isOpenAccess=N, hasTMAccessionNumbers=N). I found no preprint in Europe PMC, so I used the abstract plus repository metadata and did not touch the publisher site.",
+  "data_url": "https://doi.org/10.6084/m9.figshare.29087090 (GORG-Dark SAGs, CC BY 4.0, a single 2.47 GB zip of contigs). Labels and metadata come from NCBI BioProject PRJNA1259050: 9,698 BioSamples and SRA runs, plus 5,282 PGAP-annotated assemblies released so far.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "(1) Europe PMC. No PMCID, and the Annotations API returned no accessions. PubMed elink returned only PubMed neighbours with no repository links (unexpected), so I found BioProject PRJNA1259050 by text search. (2) figshare 29087090. CC BY 4.0, one 2,471,331,739-byte zip. I listed its central directory with HTTP range reads; a HEAD on the S3 presigned URL returned 403, but a ranged GET worked. The zip holds 9,698 *_contigs.fasta.gz files plus 9,698 __MACOSX junk files and no metadata table. I extracted 2 FASTAs: AM-118-E16 has 40 contigs and 459,980 bp, identical to NCBI GCA_062014576.1. (3) All 9,698 BioSamples, fetched with elink+efetch; esearch on the [BioProject] field returned 0. There are 9,698 unique isolates, matching the figshare files 1:1. Depth is numeric in every record: 32 distinct values from 94 to 10,899, with no unit field. The records cover 53 distinct depth-samples at 24 casts, 13 geo_loc names, 21 expeditions and collection years 2010-2021. Temperature is filled for 4,191 records, salinity for 3,191 and dissolved oxygen for 522. There are 256 NCBI organism names. (4) NCBI Datasets. 5,289 reports cover 5,282 isolates (7 have both GCA and GCF), all PGAP-annotated, with CheckM values for only 13. The esearch count was 5,286 earlier in the session, so the release is still in progress. (5) Kill checks on the metadata. A coarse-taxon mean-depth lookup gives leave-one-cast-out R2 -0.02 and within-cast Spearman 0.07. Within station x taxon groups, GC vs depth has median rho 0.24 (positive in 10 of 13) and assembly length vs depth -0.06. (6) Zenodo 21682938 is only a BWA contaminant index (MIT, ~7.8 GB) and holds no labels.",
+    "what_came_from_paper_text_only": "From the abstract only: the biogeography findings, particle-attached Pelagibacterales, Patescibacteria and Nanoarchaeota in the Baltic and Black Seas, the proteorhodopsin type, and chemolithoautotrophy. The BioProject description says '58 marine locations', but the BioSamples show 24 distinct coordinates and 53 depth-samples. I did not see GTDB taxonomy, CheckM completeness or any per-cell phenotype (e.g. FACS cell size); these are probably in the paywalled Table S1. Not downloaded: the full 2.47 GB zip, SRA reads and the Zenodo index. The ~8 Gbp and ~8M-protein totals are extrapolated from the NCBI subset (median 696 kb, 888 proteins). The GORG-Tropics counts come from the ISME J 2025 full text."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). The figshare zip is CC BY 4.0, with no login or embargo, and ranged GETs return HTTP 206. The NCBI BioSample, SRA and assembly records are public."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass with a caveat (checked). Depth is a column in every BioSample record, keyed by isolate ID, and the IDs match the figshare file names 9,698/9,698. It is a clean 1:1 metadata join, not a constructed label. No per-cell measured phenotype exists in the open files."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass (checked). The contig sequences themselves are in the zip, not accession numbers. Proteins need pyrodigal, or must be pulled from PGAP for 5,282 of the 9,698 SAGs."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass with a flag (checked). Depth has no unit field. MIxS defines it in metres, and the values (94-10,899, matching Challenger Deep) are consistent with metres. Temperature, salinity and oxygen units are implied, not stated."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 9698,
+      "note": "Pass on rows (checked), but the label varies only between the 53 samples (32 depth values) at 24 casts, so the effective number of independent units is small."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "2.47 GB zip of contigs (~8 Gbp uncompressed, estimated), streamed one genome at a time. The derived feature and label table is under 0.5 GB.",
+      "note": "Pass. The baseline is CPU-only (composition features plus GBM). Building the full gene annotation or ESM-2 embeddings takes hours of CPU time."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass (checked). The abstract's 9,698 equals the figshare file count, the BioSample count and the SRA count. Flags: the BioProject's '58 locations' vs 24 coordinates/53 samples; NCBI has 5,282 assemblies and the release is ongoing."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass. Depth is the Niskin-bottle sampling depth, a physical measurement that is neither predicted nor derived from the genomes. The NCBI organism names are pipeline taxonomy and must not be used as labels."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "9,698 FASTA files in one zip plus BioSample XML; the isolate-ID join is verified 9,698/9,698."
+    },
+    "B2": {
+      "score": 1,
+      "why": "The 2 FASTA.gz I opened parsed cleanly; the zip carries 9,698 __MACOSX junk files; labels need XML parsing."
+    },
+    "B3": {
+      "score": 2,
+      "why": "Depth is bottle depth in metres, one field across 21 expeditions, values 94-10,899 (checked)."
+    },
+    "B4": {
+      "score": 2,
+      "why": "No censored or non-numeric depth values in the 9,698 records (checked)."
+    },
+    "B5": {
+      "score": 2,
+      "why": "0 duplicate isolates; 7 GCA/GCF assembly pairs collapse trivially by isolate (checked)."
+    },
+    "B6": {
+      "score": 1,
+      "why": "MIxS MISAG fields are standard, but no data dictionary; taxonomy and completeness only in the paywalled supplement."
+    },
+    "C1": {
+      "score": 2,
+      "why": "Genome vs lineage lookup on held-out stations is informative either way: niche encoded, or phylogenetically conserved."
+    },
+    "C2": {
+      "score": 1,
+      "why": "Alneberg 2020 did genome-to-niche on 352 Baltic clusters with random CV; GenomeSPOT predicts growth optima, not depth."
+    },
+    "C3": {
+      "score": 2,
+      "why": "Diversity/better angle: first unselected, global single-cell set spanning 94-10,899 m, vs one brackish sea of MAGs."
+    },
+    "C4": {
+      "score": 1,
+      "why": "Depth niche otherwise needs deep cruises or many metagenome abundance maps; prediction is cheaper but replaces no assay."
+    },
+    "C5": {
+      "score": 2,
+      "why": "Obvious dummies: global mean, coarse-taxon mean (within-cast rho 0.07, computed), nearest-genome lookup."
+    },
+    "D1": {
+      "score": 2,
+      "why": "ESM-2 has open MIT weights and runs on PGAP or pyrodigal proteins; small checkpoints run on CPU."
+    },
+    "D2": {
+      "score": 1,
+      "why": "~8M proteins (extrapolated); needs per-genome protein subsampling and pooling, a non-standard genome-level head."
+    },
+    "D3": {
+      "score": 2,
+      "why": "ESM-2 is MIT; data are CC BY 4.0 on figshare and public at NCBI."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Leave-one-cast-out (24), leave-one-sample-out (53) and leave-one-region-out (13) all come from the metadata (checked)."
+    },
+    "E2": {
+      "ok": true,
+      "why": "24 casts; 53 samples of 2-467 cells, 52 with >=50 cells; 13 regions (checked)."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Global-mean, taxon-mean and nearest-genome baselines; the taxon-mean computed here gives LOCO R2 -0.02."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Near-identical genomes found at several depths give the irreducible spread; needs ANI clustering, not yet done."
+    },
+    "E5": {
+      "ok": true,
+      "why": "SAR202/Dehalococcoidia are deepest (median 2,000 m); within station-taxon groups GC rises with depth (median rho 0.24, checked)."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Depth shuffled across samples, a length/contig-count-only model and feature-block ablation are all runnable."
+    },
+    "E7": {
+      "ok": true,
+      "why": "GORG-Tropics (12,715 photic SAGs, ENA PRJEB33281) as out-of-range test; years 2010-2021 allow a temporal split."
+    },
+    "E8": {
+      "ok": false,
+      "why": "No published ML number on GORG-Dark; Alneberg's rho 0.70-0.81 is on different Baltic data."
+    },
+    "G1": {
+      "score": 2,
+      "why": "NCBI taxid, BioSample/SRA accessions and lat/lon, depth and date are on every record (checked)."
+    },
+    "G2": {
+      "score": 2,
+      "why": "GORG-Tropics (same pipeline, OSF pcwj9) and World Ocean Atlas, joined on lat/lon/depth for temperature/oxygen."
+    },
+    "G3": {
+      "score": 1,
+      "why": "Tropics is a schema-harmonised union, not a key join; WOA is a nearest-grid match for 53 samples."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Together they cover 0-10,899 m from one unbiased single-cell pipeline; neither covers the full water column alone."
+    },
+    "H1": {
+      "score": 1,
+      "why": "Presence-only: a lineage missing from ~180 sampled cells is weak evidence it does not live there."
+    },
+    "H2": {
+      "score": 1,
+      "why": "21 expeditions and 13 regions, but one sorting/amplification/assembly pipeline (Bigelow SCGC)."
+    },
+    "H3": {
+      "score": 2,
+      "why": "The claim can be stated precisely: sample depth, for cells that amplified in this pipeline, at 53 sampled depths."
+    },
+    "H4": {
+      "score": 1,
+      "why": "The lab has published on SAG representativeness and chimerism; whether this paper states the gaps is unchecked (paywalled)."
+    },
+    "I1": {
+      "score": 2,
+      "why": "Andersson lab (Alneberg 2020) posed genome-to-niche prediction; the Stepanauskas lab (Bigelow) built the atlas."
+    },
+    "I2": {
+      "score": 1,
+      "why": "A knowledge result; might steer which genes get studied as depth/pressure adaptations, not a concrete experiment."
+    },
+    "I3": {
+      "score": 1,
+      "why": "Within-cast rank correlation and gain over lineage lookup match the scientific question; no decision threshold involved."
+    },
+    "I4": {
+      "score": 1,
+      "why": "Coarse taxon lookup fails (rho 0.07), but an untested nearest-genome lookup may suffice."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Grouped CV, transfer to a second atlas, frozen-embedding heads and ablations: real modelling."
+    },
+    "J2": {
+      "score": 1,
+      "why": "Known depth patterns (SAR202 deep, MGII shallow) allow sanity checks; ecotype-level calls need an expert."
+    },
+    "J3": {
+      "score": 2,
+      "why": "The clean 9,698-row cell metadata plus composition table and the lookup-vs-genome result stand alone."
+    },
+    "J4": {
+      "score": 1,
+      "why": "No budget set; suggest 3 weeks."
+    },
+    "J5": {
+      "score": 0,
+      "why": "No kill date written in NOTES.md."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Alneberg et al. 2020, Communications Biology (PMC7070063): ridge/random forest/gradient boosting on eggNOG gene profiles of Baltic Sea MAG clusters",
+        "open_weights": null,
+        "score_and_split": "Spearman 0.70-0.81 for placement along salinity, depth and size-fraction gradients. 352 species clusters from 1,961 MAGs and 123 samples, one sea. 10-fold CV with random cluster partition, i.e. no phylogeny-aware split (full text retrieved).",
+        "authors_named_unsolved": "The intro says it 'remains to be shown' that distribution can be predicted from the genome, as a step toward species distribution models joining genetics and environment. Discussion not inspected.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "GenomeSPOT (Barnum et al., bioRxiv 10.1101/2024.03.22.586313; github cultivarium/GenomeSPOT, MIT)",
+        "open_weights": true,
+        "score_and_split": "Per the bioRxiv abstract (search snippet): optimum temperature R2 0.73, salinity R2 0.81, pH R2 0.48 and oxygen tolerance 92% balanced accuracy for held-out novel families, trained on 15,596 cultured genomes. It predicts growth optima, not habitat depth.",
+        "authors_named_unsolved": "README: predictions are inaccurate for organisms unlike the training set or with atypical amino-acid composition, and most failures are genomes with <700 proteins. The median NCBI GORG-Dark SAG has 888, so many will fail.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (facebookresearch/esm; t6_8M or t12_35M) on PGAP or pyrodigal proteins, mean-pooled per genome over a fixed protein subsample. A frozen DNA language model over ~8 Gbp of contigs is not CPU-feasible.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU. Subsampling ~100 proteins per genome gives ~1M sequences, an estimated few hours (not timed). Composition features plus GBM need minutes.",
+    "licence": "ESM-2 MIT; data CC BY 4.0 (figshare), NCBI public domain."
+  },
+  "integration": {
+    "partner_dataset": "GORG-Tropics: 12,715 photic-zone SAGs from 28 samples, same Bigelow pipeline (ENA PRJEB33281, OSF pcwj9), plus the NOAA World Ocean Atlas 2023 for in situ temperature and oxygen at each sample.",
+    "join_key": "SAG isolate ID within each atlas, with a schema-harmonised union of the two atlases on lat/lon, depth and date. For WOA, nearest grid cell on lat/lon/depth/month, one lookup per sample (53). Collapse GCA/GCF pairs by isolate; expect 100% coverage.",
+    "bigger_question_one_sentence": "Is a prokaryote cell's position in the 0-11,000 m water column readable from its genome beyond its lineage, and which genome features carry that signal?"
+  },
+  "controls": {
+    "positive_control": "Trivial target: predict GC/length from k-mers. Known effect: SAR202/Dehalococcoidia predicted deepest and MGII (Thalassarchaeum) shallowest. The within station-taxon GC-depth trend (median rho 0.24) must be recovered.",
+    "negative_control": "Shuffle depth labels across samples (not cells) and rerun leave-one-cast-out CV. Also run a model on length, contig count and completeness only; if it matches the genome model, the signal is an amplification artefact.",
+    "external_validation": "Score GORG-Tropics photic SAGs, which must all be predicted shallowest. Temporal split by collection year (2010-2014 vs 2016-2021). Hold out a whole basin (e.g. train without the Mariana and Atacama trenches)."
+  },
+  "honest_claim_h3": "Predicts the depth of the water sample a cell came from, among cells that survived sorting, lysis and amplification in one lab's pipeline, at 53 sampled depths from 24 stations. That is where its lineage was found, not where it grows best.",
+  "pitch": {
+    "headline": "9,698 single-cell genomes from 94 to 10,899 m, each joined 1:1 to a measured bottle depth, CC BY 4.0",
+    "what_makes_the_data_unusual": "One zip holds 9,698 contig FASTAs that match 9,698 BioSamples exactly, with depth numeric in every record across 53 depth-samples, 24 casts and collection years 2010-2021. The label is a Niskin-bottle measurement, not a model output, and the sequences themselves are present rather than accession numbers.",
+    "the_win": "A genome-only model that beats a coarse-taxon mean-depth lookup under leave-one-cast-out CV, where that lookup scores R2 -0.02 and within-cast Spearman 0.07, and that places GORG-Tropics photic SAGs shallowest. GenomeSPOT, the one baseline with open weights, predicts growth optima rather than habitat depth, so no published depth number exists to beat.",
+    "even_if_it_fails": "A failure that survives the negative controls shows depth is not readable from genome composition beyond lineage, which is a direct answer to the question Alneberg et al. called unsolved. A failure matching the length/contig-count-only model instead says the apparent signal was an amplification artefact, which is a finding about single-amplified-genome data rather than about the ocean.",
+    "who_wants_it": "Marine microbial ecologists, including the Bigelow group behind both GORG atlases and the Alneberg et al. line of genome-to-distribution work, who would gain or lose a way to place genomes of unknown origin in the water column. GenomeSPOT's authors would learn whether their <700-protein failure mode holds on SAGs with a median of 888 proteins."
+  },
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence of a single ocean microbe cell to predict how deep in the ocean it was collected.",
+    "train_on": "Partial genome sequences (assembled DNA fragments) of 9,698 individual bacterial and archaeal cells. Each came from one of 53 water samples taken at 24 ocean stations (counts verified).",
+    "predict": "The water depth (94-10,899 m) of the cell's sample, as recorded from the sampling bottle in each cell's public sample record. It is a field measurement, not any model's output.",
+    "why_worthwhile": "Ocean microbiologists would learn whether a microbe's depth range is written in its genome beyond its family tree; either answer teaches something. A working model could also place genomes of unknown origin in the water column."
+  },
+  "ml_idea": "Regress each SAG's log10 depth (or classify its depth zone) on amino-acid composition, GC, tetranucleotide frequencies, gene-family presence normalised for completeness, and mean-pooled frozen ESM-2 embeddings. Evaluate with leave-one-cast-out and leave-one-basin-out CV. Baselines: global mean, coarse-taxon mean, nearest-genome (MinHash) depth and GenomeSPOT outputs. Test transfer on GORG-Tropics and on a temporal split.",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "working_set_gb": 2.5,
+    "needs_gpu": false,
+    "cheapest_killing_check": "Download the 2.47 GB zip and compute amino-acid composition, GC, length and a MinHash sketch per SAG. Compare a GBM with leave-one-cast-out CV against (a) a length/contig-count-only model and (b) nearest-genome depth. Kill if within-cast Spearman doesn't beat both; the coarse-taxon lookup already scores 0.07.",
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "The 2.47 GB zip is a stated download size; the ~8 Gbp uncompressed volume, the 'few hours' for ESM-2 embeddings over ~1M subsampled proteins, and the 'minutes' for composition features plus GBM are the evaluation's own estimates, and it says nothing was timed."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "Part A passes on the files: 9,698 genomes joined 1:1 to measured bottle depths. The labels are per sample (53 samples, 24 casts). Coarse-taxon lookup fails (rho 0.07) while within-taxon GC tracks depth (rho 0.24), so the signal is plausible. Untested: whether a nearest-genome lookup or completeness artefacts explain it. The build is ~20 h over 2.5 GB."
+}

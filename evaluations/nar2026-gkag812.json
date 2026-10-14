@@ -1,0 +1,149 @@
+{
+  "paper_id": "nar2026-gkag812",
+  "title": "Binary-SPA: a reference-free method for cell annotation in high-resolution spatial transcriptomics.",
+  "doi": "10.1093/nar/gkag812",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://spatch.pku-genomics.org/#/download (SPATCH portal); GEO GSE322974 and GSE299207; figshare 10.6084/m9.figshare.31502971",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened: GSE322974 Xenium cells.parquet (75,396 rows x 14 columns, no cell-type column) and cell_feature_matrix.h5 (9,858 features of which 5,046 'Gene Expression', 75,396 cells, 11,729,449 non-zeros); SPATCH COAD CODEX proteome.zip -> adata_codex.h5ad (266,625 cells x 16 proteins, obs columns 'annotation' with 10 protein-based cell types, 'spatial_cluster', coordinates in obsm['spatial']); SPATCH manual_segmentation.zip (5 JSON masks + 5 PNG tiles, boundaries only, no cell types). Queried the SPATCH backend API directly: 33 datasets listed (15 spatial transcriptomics, 15 CODEX, 3 scRNA-seq) with per-cell type counts, e.g. xenium_coad has 365,395 cells across 15+ annotated types and xenium_coad_codex has 266,549 cells across 10 types. Read the zip central directory of the 354 MB transcriptome archive by ranged GET: it holds exactly one file, transcriptome/adata.h5ad, 1.66 GB uncompressed. Listed GEO FTP contents for both series and NGDC HRA011129 (open access, raw platform data).",
+    "what_came_from_paper_text_only": "That Binary-SPA's reported median per-tile Pearson correlation against CODEX was 0.87 (COAD) and 0.96 (OV), and r = 0.894 vs clinical plasma-cell counts (SingleR 0.731). That the SPATCH transcriptome annotations were produced by a consensus/label-transfer pipeline rather than measured independently. I did NOT download the 354 MB transcriptome archive, so I did not confirm with my own eyes whether its adata.h5ad carries the annotation column the web portal serves; I also did not open GSE322974_Binary_SPA.rds (155 MB R object) or the 6 GB COMET TIFF."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "All sources open with no login: I successfully pulled files from GEO FTP, figshare (CC BY 4.0) and the SPATCH portal's Aliyun file shares. NGDC HRA011129 is marked open access."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "The only label measured independently of the transcriptome is the CODEX protein-based cell type, and it sits on an ADJACENT tissue section, so its 266,625 cells do not correspond to the 365,395 transcriptome cells. The paper itself had to construct the comparison by binning both into ~1,000 spatial tiles. In the file I opened (GSE322974 cells.parquet) there is no cell-type column at all."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Expression matrices are present as actual values, not accessions: verified a 5,046-gene x 75,396-cell Xenium h5 and a 266,625 x 16 CODEX h5ad."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Xenium values are integer transcript counts per cell (int32) with x/y centroids in microns; CODEX values are float protein intensities. Units are conventional and consistent within each file."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 365395,
+      "note": "Cell counts are huge but the unit of independence is the tissue: 3 tumours (colon, liver, ovary) in SPATCH, 1 bone-marrow biopsy in GSE322974. The one physically measured label (clinical bone-marrow plasma-cell percentage) exists for only ~22 patient samples in GSE299207, far under the ~400 threshold."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~1.7 GB per spatial dataset uncompressed (adata.h5ad), ~60 MB per CODEX dataset; ~5 GB if three platforms are loaded.",
+      "note": "Sparse count matrices load fine in 16 GB RAM; no GPU needed for a tile-level baseline."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "SPATCH download table, the backend dataset API and the summed per-type cell counts all agree (e.g. 365,395 COAD Xenium cells); CODEX h5ad I opened has 266,625 cells versus 266,549 in the API, a 76-cell difference I could not reconcile but which is immaterial."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FATAL. Every per-cell cell-type label available for the transcriptomics data is another annotation method's output computed from the very expression features a model would use as input: the SPATCH labels come from consensus label transfer off the paired scRNA-seq, and GSE322974_Binary_SPA.rds contains Binary-SPA's own predictions. Training on either is distilling an annotation pipeline, not learning biology, and the Binary-SPA authors themselves refused to treat those labels as ground truth, falling back to tile-level CODEX composition instead."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Binary-SPA (this paper; marker-matrix binary scoring plus Seurat anchor-based self-projection, R package)",
+        "open_weights": true,
+        "score_and_split": "Median per-tile Pearson correlation of cell-type composition against adjacent-section CODEX: 0.87 in colon adenocarcinoma, 0.96 in ovarian cancer (no held-out split; evaluated on the same tissues it was tuned on). Pearson r = 0.894 between its plasma-cell percentage and clinical bone-marrow counts across ~22 patients, versus 0.731 for SingleR.",
+        "authors_named_unsolved": "They state marker-based annotation fails because it relies on expression level to infer identity, and that liver (HCC) tile analysis was impossible because CODEX data quality was insufficient; they do not solve how to obtain true per-cell ground truth.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Seurat label transfer (FindTransferAnchors + MapQuery), the standard reference-based annotator",
+        "open_weights": true,
+        "score_and_split": "Reported by the benchmark literature retrieved below as a consistently top-ranked method; Binary-SPA uses its anchor machinery internally. No single headline number on a held-out split that I retrieved.",
+        "authors_named_unsolved": "Degrades when no well-matched single-cell reference from the same tissue exists.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SingleR, a correlation-based reference annotator",
+        "open_weights": true,
+        "score_and_split": "Pearson r = 0.731 versus clinical plasma-cell counts in this paper's bone-marrow cohort; a 2025 BMC Bioinformatics benchmark of five reference-based tools on a 10x Xenium HER2+ breast cancer dataset found SingleR the best performer against marker-based manual annotation.",
+        "authors_named_unsolved": "Dependence on reference quality and composition.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "scANVI and TACCO (semi-supervised deep generative and optimal-transport annotators)",
+        "open_weights": true,
+        "score_and_split": "Named alongside Seurat as consistently top-ranked in the 2026 benchmark 'Benchmarking cell type annotation in spatial transcriptomics' (bioRxiv 2026.06.16.732716 / PMC13533010), evaluated across MERFISH, Open-ST, Stereo-seq and Xenium with expert-curated annotations, scored by confusion matrix, hierarchical accuracy, subtype accuracy, runtime and robustness to reference volume. I could not retrieve the per-method numeric table (the full text returned HTTP 429 and PMC returned a captcha).",
+        "authors_named_unsolved": "Fine-grained cell subtype annotation remains considerably harder than broad lineage assignment, and cross-platform / cross-developmental-stage / disease-dynamic transfer is where top methods stop being top.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RCTD, scPred, scmapCell, Azimuth, Tangram, CellTypist (further open annotators named in the retrieved benchmarks)",
+        "open_weights": true,
+        "score_and_split": "Compared head-to-head in the 2025 BMC Bioinformatics Xenium benchmark and the 2026 spatial annotation benchmark; specific numbers not retrieved.",
+        "authors_named_unsolved": "Same as above: subtype resolution and cross-platform transfer.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (single-cell transcriptome foundation models); open weights, CPU-feasible for embedding a few hundred thousand cells with a frozen encoder",
+    "freeze_and_head_viable": true,
+    "hardware": "16 GB laptop CPU would work for frozen embeddings of ~365k cells over roughly a day; a GPU would make it an hour.",
+    "licence": "scGPT is MIT; Geneformer is Apache-2.0. Not the blocker here."
+  },
+  "integration": {
+    "partner_dataset": "Human Protein Atlas / CellMarker-style marker resources and the paired scRNA-seq atlases in SPATCH (3 tumours, 8,288-12,226 cells each), joinable to the Xenium panels on HGNC gene symbol.",
+    "join_key": "HGNC gene symbol (verified present as plain symbols, e.g. A2ML1, ABCA1, in the Xenium feature table) and spatial x/y coordinates in microns within a section.",
+    "bigger_question_one_sentence": "Does a transcriptome foundation model embed spatial-transcriptomics cells well enough that protein-defined identity is recoverable from RNA alone? — a good question, but unanswerable here because no cell is measured in both modalities."
+  },
+  "controls": {
+    "positive_control": "Available in principle: the Xenium panels contain canonical lineage genes (e.g. epithelial keratins, CD3 for T cells), and the 609 negative-control codewords plus 40 negative-control probes verified in the h5 give a built-in technical floor.",
+    "negative_control": "Label shuffling would be runnable, and the negative-control codeword counts (mean 0.0015 per cell, verified) are a genuine per-cell noise channel.",
+    "external_validation": "Weak: CD138 immunohistochemistry images and clinical plasma-cell percentages for ~22 bone-marrow patients, plus adjacent-section CODEX for 2 of 3 tumours. None of these is a per-cell label."
+  },
+  "honest_claim_h3": "The most a model built on this data could honestly claim is: 'within three tumours and one bone-marrow biopsy, it reproduces the cell-type proportions that an existing annotation pipeline assigned, and matches adjacent-section protein composition at ~1,000-tile resolution' — not that it predicts any cell's true identity.",
+  "plain_idea": {
+    "one_liner": "Use a cell's spatial gene-expression profile to predict which cell type it is, without needing a matched single-cell reference.",
+    "train_on": "Cell-by-gene count matrices from imaging-based spatial transcriptomics: verified 75,396 cells x 5,046 genes in the new bone-marrow dataset and 365,395 cells x 5,001 genes for colon cancer in SPATCH, across five platforms and three tumours.",
+    "predict": "A cell-type label out of roughly 10-16 classes. The true answer would have to come from the adjacent-section CODEX protein stain (266,625 cells x 16 proteins, verified), but those are different physical cells, so no per-cell true answer exists.",
+    "why_worthwhile": "Pathology and tumour-immunology labs annotate every spatial transcriptomics experiment by hand or by borrowing a reference, which is slow and unreliable; a reference-free annotator that is honestly validated would save that step. The project fails because the honest validation is exactly what the data cannot supply."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The 2026 spatial-annotation benchmark already spans MERFISH, Open-ST, Stereo-seq and Xenium with expert-curated labels; this paper adds 3 tumours on 5 platforms plus 22 bone-marrow biopsies, which is comparable breadth and smaller in number of independent tissues."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The data does support an uncertainty signal — Binary-SPA's own delta-cell-type-score and the 609 negative-control codewords and 40 negative-control probes I verified in the h5 give a per-cell noise estimate — but without per-cell truth you cannot calibrate that confidence against anything."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Seurat, scANVI, TACCO, SingleR, RCTD and Tangram are all open, current and were honestly compared in 2025-2026 benchmarks against expert-curated annotations; Binary-SPA itself only beat a five-method consensus by 0.87 vs 0.85 median tile correlation (p = 0.042), so the headroom is a rounding error."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Binary-SPA is runnable as a baseline and the code is open, but the condition that fails is the evaluation: there is no common per-cell label to score both models on, so no amount of extra data makes an improvement measurable."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: train a reference-free cell-type classifier (frozen scGPT or Geneformer embeddings plus a small head) on imaging-based spatial transcriptomics cells and validate it against protein-defined identity. It dies on labels. The only per-cell labels distributed are another pipeline's output computed from the same expression features (A8 circularity), and the one protein-measured label sits on an adjacent tissue section whose cells cannot be matched (A2). The surviving framing — regress adjacent-section CODEX cell-type proportions from pseudo-bulk transcriptome within ~1,000 spatial tiles — is spatial deconvolution, a saturated task, and would rest on 3 independent tumours.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 5.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 8.0,
+    "embedding_hours": 24.0,
+    "cv_run_minutes": 20,
+    "compute_note": "Estimated, not timed: I measured the real file sizes (1.66 GB per spatial h5ad from the zip directory, 60 MB per CODEX h5ad, 16.5 MB per Xenium h5) and scaled a typical frozen single-cell foundation-model throughput of a few cells per second per CPU core over ~365k cells. I did time the small downloads and h5/parquet reads, which were seconds.",
+    "cheapest_killing_check": "Ask whether any single cell has both a transcriptome profile and a protein measurement. Answer, verified in ten minutes: no — CODEX was run on adjacent sections, 266,625 CODEX cells versus 365,395 Xenium cells with no shared identifier. That alone kills the supervised version of the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A8 and A2. Every per-cell cell-type label in this data is another annotation method's output computed from the same expression features (SPATCH's consensus label transfer; Binary-SPA's own predictions in GSE322974_Binary_SPA.rds), so training on it distils a pipeline rather than learning biology. The one transcriptome-independent label, CODEX protein identity for 266,625 cells over 16 markers, lies on an adjacent tissue section and cannot be joined to any transcriptome cell — the paper itself conceded this by comparing only cell-type proportions inside ~1,000 spatial tiles. The one physically measured outcome, clinical bone-marrow plasma-cell percentage, exists for about 22 patients, failing A5. Separately, C2 is saturated: Seurat, SingleR, scANVI, TACCO, RCTD, scPred, Azimuth and Tangram are all open and were honestly benchmarked against expert-curated annotations in 2025-2026, and Binary-SPA's own margin over a five-method consensus was 0.87 versus 0.85 median tile correlation. The data itself is clean and well served (the SPATCH portal downloads worked first try, CC BY 4.0 on the figshare component) — it is the ground truth that is missing, and no amount of modelling creates it."
+}

@@ -1,0 +1,196 @@
+{
+  "paper_id": "nar2026-gkag815",
+  "title": "Large-scale mutational analysis uncovers molecular mechanisms governing dual RNA functions in transposons.",
+  "doi": "10.1093/nar/gkag815",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13521648/ (Supplementary Table S3, inside gkag815_supplemental_files.zip) + https://github.com/sternberglab/Mortman_et_al_2026/blob/HEAD/0_info/library_members.csv + https://doi.org/10.5281/zenodo.21537428",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the Nucleic Acids Research supplement (6.4 MB) and parsed Supplementary Table S3 with openpyxl: 5,752 data rows after the 6-row merged header, each with a 252-nucleotide variable sequence, a unique 10-base barcode, a design code, raw read counts, abundances, input-normalised abundances and log2 fold changes for three assays (DNA cleavage 3 replicates, splicing 3, excision 2). I confirmed the log2 fold-change columns are exactly affine to log2 of the matching normalised-abundance column (Pearson r = 1.00 on every assay/replicate pair), so no block is mis-sorted. I computed replicate agreement (replicate 1 vs 2 r-squared = 0.9840 cleavage, 0.9085 splicing, 0.8201 excision) and these match the published values in Figure 1D exactly. I downloaded library_members.csv from the GitHub deposit (5,752 rows, 300-nucleotide full constructs), joined it to Table S3 on the variant code (5,752 of 5,752 rows join, barcode agrees for 5,751), and confirmed the 252-nt variable sequence is a substring of the full construct for 100% of rows. I counted censored values (138 rows floored at log2FC = -13 in cleavage), duplicate sequences (58 sequences carrying 2+ barcodes, 143 rows; barcode-pair agreement r = 0.98/0.87/0.89, mean absolute difference 0.65-0.69 log2 units), and the 24 design-code groups. I ran a one-hot ridge regression with 5-fold cross-validation grouped by design code: Spearman 0.212 (cleavage), 0.376 (splicing), 0.718 (excision), in 0.3 seconds. I read Figure 1 to get the library design categories and the published replicate R-squared values.",
+    "what_came_from_paper_text_only": "The biology of each assay (excision measured as plasmid-backbone read recovery after TnpA expression; splicing measured after reverse transcription; DNA cleavage measured as survival of library members whose guide RNA is non-functional, so a high cleavage log2 fold change means a dead guide), the identity of the 4 wild-type and 12 scrambled negative-control barcodes, the claim that stem-loops SL1-SL5 and two pseudoknots make up the guide RNA structure, and the Figure 1B category counts. I did not open the raw sequencing data in the Sequence Read Archive (BioProject PRJNA1432764) and did not need to."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Opened the processed activity table straight from the open-access Nucleic Acids Research supplement and the GitHub sequence file; no login or application. The data availability statement's 'available from the corresponding authors on reasonable request' line is misleading - the per-variant activity data is already in Supplementary Table S3."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the file: log2 fold change per assay per replicate is already a column (8 label columns), plus input-normalised abundance. Nothing has to be constructed; I only averaged replicates."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: the 252-nucleotide variable sequence is literally in column B of Table S3 for all 5,752 rows, and the 300-nucleotide full construct is in the GitHub CSV. No accession lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Verified in the header rows: 'Read count (n+1)', 'Ab = Abundance = (count / total_counts)', 'Normalized Ab (assay_ab / input_ab / WT_...)', 'Fold change (log2)'. Consistent across all three assays."},
+    "a5_enough_rows": {"pass": true, "n_rows": 5752, "note": "5,752 variants counted in the file, each with three activity labels (~17,000 variant-assay measurements). Caveat: all are variants of one element's right end, so independent information is lower than the raw count suggests."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~20 MB (8.7 MB xlsx + 1.8 MB csv)", "note": "Verified by loading everything in memory; the one-hot matrix is 5,752 x 1,008 floats (23 MB) and the cross-validation ran in 0.3 seconds on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Table S3 and the independent GitHub library_members.csv both have exactly 5,752 rows and join 1:1. Figure 1B's category counts sum to 5,728, a 24-row (0.4%) shortfall, most likely controls counted once instead of per barcode; the two data files agree with each other, so I can tell which is right."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are log2 fold changes of barcode read counts from three physical pooled assays in E. coli (TnpA-driven excision, reverse-transcription-based splicing, TnpB-driven cleavage survival). No model output anywhere, and the label is not computable from the sequence features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One table (S3) holds sequence plus all labels; optional GitHub CSV joins 5,752/5,752 on variant code."},
+    "B2": {"score": 1, "why": "xlsx with a 6-row merged header needed manual column mapping; parsed cleanly on the second attempt."},
+    "B3": {"score": 2, "why": "All labels already log2 fold change normalised to input and wild-type, one lab, one pipeline."},
+    "B4": {"score": 1, "why": "138 rows (2.4%) floored at log2FC = -13 in cleavage; excision replicate-2 normalised abundance blank for 1,952 rows."},
+    "B5": {"score": 1, "why": "58 sequences appear under 2+ barcodes (143 rows); agreement r = 0.87-0.98, trivially averaged."},
+    "B6": {"score": 1, "why": "Header rows document every numeric column, but the 24 design-code prefixes are only decipherable from Figure 1B."},
+    "C1": {"score": 2, "why": "How far activity prediction transfers across mutational classes and assays is informative either way; verified harsh group split gives 0.21-0.72."},
+    "C2": {"score": 2, "why": "Four searches found no model for IStron, OMEGA guide RNA or group I intron activity; paper mentions machine learning zero times."},
+    "C3": {"score": 2, "why": "Novel plus unique-application: 5,752 measured variants of a tri-functional element that nobody has modelled."},
+    "C4": {"score": 2, "why": "Each label needs oligo synthesis, cloning, three selections in E. coli and deep sequencing; weeks of bench work."},
+    "C5": {"score": 2, "why": "I computed the dummy and linear baselines myself (Spearman 0.212/0.376/0.718) and reproduced the published replicate R-squared."},
+    "D1": {"score": 2, "why": "RNA-FM (open RNA foundation model, GitHub ml4bio/RNA-FM) and DNABERT-2 both take 252-300 nucleotide inputs directly."},
+    "D2": {"score": 2, "why": "5,752 sequences embedded once on CPU (~1 h), then a ridge or small head trains in seconds; verified the 0.3 s cross-validation."},
+    "D3": {"score": 2, "why": "RNA-FM is MIT-licensed, DNABERT-2 Apache-2.0; the data is Nucleic Acids Research open access with a CC-BY-4.0 Zenodo deposit."},
+    "E1": {"ok": true, "why": "Verified 24 design-code groups in the file; held-out design class and held-out right-end region splits both buildable."},
+    "E2": {"ok": true, "why": "Verified group sizes: 10 groups have 100+ members (largest 1,264), well above the five needed."},
+    "E3": {"ok": true, "why": "Computed global mean (Spearman 0) and one-hot ridge (0.212/0.376/0.718) under design-group-held-out cross-validation."},
+    "E4": {"ok": true, "why": "2-3 biological replicates per assay plus 58 sequences re-measured under independent barcodes; mean |difference| 0.65-0.69 log2 units."},
+    "E5": {"ok": true, "why": "4 wild-type barcodes must score ~0; stem-loop deletions must kill cleavage; terminal trinucleotide must rank top in all assays."},
+    "E6": {"ok": true, "why": "Label shuffling, barcode-only features and position ablation all run in seconds given the 0.3 s cross-validation."},
+    "E7": {"ok": false, "why": "No second IStron mutational library exists; cross-assay transfer stays within one library, and I could not verify a downloadable natural right-end catalogue."},
+    "E8": {"ok": true, "why": "Reproduced Figure 1D's replicate R-squared (0.8201/0.9085/0.9840) exactly from my parsed table, confirming column mapping."},
+    "G1": {"score": 1, "why": "Only internal variant codes, barcodes and raw sequence; no UniProt, Ensembl or genomic coordinates in the file."},
+    "G2": {"score": 1, "why": "Plausible partners (Rfam RF00028 group I intron alignments, ISfinder IS607 elements) but joinable only by sequence homology, and I did not verify a download."},
+    "G3": {"score": 1, "why": "Homology-based join to natural elements would be one-to-many but manageable with a single alignment pass."},
+    "G4": {"score": 2, "why": "Combined question neither answers alone: do natural IStron right ends sit inside the narrow measured region where all three activities co-exist?"},
+    "H1": {"score": 2, "why": "Loss-of-function systematically measured: 22% of variants below -2 for splicing, 33% for excision, plus 12 designed scramble controls."},
+    "H2": {"score": 0, "why": "One lab, one IStron element's right end, one E. coli host, one assay format - verified from methods and the single 252-nt window."},
+    "H3": {"score": 2, "why": "Honest claim writes in one sentence; the assay direction (cleavage survival is inverted) is explicit in Figure 1C."},
+    "H4": {"score": 2, "why": "Paper states design categories, replicate correlations, negative controls and that only one element was tested."},
+    "I1": {"score": 2, "why": "Sternberg lab (Columbia) and the groups engineering TnpB, the compact RNA-guided nuclease now used as a genome editor."},
+    "I2": {"score": 2, "why": "A ranked list of guide-RNA scaffold variants that keep cutting while tolerating splicing changes directly picks which constructs to build."},
+    "I3": {"score": 2, "why": "Decision is 'which handful of variants to synthesise', so precision in the top 50 ranked variants is the decision itself."},
+    "I4": {"score": 2, "why": "Verified that a per-position linear model gets only Spearman 0.21 on cleavage, so no lookup or single rule solves it."},
+    "J1": {"score": 2, "why": "Multi-task regression, grouped splits, frozen RNA foundation model plus head, noise ceiling, leakage controls."},
+    "J2": {"score": 1, "why": "Named, checkable controls exist (stem-loops, terminal trinucleotide, wild-type barcodes) but RNA structure intuition is needed."},
+    "J3": {"score": 2, "why": "The tidy 5,752-row sequence-plus-three-labels CSV does not exist publicly and is useful on its own; I already built it."},
+    "J4": {"score": 1, "why": "No budget written yet; three weeks is realistic given the 0.3 s cross-validation and ~3 h to the feature table."},
+    "J5": {"score": 1, "why": "Kill condition stated here but not yet written into NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SpliceAI / Pangolin (deep neural networks predicting splicing from human pre-messenger-RNA sequence)",
+        "open_weights": true,
+        "score_and_split": "High accuracy on human splice-junction prediction (chromosome-held-out splits), but these predict spliceosomal splicing in vertebrate genomes, not self-splicing by a group I intron ribozyme, so no number is comparable.",
+        "authors_named_unsolved": "Not applicable to this system; their stated gaps concern tissue-specific and deep-intronic human variants.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "CPEB3 self-cleaving ribozyme mutational-effect models (random forest and long short-term memory network, Frontiers in Molecular Biosciences 2022)",
+        "open_weights": null,
+        "score_and_split": "Predicted self-cleavage activity for variants of one ribozyme; correlation with measured activity fell as mutational distance from wild-type grew. Different ribozyme, single activity, so not a comparable number.",
+        "authors_named_unsolved": "Generalising to variants many mutations away from the training sequences; adding higher-order mutants to training helped but did not solve it.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Frozen RNA-FM embeddings plus a small convolutional head for CRISPR-Cas12a guide activity (arXiv 2506.11182, 2025)",
+        "open_weights": true,
+        "score_and_split": "Spearman 0.76 on the held-out HT1-2 split of a 15,000-guide Cas12a dataset, above the 0.71 quoted for DeepCpf1. Different nuclease family and a DNA-targeting guide, not an OMEGA guide RNA, so it is a method template rather than a competitor.",
+        "authors_named_unsolved": "Whether transcriptome-pretrained embeddings transfer to guide systems beyond Cas12a.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (open RNA foundation model, ml4bio/RNA-FM) as the primary encoder for the 252-nucleotide transcript; DNABERT-2 or Nucleotide Transformer as a DNA-side comparison; one-hot plus predicted secondary-structure pairing probabilities as the interpretable baseline",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU only: ~1 h one-time embedding of 5,752 sequences, then heads train in seconds (measured 0.3 s for a 5-fold grouped cross-validation on one-hot features)",
+    "licence": "RNA-FM MIT, DNABERT-2 Apache-2.0; data CC-BY-4.0 (Zenodo) and Nucleic Acids Research open access"
+  },
+  "integration": {
+    "partner_dataset": "Natural IS607-family IStron right ends and group I intron alignments (Rfam RF00028 / RNAcentral, ISfinder) - named but download not verified in this evaluation",
+    "join_key": "Sequence homology to the 252-nucleotide right-end window (no shared accession exists)",
+    "bigger_question_one_sentence": "Do naturally occurring IStron right ends sit inside the narrow sequence region where excision, guided DNA cleavage and self-splicing can all be satisfied at once, i.e. is the measured three-way trade-off visible as selection across the natural element population?"
+  },
+  "controls": {
+    "positive_control": "Four wild-type barcodes must be predicted near log2 fold change 0 in all three assays; deletions of guide-RNA stem-loops SL1-SL5 must be predicted to abolish DNA cleavage; the terminal trinucleotide of the right end must emerge as a top determinant in all three assays (the paper's headline finding). Plus a trivially learnable surrogate: predict GC content of the variable window from the same features.",
+    "negative_control": "Shuffle labels within each design group and confirm collapse to the group mean; train on the 10-base barcode alone (it is randomly assigned, so it must carry no signal); replace sequence features with random noise of the same shape.",
+    "external_validation": "None strictly independent: no second IStron mutational library exists. Best available substitutes are (a) train on one assay and test ranking transfer to another, (b) hold out whole design classes such as the 442 truncations or the 402 sliding-3'-splice-site variants, and (c) a prospective check that natural right ends score as functional, if a downloadable catalogue can be found."
+  },
+  "honest_claim_h3": "Within designed mutational variants of one IStron element's right end, measured in one E. coli pooled assay, the model ranks which sequence changes preserve or destroy excision, RNA-guided DNA cleavage and self-splicing, and flags which variants break the cleavage-splicing trade-off; it says nothing about other IStron families, other hosts, or absolute activity levels.",
+  "plain_idea": {
+    "one_liner": "Use a transposon's right-end DNA sequence to predict three competing activities it must balance: self-splicing, guided DNA cutting, and excision.",
+    "train_on": "5,752 designed sequence variants (verified count) of a 252-nucleotide window at the right end of an IStron, a jumping gene that is simultaneously a transposon, a guide RNA and a self-splicing ribozyme. Each variant's sequence is in the file; the full 300-nucleotide construct is in a companion CSV.",
+    "predict": "Three numbers per variant - how much it changes excision, RNA-guided DNA cleavage and self-splicing relative to the unmutated element - each a log2 fold change of barcode read counts from a pooled bacterial assay with 2-3 biological replicates (replicate R-squared 0.98, 0.91 and 0.82, which I reproduced from the file).",
+    "why_worthwhile": "Groups engineering TnpB, the smallest known RNA-guided DNA-cutting enzyme now being developed as a compact genome editor, need to know which guide-RNA scaffold changes keep cutting; this is the only dataset that measures cutting, splicing and excision for the same sequences, so it can show whether one sequence model can predict a genuine functional trade-off rather than a single activity."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "No model has ever been trained on IStron, OMEGA guide RNA or group I intron self-splicing activity; the nearest relatives are a CPEB3 ribozyme model on a different, single-activity ribozyme and Cas12a guide models on a different nuclease family. 5,752 variants measured in three assays simultaneously has no counterpart."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "Verified in the file: 2-3 biological replicates per assay give a per-variant standard deviation (median 0.10, 0.24 and 0.57 log2 units for cleavage, splicing and excision), and 58 sequences re-measured under independent barcodes give a true repeatability floor of 0.65-0.69 log2 units mean absolute difference. None of the named existing models report calibrated per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "There is no incumbent on this task at all. The only in-house baseline is the one I built: a per-position one-hot ridge scoring Spearman 0.212 (cleavage), 0.376 (splicing), 0.718 (excision) under design-group-held-out cross-validation, leaving clear headroom on two of three assays."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "There is no existing model to run as a baseline on this exact task, and no accessible new data that measures the same quantities the same way; natural element sequences carry only a presumed-functional label from evolution, not a matching log2 fold change."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "The three activity labels are essentially unique to this paper. Related but non-joinable measurements exist: guide-RNA activity for CRISPR-Cas12a (a ~15,000-guide dataset cited in arXiv 2506.11182, which I retrieved) and self-cleavage activity for the CPEB3 ribozyme (Frontiers in Molecular Biosciences 2022, retrieved). Group I intron sequences, but not activities, are catalogued in Rfam RF00028 / RNAcentral (known resource, download not verified).",
+    "approx_items": null,
+    "join_key": "No shared identifier; only sequence homology to the 252-nucleotide right-end window",
+    "why": "Because the label is nearly unique, there is no ready-made external test set - which is simultaneously the reason the project is novel and the reason its claim must stay local to this element."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Near-duplicate variants: 58 sequences appear under 2 or more barcodes (143 rows), so the same sequence could land in both train and test and inflate scores.",
+      "Design-class structure: variants come in 24 systematic design families (truncation series, substitution scans), so random splitting puts a variant one nucleotide away from its test neighbour in the training set.",
+      "The 10-base barcode sits in the same molecule as the variable sequence, so including it as a feature would let the model memorise individual library members.",
+      "Floored values: 138 rows pinned at log2 fold change -13 in the cleavage assay are an artefact of zero reads plus a pseudocount, not a measured activity, and will reward a model that learns to predict the floor.",
+      "Replicates within an assay share the same input library, so treating replicates as independent rows would triple the apparent sample size."
+    ],
+    "split": "Primary: hold out whole design-code groups (column 'Code(s)' prefix, which I saw in the file - 24 groups, 10 with 100+ members) using GroupKFold, which I already ran. Secondary and harder: hold out contiguous positional windows of the right end, so the test set contains mutations at positions never mutated in training. Always collapse duplicate sequences to one row (averaging across barcodes) before splitting.",
+    "checks": [
+      "Shuffle labels within each design group and confirm Spearman collapses to 0 (cross-validation takes 0.3 s, so this is free).",
+      "Train on the 10-base barcode alone; it is randomly assigned, so anything above 0 proves leakage or a bug.",
+      "Report, for each test variant, the Hamming distance to its nearest training sequence, and plot accuracy against that distance.",
+      "Train on the floored (log2FC = -13) rows only versus with them excluded, and check the headline number does not depend on them."
+    ],
+    "verdict": "Manageable: the design-group column needed for a clean grouped split is present in the file, duplicates are identifiable by exact sequence match, and every control runs in under a second."
+  },
+  "success_criteria": {
+    "metric": "Spearman rank correlation between predicted and measured log2 fold change, per assay, under design-group-held-out cross-validation; plus precision among the top 50 ranked variants for the decision users actually make (which variants to synthesise and test individually).",
+    "baselines": "Measured by me on the actual file: global mean gives Spearman 0; per-position one-hot ridge with 5-fold cross-validation grouped by design code gives 0.212 (DNA cleavage), 0.376 (splicing), 0.718 (excision). No published model number exists for this task.",
+    "success": "Spearman >= 0.45 on DNA cleavage and >= 0.55 on splicing under the same design-group-held-out split (roughly doubling the one-hot ridge on both), while matching or beating 0.718 on excision; and correctly recovering all three named positive controls (wild-type barcodes near 0, stem-loop deletions dead for cleavage, terminal trinucleotide ranked as a top determinant in all three assays).",
+    "noise_ceiling": 0.95,
+    "kill": "If after one week no model beats the one-hot ridge by more than 0.05 Spearman on any of the three assays under the grouped split, or if the shuffled-label control does not collapse to 0, stop."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nucleic Acids Research",
+      "why": "Publishes sequence-to-function models of RNA elements and already published this dataset; it would take a model that predicts all three activities, recovers the cleavage-splicing antagonism from predicted RNA structure alone, and correctly scores natural IStron right ends as functional."
+    },
+    "realistic": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes focused predictive models and benchmarks on single high-quality functional datasets; the likely result - frozen RNA-language-model embeddings clearly beat one-hot on splicing and excision but transfer poorly across design classes, with an explicit noise ceiling - fits exactly."
+    },
+    "fallback": {
+      "journal": "bioRxiv preprint plus a machine-learning-in-computational-biology workshop (e.g. MLCB), with the tidy 5,752-row dataset deposited on Zenodo",
+      "why": "Even a negative result - that no model beats a per-position linear fit once design classes are held out - is a publishable statement about how little a single-locus mutational library generalises, and the machine-readable table is a contribution on its own."
+    }
+  },
+  "pitch": {
+    "headline": "5,752 sequence variants of one transposon end, each measured for three competing activities at once, in a 20 MB table nobody has modelled.",
+    "what_makes_the_data_unusual": "Three independent pooled assays on the identical 5,752 variants - excision, RNA-guided DNA cleavage and self-splicing - with 2-3 replicates each; I reproduced the published replicate R-squared (0.98, 0.91, 0.82) from the file.",
+    "the_win": "Spearman 0.45+ on DNA cleavage and 0.55+ on splicing with held-out design classes, against the 0.212 and 0.376 a per-position linear model gets - numbers I measured myself on this file.",
+    "even_if_it_fails": "We learn how far a single-locus mutational library generalises across mutation classes, and we publish the first machine-readable version of a dataset currently locked in a 6-row-merged-header spreadsheet.",
+    "who_wants_it": "The Sternberg lab and the groups engineering TnpB, the smallest RNA-guided nuclease, who must choose which guide-RNA scaffold variants to synthesise and test."
+  },
+  "ml_idea": "Multi-task sequence-to-function regression: encode each 252-nucleotide IStron right-end variant (one-hot plus predicted base-pairing probabilities, and separately frozen RNA-FM embeddings), then fit three heads predicting log2 fold change in excision, RNA-guided DNA cleavage and self-splicing. Evaluate with design-group-held-out and positional-window-held-out cross-validation against a per-position one-hot ridge (measured: Spearman 0.212/0.376/0.718). The headline experiment is the trade-off: can a model trained on cleavage and splicing jointly identify the variants that keep one activity while losing the other - the paper's main biological finding - and does predicted guide-RNA stem stability carry that signal, as the authors claim for GC content at the 3' stem-loop base?",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.02,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 1,
+    "cv_run_minutes": 1,
+    "compute_note": "Timed on this laptop: parsing the 8.7 MB xlsx plus a 3-task, 5-fold grouped cross-validation on one-hot features took 0.3 s of model time and under 2 s wall clock total. The 1 h embedding figure is an estimate of 5,752 sequences x 252 nucleotides through RNA-FM on CPU at roughly 2 sequences per second; not timed.",
+    "cheapest_killing_check": "Already done: parse Supplementary Table S3 and confirm the replicate R-squared matches Figure 1D (0.8201 excision, 0.9085 splicing, 0.9840 cleavage - all three matched exactly), then confirm a one-hot ridge with design-group-held-out cross-validation beats the global mean (it does: 0.212/0.376/0.718). If those had failed, the project was dead in 30 minutes."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer verified in the files, not the paper: 5,752 variants, sequences and three log2-fold-change labels already as columns, 20 MB total, counts agreeing across two independent deposits, and the published replicate R-squared reproduced exactly from my own parse. No model exists for this task (the paper never mentions machine learning), the baselines and noise ceiling are both measurable from the same file, the design-code column gives an honest grouped split, and wild-type plus scrambled controls are built into the library. The real limit is breadth, not readiness: it is one element's right end in one host, so the claim stays local - but the three-assay structure makes the trade-off question informative whichever way it resolves."
+}

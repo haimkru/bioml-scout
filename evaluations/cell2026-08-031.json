@@ -1,0 +1,115 @@
+{
+  "paper_id": "cell2026-08-031",
+  "title": "Programmed ribosomal frameshifting triggers translational stress to promote viral replication.",
+  "doi": "10.1016/j.cell.2026.08.031",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE322665",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the only deposited dataset, GSE322665_RAW.tar (4.5 MB) from GEO (Gene Expression Omnibus, NCBI's public gene-expression archive), unpacked it and opened the count files. It holds exactly 12 per-sample files (HEK293T human kidney cells: non-transfected, mock, CTRL/dL1, and FS frameshift-element, 3 replicates each). Each file is a headerless 2-column TSV with 78,894 rows: a versioned Ensembl gene identifier (e.g. ENSG00000290825.2) and a raw integer read count. No gene symbols, no normalised values, no column names, no units line, no sample-level outcome column. Also checked NCBI BioProject PRJNA1430871 (12 SRA runs, 12 BioSamples, nothing else) and searched PRIDE (proteomics archive) and Zenodo for the proteomic or CRISPR screen data: nothing found.",
+    "what_came_from_paper_text_only": "Everything about the proteomic screen, the CRISPR/genetic screen, the DRG1 and IGF2BP3 hits, the airway-organoid experiments and the HIV-1/West Nile virus conservation comes from the abstract alone. The paper is paywalled in Cell (Europe PMC: isOpenAccess=N, no PMCID), so I could not read the methods or the data-availability statement, and the supplementary tables that would contain the screen results are not retrievable."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "GEO series GSE322665 downloads freely without login; I fetched and unpacked the 4.5 MB tar myself. (The paper's own supplementary tables are paywalled, but the deposited data is open.)"
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no prediction target anywhere in the files. The only thing resembling a label is which of 4 conditions a sample belongs to, and that lives in the file name, not a column. Any gene-level target (e.g. change in expression on frameshift-element expression) would have to be constructed by running a differential-expression analysis first."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "The files contain only Ensembl gene identifiers and read counts. Any model input (gene sequence, 5'UTR, codon usage, protein features) would require tens of thousands of lookups against another database; nothing is present as a feature."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "The TSV files are headerless. Counts are evidently raw reads but nothing in the deposit says so, and there is no library-size or normalisation column; units are implied, not stated."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 12,
+      "note": "The experimental unit is the sample and there are 12 (4 conditions x 3 replicates), far below the ~400 minimum for classification. The 78,894 rows per file are genes measured in those same 12 samples, not independent labelled examples."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~5 MB compressed, ~20 MB as a 78,894 x 12 count matrix",
+      "note": "Trivially laptop-sized; this is the only Part A item that is comfortably fine. Verified by downloading the whole deposit."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO metadata says 12 samples and the tar contains 12 files; BioProject lists 12 SRA runs and 12 BioSamples. Consistent, though I could not compare against the paywalled methods text."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "If genes were used as rows, the target (log fold change between frameshift and control samples) is computed directly from the same read counts that would be the features: leakage by construction. There is no independent measurement in the deposit to serve as a label."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "PRFect (2024 machine-learning tool that predicts programmed ribosomal frameshift sites in prokaryotic and viral genomes)",
+        "open_weights": true,
+        "score_and_split": "Reported as accurate on curated frameshift-site sets in prokaryotes and viruses; I read the abstract only and did not verify a specific number or split.",
+        "authors_named_unsolved": "Generalisation beyond prokaryotic/viral coding genes to eukaryotic frameshift events.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "FScanpy (2025/2026 semi-supervised hybrid learning framework for ribosomal frameshifting determinants across species)",
+        "open_weights": null,
+        "score_and_split": "Reported AUC (area under the receiver operating characteristic curve) 0.951 across its datasets and 0.877 on euplotid protists; taken from the search abstract, not verified.",
+        "authors_named_unsolved": "Cross-species generalisation of frameshift-site prediction.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "KnotInFrame (2008 pseudoknot-folding-based -1 frameshift signal detector)",
+        "open_weights": null,
+        "score_and_split": "Pre-deep-learning rule/folding method; no modern benchmark split.",
+        "authors_named_unsolved": "Discriminating real frameshift stimulators from the many sequences that fold into pseudoknots.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "n/a — rejected at Part A",
+    "join_key": "Ensembl gene ID (the only identifier present, and versioned)",
+    "bigger_question_one_sentence": "Not written: with 12 samples from one cell line there is no combined question a join could answer."
+  },
+  "controls": {
+    "positive_control": "Would have been: the model must recover the known shutdown of host translation and the integrated stress response signature (e.g. ATF4 targets) in the frameshift-element samples.",
+    "negative_control": "Label shuffling across the 12 samples — but with 3 replicates per group this is uninformative.",
+    "external_validation": "None in the deposit; other SARS-CoV-2 or stress-response RNA-seq datasets exist in GEO but were measured in different cells and protocols."
+  },
+  "honest_claim_h3": "At best: 'in one human kidney cell line, genes whose expression shifts when a SARS-CoV-2 frameshift element is expressed can be separated from those that do not' — a differential-expression result, not a predictive model, and with no held-out samples it could not be validated.",
+  "plain_idea": {
+    "one_liner": "Use gene features to predict which human genes change expression when a viral frameshift element is expressed in cells.",
+    "train_on": "The only option here is 78,894 Ensembl-identified genes measured in 12 RNA sequencing samples (4 conditions x 3 replicates, one cell line), with gene sequence features that would have to be fetched from another database.",
+    "predict": "Whether a gene's expression goes up or down on expression of the SARS-CoV-2 frameshift element, where the true answer is itself a statistic computed from the same 12 read-count files.",
+    "why_worthwhile": "Virologists studying how viruses shut off host protein production would care about the biology, but the deposited data cannot support a model; at most it supports the differential-expression analysis the authors already did."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "No viable machine-learning project. The deposited data is a 12-sample, one-cell-line RNA sequencing experiment (78,894 genes x 12 raw-count columns) with no outcome column. Framing genes as rows would mean predicting a differential-expression statistic derived from the very counts used as features. The genuinely interesting machine-learning question nearby — predicting frameshifting efficiency or frameshift-site location from RNA sequence — needs a high-throughput frameshift reporter library (such as the published human-cell frameshift surveys), not this paper's data, and is already addressed by PRFect and FScanpy.",
+  "effort": {
+    "hours_to_feature_table": 1,
+    "working_set_gb": 0.02,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Measured directly: the whole deposit is 4.5 MB compressed and loads as a 78,894 x 12 integer matrix in seconds. Compute was never the problem; the sample count was.",
+    "cheapest_killing_check": "Count the samples in the GEO series before anything else — 12 samples across 4 conditions kills it in one minute, which is exactly what happened."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 (12 samples), A2 (no label column), A3, A4 and A8 (target would be computed from the features). Verified by opening all 12 deposited count files; the proteomic and CRISPR screen data are not deposited anywhere I could find and the paper is paywalled."
+}

@@ -1,0 +1,91 @@
+{
+  "paper_id": "nature2026-10806-y",
+  "title": "A compendium of next-generation patient-derived models for diverse cancers.",
+  "doi": "10.1038/s41586-026-10806-y",
+  "journal": "Nature",
+  "data_url": "https://portal.gdc.cancer.gov/projects/HCMI-CMDC (open derived files via https://api.gdc.cancer.gov) and https://www.cbioportal.org/study/summary?id=pancan_hcmi_2025",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I downloaded two open-access gene-expression files from the NCI Genomic Data Commons (GDC) with no login (4,222,660 and 4,242,976 bytes, *.rna_seq.augmented_star_gene_counts.tsv): each has 60,664 gene rows plus 4 quality-control rows, 9 columns (raw read counts, TPM = transcripts per million, FPKM), GENCODE v36 noted in a header comment, TPM sums to exactly 1,000,000, 4 missing values. I queried the GDC application programming interface (API): project HCMI-CMDC has 805 cases and 43,662 files, of which 11,166 are open and 32,496 controlled; 637 cases have a 'Next Generation Cancer Model' sample and 168 do not, matching the paper's 168 failed derivations exactly. Open derived file counts and sizes: gene expression 1,153 files (median 4.2 MB, 4.87 GB total), gene-level copy number 1,108 (3.4 MB each), methylation beta values 1,022 (median 22.9 MB, 23.2 GB total), masked somatic mutations 923 (0.11 GB total). 414 cases have an open tumour-tissue expression file (249 model-success, 165 failure); 258 cases have both tumour and model expression. THE DECISIVE CHECK: cross-tabulating the case barcode's centre code against outcome gives CSHL 216 success/0 fail, BROD 243/0, SANG 131/0, WCMC 35/0, STAN 12/0, EXPT 0/168 - every failed derivation is an HCM-EXPT-* case and no success is. Failures also have 0 blood-derived-normal samples (successes have 584), race recorded as 'white' for 2/168 versus 293/637, age present 99/168 versus 456/637, and Breast as top site (54/168) versus Colon for successes. Restricting to the gut cohorts the paper used (colon, rectum, oesophagus, pancreas, stomach) leaves 236 labelled cases (136 success, 100 fail). I also pulled the cBioPortal study pancan_hcmi_2025 via its API: publicStudy true, 1,183 samples, 637 patients, 39 clinical attributes, 1,026 sequenced, 1,041 with copy number, 394 structural variants, 448 treatments; the sample table pivots to 1,183 rows x 34 attributes with SAMPLE_ANNOTATION = 665 'Cancer Model Aliquot', 409 'Matched Tumor Aliquot', 109 blank, and 6 molecular profiles listed (mutations, copy number, methylation HM450, messenger RNA TPM and z-scores, structural variants).",
+    "what_came_from_paper_text_only": "From the full text, not opened: the 97.8% genetic and 95% epigenetic concordance across 421 matched tumour-model pairs; that 388 pairs have loss-of-heterozygosity concordance values and only 9 showed distinct aneuploidy and 5 were markedly discordant; that the authors' own success-versus-failure comparison was restricted to colon, oesophageal and pancreatic adenocarcinoma, found tumour purity non-significant, and found DNA-repair-associated states enriched in failures; that raw sequencing is controlled-access under dbGaP phs001486. Supplementary Tables 1-15 are NOT retrievable: the Europe PMC supplementaryFiles endpoint timed out twice at 120 s, so I never saw the per-pair concordance tables and cannot confirm whether a concordance value exists as a column. The cBioPortal bulk download https://cbioportal-datahub.s3.amazonaws.com/pancan_hcmi_2025.tar.gz returns HTTP 403, so the study is only reachable through the REST API. I did not download any expression matrix beyond 2 files, nor any methylation file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass, checked: two GDC open expression files downloaded anonymously and the cBioPortal API returns data without a key. Raw sequencing is controlled (dbGaP phs001486) but the derived open files suffice."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "Fail, checked: 'derivation succeeded' is nowhere a column. It must be inferred from the absence of a 'Next Generation Cancer Model' sample for a case, and absence could also mean 'not yet deposited'. The alternative label (tumour-model concordance) would have to be recomputed from variant calls."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass, checked: the expression files contain actual counts and TPM for 60,664 GENCODE v36 genes, not accessions needing lookup."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass, checked: column names state the units (unstranded counts, tpm_unstranded, fpkm_unstranded, fpkm_uq_unstranded) and TPM sums to 1,000,000."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 414,
+      "note": "Fail for the only defensible framing, checked: 414 labelled cases overall, but the paper's own cancer-type-matched comparison (colon, rectum, oesophagus, pancreas, stomach) leaves 236 cases, under the ~400 classification floor. Within-site counts are worse: Breast 6 success/53 fail, Brain 37/1."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~1.7 GB (414 tumour expression files at 4.2 MB each); methylation would be 23 GB and is out",
+      "note": "Pass for expression only, checked file sizes from the GDC API; no single open file exceeds 23 MB."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass, checked: GDC gives 637 cases with a model and 168 without, matching the paper's 665 models / 168 failed derivations (665 model aliquots in cBioPortal across 637 donors)."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Fail, checked, and this is the decisive one: the derivation-failure label is perfectly collinear with the submitting-centre code in the case barcode (all 168 failures are HCM-EXPT-*, all 637 successes come from five other centres), and also with missing blood normals, missing demographics and a different cancer-type mix. The label is therefore recoverable from batch metadata that travels with the features, so any accuracy would be batch discrimination, not biology, and no leakage-free centre-held-out split exists."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [],
+    "note": "Two web searches found machine-learning work on patient-derived organoids, but all of it predicts drug response or classifies organoid images, not whether a derivation attempt will succeed. The named items I saw were only search-result titles and abstract snippets, not papers I retrieved and read: PharmaFormer (npj Precision Oncology 2025, transfer learning from organoid pharmacogenomics to clinical drug response) and TransferNet-PDO (image-based malignant-versus-normal organoid classification). I therefore record no existing model for the derivation-success task; absence of search results is weak evidence, so this is 'likely novel', not novel."
+  },
+  "backbone": {
+    "name": "none that fits well - Geneformer and scGPT are single-cell transcriptome models and bulk tumour RNA sequencing is not their input distribution; a simple regularised linear model or gradient boosting on log TPM of ~20,000 protein-coding genes is the honest baseline",
+    "freeze_and_head_viable": false,
+    "hardware": "laptop CPU, 16 GB RAM",
+    "licence": "GDC open-access data, NIH Genomic Data Sharing policy; paper is CC BY"
+  },
+  "integration": {
+    "partner_dataset": "DepMap gene-dependency and drug-sensitivity profiles (companion HCMI papers report essentiality and drug screens on these same models)",
+    "join_key": "HCMI model identifier / ATCC catalogue name, or donor submitter_id",
+    "bigger_question_one_sentence": "Do the transcriptional programmes a tumour loses during organoid culture also change which genes the model depends on, so that a dependency measured in the model misleads about the patient's tumour?"
+  },
+  "controls": {
+    "positive_control": "Predict cancer type (24 classes) from the tumour expression profile - must be near-perfect, otherwise the pipeline is broken.",
+    "negative_control": "Train on metadata only (centre prefix, whether race was reported, whether a blood normal exists) with no expression at all; I expect near-perfect separation of success from failure, which is the proof that the expression model would be learning batch, plus the usual label shuffle.",
+    "external_validation": "None available: there is no second cohort that sequenced tumours from failed derivation attempts, so nothing independent to test on."
+  },
+  "honest_claim_h3": "A model trained on this data would claim only that it can tell which submission batch a tumour RNA-sequencing sample came from, because in this resource batch and derivation outcome are the same variable; it could not claim to predict whether a new tumour will yield a model.",
+  "plain_idea": {
+    "one_liner": "Use a tumour's gene activity profile to predict whether a living laboratory model can be grown from it.",
+    "train_on": "One bulk RNA-sequencing profile per patient tumour (60,664 genes, counts and TPM = transcripts per million) plus clinical covariates such as tumour site, age and prior treatment. I verified 414 patients have such a file in open access (249 whose tumour yielded a model, 165 whose derivation attempt failed).",
+    "predict": "A yes/no: did the laboratory succeed in establishing an organoid, neurosphere or cell line from this tumour? The truth comes from the wet-lab outcome of the Human Cancer Models Initiative's derivation attempt, recorded as whether a model sample exists for that donor.",
+    "why_worthwhile": "Organoid derivation fails for a large fraction of tumours at high cost, so biobanks and labs would use a prediction to decide which specimens to attempt; even a failed model would say which tumour programmes track with culture failure."
+  },
+  "pitch": null,
+  "ml_idea": "The project considered was a binary classifier taking a patient tumour's bulk RNA-sequencing profile (and optionally gene-level copy number) and predicting whether the Human Cancer Models Initiative succeeded in deriving a next-generation model (organoid, neurosphere or cell line) from that tumour, evaluated with a cancer-type-matched and centre-held-out split. A secondary idea was predicting, for the 258 donors with both tumour and model RNA, which genes drift during culture. Both die on the same structural problem: the 168 failures are a single separate submission batch, and 258 pairs is too few for a pair-level label that would itself have to be constructed.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 1.7,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": null,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated from measured file sizes, not timed end to end: 414 tumour files at 4.2 MB each is ~1.7 GB on disk; keeping 20,000 protein-coding genes as float32 for 414 samples is ~33 MB in memory, so cross-validation of a regularised linear or boosted-tree model takes minutes on CPU. Downloading 414 files one at a time from the GDC API is the slow part.",
+    "cheapest_killing_check": "Cross-tabulate the four-letter centre code in the case barcode (HCM-XXXX-...) against whether the case has a model sample. I ran it: it is 168/168 EXPT for failures and 0/637 elsewhere, so the label is the batch. This took one API call and killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A fails on A8 and A5. The 168 failed-derivation tumours are a single separate submission cohort (every one is an HCM-EXPT-* case, no success is), and they also lack blood normals and demographics and have a different cancer-type mix, so the derivation-outcome label is perfectly predictable from batch metadata and no leakage-free split exists. The cancer-type-matched subset the paper itself used leaves only 236 labelled cases, below the classification floor, and the label is nowhere a column (A2) - it is inferred from the absence of a model sample. The underlying resource is genuinely open and clean (verified: 11,166 open GDC files, 4.2 MB tidy TSVs with stated units, counts matching the paper), so it is a fine resource for descriptive work, just not for this supervised task."
+}

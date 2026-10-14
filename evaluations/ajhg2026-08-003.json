@@ -1,0 +1,47 @@
+{
+  "paper_id": "ajhg2026-08-003",
+  "title": "Distinct mutational landscapes for germline and somatic cancer variants in forty tumor suppressor genes.",
+  "doi": "10.1016/j.ajhg.2026.08.003",
+  "journal": "American Journal of Human Genetics 113(9), Sep 2026 (PMID 42641600). PMC13508591 is the NIHMS2202118 author manuscript; Europe PMC lists isOpenAccess=N. The open preprint is bioRxiv 10.64898/2026.02.26.707048 (PMC13160038, CC BY-NC).",
+  "data_url": "https://github.com/seplon/Germline-Somatic-AnalysisPaper (MIT; code only, no per-variant tables). Source databases: ClinVar (open), cBioPortal public API (open), OncoKB API (token required), COSMIC v98 Census (login).",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Europe PMC fullTextXML returned HTTP 500, and supplementaryFiles returned 'not open access'. NCBI efetch db=pmc returned the full author-manuscript body (methods, DAS), which I read. The AJHG supplement xlsx on PMC is behind a proof-of-work bot gate, which I did not bypass. I downloaded the preprint supplement zip (PMC13160038). media-1.xlsx has 11 sheets of gene-, study- and cluster-level summaries, largest 214 rows, with no per-variant table. I listed the full GitHub tree: 20 notebooks/scripts, plus 40 moving_difference_<GENE>_SMF_SD.txt files. Those are per-50bp-window aggregates (TP53: 1,129 rows of window fractions), not variants. The processed variant files the notebooks read (e.g. Python_clinvar_processed_VEP_MANE_8-15-24.txt, Python_cbio_processed_VEP_MANE_CAID_8-16-24.txt) are absent. A retained notebook output shows clinvarcodingcount=32941, matching the paper. The cBioPortal notebook calls the OncoKB API with 'USER INSERT API KEY', and OncoKB byGenomicChange returned HTTP 401 without a token. The cBioPortal /api/genes/TP53 endpoint returned 200 without login.",
+    "what_came_from_paper_text_only": "All variant counts except the notebook's 32,941: 201,061 ClinVar records, 33,702 P/LP, 12,907 coding O/LO from 13,621, 3,863 shared, 15,909 COSMIC O/LO, 69,276 samples in 213 studies, and 103 clusters. Also the methods: liftover via ClinGen Allele Registry, VEP v112 on MANE, TMB<10 filter, and ClinVar submitter count as the germline frequency proxy. I did not check COSMIC download login beyond the landing page."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Verified: no per-variant germline/somatic table is deposited anywhere. GitHub has code and window aggregates only, and the supplements are summaries. Rebuilding the somatic O/LO set needs an OncoKB API key (401 without one; licence registration) and, for replication, a COSMIC login. Only ClinVar and cBioPortal are open."},
+    "a2_label_is_a_column": {"pass": false, "note": "Fails. 'Germline vs somatic' is not a column. It is which database a variant came from: ClinVar P/LP (germline origin) vs cBioPortal O/LO. It would have to be constructed by GRCh37->38 harmonization, CAID matching and VEP annotation, and 3,863 variants sit in both sets (ambiguous label)."},
+    "a3_inputs_present": {"pass": false, "note": "No variant rows were deposited. Inputs would be HGVS/genomic coordinates rebuilt from ClinVar and cBioPortal, and about 58% of germline variants are frameshifts (per paper), so there is no sequence-level input for most rows without further construction."},
+    "a4_units_stated": {"pass": null, "note": "Not applicable: the label is categorical. The count-like fields (somatic events per variant; ClinVar submitter count as a germline-frequency proxy) are non-comparable by design, per the paper."},
+    "a5_enough_rows": {"pass": null, "n_rows": null, "note": "The paper claims 32,941 germline + 12,907 somatic coding variants. Only the 32,941 is corroborated, by a notebook output, and no table could be counted. It would pass easily if the table existed."},
+    "a6_fits_laptop": {"pass": true, "working_set": "Likely <100 MB for the variant tables if rebuilt. Running VEP v112 locally needs a large cache (REST is the alternative).", "note": "Size is not the problem. This is an estimate, since no files exist to measure."},
+    "a7_counts_match_paper": {"pass": null, "note": "The paper's internal counts are consistent: 33,702 P/LP minus non-coding gives 32,941 coding, and the notebook output matches 32,941. Not checkable against data because no variant file is deposited."},
+    "a8_label_provenance": {"pass": false, "note": "Fails on leakage by construction. Somatic O/LO comes from OncoKB's annotator ('classified automatically based on the gene type and a set of manually curated variants'), and germline P/LP from ACMG submissions. Both depend heavily on molecular consequence, a likely feature. The rest of the signal is database ascertainment (tumor-type mix, UV/tobacco signatures, MSI homopolymer frameshifts, ClinVar non-cancer pleiotropy), so a classifier would learn source, not biology."}
+  },
+  "part_a_verdict": "reject",
+  "scores": {
+    "b_model_readiness": null,
+    "c_worth_asking": null,
+    "d_backbone_fit": null,
+    "g_integration": null,
+    "h_missing_data": null,
+    "i_does_anyone_care": null,
+    "j_fit_finishability": null
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Haque et al., PLOS Genetics 2025 (PMC11737861): gene-specific logistic regression and random forest using Cancer Hotspots features to predict germline missense P/LP", "open_weights": true, "score_and_split": "Temporal test set of 335 variants (2021-22 ClinVar submissions, LOVD, literature): LRM AUPRC 0.847 / AUROC 0.821, RFM AUPRC 0.829 / AUROC 0.774. Trained on 13,881 variants in 66 genes.", "authors_named_unsolved": "Non-coding variants, performance varying by gene, and germline and somatic variants having different functional consequences.", "runnable_as_baseline": null},
+      {"name": "AbbVie tumor-only somatic/germline classifiers (LightGBM/XGBoost/TabNet), npj Precision Oncology (PMC9825621)", "open_weights": true, "score_and_split": "Held-out cancer types (BRCA/SARC/UCEC, 45 patients): LightGBM AUC 0.949. External metastatic melanoma (23 patients): AUC 0.867. Labels from matched-normal calling.", "authors_named_unsolved": "VAF-based methods cannot match a matched normal when the biopsy has little stromal content. Training diversity is limited.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (missense only) or AlphaGenome (genomic context). Neither fits most rows, which are frameshift and stop-gain variants.", "freeze_and_head_viable": false, "hardware": "CPU would be fine for ESM-2 on missense, but missense is a minority of variants (per paper).", "licence": "Code MIT. Preprint CC BY-NC. OncoKB academic licence needed for the label. COSMIC licence terms apply."},
+  "integration": {"partner_dataset": "gnomAD / AlphaMissense on GRCh38 coordinates (CAID, HGVS) would be possible if a table existed.", "join_key": "ClinGen Allele Registry CAID or GRCh38 chr:pos:ref:alt on the MANE transcript", "bigger_question_one_sentence": "Does germline-vs-somatic divergence in TSGs persist after conditioning on mutational signature and tumor-type ascertainment? This is essentially the paper's own question, and a statistical one rather than an ML one."},
+  "controls": {"positive_control": "Would be: DICER1 RNase IIIB somatic missense hotspots, CEBPA N-terminal germline frameshifts vs C-terminal bZIP somatic in-frame indels, and MSI homopolymer frameshift clusters.", "negative_control": "Label shuffle. A consequence-only model would expose how much of the label is computable from VEP consequence.", "external_validation": "Per paper: COSMIC non-overlapping samples (login) and the TCGA germline P/LP set (only 5 genes had enough data)."},
+  "honest_claim_h3": "At best: 'distinguishes variants submitted to ClinVar as germline P/LP from variants OncoKB-annotated as O/LO in low-TMB cBioPortal tumors in 40 TSGs'. That is a database-ascertainment claim, not a biological germline-vs-somatic origin claim.",
+  "ml_idea": "No defensible ML task. The best option would be a consequence-plus-position classifier of ClinVar-vs-cBioPortal membership with ablations showing how much is signature/ascertainment, but that reproduces the paper's chi-square and clustering results with less interpretability.",
+  "effort": {"hours_to_feature_table": 40, "cheapest_killing_check": "Done: the GitHub tree and preprint supplement contain no per-variant table, and the OncoKB API returns 401 without a key. The only revival path is to email the authors (slulla@bcm.edu) for the processed ClinVar/cBioPortal VEP-MANE-CAID files, and even then A8 stands."},
+  "roi": null,
+  "verdict": "reject",
+  "verdict_reason": "Fails A1, A2, A3 and A8. No per-variant table is deposited, and the germline/somatic label is the database of origin, which must be rebuilt (somatic side needs an OncoKB API key). The label is also largely determined by molecular consequence and source ascertainment, so a classifier would learn the databases, not biology."
+}

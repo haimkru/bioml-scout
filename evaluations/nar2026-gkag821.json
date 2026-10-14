@@ -1,0 +1,211 @@
+{
+  "paper_id": "nar2026-gkag821",
+  "title": "Massively parallel characterization of RNA G-quadruplex stability and molecular recognition.",
+  "doi": "10.1093/nar/gkag821",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE296171 (raw counts + pool FASTA); processed label table in the journal supplement gkag821_supplemental_files.zip; extra gels/fluorescence data at https://doi.org/10.6084/m9.figshare.33132299",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the journal supplement (stG4_STable_2_ProcessedData.xlsx: 6,000 rows x 50 columns, sheet 'All Sequences Processed'; second sheet 'Mutation deltaWT Scores' 1,889 rows x 16 columns) and the GEO files (GSE296171_stG4_raw_counts.txt.gz = 6,000 rows x 66 count columns, 775 KB; pool FASTA = 6,000 entries, 58 KB). Confirmed: sequences present as plain ACGU strings, 0 duplicate sequences, 0 missing values in all 13 score columns, 5 pools (stG4 3,213 / nsG4_Mut 1,833 / neg_ns 709 / neg_AAA 216 / pUG 29), 6 parent natural sequences (VEGFA, U2AF2, ARHGEF12, HNRNPA2B1, EWSR1, PABPN1). I recomputed the published stability score from the deposited read counts (log2 of guanine-pool frequency over 7-deaza-guanine-pool frequency, +1 pseudocount, mean of 3 replicates) and it matched the published column at Spearman = 1.000. I measured replicate-replicate Spearman (0.982 synthetic pool, 0.947 natural 90-mers, 0.47-0.89 per mutational parent), read depth (10.9% of sequences under 10 reads in the guanine+KCl library), the positive control (mean score +0.53 / -1.21 / -3.11 for minimum G-tract GG / GGG / GGGG; AAA negative controls +1.46), and ran baseline models (3-mer gradient-boosted tree: Spearman 0.977 within the synthetic pool on a random split; 0.347 transferring to the 709 natural 90-mers; -0.11 to +0.25 within each mutational parent).",
+    "what_came_from_paper_text_only": "The wet-lab protocol (in vitro transcription with guanine vs 7-deaza-guanine, reverse-transcriptase stop conditions, RNA Bind-n-Seq for G3BP1 and FMRP, pyridostatin treatment), the statement that no read cutoff was applied for most analyses, the -2 score cut-off used to call folded rG4s, and the CC BY-NC licence line. The fluorescence-polarization Kd measurements on figshare were not downloaded."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open download, no login: GEO GSE296171 (775 KB counts, 58 KB FASTA) and the Oxford University Press supplement zip; I fetched and opened all of them."},
+    "a2_label_is_a_column": {"pass": true, "note": "Thirteen ready-made label columns in the supplied spreadsheet, e.g. 'RT Stop Score in KCl (G in KCl/7dG in KCl)'. Nothing has to be constructed; I read them straight out of the file."},
+    "a3_inputs_present": {"pass": true, "note": "Column 'Shortened Sequences' holds the literal RNA sequence (characters A, C, G, U only, 11-90 nucleotides). No accession lookups needed; verified in the file."},
+    "a4_units_stated": {"pass": true, "note": "Every score column header names the ratio it is (log2 fold change of read frequency, guanine over 7-deaza-guanine, per condition); methods state the log2 and the pseudocount. Length is in nucleotides."},
+    "a5_enough_rows": {"pass": true, "n_rows": 6000, "note": "6,000 labelled sequences counted in both the spreadsheet and the GEO count matrix; 3,213 in the main designed pool, 1,833 single-nucleotide mutants, 709 natural 90-mers."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~3.2 MB (2.4 MB spreadsheet + 0.8 MB count matrix)", "note": "Whole dataset loads into pandas in under a second; the baseline 5-fold cross-validation I ran took 7 seconds on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says ~3,000 synthetic rG4s; designed pool is 3,213. Spreadsheet rows (6,000) = GEO count rows (6,000) = FASTA entries (6,000). No disagreement found."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a physical sequencing measurement, not a model output: I reproduced the published score exactly (Spearman 1.000) from the deposited raw read counts. Caveat I verified: the score correlates with read depth (Spearman 0.79) because strong quadruplexes drop out of the guanine library, so read counts must never be used as a feature."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One spreadsheet, 6,000 rows x 50 columns; GEO counts join 1:1 on the sequence ID (verified, 6,000/6,000 matched)."},
+    "B2": {"score": 2, "why": "xlsx and gzipped tsv both parsed first try with pandas/openpyxl; no manual fixing needed."},
+    "B3": {"score": 2, "why": "All 13 labels already normalised by authors to log2 read-frequency ratios from one assay; verified by recomputing one exactly."},
+    "B4": {"score": 1, "why": "I measured 10.9% of sequences under 10 reads in the guanine+KCl library; strongest quadruplexes are floored by the pseudocount, so a depth policy is needed."},
+    "B5": {"score": 2, "why": "0 duplicate sequences among 6,000; checked directly in the file."},
+    "B6": {"score": 2, "why": "Every score column header spells out its formula and condition; pool identifier column documents all five sub-libraries."},
+    "C1": {"score": 2, "why": "Transfer question measured both ways: designed-library rules give Spearman 0.35 on natural 90-mers and ~0 within mutational series; informative either outcome."},
+    "C2": {"score": 1, "why": "rG4detector, G4RNA screener, G4Boost, G4STAB exist and are mostly open, but none trained on quantitative RNA mutational stability; searched, not assumed."},
+    "C3": {"score": 2, "why": "Unique-application plus novel-data angle: this 2026 dataset has not been modelled, and it has labels (ligand and protein binding) no model predicts."},
+    "C4": {"score": 2, "why": "Current route is wet-lab: in vitro transcription, reverse-transcriptase stop sequencing, or circular dichroism/thermal melting per sequence."},
+    "C5": {"score": 2, "why": "I computed concrete baselines myself (3-mer tree Spearman 0.977 in-pool, 0.347 transfer, 0.674 within natural set) and rG4detector is runnable."},
+    "D1": {"score": 2, "why": "RNA-FM and RiNALMo are open-weight RNA language models matching plain RNA sequence input; both publicly distributed (searched)."},
+    "D2": {"score": 2, "why": "6,000 sequences of at most 90 nucleotides: embeddings cache once on CPU, heads train in minutes; my tree baseline took 7 seconds."},
+    "D3": {"score": 1, "why": "Backbone weights are openly distributed, but the paper and its data carry CC BY-NC (non-commercial), verified in the article licence line."},
+    "E1": {"ok": true, "why": "Hold out whole parent natural sequences and whole pools; both columns ('Pool Identifier', parent name inside 'Sequence Number') seen in the file."},
+    "E2": {"ok": true, "why": "5 pools and 6 parent natural sequences, 216-3,213 rows each; marginal, since only 4 parents have adequate read depth."},
+    "E3": {"ok": true, "why": "Global mean and per-pool mean computable; I ran them (global-mean R-squared 0, label standard deviation 1.91 in the designed pool)."},
+    "E4": {"ok": true, "why": "Three replicates deposited; I measured replicate Spearman 0.982 (designed), 0.947 (natural 90-mers), 0.81-0.89 (four usable parents)."},
+    "E5": {"ok": true, "why": "Measured in the file: longer minimum G-tract gives lower score (+0.53/-1.21/-3.11) and 216 AAA controls sit at +1.46."},
+    "E6": {"ok": true, "why": "Label shuffling and feature ablation are trivial here; the whole cross-validation run takes seconds on CPU."},
+    "E7": {"ok": true, "why": "rG4-seq transcriptome reverse-transcriptase stalling data (Kwok et al., Nature Methods 2016) and the G4RNA database are independent sources (found by search)."},
+    "E8": {"ok": true, "why": "rG4detector's published AUROC 0.75 on rG4-seq detection is reproducible with their open code; also the paper's own G-tract trend, which I already reproduced."},
+    "G1": {"score": 1, "why": "Sequences and gene symbols present, but no UniProt/Ensembl/genomic coordinates in the table; joining needs sequence mapping."},
+    "G2": {"score": 2, "why": "Named partners: rG4-seq transcriptome map (Kwok 2016) and the G4RNA database of experimentally tested rG4s."},
+    "G3": {"score": 1, "why": "Join by sequence alignment or gene symbol; one natural 90-mer can hit several transcript isoforms, so a collapse rule is needed."},
+    "G4": {"score": 2, "why": "Combined question neither answers alone: do designed-oligo folding rules explain which rG4s actually stall reverse transcriptase in whole human transcriptomes?"},
+    "H1": {"score": 2, "why": "925 explicit negative-control sequences (216 AAA, 709 natural non-quadruplex sites) plus the full non-folding end of the score range."},
+    "H2": {"score": 1, "why": "One lab, in vitro only, human-derived natural sequences, and only 6 parent sequences for the mutational arm."},
+    "H3": {"score": 2, "why": "Honest claim writable in one sentence, including the read-dropout exclusion I measured (10.9% under 10 reads)."},
+    "H4": {"score": 2, "why": "The paper explicitly discusses guanine-library read dropout for strong quadruplexes and the -2 score cut-off; I confirmed the dropout in the counts."},
+    "I1": {"score": 2, "why": "Dominguez and Mustoe labs (authors), the rG4 field (Kwok, Balasubramanian groups), and G4-ligand medicinal chemists."},
+    "I2": {"score": 2, "why": "Result decides which natural rG4s and which mutations are worth testing in the lab, and which transcripts a pyridostatin-like ligand would stabilise."},
+    "I3": {"score": 2, "why": "Ranking metric (within-sequence Spearman, precision in the top 20) matches the actual decision of picking a few mutants to test."},
+    "I4": {"score": 1, "why": "Within the designed pool a 3-mer tree already hits the noise ceiling (0.977 vs 0.982), so ML only earns its place on natural-context transfer."},
+    "J1": {"score": 2, "why": "Real grouped splits, a transfer experiment, a frozen RNA language model plus head, and a measured noise ceiling to compare against."},
+    "J2": {"score": 2, "why": "Strong textbook positive control (G-tract length, loop length) that I already reproduced; nonsense would be obvious."},
+    "J3": {"score": 2, "why": "Even the cleaned benchmark table plus the measured failure of design rules on natural context is a shareable result."},
+    "J4": {"score": 2, "why": "Three-week budget: one week for embeddings and splits, one for modelling, one for external validation and write-up."},
+    "J5": {"score": 1, "why": "Kill condition stated in success_criteria (two weeks, no held-out parent above Spearman 0.25) but not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "rG4detector (convolutional neural network, Nucleic Acids Research 2022)",
+        "open_weights": true,
+        "score_and_split": "Reported AUROC 0.75 for detecting rG4-forming sites in transcriptome rG4-seq data, versus 0.65 for G4Hunter, 0.63 for G4NN and 0.73 for cGcC; figures taken from the paper's abstract found by search, not from rerunning it.",
+        "authors_named_unsolved": "Their abstract frames linking rG4 predictions to in-cell behaviour (stress granule formation) as the open direction; I did not read their discussion in full.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "G4RNA screener (bundles G4NN neural network, G4Hunter and cGcC rules)",
+        "open_weights": true,
+        "score_and_split": "G4NN scored AUROC 0.63 and cGcC 0.73 in rG4detector's benchmark on rG4-seq data; it is a motif-independent classifier, not a quantitative stability regressor.",
+        "authors_named_unsolved": "Not retrieved; only the web-server description was found.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "G4Boost (gradient-boosted trees, BMC Bioinformatics 2022)",
+        "open_weights": true,
+        "score_and_split": "Reported over 93% accuracy and F1 0.96 for folding state and R-squared 0.95 (RMSE 4.28) for folding energy on its own data, which is largely DNA and thermodynamically derived rather than measured RNA variant stability.",
+        "authors_named_unsolved": "Not retrieved beyond the abstract.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "G4STAB (multi-input deep network, Bioinformatics 2025)",
+        "open_weights": null,
+        "score_and_split": "Reported R-squared about 0.8 predicting DNA G-quadruplex melting temperature from sequence, salt and pH, trained on 2,382 DNA sequences; DNA not RNA, so it cannot be applied directly here.",
+        "authors_named_unsolved": "Not retrieved beyond the abstract.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "AGAPE (machine-learning workflow for G-quadruplex ligand stabilisation)",
+        "open_weights": null,
+        "score_and_split": "Reported about 91% accuracy using small-molecule descriptors; it predicts from the compound side, not from the RNA sequence, so it answers a different question.",
+        "authors_named_unsolved": "Affinity-versus-selectivity trade-off named as the standing challenge in the G4-ligand literature found by search.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (RNA language model, about 100 million parameters), with RiNALMo (650 million parameters) as the larger alternative",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: 6,000 sequences of at most 90 nucleotides embed once and cache in roughly 1-2 hours; heads train in seconds",
+    "licence": "Both backbones are openly distributed; the dataset itself is CC BY-NC 4.0 (non-commercial), verified in the article's licence line"
+  },
+  "integration": {
+    "partner_dataset": "rG4-seq transcriptome-wide reverse-transcriptase stalling map of human HeLa RNA (Kwok et al., Nature Methods 2016; reported 3,845 stalling sites in potassium and 13,423 with pyridostatin), plus the G4RNA database of experimentally tested rG4 sequences",
+    "join_key": "RNA sequence match (and gene symbol for the 6 parent sequences and the 709 natural 90-mers, which are named after their source genes in the ID column)",
+    "bigger_question_one_sentence": "Do the folding rules measured on a designed oligonucleotide library predict which rG4s actually stall reverse transcriptase inside a full human transcriptome, or only inside short synthetic contexts?"
+  },
+  "controls": {
+    "positive_control": "Minimum G-tract length must order the predictions the way I measured it in the file (mean score +0.53 for GG, -1.21 for GGG, -3.11 for GGGG), and the 216 AAA negative-control oligos (mean +1.46) must be predicted as the least folded.",
+    "negative_control": "Shuffle the stability labels within each pool and confirm collapse to the per-pool mean; ablate to sequence length alone; confirm read depth is never used as a feature (it correlates with the label at Spearman 0.79 by construction).",
+    "external_validation": "rG4-seq transcriptome reverse-transcriptase stalling data (Kwok et al., Nature Methods 2016) and the G4RNA database; plus the internal train-on-designed, test-on-natural split that I already measured (Spearman 0.347)."
+  },
+  "honest_claim_h3": "For human RNA G-quadruplex sequences measured in vitro by one lab with reverse-transcriptase stop sequencing, the model ranks how single-nucleotide changes and flanking sequence alter folding strength, among sequences with enough sequencing reads to score reliably, which excludes the very strongest quadruplexes that drop out of the guanine library.",
+  "plain_idea": {
+    "one_liner": "Use the RNA letter sequence to predict how strongly a four-stranded G-quadruplex folds, and how one mutation changes it.",
+    "train_on": "6,000 RNA sequences of 11-90 letters in a single spreadsheet, which I counted: 3,213 designed quadruplex variants, 1,833 single-letter mutants of 6 natural human sequences, 709 natural 90-letter control sequences and 216 unstructured controls.",
+    "predict": "A folding-strength number: the log2 ratio of how often a sequence is sequenced from a normal-guanine RNA pool versus a pool built with 7-deaza-guanine, a guanine lookalike that cannot form quadruplexes. I reproduced this column exactly (Spearman 1.000) from the deposited read counts, so it traces back to a physical sequencing measurement.",
+    "why_worthwhile": "Labs designing RNA-targeted drugs, and anyone choosing which mutation to test at the bench, need to know which natural quadruplexes fold and which mutations break them; I measured that rules learned from the designed library rank mutations within a natural sequence at about zero correlation, so the useful part of the problem is genuinely open."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "No existing rG4 model was trained on quantitative single-nucleotide mutational data: rG4detector learned from transcriptome rG4-seq site calls, and G4STAB from 2,382 DNA melting temperatures. This dataset gives 1,833 measured single-letter mutants of 6 natural human rG4s plus 3,213 designed variants on one common log2 scale, which I counted in the file."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Three replicates plus read depth let me compute a per-sequence error bar (replicate Spearman 0.982 designed, 0.947 natural, 0.47-0.89 per mutational parent), which none of the named models reports; but rG4detector is an 11-model ensemble, so it does emit a spread, just not a calibrated one."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "G4Hunter (2016 rule) and G4NN (2017 shallow network) scored AUROC 0.65 and 0.63 in rG4detector's benchmark and are clearly beatable; rG4detector (2022 CNN, AUROC 0.75, open code) is current and honest, but it predicts site formation, not mutational ranking, so a direct head-to-head is not apples-to-apples."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The obvious extra data (rG4-seq transcriptome stalling scores) comes from a different lab, a different assay format and cellular RNA rather than a designed pool, and the existing models were evaluated on their own split, so the 'same quantity, same way, same split' conditions all fail."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "G4RNA database of experimentally tested rG4 sequences (known resource, found by search); rG4-seq and rG4-seeker transcriptome stalling sites from Kwok et al. 2016 (search result reports 3,845 sites in potassium, 13,423 with pyridostatin); QUADRatlas rG4 atlas (found by search); G4STAB's 2,382 DNA G-quadruplex melting temperatures (Bioinformatics 2025, found by search), which measure the same physical property but for DNA.",
+    "approx_items": 17000,
+    "join_key": "RNA sequence (exact or aligned match) and gene symbol; genomic coordinates for the transcriptome sources",
+    "why": "Thousands of other rG4s have a measured folding read-out elsewhere, so a model trained here can be checked on sequences this lab never touched, although the read-outs are binary site calls or DNA melting temperatures rather than the same log2 score."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The 1,833 mutational variants differ from their parent by a single letter, so a random split puts near-identical sequences in both training and test and inflates the score.",
+      "The designed pool is a combinatorial grid of G-tract and loop choices, so a random split puts the same design in train and test; I measured a 3-mer tree reaching Spearman 0.977 that way, essentially the replicate noise ceiling of 0.982.",
+      "The label is a ratio of read counts and correlates with raw read depth at Spearman 0.79, so any count-derived feature would leak the answer.",
+      "Sequences with almost no reads (10.9% have under 10 in the guanine+KCl library) are pinned to a pseudocount floor, so a model can learn 'this is a floor case' without learning folding.",
+      "The ligand and protein-binding labels come from the same sequencing libraries, so using one as a feature for another imports shared counting noise.",
+      "Pooled correlation across parent sequences flatters the model: I measured a pooled Spearman of 0.347 on the mutational set that is almost entirely between-parent offsets, with within-parent values of -0.11 to +0.25."
+    ],
+    "split": "Leave-one-parent-out over the 6 natural sequences (parent name parsed from the 'Sequence Number' column, which I saw in the file) and train-on-designed / test-on-natural using the 'Pool Identifier' column (also seen in the file); inside the designed pool, group by G-tract architecture using the CountG1-CountG4 columns. Report within-group Spearman, never pooled.",
+    "checks": [
+      "Shuffle labels within each pool and confirm performance collapses to the per-pool mean.",
+      "Compute edit distance from each test sequence to its nearest training sequence and confirm no single-letter neighbours cross the split.",
+      "Train on read depth alone to show how much of the label it explains, then confirm it is excluded from the real feature set.",
+      "Report within-parent Spearman alongside pooled Spearman every time, since the two differ by about 0.35 here."
+    ],
+    "verdict": "Manageable: the split columns are all present in the file, and the one real trap (pooled versus within-group correlation, and single-letter neighbours) is already identified and measured."
+  },
+  "success_criteria": {
+    "metric": "Within-parent Spearman correlation on held-out natural sequences, plus precision among the top 20 predicted destabilising mutations, because the user picks a handful of mutants to test at the bench rather than reading off absolute values.",
+    "baselines": "Measured by me on this file: 3-mer gradient-boosted tree trained on the designed pool transfers to the 709 natural 90-mers at Spearman 0.347 and to within-parent mutational ranking at -0.11 to +0.25; a model trained within the natural 90-mers reaches 0.674; the global-mean dummy is 0 by construction.",
+    "success": "Within-parent Spearman at or above 0.5 on each of the 4 adequately sequenced parents under leave-one-parent-out, and at or above 0.80 on held-out natural 90-mers against the 0.674 k-mer baseline.",
+    "noise_ceiling": 0.947,
+    "kill": "If after two weeks no model beats within-parent Spearman 0.25 on any held-out parent and held-out natural 90-mers stay under 0.70, stop and write up the negative transfer result."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nucleic Acids Research",
+      "why": "NAR publishes rG4 prediction methods (rG4detector appeared there) and would take a model that closes the designed-to-natural gap and is confirmed against independent transcriptome rG4-seq data."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "A benchmark plus a frozen RNA-language-model predictor, showing where k-mer design rules break on natural sequence context, is exactly the methods-and-evaluation paper Bioinformatics runs."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Even a clean negative result (designed-library rG4 rules do not transfer to natural context, with a measured noise ceiling) plus the tidied benchmark table is publishable there as a resource and evaluation note."
+    }
+  },
+  "pitch": {
+    "headline": "6,000 RNA sequences with replicate-backed quadruplex folding scores, plus a ligand response and four protein-binding read-outs, in one 2.4 MB spreadsheet.",
+    "what_makes_the_data_unusual": "Thirteen measured columns on one common log2 scale for the same 6,000 sequences, including 1,833 single-letter mutants of 6 natural human quadruplexes. Replicate Spearman 0.982 designed and 0.947 natural, zero duplicate sequences. All verified in the files.",
+    "the_win": "Rank mutations inside a natural quadruplex at Spearman 0.5 or better, where a 3-mer gradient-boosted tree trained on the designed library scores between -0.11 and +0.25 (both numbers measured by me).",
+    "even_if_it_fails": "We would have shown, against a measured noise ceiling of 0.81-0.89 per sequence family, that designed-library folding rules do not transfer to natural sequence context, which is the open question the paper itself raises about flanking sequence.",
+    "who_wants_it": "The Dominguez and Mustoe labs who produced the data, and G-quadruplex ligand chemists deciding which transcripts a pyridostatin-like compound will actually stabilise."
+  },
+  "ml_idea": "Freeze an open RNA language model (RNA-FM, or RiNALMo if CPU time allows), cache embeddings for all 6,000 sequences once, and fit a light head to predict the measured folding score. Train on the 3,213 designed variants and test on natural context: the 709 natural 90-mers and leave-one-parent-out over the 6 mutagenised natural quadruplexes, reporting within-group Spearman against the k-mer baselines I measured (0.347 transfer, 0.674 within-natural, ceiling 0.947). Secondary heads on the same cached embeddings predict the pyridostatin response (the difference between ligand and no-ligand scores, replicate Spearman 0.57-0.83) and FMRP and G3BP1 binding, none of which any published model predicts from sequence. Drop sequences under a read-depth threshold and never feed read counts as features.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 2,
+    "cv_run_minutes": 5,
+    "compute_note": "I timed the real thing: loading both files and running a 5-fold gradient-boosted-tree cross-validation on 3,213 sequences by 85 k-mer features took 7 seconds on this laptop CPU. The 1-2 hour RNA-FM embedding figure is an estimate (6,000 sequences of at most 90 letters), not timed.",
+    "cheapest_killing_check": "Already done: count how many natural-context rows survive a read-depth filter and check replicate agreement per parent. Result: 4 of 6 parents are usable (replicate Spearman 0.81-0.89) while ARHGEF12 and VEGFA are destroyed by guanine-library dropout (85% and 73% of their variants under 10 reads), leaving roughly 1,150 usable mutants plus 709 natural 90-mers."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes on the files, not the abstract: 6,000 sequences with 13 ready-made label columns, zero duplicates, zero missing values, and a label I reproduced exactly (Spearman 1.000) from the deposited read counts, so provenance is a physical measurement. The naive version of the project is dead and I proved it in 7 seconds: a 3-mer gradient-boosted tree on a random split reaches Spearman 0.977 against a replicate ceiling of 0.982, so nothing is to be gained inside the designed pool. The live project is the transfer question, which I also measured: those same rules fall to 0.347 on 709 natural 90-mers and to about zero within each mutagenised natural quadruplex, while within-natural training reaches 0.674 and the ceiling is 0.947. That is a large, honest gap with grouped splits available in-file, strong positive controls I already reproduced, an independent validation set (rG4-seq), and three label families (stability, pyridostatin response, protein binding) no published model predicts from sequence. Main caveats: only 6 parent sequences (4 with usable read depth), one lab, in vitro only, and CC BY-NC licensing."
+}

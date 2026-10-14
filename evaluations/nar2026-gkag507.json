@@ -1,0 +1,102 @@
+{
+  "paper_id": "nar2026-gkag507",
+  "title": "SGGly: a web server for whole-protein; structure-guided analysis of candidate N-linked glycosylation sites.",
+  "doi": "10.1093/nar/gkag507",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://biosig.lab.uq.edu.au/sggly/data",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded train.csv (36 MB), val.csv (4.5 MB), test.csv (4.6 MB) from the SGGly Data page, no login. Columns: Entry (UniProt accession), Position, Residue, N-linked-gly-label, PubMed-label. Rows 2,137,515 / 267,710 / 267,487 (total 2,672,712); proteins 3,667 / 460 / 287 (total 4,414); positives 12,515 / 1,677 / 1,441 (total 15,633); PubMed-supported 2,365 / 381 / 295 (total 3,041). No nulls, no duplicate (Entry, Position) rows, no protein shared between splits, all positives are Asn, 99.7% of positives sit on N-X-[not P]-S/T sequons; 21,246 sequons in total.",
+    "what_came_from_paper_text_only": "That labels come from UniProt CARBOHYD features of reviewed human entries; that the split is low-redundancy by global pairwise alignment; how 'confident negatives' were defined for the strict regime; the reported MCC 0.888 and AUC 0.987 and N-GlyDE benchmark numbers. Structural descriptors (AlphaFold/DSSP) are not in the CSVs."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Three CSVs downloaded directly from the server's Data page, no login (checked)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Binary per-residue label columns N-linked-gly-label and PubMed-label are present (checked); no construction needed."},
+    "a3_inputs_present": {"pass": true, "note": "Full sequence is present residue by residue and can be reassembled per protein (checked); structures would need AlphaFold DB lookups by UniProt accession, which is one bulk fetch."},
+    "a4_units_stated": {"pass": true, "note": "Binary labels; no units involved (checked)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 21246, "note": "21,246 sequons (candidate sites) with 15,633 positives; strict PubMed-supported positives 3,041 (counted in files)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "45 MB CSV; ESM-2 embeddings only needed at ~21k sequon positions", "note": "Embedding 4,414 proteins with a small ESM-2 on CPU is a few hours; long proteins need chunking."},
+    "a7_counts_match_paper": {"pass": true, "note": "Residues 2,672,712, proteins 4,414, positives 15,633, PubMed-supported 3,041 and sequons 21,246 all match the paper exactly (checked)."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are UniProt curator annotations; 80% (12,592) are annotation-only, some inferred by sequence similarity, so partly prediction-derived. The PubMed-label subset (3,041) traces to experiments; unlabelled sequons are not confirmed negatives."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "Three CSVs with identical five columns; train/val/test pre-split by protein (checked)."},
+    "B2": {"score": 2, "why": "All three parsed first try with pandas, no nulls (checked)."},
+    "B3": {"score": 1, "why": "Two label tiers mixing experimental and annotation-only evidence; strict tier must be chosen deliberately (checked columns)."},
+    "B4": {"score": 2, "why": "Binary labels, no censored values (checked)."},
+    "B5": {"score": 2, "why": "Zero duplicate (Entry, Position) rows and zero protein overlap across splits (checked)."},
+    "B6": {"score": 1, "why": "Columns self-explanatory but no README; negative definition only in paper text."},
+    "C1": {"score": 1, "why": "Mostly a beat-the-benchmark task; re-evaluation on strict labels could be informative either way."},
+    "C2": {"score": 0, "why": "LMNglyPred, EMNGly, StackGlyEmbed, CoNglyPred, DeepNGlyPred all open on GitHub, all protein-language-model based."},
+    "C3": {"score": 1, "why": "Only weak angle: honest re-benchmark of open models on SGGly's low-redundancy strict split."},
+    "C4": {"score": 1, "why": "Glycoproteomics mass spectrometry is costly, but sequon rule plus existing predictors are free."},
+    "C5": {"score": 2, "why": "Published MCC 0.888 strict regime, and N-GlyDE benchmark numbers for many tools."},
+    "D1": {"score": 2, "why": "ESM-2, an open protein language model, matches per-residue sequence input."},
+    "D2": {"score": 2, "why": "Per-residue embeddings at sequon positions cached once on CPU, logistic head."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT licensed; SGGly data licence page exists but terms not read."},
+    "E1": {"ok": true, "why": "Authors' low-redundancy protein-level split provided; zero protein overlap verified in files."},
+    "E2": {"ok": true, "why": "4,414 proteins, hundreds per held-out split (checked)."},
+    "E3": {"ok": true, "why": "Sequon-only rule and per-sequon majority class trivially computable."},
+    "E4": {"ok": false, "why": "No replicate measurements; annotation-only versus PubMed tiers only hint at label noise."},
+    "E5": {"ok": true, "why": "Known effect: N-X-T sequons glycosylated more often than N-X-S; Pro at X+2 position lowers occupancy."},
+    "E6": {"ok": true, "why": "Label shuffle and embedding-versus-motif ablation straightforward."},
+    "E7": {"ok": true, "why": "N-GlyDE benchmark and N-GlycositeAtlas are independent sets used by prior papers."},
+    "E8": {"ok": true, "why": "SGGly test split published, so their MCC can be checked against our model on same rows."},
+    "G1": {"score": 2, "why": "UniProt accessions in every row (checked)."},
+    "G2": {"score": 2, "why": "AlphaFold DB structures and GlyGen/GlyConnect site evidence, joinable on UniProt accession."},
+    "G3": {"score": 2, "why": "One protein per accession, one AlphaFold model per canonical sequence; isoform mismatches possible."},
+    "G4": {"score": 1, "why": "Structure adds accessibility context, but CoNglyPred and SGGly already did that."},
+    "H1": {"score": 1, "why": "Negatives are unannotated sequons, not experimentally confirmed unoccupied sites."},
+    "H2": {"score": 0, "why": "Human reviewed UniProt only, one curation source."},
+    "H3": {"score": 2, "why": "Claim stated precisely below."},
+    "H4": {"score": 2, "why": "Paper explicitly states 80% of positives are annotation-only."},
+    "I1": {"score": 1, "why": "Glycobiology and glycoproteomics labs generally; no named group would switch tools."},
+    "I2": {"score": 1, "why": "Marginal: many open predictors already prioritise sequons."},
+    "I3": {"score": 1, "why": "Per-sequon ranking roughly matches choosing sites to mutate or validate."},
+    "I4": {"score": 1, "why": "Sequon rule captures 99.7% of positives; ML only separates occupied from unoccupied sequons (~74% positive)."},
+    "J1": {"score": 2, "why": "Real modelling with embeddings, grouped splits, external benchmark."},
+    "J2": {"score": 1, "why": "Sequon biology is textbook, but label noise makes errors hard to judge."},
+    "J3": {"score": 1, "why": "A re-benchmark table of open tools is a small shareable result."},
+    "J4": {"score": 1, "why": "Could be a two-weekend project; not yet written down."},
+    "J5": {"score": 0, "why": "No kill date set."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "SGGly (this paper)", "open_weights": false, "score_and_split": "MCC 0.888, AUC 0.987 strict publication-supported regime on low-redundancy split; specificity 0.941 on N-GlyDE (paper)", "authors_named_unsolved": "Most positives are annotation-only; outputs are candidate prioritisation, not confirmed occupancy.", "runnable_as_baseline": true},
+      {"name": "LMNglyPred", "open_weights": true, "score_and_split": "MCC 0.717 on N-GlyDE independent test set (search result)", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": true},
+      {"name": "EMNGly", "open_weights": null, "score_and_split": "MCC 0.736 on N-GlyDE, 0.804 on N-GlycositeAtlas (search result)", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": null},
+      {"name": "StackGlyEmbed", "open_weights": null, "score_and_split": "MCC 0.826, sensitivity 0.982 on independent set (search result)", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": null},
+      {"name": "CoNglyPred", "open_weights": true, "score_and_split": "ESM-2 plus AlphaFold2 graph model; scores not retrieved", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": true},
+      {"name": "DeepNGlyPred", "open_weights": true, "score_and_split": "not retrieved", "authors_named_unsolved": "not retrieved", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model), 35M or 150M checkpoint", "freeze_and_head_viable": true, "hardware": "Laptop CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "AlphaFold DB structures plus GlyGen / N-GlycositeAtlas mass-spectrometry site evidence", "join_key": "UniProt accession + residue position", "bigger_question_one_sentence": "Do sequons unannotated in UniProt but occupied in mass-spectrometry atlases share structural features that annotation-trained models miss?"},
+  "controls": {"positive_control": "Model must rank N-X-T above N-X-S sequons and recover the sequon rule from embeddings alone.", "negative_control": "Shuffle labels within protein; replace embeddings with random vectors; both should fall to sequon-only baseline.", "external_validation": "N-GlyDE independent benchmark and N-GlycositeAtlas."},
+  "honest_claim_h3": "Ranks which N-X-S/T sequons in reviewed human proteins UniProt curators annotate as N-glycosylated, where 80% of positives are annotation-only and unannotated sequons are treated as negatives without experimental proof.",
+  "plain_idea": {
+    "one_liner": "Use a protein's sequence around each candidate sugar-attachment motif to predict whether that asparagine actually carries an N-linked sugar.",
+    "train_on": "Each of 21,246 candidate motifs (asparagine-X-serine/threonine) in 4,414 human proteins, described by a protein language model's per-residue summary of the sequence.",
+    "predict": "Whether the site is annotated as N-glycosylated in UniProt; 3,041 of 15,633 positives are backed by published experiments, the rest by curator annotation.",
+    "why_worthwhile": "Glycobiologists choosing which sites to mutate or check by mass spectrometry could prioritise; but many open tools already do this, so the gain is likely marginal."
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "UniProt CARBOHYD features for other species (known resource), GlyGen and GlyConnect site databases, N-GlycositeAtlas mass-spectrometry sites (named in search results as benchmark).",
+    "approx_items": null,
+    "join_key": "UniProt accession + position",
+    "why": "Mass-spectrometry atlases give an independent, experiment-based test set to check whether annotation-trained models find real sites."
+  },
+  "pitch": {
+    "headline": "A clean, pre-split per-residue table: 2,672,712 residues, 4,414 human proteins, 15,633 glycosylation sites, every count matching the paper exactly.",
+    "what_makes_the_data_unusual": "It flags which 3,041 positives have published experimental support versus 12,592 annotation-only, and splits by protein with zero overlap (verified), allowing honest strict-label evaluation.",
+    "the_win": "Show whether open tools like LMNglyPred (MCC 0.717 on N-GlyDE) keep their score on SGGly's strict PubMed-supported test split of 295 positives.",
+    "even_if_it_fails": "A table of how far published glycosylation predictors drop on low-redundancy, experiment-backed labels; little biology learned beyond that.",
+    "who_wants_it": "Groups building glycosylation predictors (Ascher lab, KC lab at Michigan Tech) deciding which benchmark to report."
+  },
+  "ml_idea": "Frozen ESM-2 per-residue embeddings at each sequon plus motif one-hot, logistic or gradient-boosted head; train on annotation labels, evaluate on PubMed-supported subset and N-GlyDE; compare against open LMNglyPred.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.05, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 3, "cv_run_minutes": 5, "compute_note": "Estimated: 4,414 proteins of mean ~600 residues through ESM-2 35M/150M on CPU at ~0.5-2 s each; head on 21k rows is seconds. Nothing timed.", "cheapest_killing_check": "Compute sequon-only plus N-X-T/S motif baseline MCC on the strict test split; if near 0.888 there is nothing left to learn."},
+  "verdict": "park",
+  "verdict_reason": "Data is clean and verified, but the task is crowded with open protein-language-model predictors, labels are mostly curator annotation, and the sequon rule alone captures 99.7% of positives; little angle remains."
+}

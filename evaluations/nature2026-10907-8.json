@@ -1,0 +1,46 @@
+{
+  "paper_id": "nature2026-10907-8",
+  "title": "Procognitive restoration of PV neuron plasticity in neurodevelopmental disorders.",
+  "doi": "10.1038/s41586-026-10907-8",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283741",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded GSE283741_RAW.tar (1.3 MB): 9 HTSeq gene-count files, each 37,625 lines (about 37,620 Ensembl mouse gene IDs plus 5 HTSeq summary rows), raw integer counts. The series matrix shows 9 samples: 5 shNT (control short hairpin RNA) and 4 shAblim3 (knock-down), all 'brain tissue', no other covariates. The XPG atlas website (xpg-atlas.onrender.com) is only a per-gene search box with autocomplete; I found no bulk download.",
+    "what_came_from_paper_text_only": "That the samples are TRAP (ribosome-tagging) pulldowns from CA3/CA2 PV interneurons; that differential expression was called with edgeR; that 82 SFARI category 1/S1 autism genes are among the upregulated genes (Supplementary Table 1, which I did not retrieve because the Europe PMC supplement request timed out)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO counts download openly (checked). The curated XPG list is only searchable gene by gene on the atlas site, and Supplementary Table 1 wasn't retrievable."},
+    "a2_label_is_a_column": {"pass": false, "note": "No gene-level label is in the files. The only candidate, 'is this gene an XPG (experience-dependent PV plasticity gene)', would have to be built by running a differential-expression test on these 9 count files."},
+    "a3_inputs_present": {"pass": true, "note": "Ensembl gene IDs with raw counts are present (checked)."},
+    "a4_units_stated": {"pass": true, "note": "Raw HTSeq read counts per gene (checked); the unit is unambiguous."},
+    "a5_enough_rows": {"pass": false, "n_rows": 9, "note": "The unit of observation is the sample: 9 libraries, 5 control and 4 knock-down (checked). That is far too few for any sample-level model. Gene-level rows (~37,620) only exist if the label is derived from these same 9 samples."},
+    "a6_fits_laptop": {"pass": true, "working_set": "1.3 MB", "note": "Trivial size (checked)."},
+    "a7_counts_match_paper": {"pass": true, "note": "9 GSM samples in GEO match the series design. The paper's DE gene counts can't be checked without Supplementary Table 1."},
+    "a8_label_provenance": {"pass": false, "note": "A gene-level 'XPG' label would be an edgeR output computed from these same counts, so any features taken from this data would leak the label. Using it as a label for sequence-based models would mean learning one noisy n=9 contrast."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "SFARI Gene / SCHEMA / Epi25 / BipEx (gene-level disease-risk lists, as used by the authors)", "join_key": "Gene symbol / Ensembl gene ID", "bigger_question_one_sentence": "Are genes induced in activated PV interneurons enriched for neurodevelopmental-disorder risk genes? The paper already answers this as an enrichment test, so it isn't an ML question."},
+  "controls": {"positive_control": "Known activity-regulated genes (e.g. Fos, Npas4) should come out upregulated, though this was not checked.", "negative_control": "Shuffle the shNT/shAblim3 sample labels.", "external_validation": "None identified for this specific mossy-fibre-input contrast."},
+  "honest_claim_h3": "With 9 TRAP-seq samples from one lab and one manipulation, a model could at most claim to rank genes by how much one shRNA perturbation changes their translation in CA3/CA2 PV interneurons, and that ranking is the paper's own DE result.",
+  "plain_idea": {
+    "one_liner": "Use gene features to predict which genes switch on when hippocampal inhibitory neurons get more excitatory input.",
+    "train_on": "Per-gene features (sequence, function annotations) for ~37,620 mouse genes. Labels would come from 9 ribosome-pulldown RNA-seq samples (5 control, 4 knock-down), counts I verified.",
+    "predict": "Whether a gene is significantly upregulated in activated PV (parvalbumin) interneurons, a label computed by differential-expression testing on the same 9 samples.",
+    "why_worthwhile": "It could flag plasticity genes in other neuron types. But the label is one noisy 9-sample contrast, so the result would not be trusted."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 0, "sources": "None found. This mossy-fibre-input PV translatome contrast appears to be unique to this paper (not searched).", "approx_items": null, "join_key": "Ensembl gene ID", "why": "Without an external measurement of the same contrast, there is nothing to validate against."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Gene-level classifier of XPG status from sequence or annotation embeddings. Rejected: the label is a DE call from n=9 samples.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.0013, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Sizes measured from the downloaded tar; nothing timed.", "cheapest_killing_check": "Count the samples in the GEO series matrix: 9. Done, and it kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "The only data is 9 TRAP-seq count files (5 control, 4 knock-down; checked), which is far too few samples (A5). Any gene-level label would be a differential-expression call computed from those same counts (A2, A8), and the curated XPG list has no bulk download."
+}

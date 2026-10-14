@@ -1,0 +1,55 @@
+{
+  "paper_id": "nar2026-gkag927",
+  "title": "circRNADisease v3.0: an updated resource for high-quality; experimentally supported circRNA-disease associations.",
+  "doi": "10.1093/nar/gkag927",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://cgga.org.cn/circRNADisease/download.jsp",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded circRNADisease_V3_circrna_details.txt (9.6 MB, tab-separated, 15,423 lines, 16 columns; 15,390 rows with a numeric Confidence Score, matching the paper's 15,390) and the Circ2Celltype table (2,025 rows, 16 columns, matches paper). Profiled columns: circBase-style IDs (hsa_circ_...) missing in 37% of rows, circRNA name missing in 31%; 4,969 distinct IDs; 656 MONDO disease IDs; 66 species (13,021 human rows); expression_pattern = up 9,458 / down 4,328 / dysregulated 850 / unknown 754; pub_time 2010-2025; 6,682 repeated circRNA-name+disease pairs. No sequence or genomic-coordinate column in the download. HEADed Circ2Mut (45 MB zip) and Circ2CNV (41 MB zip) but did not open them.",
+    "what_came_from_paper_text_only": "Abstract only (no open full text): 9,168 circRNAs, how the Confidence Score is computed from evidence types, Circ2CNV's 2,962,504 records across 33 TCGA (The Cancer Genome Atlas) cohorts, and the claim that genomic coordinates and subcellular localization are included (not present in the downloaded table)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: plain HTTP downloads from the Download page, no login; txt and xlsx both offered."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in the file: only positive circRNA-disease associations are recorded, so the standard task (link prediction) needs negatives built by sampling unrecorded pairs. The only real outcome column, expression_pattern (up/down), is a literature-reported direction; the Confidence Score is a curator formula, not a measurement."},
+    "a3_inputs_present": {"pass": false, "note": "Checked: no sequences or coordinates in the download; 37% of rows lack a circBase ID and 31% lack a name, so features need thousands of lookups in circBase/circAtlas (circRNA catalogues) and many free-text aliases can't be resolved."},
+    "a4_units_stated": {"pass": true, "note": "Categorical labels; no units needed. Confidence Score is a 0.07-0.91 unitless score."},
+    "a5_enough_rows": {"pass": true, "n_rows": 15390, "note": "Checked: 15,390 scored rows, but only ~4,969 distinct circBase IDs and many repeated pairs."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~10 MB main table", "note": "Checked file sizes; trivially laptop-sized."},
+    "a7_counts_match_paper": {"pass": true, "note": "Checked: 15,390 scored rows and 2,025 cell-type rows match the abstract; extra 33 lines in the txt look like broken rows."},
+    "a8_label_provenance": {"pass": false, "note": "The Confidence Score is computed from evidence-type fields (detection method, functional experiments), partly present as columns, so predicting it is leakage by construction. Association labels are literature curation with publication bias, not measurements."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "MSMCDA (multi-view shared units + multi-channel attention, Bioinformatics 2025)", "open_weights": null, "score_and_split": "AUC (area under the ROC curve) 0.976 on CircR2Disease, 5-fold random cross-validation over pairs; also benchmarked on CircRNADisease, Circ2Disease, CircRDS, CircR2Disease v2.0.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "MVHGCN (multi-view heterogeneous graph convolutional network, PLOS Comput Biol 2025)", "open_weights": true, "score_and_split": "Random-split cross-validation on public circRNA-disease benchmarks (exact numbers not retrieved); code on GitHub (Maoqwq/MVHGCN).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "GCNCDA (graph convolutional network, PLOS Comput Biol 2020)", "open_weights": null, "score_and_split": "Cross-validation on CircR2Disease-style benchmarks; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "CircDA (graph Markov neural network web server, 2024), KGRACDA, LMGATCDA", "open_weights": true, "score_and_split": "Open GitHub code; random pair-level cross-validation on small benchmarks (hundreds to ~1,600 associations).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (RNA language model) would apply only after resolving sequences via circBase", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "MIT (RNA-FM)"},
+  "integration": {"partner_dataset": "circBase / circAtlas for sequences; Open Targets for disease genes via host gene symbol and MONDO", "join_key": "circBase ID (37% missing), host gene symbol, MONDO ID", "bigger_question_one_sentence": "Whether host-gene disease evidence alone explains reported circRNA-disease links (a likely confound), which needs no ML."},
+  "controls": {"positive_control": "Host-gene to disease associations from Open Targets should predict many curated links.", "negative_control": "Label shuffling over disease assignments.", "external_validation": "Temporal split on pub_time (2010-2025) is possible."},
+  "honest_claim_h3": "A model would predict which circRNA-disease pairs get published as associated, among circRNAs and diseases researchers chose to study, not which circRNAs biologically drive disease.",
+  "plain_idea": {
+    "one_liner": "Use circular RNA identity and disease identity to predict which circular RNA-disease links will be reported in the literature.",
+    "train_on": "Pairs of a circular RNA (a closed-loop RNA molecule) and a disease term; 15,390 curated literature records, positives only.",
+    "predict": "Whether a pair is reported as associated, or whether the circular RNA is up- or down-regulated; truth comes from manual curation of published papers, mostly RT-qPCR (reverse-transcription quantitative PCR) measurements.",
+    "why_worthwhile": "Could prioritise circular RNAs for disease biomarker studies, but dozens of published graph models already do this on the same kind of data."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "15,390 records versus 650-1,642 associations in CircR2Disease benchmarks used by MSMCDA and MVHGCN, but it is the same kind of positive-only literature curation."},
+    "confidence_score": {"answer": "no", "why": "The per-record Confidence Score is a curator formula over evidence types, not replicate measurements, so it can't calibrate model uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "2020-2025 graph models report AUC near 0.98 on random pair splits, which are leaky; an honest temporal split might expose them, but that is a benchmark note."},
+    "guaranteed_improvement": {"answer": "no", "why": "More positive-only literature pairs with sampled negatives don't measure a new quantity; label noise and publication bias carry over."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "circRNA-disease link prediction or up/down direction prediction; rejected because labels are positive-only literature curation with constructed negatives, inputs lack sequences, and the task is saturated with graph models.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from the 9.6 MB table; sequence resolution via circBase is the main cost, not compute.", "cheapest_killing_check": "Count rows with a circBase ID that resolves to a sequence (at most 63% have an ID)."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2/A3/A8: positive-only literature associations need constructed negatives, the download has no sequences (37% of rows lack any circRNA ID), the Confidence Score is a formula over evidence columns, and circRNA-disease link prediction already has dozens of open graph models."
+}

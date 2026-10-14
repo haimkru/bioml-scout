@@ -1,0 +1,44 @@
+{
+  "paper_id": "natgen2026-02678-9",
+  "title": "A pangenome of tetraploid wheat reveals the genetic architecture underlying domestication and genomic diversity for breeding.",
+  "doi": "10.1038/s41588-026-02678-9",
+  "journal": "Nature Genetics",
+  "data_url": "http://omicsplant.cn/TetraploidWheatPangenomeDBs/downloads.html",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo 10.5281/zenodo.18466336 file list (CC-BY-4.0): 12 genome FASTA files of about 3.1 GB each plus 12 gene-annotation GFF3 files of about 120 MB each. Figshare 32213433 holds code only (Pan-genome.zip, 5.2 MB). HEAD requests on the project database's variant files: SNP VCF (variant call file) 12.0 GB, InDel VCF 589 MB, SV (structural variant) VCF 874 MB, joint VCF 3.4 TB. A 2 MB ranged read of the SV VCF parsed cleanly and showed exactly 736 sample columns (e.g. PI470991, TRI11505, XM000835) with real genotype rows on chromosome 1A.",
+    "what_came_from_paper_text_only": "That 373 accessions were phenotyped for 32 traits (7 plant architecture, 8 grain, 17 abiotic stress), that 260 accessions have spikelet-number data, and that the phenotypes sit in Supplementary Tables 19-20. The Europe PMC supplementaryFiles endpoint timed out (one attempt at 120 s), and the NCBI OA (open access) service returned 404, so no phenotype table, units or per-trait counts were seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Genotypes download openly (checked). The phenotype labels exist only in Supplementary Tables 19-20, which could not be retrieved: Europe PMC timed out and the NCBI OA service returned 404. Paper only."},
+    "a2_label_is_a_column": {"pass": true, "note": "Trait values are presumably one column per trait in Supplementary Table 19/20, so nothing would need constructing. Not verified because the table could not be opened."},
+    "a3_inputs_present": {"pass": true, "note": "Genotypes are present as VCF files covering 736 samples (header checked in the SV file). No accession lookups needed."},
+    "a4_units_stated": {"pass": false, "note": "Units for the 32 traits are unknown because the phenotype table was not retrievable. Abiotic-stress traits are often relative indices, so units can't be assumed."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "The paper says 373 phenotyped accessions (260 for spikelet number). The unit of prediction is the accession, so this is below the 400-row floor even for classification and far below 1,500 for regression. The 736 genotyped accessions don't help, because half have no labels."},
+    "a6_fits_laptop": {"pass": true, "working_set": "SV VCF 874 MB compressed; SNP VCF 12 GB would need thinning by streaming", "note": "Feasible if you use the SV or InDel VCF, or stream and LD-thin (drop correlated neighbouring variants from) the 12 GB SNP VCF down to roughly 50k markers × 373 lines."},
+    "a7_counts_match_paper": {"pass": true, "note": "VCF sample count is 736, matching the 736 accessions in the abstract (checked). The 373 phenotyped count could not be checked."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are field or greenhouse measurements of plant traits, not model outputs (paper only)."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "GBLUP (genomic best linear unbiased prediction) vs multi-trait deep learning on 270 durum wheat lines in 43 environments (Frontiers in Plant Science 2019, PMC6856087)", "open_weights": null, "score_and_split": "GBLUP was best and deep learning was similar, under cross-validation across lines and environments (search snippet only; numbers not retrieved).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "None suitable; DNA language models (e.g. Nucleotide Transformer) aren't designed for genome-wide genotype-to-trait prediction across 373 lines", "freeze_and_head_viable": false, "hardware": "CPU (GBLUP or ridge regression)", "licence": "Assemblies are CC-BY-4.0; licence for the database VCFs is not stated"},
+  "integration": {"partner_dataset": "Companion tetraploid wheat pangenome (Nature Genetics s41588-026-02680-1) or the durum Global Durum Panel", "join_key": "Germplasm accession IDs (PI, IG, TRI numbers)", "bigger_question_one_sentence": "Do structural variants predict traits better than SNPs across independently genotyped tetraploid wheat panels?"},
+  "controls": {"positive_control": "Btr1-A loss-of-function alleles should predict non-brittle rachis (domesticated vs wild).", "negative_control": "Shuffle the trait labels across accessions.", "external_validation": "None verified; a different durum panel would need ID matching."},
+  "honest_claim_h3": "Among 373 diverse tetraploid wheat accessions phenotyped by one group, genome-wide SVs explain some trait variance beyond SNPs. With n this small, that is a heritability statement rather than a deployable predictor.",
+  "plain_idea": {
+    "one_liner": "Use genome-wide DNA variants of tetraploid wheat lines to predict their plant, grain and stress-tolerance traits.",
+    "train_on": "Per accession: genotypes at DNA variant sites (SNPs, small insertions/deletions, structural variants) from VCF files covering 736 accessions; only about 373 have trait labels (paper figure, not verified).",
+    "predict": "32 measured traits such as plant height, grain size and stress responses, from the authors' field and greenhouse phenotyping (Supplementary Tables 19-20, not retrieved).",
+    "why_worthwhile": "Durum breeders could test whether structural variants improve genomic selection, but at this sample size the answer would be noisy."
+  },
+  "pitch": null,
+  "ml_idea": "Genomic prediction (GBLUP or ridge regression vs. adding SVs) of 32 traits across 373 accessions, with leave-subspecies-out splits.",
+  "effort": {"hours_to_feature_table": 12, "working_set_gb": 0.9, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": 5, "compute_note": "Estimated only: stream the 874 MB SV VCF into a 736 × variants matrix, then fit ridge or GBLUP on 373 rows; nothing timed.", "cheapest_killing_check": "Open Supplementary Table 19 and count accessions with non-missing values per trait; if most traits have under 400, it's dead."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5: only about 373 phenotyped accessions (paper text), and the phenotype tables couldn't be retrieved, so units and counts are unverified (A1/A4). The genotype VCFs for 736 samples are open and parse, but genomic prediction in durum is already served by GBLUP."
+}

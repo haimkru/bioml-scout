@@ -1,0 +1,53 @@
+{
+  "paper_id": "nature2026-10993-8",
+  "title": "TM184C is a GPCR-like regulator of intercellular exchange and autophagy.",
+  "doi": "10.1038/s41586-026-10993-8",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.21178101",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the Zenodo record (CC-BY-4.0): Dataset_S1.tsv 1.21 GB, Dataset_S2.xlsx 28.5 KB, Dataset_S3.xlsx 142 MB, Dataset_S4.xlsx 172 MB. Downloaded S2 in full: one sheet, 880 rows x 2 columns of AlphaFold model IDs listed as 'Foldseek pass' / 'Foldseek fail'. Range-read the first 20 KB of S1: columns rank, tm, coverage, type, protein, gene, protein_existence, superkingdom, organism, lineage, primary_accession, interpro_ids, source, status, id_line, sequence_aa; the first rows are rhodopsin homologues with TM-score (a structure-alignment similarity score) 0.95.",
+    "what_came_from_paper_text_only": "Total hit count (~1.46M; 506,129 GPCRs and 955,350 non-GPCR 7TMPs, meaning seven-transmembrane proteins) and the contents of S3/S4 (over the 50 MB cap, not opened). Cell-assay source data (beta-arrestin recruitment, autophagy, nanotube imaging) is attached to the Nature article and was not retrieved; Europe PMC's supplement endpoint timed out."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo, open, CC-BY-4.0; checked the file listing and downloaded S2 plus the first 20 KB of S1."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in S1: a TM-score column ('tm') and a rank column exist; the GPCR vs non-GPCR split is per the paper the S3/S4 file membership (not opened)."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: S1 carries full amino-acid sequences ('sequence_aa') and UniProt accessions."},
+    "a4_units_stated": {"pass": true, "note": "TM-score is unitless on a 0-1 scale; rank is categorical (paper text)."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Paper says ~1.46M hits; I only saw the first ~21 rows of S1, so the count is unverified."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.2 GB TSV, streamable", "note": "S1 is 1.21 GB (checked size); it can be streamed or subset by columns, but embedding over a million sequences on a CPU would take days."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checkable without downloading the 1.2 GB S1; no contradiction seen."},
+    "a8_label_provenance": {"pass": false, "note": "Every candidate label is computed, not measured: 'tm'/rank come from structural alignment of AlphaFold2 predicted models against GPCR templates, and the GPCR/non-GPCR class comes from UniProt/InterPro annotations, which also sit in S1's own 'interpro_ids' column (leakage by construction). The only measured labels, from cell assays, cover a handful of proteins."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "TM-Vec / TM-Vec 2 (predicts TM-score from sequence pairs with protein language model embeddings)", "open_weights": true, "score_and_split": "Reported TM-score error within 0.026 for remote homologues with <=10% sequence identity (Nature Biotechnology 2023); TM-Vec 2 is a faster distilled version (bioRxiv 2026).", "authors_named_unsolved": "Not retrieved beyond the abstract.", "runnable_as_baseline": true},
+      {"name": "PLMSearch (protein language model remote-homology search trained on structural-similarity labels)", "open_weights": true, "score_and_split": "Not retrieved in detail (Nature Communications 2024).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "GPCR-SLM (small transformer classifying GPCRs into 86 families)", "open_weights": null, "score_and_split": "99% accuracy versus BLAST 86.1% and HMMER 91% (split not retrieved).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "GPCR-BERT (ProtBert fine-tuned on GPCR sequences)", "open_weights": null, "score_and_split": "Not retrieved (J. Chem. Inf. Model. 2024).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model)", "freeze_and_head_viable": true, "hardware": "CPU for small checkpoints on a subset; the full ~1.46M sequences would be days of CPU time", "licence": "MIT"},
+  "integration": {"partner_dataset": "UniProt / InterPro / AlphaFold DB", "join_key": "UniProt accession (present in S1)", "bigger_question_one_sentence": "None that escapes circularity: the joinable resources are the same annotations and predicted structures the labels were derived from."},
+  "controls": {"positive_control": "Recover known GPCR families (rhodopsin rank 1) from sequence alone.", "negative_control": "Label shuffling.", "external_validation": "None independent; GPCRdb would just restate the annotation labels."},
+  "honest_claim_h3": "A model trained here would only reproduce Foldseek/TM-align scores on AlphaFold2 models, or InterPro GPCR annotations, from sequence; it would make no claim about measured GPCR-like signalling.",
+  "plain_idea": {
+    "one_liner": "Use protein sequence to predict how structurally similar a protein's predicted shape is to known G-protein-coupled receptors.",
+    "train_on": "Amino-acid sequences of seven-transmembrane proteins mined from the AlphaFold structure database; the paper reports ~1.46M, unverified (I saw ~21 rows).",
+    "predict": "The structural similarity score (TM-score) to receptor templates, or GPCR vs non-GPCR class; both are computed from predicted structures or database annotations, not measured in a lab.",
+    "why_worthwhile": "Could flag 'dark' receptor-like proteins without folding them, but TM-Vec and PLMSearch already do this, and the labels are computed rather than measured."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Sequence-to-TM-score or sequence-to-GPCR-class regression or classification on S1 with ESM-2 embeddings. Rejected: the labels are AlphaFold-plus-alignment outputs or annotation-derived, and TM-Vec, PLMSearch and GPCR classifiers already cover the task.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 1.2, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because the project is rejected at A8.", "cheapest_killing_check": "Trace the label provenance: 'tm' comes from aligning AlphaFold2 models and the class from InterPro, both confirmed from the S1 header and the paper's methods."},
+  "verdict": "reject",
+  "verdict_reason": "A8 fails. The deposited 1.2 GB table holds only computed labels: TM-scores from aligning AlphaFold2 predicted models, and GPCR classes from InterPro annotations that also appear as an S1 column. The measured cell-assay data covers only a few proteins, and sequence-to-TM-score is already handled by open models (TM-Vec, PLMSearch)."
+}

@@ -1,0 +1,46 @@
+{
+  "paper_id": "nature2026-10916-7",
+  "title": "Temporal uncoupling of radial glia lineage progression in cortical organoids.",
+  "doi": "10.1038/s41586-026-10916-7",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327468",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found two GEO (Gene Expression Omnibus) series by searching, since PubMed had no data links. GSE327468 (MADM-CloneSeq, where MADM is a two-colour mouse lineage-tracing method): I downloaded the exon count matrix (3.6 MB; 55,359 Ensembl genes x 287 cells) and the series matrix. The per-cell metadata has 69 clone IDs, 3 plates (96/96/95 cells), colour (181 green, 103 red, 3 NA), clone type (SN = 46 clones, N = 22 clones, 1 NA) and clone size. GSE326044 (10x single-cell RNA-seq): I read its file list only, 20 filtered_feature_bc_matrix .h5 files of 20-51 MB each (830 MB tar), covering organoid days D8/D13/D20/D25 (4 libraries each) and in vivo E10/E13/E16/P0 (one each).",
+    "what_came_from_paper_text_only": "Only the abstract; the paper is paywalled with no PMC full text. I did not see what SN and N stand for (probably symmetric-proliferative/neurogenic vs neurogenic-only clones), any cell-type annotations, or the in vivo comparison clone counts. I did not open the 10x .h5 files, but filtered_feature_bc_matrix files from Cell Ranger (10x's processing software) carry no cell-type labels."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both GEO series are public and download without login (checked: count CSV fetched, 10x file list read)."},
+    "a2_label_is_a_column": {"pass": false, "note": "In CloneSeq, clone type (SN/N) is a column, but it is one label per clone (69 clones). The 10x data has only sample-level day labels. Cell types and lineage fate would have to be built by clustering, which I did not check in the files."},
+    "a3_inputs_present": {"pass": true, "note": "Gene-by-cell count matrices are present (checked for CloneSeq: 55,359 genes x 287 cells)."},
+    "a4_units_stated": {"pass": true, "note": "Raw integer read counts per gene (SMART-Seq v3, a full-length single-cell RNA protocol), with exon and intron counts in separate files."},
+    "a5_enough_rows": {"pass": false, "n_rows": 287, "note": "287 cells in 69 clones (checked). The independent unit for a fate label is the clone, and 69 is far below the 400 needed even for classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "CloneSeq ~7 MB; 10x set ~830 MB of .h5", "note": "Both fit on a laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO lists 287 samples and the matrix has 287 columns (checked). I could not compare against the paper's own counts because the full text is paywalled."},
+    "a8_label_provenance": {"pass": true, "note": "Clone type and size come from MADM imaging and counting, a physical measurement rather than a model output (per GEO metadata)."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "Geneformer or scGPT (single-cell foundation models)", "freeze_and_head_viable": null, "hardware": "CPU feasible for 287 cells", "licence": "Apache-2.0 (Geneformer)"},
+  "integration": {"partner_dataset": "In vivo MADM-CloneSeq mouse cortex data from the same lab (not located here)", "join_key": "Ensembl mouse gene IDs", "bigger_question_one_sentence": "Does a progenitor's transcriptome predict its clone's fate differently in organoids than in vivo? This is untestable with 69 clones."},
+  "controls": {"positive_control": "Plate identity should be predictable from expression (batch), and colour (green/red) should be recoverable from the MADM reporter transcripts.", "negative_control": "Shuffle clone-type labels across clones.", "external_validation": "None located; in vivo clone data was not found in these GEO series."},
+  "honest_claim_h3": "With 69 clones from one mouse ES-cell line, induced at one time point, the most a model could claim is that sibling neurons' transcriptomes separate two clone types in this one organoid batch. That is too few clones to train on.",
+  "plain_idea": {
+    "one_liner": "Use the gene expression of single neurons from labelled clones to predict what kind of clone (fate pattern) each came from.",
+    "train_on": "Gene counts for 287 single cells (verified) from 69 clones in mouse cortical organoids.",
+    "predict": "Clone type (SN vs N), scored by MADM fluorescent lineage tracing and imaging in the organoids.",
+    "why_worthwhile": "Developmental neurobiologists would learn whether progenitor fate leaves a transcriptional signature in organoids. But 69 clones cannot support that claim."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify clone type from single-cell transcriptomes of clone members, holding out whole clones. Dead: only 69 clones and 287 cells.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 0.1, "cv_run_minutes": 1, "compute_note": "Estimated from the 3.6 MB count matrix, which I loaded in seconds; nothing was timed beyond loading.", "cheapest_killing_check": "Count clones in the GEO series matrix: 69. Already done, and it kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A2. The lineage-labelled data has only 287 cells in 69 clones (checked in the GEO metadata). The larger 10x single-cell RNA set has no cell-level labels beyond a sample day that is confounded with the sequencing library, so any useful label would have to be constructed by clustering."
+}

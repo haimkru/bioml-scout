@@ -1,0 +1,104 @@
+{
+  "paper_id": "nar2026-gkag393",
+  "title": "DeepKinomeWeb: a quantitative, panel-level platform for kinase inhibitor screening and selectivity profiling",
+  "doi": "10.1093/nar/gkag393",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/labnams/DeepKinome (code + toy data); https://doi.org/10.5281/zenodo.18501372 (code archive, 911 KB); https://str.kribb.re.kr/deepkinome (web server)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the whole GitHub repository through the GitHub application programming interface (14 files, none a full dataset) and downloaded and opened all three released .npz files with numpy: each holds exactly 50 rows (x = 50 x 11,308 float32 features, y = 50 float32 labels, range 0 to 6.6582117). Read the repository README (no data documentation, non-commercial licence) and feature_list.txt (11,308 feature names: kinase pocket volume, amino-acid and tri-peptide composition, plus PaDEL compound descriptors). Queried the Zenodo record via its application programming interface: a single 911 KB software zip, no data. Fetched the live web server homepage (HTTP 200, no login). Worked out the label scale myself: the maximum 6.6582117 is exactly log2(101), so y is log2(percent + 1), which is never stated anywhere.",
+    "what_came_from_paper_text_only": "That the engine is a 20-layer convolutional neural network trained on KINOMEscan competition-binding data from the LINCS (Library of Integrated Network-Based Cellular Signatures) project, and that predictions are generated dynamically on user submission. From the companion paper (Lee et al. 2025, Frontiers in Molecular Biosciences, retrieved in full): 18,771 kinase-compound pairs, 234 kinases, 163 compounds, random 6:2:2 split (11,253/3,759/3,759), RMSE 1.157, R-squared 0.535, Pearson correlation 0.743. The Europe PMC supplementary-file listing timed out on its one attempt, so the Nucleic Acids Research supplement was not retrievable."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Code, three toy .npz files and the web server all open with no login; Zenodo archive is a 911 KB software zip. Verified by downloading. But no measured dataset is deposited anywhere."},
+    "a2_label_is_a_column": {"pass": true, "note": "The released .npz files do carry a label array 'y' alongside the feature matrix 'x'. Verified in numpy. Only 50 rows per file, though."},
+    "a3_inputs_present": {"pass": true, "note": "Features are present as pre-computed numeric vectors (11,308 columns). Verified. No identifiers at all, however: no kinase names, no SMILES, so rows cannot be traced or extended."},
+    "a4_units_stated": {"pass": false, "note": "FAIL. Nothing documents the label units. I inferred log2(percent + 1) because the maximum is exactly log2(101); the companion paper states percent inhibition 0-100 with no log transform. The two contradict each other."},
+    "a5_enough_rows": {"pass": false, "n_rows": 150, "note": "FAIL. 50 train + 50 validation + 50 test = 150 labelled rows, counted in numpy. The checklist needs about 1,500. The 18,771-pair real dataset is not released."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<2 MB", "note": "Everything released is under 1 MB per file. Verified by download."},
+    "a7_counts_match_paper": {"pass": false, "note": "FAIL. Released splits are 50/50/50; the source paper reports 11,253/3,759/3,759. The label scale also disagrees (released 0-6.66 log scale vs paper's 0-100 percent)."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL for the platform's output. The only data available at scale from DeepKinomeWeb is the model's own predicted percent-inhibition values, so harvesting it would be distilling the model, not learning biology."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepKinome (Lee et al. 2025, Frontiers in Molecular Biosciences) - the model behind this web server",
+        "open_weights": false,
+        "score_and_split": "RMSE 1.157, R-squared 0.535, Pearson correlation 0.743 on a random 60/20/20 split of 18,771 kinase-compound pairs (234 kinases, 163 compounds) from LINCS KINOMEscan. Random split, so the same kinases and compounds appear in train and test.",
+        "authors_named_unsolved": "They state the error is too large for precise compound ranking or dose-response optimisation, and that the model has no external validation against an independent dataset.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "KIPP / KinasePredictPro (Shen et al. 2024, Journal of Cheminformatics) - kinase profiling prediction platform",
+        "open_weights": true,
+        "score_and_split": "Best model (random forest on AtomPairs + FP2 + RDKit descriptors) reached area under the receiver-operating curve 0.825 on test sets from a random 80/10/10 split of 216,823 bioassay points covering 141,086 compounds and 354 kinases. Datasets and runnable Python code at github.com/idrugLab/KinasePredictPro.",
+        "authors_named_unsolved": "They note that before KIPP no easy-to-use software or web server existed for kinase profiling prediction; they do not claim cold-target generalisation is solved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "KinomePro-DL (Journal of Chemical Information and Modeling 2024) - multitask deep network for kinome selectivity",
+        "open_weights": null,
+        "score_and_split": "Reported from a search-result summary only: multitask deep neural network over 191 representative kinases, trained on an in-house dataset. I did not retrieve the full text, so I do not quote its numbers.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepDTA / GraphDTA and successors on the Davis and KIBA kinase benchmarks",
+        "open_weights": true,
+        "score_and_split": "From a search-result summary: concordance index about 0.858 (DeepDTA) to 0.903 (recent graph-attention models) on the Davis and KIBA kinase binding benchmarks; cold-drug and cold-target splits are reported as the hard case where all models degrade. Code for these is widely published.",
+        "authors_named_unsolved": "Cold-start (unseen drug and unseen target) performance remains poor.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ChemBERTa or MolFormer for the compound side, ESM-2 for the kinase side",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU would suffice for 163 compounds and 234 kinases, but there is no released dataset to attach a head to.",
+    "licence": "Repository README grants academic, non-commercial use only for the software, AI models and weights; the Zenodo record is labelled CC-BY-4.0, which contradicts it."
+  },
+  "integration": {
+    "partner_dataset": "ChEMBL / KIPP kinase bioactivity set (216,823 points, 354 kinases) and the Davis and KIBA kinase binding benchmarks",
+    "join_key": "UniProt accession for the kinase and InChIKey for the compound",
+    "bigger_question_one_sentence": "Does a model trained on one kinase panel transfer to inhibitors and kinases measured by another lab and assay? - a good question, but it needs this paper's measured data, which is not released, and the join keys are absent from the released feature matrix."
+  },
+  "controls": {
+    "positive_control": "Could not be set up: the released rows carry no kinase or compound identity, so there is no known inhibitor-kinase pair (e.g. imatinib against ABL1) to check the model recovers.",
+    "negative_control": "Label shuffling would be runnable but meaningless on 150 rows.",
+    "external_validation": "Davis, KIBA and the KIPP benchmark exist and are public, but nothing in the released files joins to them."
+  },
+  "honest_claim_h3": "With what this paper releases, the only honest claim would be 'a 20-layer convolutional network reproduces 50 anonymous feature vectors' - the 18,771 measured kinase-compound pairs the real claim rests on are not provided.",
+  "plain_idea": {
+    "one_liner": "Use compound chemical descriptors and kinase protein features to predict how strongly a drug blocks each kinase in a panel.",
+    "train_on": "Each example is one kinase paired with one small-molecule compound, described by 11,308 numbers (kinase pocket size, amino-acid composition, and compound chemical descriptors). The released files contain 150 such examples; the underlying study used 18,771, which were not released.",
+    "predict": "A single number for how much the compound displaces a reference ligand from that kinase, measured by KINOMEscan, a competition binding assay where a tagged kinase is washed over immobilised bait and the leftover amount is read out by quantitative PCR.",
+    "why_worthwhile": "Medicinal chemists would use it to decide which of hundreds of kinases a new compound is likely to hit before paying for a panel screen; the panel assay costs thousands of dollars per compound."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This paper releases 150 rows; its own source dataset is 18,771 pairs over 234 kinases and 163 compounds, while the open KIPP benchmark already has 216,823 measured points over 354 kinases and 141,086 compounds. We would have less data, not more."},
+    "confidence_score": {"answer": "no", "why": "The released files have no replicate measurements, no kinase or compound identity, and no concentration column, so no per-prediction uncertainty could be estimated from them."},
+    "models_beatable": {"answer": "partly", "why": "DeepKinome (2025) and KIPP (2024) were both evaluated on random splits, which overstate performance, so an honest held-out-kinase re-evaluation would be legitimate - but it needs their data, and KIPP already published theirs, so the project would be about KIPP, not about this paper."},
+    "guaranteed_improvement": {"answer": "no", "why": "DeepKinome cannot be run as a baseline (no weights, no data, no identifiers), so the condition 'the existing model can be run as our baseline' fails outright."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: rebuild the LINCS KINOMEscan kinase-inhibitor panel as a feature/label table and train a frozen-backbone model (ESM-2 for the kinase sequence, ChemBERTa for the compound) with a small head, evaluated on held-out kinases rather than a random split. This paper contributes nothing usable to it: no measured data, no identifiers, no weights. The same project done properly would start from the KIPP benchmark (216,823 measured points, public on GitHub), which is a different paper.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Everything released is under 1 MB and I opened all of it in seconds. The 40-hour figure is an estimate of what it would take to rebuild the real table from scratch: pull LINCS KINOMEscan percent-control values, compute PaDEL descriptors for 163 compounds, and derive kinase pocket-volume and composition features - none of which is scripted in the repository.",
+    "cheapest_killing_check": "Load the three .npz files and print their shapes. Two minutes; they are 50 rows each, not the 11,253/3,759/3,759 the source paper reports."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A fails on A4, A5, A7 and A8, all verified by opening the files. The repository releases only 150 toy rows (50 per split) of anonymous 11,308-dimensional vectors with no kinase or compound identity; the real 18,771-pair dataset is not deposited anywhere. The label's units are undocumented and I had to infer log2(percent + 1) from the maximum value being exactly log2(101), which contradicts the companion paper's stated 0-100 percent scale. The web server returns only the model's own predictions, so scraping it would be distilling a closed model (A8 circularity). Even setting the data aside, kinase profiling prediction is a saturated field: KIPP publishes 216,823 measured points and runnable code, and the Davis/KIBA drug-target affinity benchmarks have dozens of open models."
+}

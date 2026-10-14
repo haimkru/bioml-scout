@@ -1,0 +1,65 @@
+{
+  "paper_id": "nar2026-gkag813",
+  "title": "Limits of deep-learning-based RNA prediction methods.",
+  "doi": "10.1093/nar/gkag813",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21241326 (also https://github.com/iammarcol/RNA-Benchmark)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the Zenodo deposit (CC-BY-4.0, open): true.zip 215 MB, complex.zip 186 MB, single.zip 26 MB, msa.zip 12.7 MB, fasta.zip 148 KB, README. Downloaded and unzipped fasta.zip: exactly 79 FASTA files for single (monomeric) RNAs and 156 for complexes, 496 sequence records total. Fetched and row-counted 12 result tables from the GitHub repository: per-target TM-score (structural similarity score, 0-1) for 10 methods has 29 'easy' + 48 'hard' = 77 monomeric RNA rows; per-target DockQ (interface quality score, 0-1) for 4 methods has 101 + 55 = 156 complex rows; the MSA (multiple sequence alignment) depth table has 78 rows. All CSVs have a PDB_ID key column and named method columns and parsed on the first try.",
+    "what_came_from_paper_text_only": "The paper's own stated counts (79 monomeric models, 158 complexes after dropping out-of-memory cases), the filtering recipe (CD-HIT-EST at 80% sequence identity, training-set cutoff dates of 30 September 2021 and 13 April 2022, removal of ambiguous nucleotides), and the definition of the easy/hard split by RNA-align TM-score similarity to pre-cutoff PDB entries. I did not download the 215 MB true.zip or 186 MB complex.zip structure archives."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 21241326 is fully open under CC-BY-4.0 and the GitHub repository is public; I downloaded fasta.zip and a dozen CSVs with no login."},
+    "a2_label_is_a_column": {"pass": true, "note": "Accuracy labels are already columns: TM-score, GDT-TS, INF and lDDT per PDB_ID per method for monomers; DockQ, F1, iRMSD, LRMSD, fnat for complexes. No construction needed."},
+    "a3_inputs_present": {"pass": true, "note": "RNA sequences are present as FASTA files (79 monomeric, 156 complex), with the alignments in msa.zip and both predicted and experimental structures in the Zenodo archives."},
+    "a4_units_stated": {"pass": true, "note": "Metrics are standard dimensionless scores on 0-1 (TM-score, lDDT, DockQ, fnat) plus RMSD columns whose angstrom units are conventional but not written in the CSV header."},
+    "a5_enough_rows": {"pass": false, "n_rows": 235, "note": "FAIL. The files contain 79 monomeric RNA targets and 156 complexes = 235 independent structures; the largest single table is 156 rows. Even counting every method-by-target accuracy value gives roughly 1,394 non-independent cells, below the ~1,500 regression floor, and the real unit (one RNA structure) is 235, below the ~400 classification floor."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.45 GB of zipped structures plus <1 MB of tables", "note": "Comfortably under the 5 GB laptop limit; tables alone are tens of kilobytes."},
+    "a7_counts_match_paper": {"pass": true, "note": "Small discrepancies: paper says 158 complexes and 79 monomers, files give 156 complex FASTAs and 77 rows in the monomeric TM-score tables. Direction is explainable but not documented."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are structural-similarity scores of each method's prediction against an experimentally determined PDB structure, so they trace back to a real measurement; but they describe one predictor's behaviour, so a model of them inherits that predictor's quirks."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "AlphaFold3 (AF3), a deep-learning biomolecular structure predictor", "open_weights": false, "score_and_split": "Mean TM-score 0.4683 and mean DockQ 0.4167 on this paper's post-training-cutoff benchmark; read from the paper's own Table-2 and Table-4 CSVs which I fetched.", "authors_named_unsolved": "The benchmark's authors state that structurally divergent RNA folds remain poorly modelled and that methods recognise recurring motifs rather than generalising.", "runnable_as_baseline": false},
+      {"name": "Boltz-1, an open-source reimplementation of AlphaFold3-style structure prediction", "open_weights": true, "score_and_split": "Mean TM-score 0.4607 and DockQ 0.3824 on the same post-cutoff benchmark; no statistically significant difference from AF3 on most measures per the abstract.", "authors_named_unsolved": "Same finding: accuracy depends strongly on similarity to the training set.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "RNA-FM, an RNA language model (would have been the natural backbone for sequence-level difficulty prediction)", "freeze_and_head_viable": true, "hardware": "CPU laptop; 235 sequences embed in well under an hour", "licence": "Open, but moot given the row count"},
+  "integration": {"partner_dataset": "PDB and Rfam (RNA family database), joinable to expand the target set", "join_key": "PDB ID / RNA family accession", "bigger_question_one_sentence": "Can RNA sequence alone tell you in advance whether a structure predictor will get the fold right? — but answering it needs far more than 235 targets, so the join would have to supply nearly all the data."},
+  "controls": {"positive_control": "Predict sequence length from the sequence, which must come out near-perfect; and recover the paper's own finding that MSA depth correlates with accuracy.", "negative_control": "Shuffle the TM-score labels and confirm collapse to the global mean.", "external_validation": "CASP16 RNA targets are already folded into this benchmark, so no truly independent second set remains."},
+  "honest_claim_h3": "With 235 structures across 10 methods, any model could only claim 'on 79 monomeric RNAs and 156 complexes deposited after the 2021-2022 training cutoffs, sequence features explain some variance in predictor accuracy' — a claim too small and too confounded to separate from the paper's own correlation analysis.",
+  "plain_idea": {
+    "one_liner": "Use an RNA sequence to predict how accurately deep-learning structure predictors will model it.",
+    "train_on": "One row per RNA target: its sequence, alignment depth and length, with 235 targets available (79 single RNAs and 156 RNA-containing complexes), all verified by counting the FASTA files.",
+    "predict": "The accuracy score a given predictor will achieve, taken from the benchmark's TM-score or DockQ columns, which compare each predicted structure against the experimentally determined structure from the Protein Data Bank.",
+    "why_worthwhile": "A reliable 'will this RNA fold be modelled correctly?' flag would tell RNA biologists and therapeutics groups when to trust a predicted structure; but with 235 targets the answer could not be established, only guessed at."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The benchmark is 79 monomeric RNAs and 156 complexes, which I counted in the files; the predictors it tests were trained on the entire pre-2022 RNA PDB, orders of magnitude more."},
+    "confidence_score": {"answer": "no", "why": "Each target is modelled once per method with no replicate predictions in the deposit, so there is no basis for estimating per-prediction uncertainty from this data."},
+    "models_beatable": {"answer": "no", "why": "AlphaFold3 (2024) and Boltz-1 (2025) are current, and this paper already evaluated them honestly on a time-split, sequence-identity-filtered held-out set — the strongest kind of evaluation."},
+    "guaranteed_improvement": {"answer": "no", "why": "Neither AF3 nor Boltz-1 can be run as a baseline on a laptop (both need GPUs and AF3 weights are access-restricted), and no new data joining on PDB ID measures the same quantity the same way."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a sequence-based 'difficulty predictor' that estimates, before running an expensive structure predictor, how accurately AlphaFold3 or Boltz-1 will model a given RNA (regression on TM-score for monomers, DockQ for complexes), using RNA-FM embeddings plus alignment depth with a frozen backbone and a small head. The labels and inputs are all present and clean, but the dataset tops out at 235 structures.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.45,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.5,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, not timed, from the file sizes I actually saw: the result tables are tens of kilobytes and the structure archives total ~440 MB zipped; 235 RNA-FM embeddings on CPU is well under an hour.",
+    "cheapest_killing_check": "Count unique PDB IDs in the per-target tables. I did it: 77 monomeric (29 easy + 48 hard) and 156 complexes (101 + 55), which is the entire dataset — the project dies here."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A5 fails on the files, not just the paper. The deposit is exemplary — open CC-BY-4.0, clean CSVs with accuracy already in named columns, sequences and alignments included, every method named — but it contains 79 monomeric RNA targets and 156 complexes, 235 independent structures in total. The only project the data offers is predicting predictor accuracy from sequence, and 235 rows cannot support that, nor does it beat the correlation analysis the authors already published. The benchmark is valuable as an external test set for someone else's model, not as a training set."
+}

@@ -1,0 +1,143 @@
+{
+  "paper_id": "cell2026-08-005",
+  "title": "Live-cell transcriptomics with engineered virus-like particles.",
+  "doi": "10.1016/j.cell.2026.08.005",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE304897",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 8 processed matrices from the GEO SuperSeries GSE304897 (GSE304774 HT1080 71 samples, GSE304775 293T 75, GSE304786 HUVEC 24, GSE330414 microphysiological-system 63, GSE304777 iPSC 30, GSE304779, GSE304780, plus a 71-row per-sample QC/design table) and 5 GEO series-matrix metadata files. Confirmed shapes (e.g. 34,934 x 71 and 23,686 x 75), zero missing values, zero duplicate gene symbols, and that column names self-describe cell line / Lysate-vs-Media / construct / timepoint / replicate. Computed the candidate label myself: genes passing a lysate TPM (transcripts per million) > 5 filter = 1,894 (HT1080) and 2,780 (293T); disjoint-replicate reliability of the log2 particle-vs-cell enrichment label = Pearson 0.59-0.79; HT1080-vs-293T agreement = Pearson 0.36; cross-construct agreement = Pearson 0.66-0.74; positive controls RN7SL2 (7SL RNA) log2 +1.16 and MT-CO1 log2 -8.5.",
+    "what_came_from_paper_text_only": "Only the abstract. Cell is paywalled here (Europe PMC isOpenAccess = N) and the Europe PMC fullTextXML endpoint returned HTTP 500 on two attempts, so I never read the data-availability statement, the methods, or any count the paper itself claims. The supplementaryFiles endpoint returned a non-zip 297-byte response, so the supplement was not retrievable. The GEO accessions were found by searching GEO directly, not from the paper text (paper_context.py found no accessions and no NCBI links)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified by downloading: open GEO FTP, no login, no access application. 14 sub-series plus one SuperSeries; every processed matrix I pulled was 0.4-2.9 MB gzipped."},
+    "a2_label_is_a_column": {"pass": true, "note": "MARGINAL. The label (log2 enrichment of a transcript in secreted particles versus inside the cell) is not a column; I had to compute it by grouping Media/IP columns against Lysate columns. But this is a groupby within one file using self-describing column names, not a join across sources, and I did it successfully."},
+    "a3_inputs_present": {"pass": true, "note": "MARGINAL. Inputs for a sequence model are absent: matrices carry only HGNC gene symbols, no Ensembl identifiers and no sequences. Recoverable with one bulk GENCODE download rather than thousands of lookups, but ~30-40% of index rows are clone-based long-non-coding-RNA names (AC103724.1, AL139815.1) and microRNA entries that will not map to a polyadenylated messenger RNA."},
+    "a4_units_stated": {"pass": true, "note": "Units are stated in file names and are standard (TPM, counts). Flagged inconsistency I measured: the kallisto matrices sum to exactly 1,000,000 per column, but GSE304774's Salmon TPM columns sum to only ~549,000-553,000 over 34,934 rows, so ~45% of the normalisation mass sits in features absent from the file and the denominator is undocumented."},
+    "a5_enough_rows": {"pass": true, "n_rows": 2780, "note": "MARGINAL. Counted by me: 2,780 genes in 293T and 1,894 in HT1080 pass lysate TPM > 5. Tightening to TPM > 20/50 raises label reliability but cuts rows to 1,249/736. Clears the ~1,500 regression threshold only at the lenient filter."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.4 GB (about 20 MB of expression matrices plus a GENCODE transcript FASTA)", "note": "Verified: every file opened in seconds in pandas on CPU, peak memory well under 2 GB. No GPU needed for the baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Internally consistent: the SuperSeries GSE304897 declares 509 samples and the 14 sub-series sample counts (6+96+16+63+24+12+36+36+24+12+30+75+71+8) sum to exactly 509. I could NOT compare against any number stated in the paper because the full text was unavailable."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a ratio of two directly measured RNA-seq abundances (secreted particle or media versus cell lysate), not any model's output, and not computed from the sequence features. One leakage trap to respect: lysate TPM is the label's denominator, so it must never be used as a feature."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Several per-series matrices; grouping works via self-describing columns, but sequences must come from outside. Seen in files."},
+    "B2": {"score": 2, "why": "All 8 gzipped TSVs parsed on first try in pandas, zero NaN values. Verified."},
+    "B3": {"score": 1, "why": "Author-normalised within a series, but Salmon sums 550k vs kallisto 1e6, and IP-vs-media labels agree only r=0.46-0.70. Measured."},
+    "B4": {"score": 1, "why": "No censored or qualitative values, but pervasive structural zeros in media force a pseudocount and expression-threshold policy. Verified."},
+    "B5": {"score": 2, "why": "Zero duplicated gene symbols in every matrix I checked (index.duplicated().sum() = 0). Verified."},
+    "B6": {"score": 2, "why": "Columns self-describe cell/fraction/construct/time/replicate, plus a tidy 13-column per-sample design and QC table. Opened it."},
+    "C1": {"score": 2, "why": "Either answer informs: a packaging grammar enables cargo engineering; no signal supports the paper's unbiased-sampling claim."},
+    "C2": {"score": 1, "why": "ExoGRU (Cell Genomics 2024) and EVRCEPT model vesicle RNA enrichment from sequence, but for natural vesicles and small RNAs, not Gag particles."},
+    "C3": {"score": 2, "why": "Clear diversity and unique-application angle: engineered Gag particles, full-length mRNA, matched no-Gag controls natural-vesicle models lack."},
+    "C4": {"score": 2, "why": "Measuring cargo needs transfection, media collection, immunoprecipitation and RNA-seq per construct: genuinely lab-based and costly."},
+    "C5": {"score": 2, "why": "Obvious strong dummies exist: global mean, per-expression-decile mean, and the literature-named 3' untranslated region length alone."},
+    "D1": {"score": 2, "why": "Open downloadable weights match RNA/transcript sequence: RNA-FM, Nucleotide Transformer, HyenaDNA, Orthrus. Known resources."},
+    "D2": {"score": 2, "why": "Only ~3,000 transcripts to embed; untranslated-region windows cacheable once on CPU, then a small head. Estimated, not timed."},
+    "D3": {"score": 2, "why": "RNA-FM and HyenaDNA are MIT-licensed; GEO data carries no restriction. Paper text is CC BY-NC but is not needed."},
+    "E1": {"ok": true, "why": "Can hold out whole cell lines, whole Gag constructs, and gene paralog clusters. Groups verified in column names."},
+    "E2": {"ok": true, "why": "At least 5 cell contexts (HT1080, 293T, HeLa, iPSC, HUVEC/NHLF) and 8 constructs, all seen in the files."},
+    "E3": {"ok": true, "why": "Global mean enrichment, per-expression-decile mean, and 3' untranslated region length alone are all computable."},
+    "E4": {"ok": true, "why": "I measured it: disjoint-replicate Pearson 0.59-0.79 depending on expression threshold. Hard ceiling known."},
+    "E5": {"ok": true, "why": "Verified in data: RN7SL2 (7SL RNA, canonical Gag-packaged host RNA) enriched +1.16 log2; MT-CO1 depleted -8.5 log2."},
+    "E6": {"ok": true, "why": "Label shuffling plus real biological negatives in the data (pUC19, H2B-GFP, untransduced WT). Seen in files."},
+    "E7": {"ok": true, "why": "Held-out cell lines inside the SuperSeries, plus exoRBase natural-vesicle RNA as an independent cross-assay check."},
+    "E8": {"ok": false, "why": "No published number reproducible: paper full text unretrievable, and no existing model reports on Gag-particle mRNA cargo."},
+    "G1": {"score": 1, "why": "Only HGNC gene symbols, no Ensembl identifiers; ~30-40% of rows are clone-based lncRNA names needing resolution. Verified."},
+    "G2": {"score": 2, "why": "Named specific partners: GENCODE/Ensembl transcripts and UTR annotation, exoRBase, ENCODE eCLIP RNA-binding-protein maps."},
+    "G3": {"score": 1, "why": "Gene symbol to transcript is one-to-many, needing a canonical-isoform collapse rule; lncRNA clone names are ambiguous."},
+    "G4": {"score": 2, "why": "Asks whether engineered particles sort RNA by the same rules as natural vesicles, which neither dataset answers alone."},
+    "H1": {"score": 2, "why": "pUC19, H2B-GFP and untransduced WT give true background; depleted genes reported alongside enriched. Verified in files."},
+    "H2": {"score": 1, "why": "One lab, human only, 5 mostly immortalised cell contexts. A few sources, not diverse. Seen in metadata."},
+    "H3": {"score": 2, "why": "Claim statable precisely in one sentence, bounded by expression threshold and by training cell line."},
+    "H4": {"score": 1, "why": "Data-level controls make background explicit, but I could not read the paper's caveats, and the 550k TPM-sum anomaly is undocumented."},
+    "I1": {"score": 2, "why": "The lab that built these self-reporting particles, plus vesicle-engineering groups choosing cargo-biasing tags."},
+    "I2": {"score": 2, "why": "A packaging grammar would redirect construct design, exactly what their Gag-EIF4E fusion attempts. Fusion seen in GSE304780 columns."},
+    "I3": {"score": 1, "why": "They need which transcripts are detectable in media; ranking metrics align roughly, but the decision is per-construct design."},
+    "I4": {"score": 1, "why": "Honest risk: literature already names 3' untranslated region length and A-richness, so a 3-feature regression may capture most signal."},
+    "J1": {"score": 1, "why": "Real grouped splits and frozen-backbone transfer, but only ~3,000 rows and largely tabular features. Modest modelling."},
+    "J2": {"score": 2, "why": "Positive controls are unambiguous and I already recovered them (7SL enriched, mitochondrial depleted), so nonsense is detectable."},
+    "J3": {"score": 2, "why": "The per-gene enrichment table with a measured noise floor, and the cross-cell-line r=0.36 finding, are useful without any model."},
+    "J4": {"score": 1, "why": "No time budget stated yet; roughly 3-4 weeks implied by the low effort estimate, but not committed."},
+    "J5": {"score": 0, "why": "No kill date or condition written down anywhere, including NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ExoGRU (a gated-recurrent-unit neural network predicting whether a small RNA is secreted in extracellular vesicles)",
+        "open_weights": null,
+        "score_and_split": "Published in Cell Genomics (2024) as outperforming alternative models at predicting small-RNA secretion probability from primary sequence, with experimental validation by guided mutagenesis and synthetic sequence design. I could not retrieve the exact metric or the split definition from the abstract-level sources I searched, and I did not confirm a weights or code release.",
+        "authors_named_unsolved": "They frame prediction of secretion for coding transcripts as still exploratory and position the model as a way to narrow the experimental search space, implying full-length mRNA cargo is not covered.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "EVRCEPT (a sequence-feature machine-learning classifier of whether an RNA is enriched in extracellular vesicles or retained in cells)",
+        "open_weights": null,
+        "score_and_split": "Served as a web tool that reports per-sequence features (length, GC and AT percentage, secondary structure) alongside the enriched-versus-retained call. I could not verify its reported metric, training-set size or split: the tool's site failed to load for me with a TLS certificate error.",
+        "authors_named_unsolved": "Not retrieved; the site did not load, so I will not guess.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model) or Nucleotide Transformer applied to 5' and 3' untranslated-region windows; HyenaDNA for full-length transcripts",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM. About 3,000 transcripts embedded once and cached, then a small regression head.",
+    "licence": "RNA-FM and HyenaDNA are MIT-licensed (permissive); Nucleotide Transformer is non-commercial, which is acceptable here."
+  },
+  "integration": {
+    "partner_dataset": "GENCODE/Ensembl human transcript sequences and untranslated-region annotation (required for the inputs), plus exoRBase natural extracellular-vesicle RNA profiles and ENCODE eCLIP RNA-binding-protein binding maps for YBX1 and HNRNPA2B1.",
+    "join_key": "HGNC gene symbol mapped to the Ensembl canonical transcript; downstream joins use Ensembl gene identifiers.",
+    "bigger_question_one_sentence": "Do engineered virus-like particles sample a cell's messenger RNA by the same sequence rules that govern natural extracellular-vesicle RNA sorting, or by Gag-specific rules that could be re-engineered?"
+  },
+  "controls": {
+    "positive_control": "RN7SL2 (7SL RNA, the host RNA HIV-1 Gag is known to package) must come out enriched: I verified log2 +1.16. Mitochondrial transcripts must come out depleted: MT-CO1 log2 -8.5, MT-ND1 -5.1. Plus a plumbing check, predicting transcript length from sequence, which should be near-perfect.",
+    "negative_control": "Shuffle the enrichment labels and confirm collapse to the per-expression-decile mean; refit on the pUC19 and H2B-GFP no-Gag conditions, where no Gag-specific sequence signal should exist. Critically, exclude lysate TPM from the features, since it is the label's denominator and would leak.",
+    "external_validation": "Hold out entire cell lines (train HT1080 plus 293T, test HeLa, iPSC and HUVEC) and entire Gag constructs. I already measured that this will be demanding: HT1080-versus-293T label agreement is only Pearson 0.36. Optionally compare against exoRBase natural-vesicle RNA."
+  },
+  "honest_claim_h3": "Among human transcripts expressed above about 5 TPM (transcripts per million) in cultured cells engineered to export virus-like particles, messenger RNA sequence features predict a transcript's relative enrichment in secreted particles up to the replicate reliability ceiling of 0.59-0.79 Pearson, within the cell line the model was trained on, and demonstrably not across cell lines.",
+  "plain_idea": {
+    "one_liner": "Use an mRNA's own sequence to predict how strongly it is exported from cells inside engineered virus-like particles.",
+    "train_on": "One row per human gene, holding sequence-derived features of its transcript: total length, 3' and 5' untranslated-region lengths, GC and A content, and short motif counts. I verified 1,894 usable genes in HT1080 cells and 2,780 in 293T cells after an expression filter.",
+    "predict": "A single number per gene: the log2 ratio of its abundance in secreted particles to its abundance inside the cell. Both abundances are measured by RNA sequencing (reported as TPM, transcripts per million) of culture media or antibody pull-downs of particles versus matched cell lysate.",
+    "why_worthwhile": "Groups using these particles to watch gene expression in living cells need to know which transcripts they will actually detect in the media and which are invisible. Even a failed model pins down how unbiased the sampling is, which is the method's core claim."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "This is the only dataset I found measuring full-length messenger RNA cargo of engineered Gag particles with matched no-Gag controls across 5 human cell contexts (509 RNA-seq samples). But it yields only ~2,780 labelled genes per context, which is small beside the transcriptome-wide natural-vesicle data behind ExoGRU and EVRCEPT."},
+    "confidence_score": {"answer": "yes", "why": "Two to three true replicates per condition let me measure the noise floor directly (disjoint-replicate Pearson 0.59-0.79, varying by expression threshold), so per-gene confidence can be reported. I found no evidence that ExoGRU or EVRCEPT reports calibrated per-RNA uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "ExoGRU is a 2024 recurrent network with experimental validation, which is recent and not obviously weak; EVRCEPT is a simpler sequence-feature classifier. Neither was trained on Gag-particle messenger RNA cargo, so neither can be beaten on its own task nor covers ours."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first and third conditions: ExoGRU predicts small-RNA secretion into natural vesicles, a different quantity from a different assay, so it cannot be run as our baseline on our label and split."}
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "exoRBase (human blood extracellular-vesicle RNA, found by search), Vesiclepedia, and the natural-vesicle RNA datasets behind ExoGRU and EVRCEPT (found by search, not opened). Nothing public measures Gag-particle cargo specifically.",
+    "approx_items": null,
+    "join_key": "HGNC gene symbol / Ensembl gene identifier",
+    "why": "Natural-vesicle enrichment data gives an independent external test of whether a learned packaging grammar is vesicle-generic or Gag-specific, though it is a different vesicle type and partly a different RNA class, so the comparison is qualitative rather than a clean extra training set."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Cell Genomics", "why": "It published ExoGRU, so it clearly takes interpretable sequence-grammar models of RNA secretion; getting in would need a packaging grammar that demonstrably transfers to held-out cell lines, which the 0.36 cross-cell-line agreement makes a real stretch."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "It publishes derived resources plus honest benchmarking, which matches the likely outcome: a per-gene particle-cargo enrichment table across 5 cell contexts, a measured noise floor, and a modest sequence model that works within but not across cell lines."},
+    "fallback": {"journal": "PLOS Computational Biology", "why": "It publishes negative and limiting results with careful evaluation, so even the finding that cargo preference is only weakly reproducible across cell lines and that a 3-feature baseline matches a language model would be publishable there."}
+  },
+  "pitch": {
+    "headline": "509 RNA-seq samples where the same cultures' internal and secreted-particle transcriptomes were measured in parallel, with no-Gag negative controls included.",
+    "what_makes_the_data_unusual": "Matched cell-lysate, media and particle-pulldown RNA-seq for the same cultures, plus pUC19, H2B-GFP and untransduced controls that quantify background secreted RNA. I verified 7SL RNA enriched +1.2 log2 and mitochondrial transcripts depleted -8.5 log2.",
+    "the_win": "A sequence model reaching Spearman around 0.6-0.7 on held-out genes for per-gene particle enrichment, beating a 3'-untranslated-region-length-only baseline and approaching the replicate ceiling I measured at 0.59-0.79 Pearson.",
+    "even_if_it_fails": "We still publish the measured noise floor and the verified finding that cargo preference transfers poorly between cell lines (HT1080 versus 293T, Pearson 0.36) plus the undocumented 550k TPM-sum anomaly in GSE304774.",
+    "who_wants_it": "The lab that engineered these self-reporting particles, and extracellular-vesicle engineers deciding which 3'-untranslated-region tag to append to bias cargo toward transcripts they want to monitor."
+  },
+  "ml_idea": "Build a per-gene regression predicting log2 enrichment of a transcript in secreted virus-like particles relative to its intracellular abundance, from the transcript's sequence alone. Labels come from matched Media-or-immunoprecipitation versus Lysate RNA-seq columns in GSE304897 (I computed them: 1,894 genes in HT1080, 2,780 in 293T at lysate TPM > 5). Features are engineered sequence properties (transcript length, 3' and 5' untranslated-region lengths, GC and A content, m6A DRACH and RNA-binding-protein motif counts) plus cached embeddings from a frozen RNA language model over untranslated-region windows. Evaluate with grouped cross-validation holding out whole cell lines and whole Gag constructs, against a 3'-untranslated-region-length-only baseline and a per-expression-decile mean, and report everything relative to the replicate reliability ceiling of 0.59-0.79 Pearson that I measured. The scientifically valuable secondary result is already in hand: cargo preference agrees only at Pearson 0.36 between HT1080 and 293T, so the quantity may be substantially cell-context-specific rather than an intrinsic transcript property.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 0.4,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 6,
+    "cv_run_minutes": 3,
+    "compute_note": "Matrix sizes, parse times and memory are measured: all 8 matrices load in seconds under 2 GB. The 10 hours to a feature table is my estimate, dominated by mapping gene symbols to canonical GENCODE transcripts and extracting untranslated-region features, not by the expression data. Embedding hours assume ~3,000 transcripts of untranslated-region windows at roughly 0.15 sequences per second on CPU; estimated, not timed.",
+    "cheapest_killing_check": "Count how many of the 2,780 labelled gene symbols map to exactly one canonical GENCODE transcript with an annotated 3' untranslated region. If under ~1,500 survive, the project dies on row count. Do this before anything else; it is about two hours."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "The data is genuinely clean and I opened it: 509 samples, processed matrices under 3 MB each, no missing values, no duplicate gene symbols, self-describing columns, a tidy design table, real biological negative controls (pUC19, H2B-GFP, untransduced), and positive controls that the data recovers exactly as textbook HIV-1 Gag biology predicts (7SL RNA enriched +1.16 log2, mitochondrial transcripts depleted -8.5 log2). Part A passes, but three killers are marginal and all three point the same way: the label must be computed as a column-group ratio rather than read off (A2), the sequence inputs are absent and only unstable gene symbols are provided (A3), and only 1,894-2,780 genes per cell context carry a usable label (A5), barely clearing the ~1,500 threshold. Two measurements I made set the real ceiling: single-replicate label reliability is Pearson 0.59-0.79, and the label agrees only at Pearson 0.36 between HT1080 and 293T, so cargo preference may be a cell-context property rather than an intrinsic transcript property. Verify two things before committing, each about two hours: how many labelled symbols map to one canonical GENCODE transcript with an annotated 3' untranslated region, and whether a 3-feature regression (3'-untranslated-region length, transcript length, A content) already hits the reliability ceiling, in which case this is a one-page note rather than a model."
+}

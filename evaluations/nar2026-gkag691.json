@@ -1,0 +1,47 @@
+{
+  "paper_id": "nar2026-gkag691",
+  "title": "A nanogram-sensitive workflow for oligonucleotide mass spectrometry using ion-pair-free nanoflow HILIC and RNase benchmarking.",
+  "doi": "10.1093/nar/gkag691",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/pride/archive/projects/PXD070755",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed all 32 files in PRIDE project PXD070755 via the PRIDE API: 14 Thermo .raw files (282-926 MB each, about 8 GB total) and 18 small mzTab search-result files (2-232 KB). Downloaded the largest mzTab (NIST_mRNA_T1_250ng_1.mzTab): 851 oligonucleotide-spectrum-match rows with sequence, modifications, retention time, charge, observed and calculated m/z, and NASE (NucleicAcidSearchEngine) scores.",
+    "what_came_from_paper_text_only": "That the samples are yeast tRNAPhe, tRNAIle, an HDV-ribozyme construct with/without pseudouridine, and NIST firefly luciferase mRNA digested by RNase T1, RNase 4 and colicin E5. Supplementary tables were not retrievable (Europe PMC supplement endpoint timed out)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "PRIDE PXD070755 is public; file listing and one mzTab downloaded without login (checked)."},
+    "a2_label_is_a_column": {"pass": false, "note": "No ML target exists as a designed column. The only candidate label is retention time per identified oligonucleotide in the mzTab files, a by-product of a methods benchmark, not a curated outcome table."},
+    "a3_inputs_present": {"pass": true, "note": "Oligonucleotide sequences and modifications are present as text in the mzTab rows (checked one file)."},
+    "a4_units_stated": {"pass": true, "note": "mzTab is a standard format with retention time in seconds and m/z defined by the spec (checked header)."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Largest mzTab has 851 matches; 18 files total likely a few thousand rows, but they are repeated spectra of fragments from only ~4 RNA molecules, so unique sequences are probably in the low hundreds. Total not counted."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<5 MB for mzTabs; ~8 GB if raw spectra were needed", "note": "Search results are tiny; raw spectra (needed for any spectrum-level task) exceed the 50 MB cap and the 5 GB working-set guideline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not cross-checked against paper identification counts; file names match the sample design described in the paper."},
+    "a8_label_provenance": {"pass": false, "note": "The identifications themselves are outputs of NASE database search (a scoring model), and retention times come from one HILIC setup; any sequence label would be distilling the search engine."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Gradient boosting / SVR retention-time models for ion-pair oligonucleotide chromatography (J Chromatogr A 2022, PubMed 40014960)", "open_weights": null, "score_and_split": "Not retrieved in detail.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "ML retention-time prediction on larger antisense oligonucleotide datasets (arXiv 2511.15753)", "open_weights": null, "score_and_split": "Not retrieved in detail.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Kinetic CID spectrum prediction for deprotonated oligonucleotides (JASMS 2025)", "open_weights": null, "score_and_split": "Not retrieved in detail.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (RNA language model) in principle, but oligos are 3-20 nt with modifications", "freeze_and_head_viable": false, "hardware": "CPU", "licence": "MIT (RNA-FM)"},
+  "integration": {"partner_dataset": "MODOMICS (RNA modification database)", "join_key": "tRNA sequence / modification position", "bigger_question_one_sentence": "None worth stating; the dataset covers too few molecules to add to MODOMICS-scale knowledge."},
+  "controls": {"positive_control": "Retention time should rise with oligonucleotide length (stated in HILIC literature).", "negative_control": "Label shuffling.", "external_validation": "None identified for nanoflow HILIC of RNase digests."},
+  "honest_claim_h3": "Could only claim to predict HILIC retention of RNase fragments from four RNA molecules on one instrument setup in one lab.",
+  "plain_idea": {
+    "one_liner": "Use short RNA fragment sequences and modifications to predict when they come off a chromatography column.",
+    "train_on": "Sequence and modifications of each identified RNA fragment from mass-spectrometry search results; unknown number of unique fragments, likely a few hundred.",
+    "predict": "Retention time on the authors' nanoflow HILIC (hydrophilic interaction liquid chromatography) column, as recorded by the instrument for search-engine-identified fragments.",
+    "why_worthwhile": "Better retention prediction could help RNA mass-spec search engines reject false matches, but this dataset is too narrow to train a general model."
+  },
+  "label_elsewhere": {"score": 1, "sources": "Oligonucleotide retention-time datasets exist for ion-pair reversed-phase chromatography of antisense oligos (found by search), not for HILIC of RNase digests.", "approx_items": null, "join_key": "oligonucleotide sequence", "why": "Different chromatography modes make cross-dataset training largely incompatible."},
+  "pitch": null,
+  "ml_idea": "HILIC retention-time prediction for RNase-digested RNA oligonucleotides from mzTab identifications; rejected because few unique sequences, labels derived from search-engine output, and no designed outcome table.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 0.005, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated from the 18 mzTab file sizes (total under 1 MB); nothing timed.", "cheapest_killing_check": "Concatenate all 18 mzTabs and count unique (sequence, modification) pairs at 1% FDR; under ~400 kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Methods paper with ~8 GB raw spectra and 18 small search-result files covering about four RNA molecules; no designed label column, too few unique items, and identifications are search-engine outputs (A2, A5, A8 fail)."
+}

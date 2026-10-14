@@ -1,0 +1,53 @@
+{
+  "paper_id": "nar2026-gkag670",
+  "title": "Ku70-SAP domain has an overlapping function with DNA-PKcs in limiting the lateral movement of the Ku ring along DNA.",
+  "doi": "10.1093/nar/gkag670",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE276069",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the GEO (Gene Expression Omnibus) series GSE276069 file directory and its filelist.txt (21 samples, GSM8490562-GSM8490581), then downloaded and opened four processed Excel workbooks: HL and PKSHL IgH junction files (5,428 and 10,367 junction rows) and the two pooled class-switch-recombination files (21,912 rows for the wild-type pool of 2 mice, 38,798 rows for the SAP-deleted pool of 3 mice). Read all 32-33 column headers and the first data rows; listed all 18-20 sheets per workbook. Confirmed per-sample files are individually downloadable (~1.7 MB each) and the raw archive is 75 MB.",
+    "what_came_from_paper_text_only": "That the junctions were aligned to a custom genome (mm9 with the 129-strain IgH switch region swapped in from GenBank AJ851868.3, plus the pMX-INV V(D)J substrate added as an extra chromosome), that the transloc_pipeline from GitHub was used, that deletion size was capped at 1,000 bp, and the genotype of each library (the files carry no genotype column; genotype is only in file names and the GEO sample titles)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open GEO FTP; I downloaded four processed .xlsx workbooks (3-21 MB) with no login. Per-sample files also fetchable individually."},
+    "a2_label_is_a_column": {"pass": false, "note": "No label column exists. The paper's outcomes - deletion size at the junction and microhomology usage - are not columns; they must be computed from junction/bait coordinates and CIGAR alignment strings. Genotype is only in file names."},
+    "a3_inputs_present": {"pass": false, "note": "Only the ~20 bp read sequence (Seq) and coordinates on a non-standard genome (mm9 with a 129-strain IgH region substituted, plus a pMX-INV pseudo-chromosome) are present; getting sequence context requires rebuilding that custom genome first."},
+    "a4_units_stated": {"pass": true, "note": "Coordinates are base pairs and counts are deduplicated read counts, but no file records the genome build, so coordinates are only interpretable via the methods text."},
+    "a5_enough_rows": {"pass": false, "n_rows": 20, "note": "Junction rows are plentiful (21,912 and 38,798 in the two pooled files) but the independent unit is the library/mouse: 20 libraries across ~7 genotype groups, 2-3 mice each, all from one locus."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~75 MB total across 20 Excel workbooks", "note": "Verified sizes; everything fits in memory easily."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says '>38 000 unique CSR junctions from three Ku70-SAP-deleted and two wild-type mice'; the SAP pool alone has 38,798 rows and the wild-type pool 21,912, so the quoted figure is roughly consistent but ambiguous."},
+    "a8_label_provenance": {"pass": false, "note": "Any quantitative label here (deletion size, microhomology length) is arithmetic on the same coordinate and alignment columns that would be the model's features - leakage by construction, not an independent measurement."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "inDelphi (machine-learning predictor of CRISPR-Cas9 repair outcomes)", "open_weights": true, "score_and_split": "Reported to predict frequencies of microhomology deletions, microhomology-less deletions and 1-bp insertions at held-out target sites; exact numbers not retrieved, only the summary from search results and the Broad Institute/PMC description.", "authors_named_unsolved": "Not retrieved - I only read search-result summaries, not the discussion.", "runnable_as_baseline": false},
+      {"name": "Lindel (Chen et al., Nucleic Acids Research 2019, gkz487 - predictive model of Cas9 double-strand-break repair outcomes)", "open_weights": true, "score_and_split": "Trained on massively parallel profiling of repair outcomes at thousands of designed target sites; number not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "DeepSHM (convolutional network for somatic hypermutation targeting in antibody genes)", "open_weights": null, "score_and_split": "Reported to improve on k-mer mutability models using 5-21 nucleotide context and to recover an extended WWRCT antibody-mutation motif; split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 or Nucleotide Transformer (DNA language models)", "freeze_and_head_viable": true, "hardware": "Laptop CPU would suffice for the few hundred kilobases involved", "licence": "Open weights, permissive-to-non-commercial depending on checkpoint"},
+  "integration": {"partner_dataset": "None usable: the junction coordinates sit on a one-off hybrid genome build, so they do not join cleanly to any standard resource.", "join_key": "genomic coordinates (custom build, no build recorded in the files)", "bigger_question_one_sentence": "Could not write one - the only identifiers present are coordinates on a bespoke genome from a single mouse strain."},
+  "controls": {"positive_control": "The known concentration of class-switch junctions in the Smu, Sgamma1 and Sepsilon switch regions (>80% of preys per the paper) would have to be recovered.", "negative_control": "Shuffle genotype labels across the 20 libraries - but with 2-3 libraries per genotype the test has almost no power.", "external_validation": "Other Alt/Zha-lab HTGTS (high-throughput genome-wide translocation sequencing) datasets exist in GEO, but they use different bait primers and genome builds, so they are not directly comparable."},
+  "honest_claim_h3": "At best: 'in one mouse antibody gene locus, local DNA sequence explains some of the variation in where repair junctions land', based on 20 sequencing libraries from 2-3 mice per genotype, which cannot support a claim about repair outcomes in general.",
+  "plain_idea": {
+    "one_liner": "Use local DNA sequence to predict where broken-DNA repair junctions form, and how much DNA is lost at each junction.",
+    "train_on": "Per-read repair junction tables from HTGTS (high-throughput genome-wide translocation sequencing): 21,912 junctions in the wild-type pool and 38,798 in the SAP-deleted pool, but only 20 libraries from ~7 mouse genotypes, all from a single antibody gene locus.",
+    "predict": "Junction position or the amount of DNA deleted at the junction. The true value comes from short-read sequencing of repair products, aligned by the authors' transloc_pipeline, so the 'label' is itself arithmetic on the alignment coordinates.",
+    "why_worthwhile": "DNA repair biologists would like a sequence-level rule for where end-joining breaks and seals DNA; here, though, the one locus and 20 libraries mean nothing general could be concluded even if a model fitted well."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict per-position repair-junction density and deletion size along the mouse IgH locus from local DNA sequence using a frozen DNA language model, with libraries held out by mouse. Dies because there is no label column, the deletion-size label is computed from the same coordinates that would be the features, and the independent unit is 20 libraries from one locus.",
+  "effort": {"hours_to_feature_table": 20, "working_set_gb": 0.08, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": 1, "cv_run_minutes": 10, "compute_note": "Sizes and row counts measured by downloading and opening four workbooks; the 20 hours is an estimate for rebuilding the custom mm9+129-IgH+pMX-INV genome, re-deriving deletion size and microhomology from CIGAR strings, and harmonising 20 hand-edited workbooks that mix data sheets with analysis sheets and Excel formulas.",
+    "cheapest_killing_check": "Count independent experimental units: filelist.txt shows 21 samples / 20 libraries spread over ~7 genotype groups, i.e. 2-3 mice per group. That alone kills any genotype-level model."},
+  "verdict": "reject",
+  "verdict_reason": "Files open fine, but there is no label column (deletion size and microhomology must be recomputed from the alignment columns that would be the features), and the independent unit is 20 sequencing libraries from 2-3 mice per genotype in a single antibody gene locus on a one-off custom genome build. Fails A2, A3, A5 and A8."
+}

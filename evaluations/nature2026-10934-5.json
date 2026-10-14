@@ -1,0 +1,211 @@
+{
+  "paper_id": "nature2026-10934-5",
+  "title": "Pervasive phosphorylation by phage T7 kinase disarms bacterial defences.",
+  "doi": "10.1038/s41586-026-10934-5",
+  "journal": "Nature",
+  "data_url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41586-026-10934-5/MediaObjects/41586_2026_10934_MOESM3_ESM.zip",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the 39.5 MB Supplementary Tables zip (CC-BY, no login) and opened all 8 Excel workbooks with pandas. Counted: Table 1 sheet D = 16,170 unique T7-kinase-targeted host phosphosites on 2,240 E. coli proteins (S 6,092 / T 7,045 / Y 3,033); Table 1 sheet B (in vitro assay) = 11,052 unique protein-site keys on 1,435 proteins; Table 1 sheet C (reanalysed older public data) = 4,727 sites; Table 3 sheet A = 141,273 rows, 15,697 peptides, 10,580 unique single-site log2 fold-change values at 5 min; Table 4 sheet A = 2,638 single-site occupancy estimates in per cent (range -14.8 to 92.2, 87 above 25%); Table 4 sheet B = 2,549 single-site kinase-attributable occupancy values. Downloaded the UniProt E. coli K-12 reference proteome (UP000000625, 4,403 sequences, 1.9 MB) and checked every site: 16,170 of 16,170 accessions were found and the amino acid at the stated position matched the stated letter in 100.00% of cases. Counted the negative pool: 101,829 serine/threonine/tyrosine residues in those 2,240 proteins, so 15.9% are positive. Measured the replicate noise floor myself: median within-site standard deviation 0.657 log2 units versus 0.923 between sites for fold-change, and 4.48 percentage points versus 10.94 for occupancy. Ran a timed baseline: one-hot +/-7 residue window, logistic regression, 5-fold protein-grouped cross-validation gave ROC-AUC 0.720 +/- 0.006 and PR-AUC 0.307 (chance 0.159) in 4.5 seconds; residue type alone gave 0.528.",
+    "what_came_from_paper_text_only": "The claim of no sequence motif specificity, the mechanism linking high-occupancy phosphorylation to inactivation of Retron-Eco9 and DarTG1, the phosphomimetic mutant experiments, the PTMProphet localisation cut-off of 0.75 defining class I sites, and the statement that detected sites exceed previously reported E. coli sites by over threefold. I did not download the raw mass spectra (PRIDE PXD058408), the Zenodo code and AlphaFold3 structures, or the Figshare genomes."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplementary Tables zip downloaded directly from the publisher, 39.5 MB, no login, article is Creative Commons Attribution 4.0. Verified by downloading and unzipping."},
+    "a2_label_is_a_column": {"pass": true, "note": "Labels are literal columns I read: 'Estimated Stoichiometry (%)', 'T7K-mediated stoichiometry (%)', log2 fold-change per timepoint, and the site list itself. Only the negative class needs enumerating, which is one deterministic pass over a single reference proteome file, not inference across sources."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are not in the tables, but all 2,240 accessions resolve from one bulk 1.9 MB UniProt proteome download; I verified 16,170 of 16,170 site accessions were present. No per-item lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Occupancy is given in per cent in the column name, fold-changes as log2, localisation as a probability 0-1, plus explicit replicate counts and a 'Ratio Quality' flag. Checked in the column headers."},
+    "a5_enough_rows": {"pass": true, "n_rows": 101829, "note": "101,829 candidate serine/threonine/tyrosine residues with 16,170 positives for classification; 10,580 single-site fold-change values and 2,638 occupancy values for regression. All counted in the files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.5 GB (38 MB of Excel, 1.9 MB proteome FASTA, ~1 GB of optional AlphaFold structures)", "note": "Baseline cross-validation ran in 4.5 seconds on this laptop. No GPU needed; protein-language-model embeddings for 2,240 proteins cache once on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "The paper states detected sites exceed previously reported E. coli sites by over threefold; the files give 16,170 kinase-targeted sites against 4,727 reanalysed prior sites, a 3.4-fold ratio. No headline count in the abstract contradicts the tables."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are physical measurements: tandem-mass-tag reporter intensities for fold-change, and a phosphatase-treated versus untreated ratio for occupancy. Not a model output. One caveat found and noted: Table 4 sheet C holds GraphBind predictions (a model's output) for DNA-binding residues, which must never be used as a label."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Eight workbooks, but the task needs three sheets plus one FASTA; join on UniProt accession plus position worked at 100%."},
+    "B2": {"score": 2, "why": "All eight Excel files parsed first try with pandas, no fixes, no encoding or header problems."},
+    "B3": {"score": 2, "why": "One lab, one mass-spectrometry pipeline; tandem-mass-tag intensities already normalised and occupancy already estimated by the authors."},
+    "B4": {"score": 1, "why": "466 of 9,462 occupancy ratios flagged 'Poor' with an explicit keep/drop column; negative occupancy values need a floor policy."},
+    "B5": {"score": 1, "why": "Same site via several peptides: 2,298 of 10,580 fold-change sites, 170 of 2,638 occupancy sites; collapse by mean is trivial."},
+    "B6": {"score": 2, "why": "Every workbook opens with a Contents sheet describing each tab; column names are verbose and self-explanatory."},
+    "C1": {"score": 2, "why": "Asks how much of a motif-less kinase's target choice is predictable at all; informative whichever way it resolves."},
+    "C2": {"score": 1, "why": "GPS-pPLM and MPsite predict prokaryotic phosphosites, but web-server-first and trained on 44,839 sites across 95 species; none model a phage kinase."},
+    "C3": {"score": 2, "why": "No machine learning has touched this data; searched and found none. Clear novel plus unique-application angle."},
+    "C4": {"score": 2, "why": "The label needs tandem-mass-tag phosphoproteomics with phosphatase controls across an infection timecourse: weeks of expensive lab work."},
+    "C5": {"score": 2, "why": "I measured a baseline myself (PR-AUC 0.307, ROC-AUC 0.720, protein-grouped); published prokaryotic numbers 0.71-0.91 also exist."},
+    "D1": {"score": 2, "why": "ESM-2, an open-weight protein language model, matches protein sequence input exactly; weights downloadable."},
+    "D2": {"score": 2, "why": "2,240 proteins of mean length 308; per-residue embeddings cached once on CPU, then a linear or tree head."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT-licensed and the paper's data is Creative Commons Attribution 4.0; no restriction on either."},
+    "E1": {"ok": true, "why": "Hold out whole proteins, or better, whole 30%-sequence-identity clusters; UniProt accession column verified present on every row."},
+    "E2": {"ok": true, "why": "2,240 distinct proteins as groups, counted in the files; far more than the five needed."},
+    "E3": {"ok": true, "why": "Measured dummies: 15.9% positive rate overall, residue-type-only ROC-AUC 0.528, per-protein mean rate."},
+    "E4": {"ok": true, "why": "Computed from duplicate peptides: within-site sd 0.657 log2 units versus 0.923 between sites; 4.48 versus 10.94 percentage points for occupancy."},
+    "E5": {"ok": true, "why": "Literature T7-kinase substrates (RNase E, RNA polymerase subunit beta-prime, elongation factor G) must rank high; residue type must be learnable."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation both run in seconds; my baseline cross-validation took 4.5 seconds."},
+    "E7": {"ok": true, "why": "Three independent sets in the files: in vitro purified-kinase assay (11,052 sites), other-phage data (32,647 rows), reanalysed public data (4,727 sites)."},
+    "E8": {"ok": false, "why": "GPS-pPLM's authors say code is on GitHub but I did not verify downloadable weights, so reproducing their number is unconfirmed."},
+    "G1": {"score": 2, "why": "UniProt accession plus residue position on every row; verified 100% resolve with the correct amino acid letter."},
+    "G2": {"score": 2, "why": "AlphaFold DB covers the whole E. coli K-12 proteome (UP000000625) and joins on the same UniProt accession."},
+    "G3": {"score": 2, "why": "One predicted structure per accession in AlphaFold DB; strictly one-to-one, no collapse rule needed."},
+    "G4": {"score": 2, "why": "Asks whether residue burial and DNA-binding character, not local sequence, decide a motif-less kinase's targets; neither dataset answers alone."},
+    "H1": {"score": 1, "why": "85,659 unphosphorylated candidate residues plus knockout, catalytic-dead and domain-deletion controls, but undetected does not always mean unphosphorylated."},
+    "H2": {"score": 1, "why": "One lab, one mass-spec platform, one host strain, one main phage; partly offset by an in vitro assay and other-phage data."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one sentence and is limited exactly by mass-spectrometry peptide coverage."},
+    "H4": {"score": 2, "why": "The paper states its localisation cut-off, class I criteria and detection limits; column names carry the caveats."},
+    "I1": {"score": 2, "why": "The EMBL groups that made it, anti-phage-defence labs (Sorek, Bondy-Denomy), and the dbPSP/GPS-pPLM authors."},
+    "I2": {"score": 2, "why": "A ranked list of likely high-occupancy sites on defence proteins tells a lab which phosphomimetic mutants to clone; the paper did this by hand for RcaT."},
+    "I3": {"score": 2, "why": "Precision in the top 100 predicted high-occupancy sites is literally the number of mutants a lab would build."},
+    "I4": {"score": 1, "why": "Honest: a per-protein average already reaches in-sample ROC-AUC 0.786, so simple features do much of the work."},
+    "J1": {"score": 2, "why": "Grouped splits, a frozen protein language model with a new head, calibration, ablations and an external assay test."},
+    "J2": {"score": 2, "why": "Known T7-kinase substrates and the textbook expectation that buried residues are not phosphorylated give clear sanity checks."},
+    "J3": {"score": 2, "why": "The cleaned 101,829-row residue table with UniProt and structure joins is a shareable resource even if the model is mediocre."},
+    "J4": {"score": 2, "why": "Three weeks: one for the feature table and embeddings, one for models and ablations, one for the external assay test."},
+    "J5": {"score": 1, "why": "Kill condition stated in this evaluation (no 0.05 PR-AUC gain over 0.307 in week one) but not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "GPS-pPLM (2024, Cells) - a transformer language model for prokaryotic phosphorylation sites",
+        "open_weights": false,
+        "score_and_split": "ROC-AUC 0.71 for nitrogen-linked and 0.77 for oxygen-linked phosphorylation from the general pretrained model, 0.79-0.91 after fine-tuning, on a 90/10 split made by timestamp (before/after October 2022); trained on 44,839 sites in 16,041 proteins across 95 species.",
+        "authors_named_unsolved": "They state that compute limits forced them to use only short peptide windows, and that 3D structures would improve accuracy but too few prokaryotic structures were available. AlphaFold DB now removes that excuse for E. coli.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MPsite (2022, Gene) - microbial phosphorylation site predictor using evolutionary and structural features",
+        "open_weights": null,
+        "score_and_split": "Not retrieved directly; GPS-pPLM reports beating it by 14.3% on phosphoserine prediction. I did not open the MPsite paper, so I record no number of my own.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "NetPhosBac - an older bacterial phosphosite predictor",
+        "open_weights": null,
+        "score_and_split": "Not retrieved directly; GPS-pPLM reports beating it by 45.5% on phosphoserine prediction.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "MusiteDeep, DeepPhos, Phosformer, LMPhosSite - general and kinase-specific phosphosite predictors",
+        "open_weights": true,
+        "score_and_split": "All trained and evaluated on eukaryotic, mostly human, phosphosites; MusiteDeep serves human predictions only but allows custom retraining. No number applies to a bacterial or phage-kinase task.",
+        "authors_named_unsolved": "Kinase-specific prediction for kinases with few known substrates and no clear motif remains open.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "No model of T7 kinase targets or of phosphorylation occupancy for any phage kinase",
+        "open_weights": null,
+        "score_and_split": "Four searches found nothing; the preprint has been public since December 2024 and no modelling paper cites it.",
+        "authors_named_unsolved": "The paper itself says the kinase has no sequence motif specificity, leaving what does determine its targets explicitly open.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (esm2_t30_150M or esm2_t33_650M), an open-weight protein language model",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop; per-residue embeddings for 2,240 proteins of mean length 308 cached once, then a logistic-regression or gradient-boosting head",
+    "licence": "MIT for ESM-2; data is Creative Commons Attribution 4.0"
+  },
+  "integration": {
+    "partner_dataset": "AlphaFold DB predicted structures for the E. coli K-12 reference proteome (UP000000625), giving per-residue solvent accessibility, predicted disorder and the pLDDT confidence score",
+    "join_key": "UniProt accession plus residue position, verified to resolve for 16,170 of 16,170 sites with the correct amino acid letter",
+    "bigger_question_one_sentence": "When a kinase has no sequence motif, is its choice of target set by how exposed a residue is and whether the protein binds DNA rather than by local sequence, and does that predict which bacterial defence proteins a phage can switch off?"
+  },
+  "controls": {
+    "positive_control": "Known T7-kinase substrates from decades of literature - RNase E (rne), RNA polymerase subunit beta-prime (rpoC), elongation factor G and ribosomal protein S6 - must rank among the top predictions; separately, predicting the residue's own identity (serine, threonine or tyrosine) from its sequence window must be near-perfect.",
+    "negative_control": "Shuffle the labels within each protein and confirm PR-AUC collapses to the 0.159 base rate; replace the protein-language-model embeddings with random vectors of the same shape and confirm the same collapse; ablate the sequence-window block against the protein-level block to see which does the work.",
+    "external_validation": "The in vitro assay in Supplementary Table 1 sheet B: purified T7 kinase domain on E. coli lysate, 11,052 unique protein-site keys on 1,435 proteins, of which only 4,652 overlap the in vivo set - a genuinely different assay. Also Supplementary Table 8 sheet A, 32,647 rows of phosphoproteomics from other phages including P1vir, and Supplementary Table 1 sheet C, 4,727 reanalysed sites from older public E. coli studies."
+  },
+  "honest_claim_h3": "Among the serine, threonine and tyrosine residues sitting on E. coli peptides that this one laboratory's mass spectrometer actually detected, the model predicts which ones the T7 phage kinase phosphorylates and roughly what fraction of protein copies carry the modification; it says nothing about residues on peptides the instrument never saw, and nothing yet about hosts other than E. coli K-12.",
+  "plain_idea": {
+    "one_liner": "Use a protein's sequence and predicted shape to predict which of its serines, threonines and tyrosines a phage kinase attacks.",
+    "train_on": "Each example is one serine, threonine or tyrosine residue in an E. coli protein, described by its surrounding sequence and by how buried it is in the predicted 3D structure. I counted 101,829 such residues across 2,240 proteins in the supplementary files.",
+    "predict": "Whether the T7 phage kinase phosphorylates that residue (16,170 of the 101,829 do), and for 2,638 of them the occupancy in per cent. Truth comes from mass-spectrometry phosphoproteomics during infection, with occupancy measured as the ratio between phosphatase-treated and untreated samples.",
+    "why_worthwhile": "Groups studying how phages switch off bacterial immune systems could use a ranked shortlist of likely high-occupancy sites to choose which mutant proteins to build next, as this paper did by hand for one toxin. Even a failure puts a number on how unpredictable a motif-less kinase really is."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "16,170 phosphosites in one organism from one kinase, versus GPS-pPLM's entire training set of 44,839 sites spread over 95 species, of which dbPSP 2.0 contributed 19,296. The files also give 4,727 previously reported E. coli sites for direct comparison, a 3.4-fold increase, plus occupancy in per cent, which no existing predictor was trained on at all."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The files carry replicate counts per site, duplicate peptide measurements (2,298 of 10,580 fold-change sites, 170 of 2,638 occupancy sites) and localisation probabilities, so a per-prediction uncertainty can be calibrated against measured noise. But I did not confirm that GPS-pPLM lacks calibration; it does output a score with high/medium/low thresholds."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "GPS-pPLM is recent (2024) and transformer-based, with an honest timestamp split, so it is not a weak target. But it uses only short peptide windows, its authors name missing prokaryotic structures as the gap, and it was never trained on phage-kinase targets or on occupancy, so it is not competing on this task."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "GPS-pPLM predicts endogenous prokaryotic phosphosites deposited by bacterial kinases, not T7 kinase targets, so it does not measure the same quantity and cannot be our baseline on the same split. My own one-hot window model (PR-AUC 0.307) is the real baseline, and beating it with embeddings and structure is likely but not guaranteed."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "dbPSP 2.0 (curated prokaryotic phosphosites; the GPS-pPLM paper states it contributed 19,296 sites), the GPS-pPLM compiled benchmark of 44,839 nonredundant prokaryotic sites across 95 species, and PhosphoSitePlus for eukaryotic sites. The paper's own Supplementary Table 1 sheet C holds 4,727 reanalysed E. coli sites from earlier public studies, which I opened and counted.",
+    "approx_items": 44839,
+    "join_key": "UniProt accession plus residue position",
+    "why": "Tens of thousands of phosphosites in other bacteria, measured by the same kind of mass spectrometry, give both extra training data and a ready-made external test of whether a model learned T7-kinase-specific targeting or just generic phosphorylatability."
+  },
+  "leakage_plan": {
+    "risks": [
+      "E. coli has large paralogue families (ribosomal proteins, ABC transporters, two-component sensors) whose members would otherwise be split between training and test, inflating performance.",
+      "The biggest confound is detection, not biology: a residue counted as negative may simply sit on a tryptic peptide the instrument never saw, and peptide length, charge and hydrophobicity are all readable from the sequence the model gets.",
+      "Protein abundance drives how many sites are detected per protein, so an abundance-correlated sequence feature could masquerade as a targeting signal; abundance is available in Supplementary Table 3 sheet B for 2,967 proteins.",
+      "The same site appears in multiple peptide rows across sheets (2,298 of 10,580 fold-change sites), so naive row-level splitting would put the same measurement on both sides.",
+      "Supplementary Table 4 sheet C contains GraphBind DNA-binding predictions, which are another model's output and must not be used as a label or as a feature if DNA-binding is part of the story being tested."
+    ],
+    "split": "Cluster the 2,240 proteins at 30% sequence identity with MMseqs2 and hold out whole clusters. The grouping column is the UniProt accession, which I confirmed is present on every row and resolves 100% against proteome UP000000625. In addition, hold out the entire in vitro assay sheet (1,435 proteins, 11,052 sites) as a never-trained-on external test.",
+    "checks": [
+      "Shuffle labels within each protein and confirm PR-AUC falls to the 0.159 base rate.",
+      "Train on tryptic-peptide properties alone (peptide length, missed cleavages, hydrophobicity, whether the peptide was ever observed unmodified) to measure how much of the signal is detectability rather than targeting.",
+      "Train on protein-level features alone (length, abundance from Supplementary Table 3 sheet B) and compare against the in-sample per-protein ROC-AUC of 0.786 I already measured, to see how much is protein choice rather than residue choice.",
+      "Report the maximum sequence identity between each held-out protein and its nearest training protein."
+    ],
+    "verdict": "Manageable, with one real hazard: the mass-spectrometry detectability confound needs the peptide-coverage control run before any headline number is believed."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 100 predicted high-occupancy sites (above 25% occupancy), because a laboratory would build roughly that many phosphomimetic mutants; plus PR-AUC (precision-recall area under the curve) for the site classification on proteins held out by 30% sequence-identity cluster.",
+    "baselines": "Measured by me on this data: one-hot +/-7 residue window with logistic regression, 5-fold protein-grouped cross-validation, PR-AUC 0.307 and ROC-AUC 0.720; chance PR-AUC 0.159; residue-type-only ROC-AUC 0.528. Published for the adjacent task: GPS-pPLM ROC-AUC 0.71-0.77 pretrained, 0.79-0.91 fine-tuned, on a timestamp split.",
+    "success": "PR-AUC at least 0.45 on sequence-identity-clustered held-out proteins (against my measured 0.307 and chance 0.159), and Spearman correlation at least 0.45 for occupancy in per cent on held-out proteins, with at least 40 of the top 100 predicted high-occupancy sites confirmed above 25% in the in vitro assay.",
+    "noise_ceiling": 0.91,
+    "kill": "If a frozen protein-language-model embedding plus AlphaFold solvent accessibility does not beat the 0.307 window baseline by at least 0.05 PR-AUC after one week, or if the peptide-detectability-only model reaches within 0.03 PR-AUC of the full model, stop."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning; it would take showing that residue burial and DNA-binding character, not sequence, explain a motif-less kinase's targets, plus a prospectively nominated defence-protein site that someone then validates."
+    },
+    "realistic": {
+      "journal": "Molecular & Cellular Proteomics",
+      "why": "Publishes phosphoproteomics method and prediction work; a first predictor of phage-kinase site selection and occupancy, honestly evaluated on sequence-identity-clustered held-out proteins with an in vitro external test, fits squarely."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes negative and partial computational results with a released resource; even a finding that sequence and structure explain little beyond the per-protein average, shipped with the cleaned 101,829-row residue table, is publishable there."
+    }
+  },
+  "pitch": {
+    "headline": "16,170 phosphosites from one promiscuous phage kinase; every single one joins UniProt at the correct residue; no machine learning has touched this data.",
+    "what_makes_the_data_unusual": "A kinase the authors say has no sequence motif, so target choice must be structural. 2,240 proteins, knockout and catalytic-dead controls, an independent in vitro assay with 11,052 sites, occupancy measured in per cent, all Creative Commons Attribution.",
+    "the_win": "Beat the baseline I actually ran on these files (PR-AUC 0.307, ROC-AUC 0.720, protein-grouped cross-validation, chance 0.159) and reach Spearman 0.45 for occupancy on held-out proteins, against a measured noise ceiling of about 0.91.",
+    "even_if_it_fails": "We put a number on the paper's qualitative claim that this kinase has no specificity, and we learn whether mass-spectrometry detectability, not biology, explains apparent phosphosite predictability. The cleaned 101,829-row table stands alone.",
+    "who_wants_it": "The EMBL groups that generated it, anti-phage-defence labs (Sorek, Bondy-Denomy) choosing which phosphomimetic mutants to clone, and the dbPSP/GPS-pPLM authors who named missing prokaryotic structures as their limitation."
+  },
+  "ml_idea": "Build a residue-level table of all 101,829 serine, threonine and tyrosine residues in the 2,240 E. coli proteins detected in this study, labelled 1 for the 16,170 phosphorylated by T7 kinase and 0 otherwise, with a second continuous label of occupancy in per cent for 2,638 sites and log2 fold-change for 10,580. Features: frozen ESM-2 per-residue embeddings, a one-hot sequence window, and AlphaFold DB solvent accessibility, predicted disorder and pLDDT joined on UniProt accession. Train a head with 30%-sequence-identity-clustered protein groups held out, and ablate sequence versus structure versus protein-level context to answer how a motif-less kinase chooses its targets. Test externally on the in vitro purified-kinase assay and on other phages' phosphoproteomes in Supplementary Table 8.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 2,
+    "cv_run_minutes": 15,
+    "compute_note": "I timed the parts I ran: parsing all eight workbooks and the 1.9 MB proteome took under two minutes, and the 5-fold protein-grouped logistic-regression cross-validation on 101,829 rows by 315 features took 4.5 seconds. Embedding time is an estimate (2,240 proteins of mean length 308 through ESM-2 on an Apple Silicon CPU) and the 15-minute figure assumes gradient boosting on 1,280-dimensional embeddings; neither was timed.",
+    "cheapest_killing_check": "Already done and passed: check that the site identifiers join the reference proteome with the right amino acid at the right position (16,170 of 16,170, 100%), and that a plain sequence window beats chance (ROC-AUC 0.720 versus 0.528 for residue type alone). The next cheapest check is the peptide-detectability-only model, which would kill the project if it matches the full model."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passed with the files open, not on the paper's description: 16,170 measured phosphosites joined the UniProt reference proteome at 100% with the correct amino acid at every position, giving 101,829 labelled candidate residues at a 15.9% positive rate, plus occupancy in per cent for 2,638 sites and fold-change for 10,580. The labels are physical mass-spectrometry measurements, not another model's output. I measured the baseline (PR-AUC 0.307, ROC-AUC 0.720 on protein-grouped cross-validation) and the replicate noise floor (within-site sd 0.657 log2 units versus 0.923 between sites) in minutes, so the project cannot stall on an unverified count. The question is informative either way, because the paper claims this kinase has no sequence motif yet a crude sequence window already beats chance, and AlphaFold DB joins one-to-one on the same accession to test whether burial and DNA-binding explain the rest. No one has modelled this data; the one adjacent model, GPS-pPLM, names missing prokaryotic structures as exactly the gap this project fills. Main risk, and the thing to control first: a residue counted as negative may simply be one the mass spectrometer never saw."
+}

@@ -1,0 +1,43 @@
+{
+  "paper_id": "nar2026-gkag892",
+  "title": "The stability of m6A-marked transcripts is linked to cell identity in planarians.",
+  "doi": "10.1093/nar/gkag892",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE325813",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE325813 file list (75 files, 4.9 GB RAW.tar): 36 salmon quant.sf.gz files (~0.6 MB each) for the actinomycin D (transcription-blocking drug) time course (WT, unc22 RNAi, mettl14 RNAi x 0/6/12 h x 4 replicates) and 33 modkit bedMethyl pileup files of 120-284 MB each. Opened WT-0h-R1 quant.sf: 41,367 transcripts (h1SMcT IDs) with Length, TPM, NumReads. Ranged-read the first rows of a WT pileup: per-adenosine genome positions with coverage and percent modified, not a site list. Zenodo 22082929 holds only analysis code (MIT).",
+    "what_came_from_paper_text_only": "~72,200 m6A sites, the 99% Dorado probability cutoff, the 316-gene stabilised cluster and the Supplementary Table S7 decay clusters; the NAR supplement could not be retrieved (Europe PMC timed out), so no curated site table or decay-rate table was opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO files are public with no login; checked the file list and downloaded one quant file. The pileups are over the 50 MB cap."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in the files: no file has a per-site m6A label or a per-gene decay rate. Site labels must be built by thresholding 170-280 MB pileups, and decay rates must be fitted from 36 TPM (transcripts per million) tables across time points."},
+    "a3_inputs_present": {"pass": true, "note": "Sequence would come from the schMedS3 planarian genome and transcriptome, which is a single public download rather than thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "Quant files use TPM and read counts; pileups use percent modified, per the modkit format."},
+    "a5_enough_rows": {"pass": true, "n_rows": 41367, "note": "41,367 transcripts per quant file (verified); ~72,200 sites is the paper's figure only."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.5-2 GB if pileups were streamed and filtered", "note": "Pileups would need streaming, but this is feasible on a laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "The 72,200 site count was not checkable without building the site list; there was no contradiction among what was seen."},
+    "a8_label_provenance": {"pass": false, "note": "m6A calls are the output of Dorado's neural-network modification caller (sup v5.0.0 m6A model) thresholded at 99%, so a sequence-to-m6A model would distil Dorado. Decay labels are measured, but only for clusters of hundreds of genes per the paper."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "RNA-FM (an RNA language model) would fit sequence windows", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "MIT (RNA-FM)"},
+  "integration": {"partner_dataset": "Planarian single-cell atlas (cell-type markers)", "join_key": "transcript ID (dd_v6 to schMedS3 needs remapping by minimap2)", "bigger_question_one_sentence": "Do sequence features predict whether m6A stabilises or destabilises a transcript depending on cell type?"},
+  "controls": {"positive_control": "DRAYW motif enrichment and stop-codon proximity of called sites", "negative_control": "mettl14 knockdown pileups (73% loss of global m6A)", "external_validation": "None located for planarian; human or mouse m6A atlases are a different species."},
+  "honest_claim_h3": "A model would predict where Dorado's neural network calls m6A in one clonal planarian line, not where m6A is independently measured.",
+  "plain_idea": {
+    "one_liner": "Use RNA sequence around adenosines to predict which ones carry the m6A chemical mark in planarian flatworms.",
+    "train_on": "Sequence windows around adenosines in the planarian transcriptome; ~72,200 positive sites per the paper (not verified).",
+    "predict": "Whether a site is methylated. The truth comes from nanopore direct RNA reads scored by Dorado's modification-calling neural network.",
+    "why_worthwhile": "Planarian researchers could map m6A in transcripts not covered by sequencing. The label is another model's output, however, which limits what we would learn."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Sequence-to-m6A site classifier, or prediction of mettl14-dependent decay change per gene; neither label exists as a column, and the site label is a Dorado model prediction.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 1.5, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from file sizes only; nothing was timed.", "cheapest_killing_check": "Retrieve the NAR supplementary tables to see whether a curated site list or per-gene decay-rate table exists."},
+  "verdict": "reject",
+  "verdict_reason": "A2 and A8 fail. The deposited files hold raw per-adenosine pileups and per-sample transcript abundances, with no site or decay-rate table, and the m6A labels are Dorado neural-network calls rather than an independent measurement."
+}

@@ -1,0 +1,97 @@
+{
+  "paper_id": "cellgen2026-101331",
+  "title": "Single-cell 3D genome imaging shows super-enhancer hubs are rare; nonspecific; and neither necessary nor sufficient for transcriptional bursting.",
+  "doi": "10.1016/j.xgen.2026.101331",
+  "journal": "Cell Genomics",
+  "data_url": "https://zenodo.org/records/10472228",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 10472228 (CC-BY-4.0, single version v0.0.0 dated 2024-04-25, titled after the bioRxiv preprint). Listed all 6 files and their sizes; read the zip directories by ranged GET (80 per-FOV, i.e. per field-of-view, CSVs at ~10 MB each; the FOF-CT tables: all_E14mESC core 331 MB and quality 220 MB uncompressed). Pulled out and parsed the three RNA_DNA tables: 138,795 spot rows, 45 FOVs, ~1,737 cells (FOV x Cell_ID), 42 loci. Nascent-RNA burst intensity is present for only 15,411 allele rows across 6 genes; 2,650 of them are >0. Opened SuperEnhancerLoci.xlsx (376 super-enhancers, mm10 and mm9 coordinates, gene names, RefSeq IDs) and the chromatin-feature xlsx (376 rows: NANOG/OCT4/SOX2/Pol II/MED1 ChIP, H3K27ac, LAD and SPRITE-speckle scores).",
+    "what_came_from_paper_text_only": "Only the abstract was available (paywalled, not in PMC). The cohesin, CTCF, BET and Pol II perturbation datasets and the 'thousands of cells' figure come from the abstract; the perturbation data is not in the Zenodo deposit I opened, which predates the final paper. The large all_E14mESC tables were not downloaded (over 50 MB)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open Zenodo record under CC-BY-4.0, no login; checked in the files."},
+    "a2_label_is_a_column": {"pass": true, "note": "The bursting label is a measured column (nascentRNA_burst_intensity, one per allele). Hub membership, by contrast, would have to be built from 3D distances, so only bursting counts as a ready-made label."},
+    "a3_inputs_present": {"pass": true, "note": "The inputs are x/y/z coordinates in microns for each imaged locus, plus 1D chromatin scores for all 376 super-enhancers. No identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "The header says XYZ_unit=micron and genome build mm10. Burst intensity is in arbitrary fluorescence units (0 to 59,059), so a yes/no burst threshold is safer."},
+    "a5_enough_rows": {"pass": true, "n_rows": 15411, "note": "15,411 allele observations with a burst measurement (2,650 bursting) pass the 400-row classification bar. But they cover only 6 genes in ~1,737 cells, so the effective diversity is tiny."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~35 MB uncompressed for the RNA+DNA tables; ~550 MB if you add the full DNA-only tracing tables", "note": "Plain CSVs; the RNA_DNA subset loads in seconds."},
+    "a7_counts_match_paper": {"pass": true, "note": "376 super-enhancers and >1,700 cells fit 'hundreds of SEs in thousands of cells'. The perturbation data mentioned in the abstract is missing from this 2024 deposit, which is a version gap, not a contradiction."},
+    "a8_label_provenance": {"pass": true, "note": "Burst intensity is a direct physical measurement (nascent-RNA FISH signal at each allele). It is not a model output and is not computed from the DNA coordinates."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three FOF-CT tables (core, quality, cell) joined on Spot_ID; hub features must be computed from coordinates. Seen in files."},
+    "B2": {"score": 1, "why": "CSVs with '#' comment headers and a parenthesised column line; needs skiprows and manual column names. Seen."},
+    "B3": {"score": 1, "why": "One lab and one assay, but burst intensity is in arbitrary units; a threshold or per-gene normalisation is needed."},
+    "B4": {"score": 2, "why": "No censored values; 85% of zeros are real 'no burst' calls. Seen in files."},
+    "B5": {"score": 2, "why": "Spot_IDs are unique; no duplicates seen in the RNA_DNA tables."},
+    "B6": {"score": 1, "why": "FOF-CT format is documented online and the header names the columns, but the burst calling threshold is undocumented."},
+    "C1": {"score": 1, "why": "Asking whether 3D neighbourhood predicts bursting beyond hub presence is informative, but the paper already reports a weak effect."},
+    "C2": {"score": 1, "why": "Rajpurkar 2021 deep-learning trace-to-transcription model exists, open code, Drosophila data only; nothing on mouse SEs found."},
+    "C3": {"score": 1, "why": "Weak unique-application/transfer angle: test fly-trained trace-to-transcription approach on mouse super-enhancers."},
+    "C4": {"score": 2, "why": "ORCA (multiplexed DNA plus RNA imaging) needs weeks of microscopy per experiment."},
+    "C5": {"score": 1, "why": "Obvious dummies: per-gene burst rate, and linear distance to the nearest SE; no published AUC from this paper seen."},
+    "D1": {"score": 0, "why": "No open pretrained backbone for single-cell 3D coordinate traces; DNA models don't fit 6 genes."},
+    "D2": {"score": 0, "why": "Nothing to freeze; a model would be trained from scratch (graph network or gradient boosting on distances)."},
+    "D3": {"score": 2, "why": "Data is CC-BY-4.0 per the Zenodo record."},
+    "E1": {"ok": true, "why": "Hold out by field of view (45 FOVs) or by gene; both split cleanly."},
+    "E2": {"ok": false, "why": "Only 6 genes with burst labels; holding out genes leaves too few groups."},
+    "E3": {"ok": true, "why": "Per-gene burst-rate baseline is trivial to compute."},
+    "E4": {"ok": false, "why": "No replicate measurements per allele; noise floor not estimable from these files."},
+    "E5": {"ok": true, "why": "Known effect: two alleles in one cell co-burst more, and the paper reports larger hubs slightly raise burst probability."},
+    "E6": {"ok": true, "why": "Label shuffling within gene, and dropping the coordinate features, are both straightforward."},
+    "E7": {"ok": false, "why": "No second mouse SE RNA+DNA imaging set found; Drosophila ORCA data is a different system."},
+    "E8": {"ok": false, "why": "Full text unavailable; can't confirm which published numbers to reproduce."},
+    "G1": {"score": 2, "why": "mm10 genomic coordinates and RefSeq IDs for all 376 super-enhancers, seen in xlsx."},
+    "G2": {"score": 1, "why": "4DN portal chromatin-tracing data and ENCODE mESC tracks are plausible partners; not verified joinable for bursting."},
+    "G3": {"score": 2, "why": "Coordinate overlap of 15 kb SE regions is one-to-one with genomic bins."},
+    "G4": {"score": 0, "why": "No combination answers a bigger question that neither answers alone; the chromatin features are already included."},
+    "H1": {"score": 2, "why": "Negatives present: 12,761 non-bursting allele observations versus 2,650 bursting. Seen."},
+    "H2": {"score": 0, "why": "One lab, one cell line (E14 mouse ES cells), 6 genes."},
+    "H3": {"score": 2, "why": "Claim stated precisely below."},
+    "H4": {"score": 1, "why": "Gene count for RNA readout only visible in files; abstract implies broader coverage."},
+    "I1": {"score": 1, "why": "3D-genome and enhancer-biology community (e.g. 4DN consortium); no decision hinges on it."},
+    "I2": {"score": 0, "why": "The paper already settles the biological question; a model would not redirect experiments."},
+    "I3": {"score": 1, "why": "Burst yes/no AUC roughly matches 'does structure predict activity'."},
+    "I4": {"score": 0, "why": "Paper finds weak signal; per-gene rate plus distance threshold likely matches any model."},
+    "J1": {"score": 1, "why": "Geometric feature engineering and grouped CV, but no transfer learning."},
+    "J2": {"score": 1, "why": "Boettiger lab is at Stanford, same institution as user; domain is specialist."},
+    "J3": {"score": 1, "why": "Negative result 'structure adds nothing beyond gene identity' is shareable but thin."},
+    "J4": {"score": 1, "why": "One-week scope is plausible but not stated."},
+    "J5": {"score": 0, "why": "No kill date written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Rajpurkar et al. 2021, deep learning connecting DNA traces to transcription (Nature Communications)", "open_weights": null, "score_and_split": "Predicted on/off expression state from Drosophila ORCA traces of the Bithorax complex and beat contact-based methods; exact AUC and split not retrieved.", "authors_named_unsolved": "Retrieved summary says single enhancer-promoter contacts contribute little and predictive features go beyond contact; full discussion not read.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "none suitable", "freeze_and_head_viable": false, "hardware": "CPU; gradient boosting or a small graph network on pairwise distances", "licence": "Data CC-BY-4.0"},
+  "integration": {"partner_dataset": "4DN Data Portal chromatin-tracing (FOF-CT) datasets; ENCODE mESC ChIP-seq (already summarised in the deposit)", "join_key": "mm10 genomic coordinates", "bigger_question_one_sentence": "None convincing: the 1D chromatin features worth joining are already in the deposit, and no other mouse SE RNA+DNA imaging set was found."},
+  "controls": {"positive_control": "Recover the per-gene burst rate, and the allele co-bursting and hub-size effects the paper reports.", "negative_control": "Shuffle burst labels within gene; replace coordinates with noise of the same shape.", "external_validation": "None for mouse; Drosophila ORCA RNA+DNA data (Mateo 2019) only as a cross-system transfer test."},
+  "honest_claim_h3": "Within E14 mouse ES cells and 6 imaged genes, the model measures how much the 3D positions of 376 super-enhancers around an allele add to predicting a nascent-RNA burst beyond gene identity.",
+  "plain_idea": {"one_liner": "Use the imaged 3D positions of hundreds of strong enhancers around a gene copy to predict whether that copy is actively transcribing.", "train_on": "For each gene copy in a single cell, the distances to the 376 imaged super-enhancers plus their chromatin scores; 15,411 labelled copies across 6 genes and ~1,737 cells (verified).", "predict": "Whether the copy shows a nascent-RNA burst, measured by RNA FISH (fluorescent probes against newly made RNA) imaged in the same cell.", "why_worthwhile": "It would test whether any 3D spatial pattern, not just hub presence, carries information about bursting. The paper already suggests the answer is 'barely', so the expected payoff is small."},
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Mouse super-enhancers across 376 loci versus Rajpurkar's single Drosophila locus, but the RNA label covers only 6 genes here."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements per allele, and only 6 genes, so calibrated per-group uncertainty is not supportable."},
+    "models_beatable": {"answer": "partly", "why": "The 2021 model was trained on a different organism and locus. It's not a direct competitor, and its split wasn't retrieved."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model is trained on this task and data, and there's no joinable new data measuring the same quantity the same way."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "4DN Data Portal holds other chromatin-tracing sets, some with RNA readouts (known resource, not searched for mESC bursting); Drosophila ORCA RNA+DNA (Mateo 2019, known).", "approx_items": null, "join_key": "genomic coordinates (different genomes and loci)", "why": "Burst labels from other imaging studies are at other loci and in other species, so they serve only for cross-system transfer tests, not as extra training data."},
+  "publication_target": {
+    "ambitious": {"journal": "Nature Communications", "why": "It would need to show that 3D super-enhancer configuration predicts bursting well beyond gene identity, which contradicts the paper; unlikely."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes reanalysis notes such as a grouped-CV benchmark of structure-to-transcription prediction on public 4DN tracing data."},
+    "fallback": {"journal": "bioRxiv preprint plus a 4DN hackathon/workshop", "why": "A negative result, 'structure adds little beyond gene identity', fits a short preprint."}
+  },
+  "pitch": {
+    "headline": "Rare paired data: 3D positions of 376 super-enhancers plus same-cell nascent-RNA bursts in ~1,737 mouse ES cells, CC-BY, 35 MB.",
+    "what_makes_the_data_unusual": "The same cells have both their DNA positions and their burst calls (15,411 allele observations), in a documented 4DN format, freely licensed. Most public tracing sets lack the RNA readout.",
+    "the_win": "A grouped-by-FOV model whose burst AUC beats the per-gene-rate baseline by a clear margin, which would show that 3D context carries signal the paper's hub analysis missed.",
+    "even_if_it_fails": "A clean quantitative confirmation that super-enhancer 3D configuration adds little beyond gene identity. Modest: the paper already says this.",
+    "who_wants_it": "The Boettiger lab (Stanford) and 4DN chromatin-tracing groups debating the condensate/hub model. It would sharpen, not change, their conclusions."
+  },
+  "ml_idea": "Per-allele burst classification from distances to 376 SEs plus 1D chromatin scores, with grouped CV by FOV. Compare against per-gene burst rate and nearest-SE distance baselines; optionally test transfer to Drosophila ORCA.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.04, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 0, "cv_run_minutes": 2, "compute_note": "Estimated from parsed table sizes (138,795 spot rows); no model was timed.", "cheapest_killing_check": "Fit per-gene burst rate alone and add distance-to-nearest-SE. If AUC rises by under 0.02 on FOV-grouped CV, stop."},
+  "verdict": "park",
+  "verdict_reason": "Part A passes, but bursting is measured for only 6 genes, no pretrained backbone fits (D fails), and the paper already reports the 3D-to-bursting signal is weak. Low payoff unless the perturbation data appears on 4DN."
+}

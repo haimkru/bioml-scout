@@ -1,0 +1,196 @@
+{
+  "paper_id": "nar2026-gkag709",
+  "title": "CNEwrap: a scalable toolkit with a novel algorithm for large-scale genome-wide accelerated conserved non-coding elements detection.",
+  "doi": "10.1093/nar/gkag709",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.6084/m9.figshare.29625779",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked SimData.zip (7.68 MB) and ScienceData.zip (10.25 MB) from FigShare article 29625779 v5 (CC BY 4.0, no login). Counted: 3 simulation sets (ratites 16 species, reptiles 14 species, reptiles2 14 species), each one 500-row BED plus four FASTA files (CaseA/B/C = 1/2/3 accelerated clades, CaseZ = null), 200 bp per locus, so 6,000 labelled locus-alignments. Real set: hg38_science_rename.bed has 10,032 rows and 10,032 unique hCONDEL IDs; hg38_science_verified.csv has 803 IDs; 1,701 per-element FASTA alignments each with exactly 10 mammal sequences (confirmed in phyloacc-aln-stats.csv, 1,701 rows, num-seqs = 10 for all; alignment length median 142 bp, min 4, max 3,320). I computed the key overlap myself: 127 of the 803 experimentally validated hCONDELs have an alignment here, and the second set has 4,669 unique HAR/human-gained-enhancer IDs, 532 validated, 352 scored, 12 overlapping. Read Simulation_ACC.R to learn that BED columns 6 and 7 are the per-locus simulated conserved and accelerated substitution rates, and run_cnewrap.sh to confirm PO = accelerated loci and NE = CaseZ null loci. Then reproduced the paper's own benchmark using the exact score columns its plotting script uses (ave_score for EvoAcc, lnlratio for phyloP, logbf1 for PhyloAcc, weightedPearsonCorrelationCoeff for ForwardGenomics): PhyloAcc reaches AUROC 0.997-1.000 in all six case-by-taxon combinations, phyloP 0.568-1.000, while EvoAcc's ave_score gives 0.371/0.194/0.003 (reptile A/B/C) and 0.693/0.665/0.016 (ratite A/B/C), and no single sign flip fixes it. A single trivial feature, the raw count of variable sites in the alignment, reaches AUROC 0.827-0.997 across all six.",
+    "what_came_from_paper_text_only": "The claim that EvoAcc outperforms PhyloAcc, phyloP and ForwardGenomics on simulated data, and the published real-data counts (EvoAcc 34, PhyloAcc 4, phyloP 6, ForwardGenomics 0 of the 127 validated hCONDELs; 5/4/6/0 of the 12 validated enhancers). I did not open CNEWRAP.zip (111.8 MB) or scripts_for_figures.7z (52.8 MB), both over the 50 MB cap, so I could not check whether those archives contain figure-source tables that differ from the results_collection archives I did open. The provenance of the MPRA (massively parallel reporter assay) labels is from the paper plus a search: they are taken from Xue et al., Science 2023, using that study's own significance thresholds."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified by downloading: FigShare 29625779 v5, CC BY 4.0, 18 files, no login or application. The two files I needed (SimData.zip, ScienceData.zip) are 7.7 and 10.2 MB."},
+    "a2_label_is_a_column": {"pass": true, "note": "No inference needed, but the label is not literally a column. For simulated loci it is the identity of the FASTA file (CaseA/B/C accelerated vs CaseZ null) plus per-locus true rates in BED columns 6-7; for real elements it is membership in an 803-ID list joined on hCONDEL ID. Both are clean assignments I performed successfully."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: actual aligned nucleotide sequences are in the files, not accession numbers. Simulated FASTAs hold 14-16 species concatenated across 500 loci; each real element is a 10-species alignment."},
+    "a4_units_stated": {"pass": true, "note": "Sequence data needs no units and alignment lengths are in base pairs. The two continuous label columns (simulated conserved and accelerated substitution rates) carry no header and no stated units; I recovered their meaning only by reading Simulation_ACC.R."},
+    "a5_enough_rows": {"pass": true, "n_rows": 6000, "note": "Verified by counting: 500 loci x 4 scenarios x 3 simulation sets = 6,000 labelled 200 bp alignments, half of them negatives. Real external set is 1,701 elements with 127 positives."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.1 GB", "note": "Verified: 18 MB of zips expand to 11 MB (sim) and 81 MB (real). A 200 bp by 14-row alignment model needs no GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Unusually good: every number I counted matches the text exactly - 10,032 hCONDELs, 803 validated, 1,701 mapped, 127 validated-and-mapped, 352 enhancers mapped, 12 validated, 500 simulated loci of 200 bp."},
+    "a8_label_provenance": {"pass": true, "note": "Simulated labels are the generating parameters of the authors' own simulation, not a model's prediction. Real labels are MPRA (massively parallel reporter assay) measurements from Xue et al., Science 2023. Caveat: the released EvoAcc, phyloP, PhyloAcc and ForwardGenomics per-locus scores are model outputs and may only be used as baselines, never as features."
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Several files; concatenated FASTAs must be split by BED, plus 1,701 separate alignment files. Keys join cleanly."},
+    "B2": {"score": 1, "why": "Parsed, but needed whitespace separators for ForwardGenomics output and comment-stripping for PhyloAcc likelihoods."},
+    "B3": {"score": 1, "why": "Training label is a simulated scenario; validation label is MPRA activity. Different quantities, not comparable."},
+    "B4": {"score": 2, "why": "No censored values in labels or alignments; baseline score files miss some rows (ForwardGenomics 1,565 of 1,701), easily dropped."},
+    "B5": {"score": 1, "why": "Each real element duplicated as a *.anc.fas ancestral version in nested folders; removable by filename suffix."},
+    "B6": {"score": 1, "why": "No README anywhere; three binary columns in the hCONDEL BED whose meaning I could not determine. Scripts recover the rest."},
+    "C1": {"score": 2, "why": "Does the released benchmark reproduce the paper's ranking? Informative either way, and I already have the answer."},
+    "C2": {"score": 0, "why": "PhyloAcc, phyloP and ForwardGenomics are all open and honestly evaluated; PhyloAcc scores AUROC 0.997-1.000 here."},
+    "C3": {"score": 1, "why": "Re-evaluation angle is real and verified, but there is no machine-learning angle once PhyloAcc saturates the task."},
+    "C4": {"score": 1, "why": "Paper's own Supplementary Table 3 shows ForwardGenomics at 39-53 GB RAM and PhyloAcc slow; a fast surrogate has some value."},
+    "C5": {"score": 2, "why": "Published AUPRC figure plus four released per-locus score sets; I computed the comparison numbers myself."},
+    "D1": {"score": 1, "why": "DNABERT-2 and HyenaDNA have open weights and fit 200 bp, but they take single sequences, not alignments."},
+    "D2": {"score": 2, "why": "About 84,000 short sequences (6,000 loci x 14 species) embed once on CPU and cache; no GPU needed."},
+    "D3": {"score": 2, "why": "DNABERT-2 is Apache-2.0; the data itself is CC BY 4.0, which I read off the FigShare record."},
+    "E1": {"ok": true, "why": "Hold out whole locus indices and a whole taxon set; the same 500-locus BED underlies positives and negatives."},
+    "E2": {"ok": true, "why": "Six case-by-taxon groups, 500 locus indices, plus two independent real external sets."},
+    "E3": {"ok": true, "why": "Balanced 500 positives and 500 negatives per case, so chance precision is exactly 0.5; I computed it."},
+    "E4": {"ok": false, "why": "No replicate scores per locus in the release and no MPRA replicate-level data, so no noise floor."},
+    "E5": {"ok": true, "why": "Strong positive control verified: PhyloAcc's logbf1 must reproduce AUROC about 0.999, and it does."},
+    "E6": {"ok": true, "why": "Label shuffling and feature ablation trivially runnable on a 6,000-row table of 200 bp alignments."},
+    "E7": {"ok": true, "why": "Two independent real sets (1,701 hCONDELs, 352 enhancers) plus two independent taxon simulations."},
+    "E8": {"ok": true, "why": "Published numbers reproducible; I already recomputed the four-method comparison from the released scores."},
+    "G1": {"score": 2, "why": "Verified in the BED: hg38 coordinates with explicit chromosome accessions such as NC_000001.11, plus hCONDEL IDs."},
+    "G2": {"score": 2, "why": "Xue et al. Science 2023 table S1 holds MPRA activity for all 10,032 hCONDELs, joinable on hCONDEL ID."},
+    "G3": {"score": 1, "why": "ID join is one-to-one but only 1,701 of 10,032 elements have alignments here; six cell types need a collapse rule."},
+    "G4": {"score": 2, "why": "Does rate acceleration at a human-specific deletion predict whether it actually changes regulatory activity? Neither set answers alone."},
+    "H1": {"score": 2, "why": "Negatives systematic by construction: 500 CaseZ null loci per set and 1,574 non-validated hCONDELs."},
+    "H2": {"score": 1, "why": "Two taxon sets plus 10 mammals, but one simulation model with one parameterisation and human-only MPRA data."},
+    "H3": {"score": 2, "why": "Claim statable precisely in one sentence; see honest_claim_h3."},
+    "H4": {"score": 1, "why": "Paper is honest that real-data performance is only comparable, but does not disclose that released scores fail to reproduce its ranking."},
+    "I1": {"score": 2, "why": "Named: the PhyloAcc group (Edwards and Liu labs, Harvard), the CNEwrap authors, and Zoonomia comparative-genomics groups."},
+    "I2": {"score": 2, "why": "Would change which acceleration method a lab runs on a new genome set, and whether EvoAcc's extra calls are trusted."},
+    "I3": {"score": 1, "why": "AUROC and AUPRC roughly match ranking loci for follow-up; users really want precision in a top-N they would validate."},
+    "I4": {"score": 0, "why": "Verified that counting variable sites alone reaches AUROC 0.827-0.997; a one-line rule beats the new algorithm."},
+    "J1": {"score": 1, "why": "Mostly parsing alignments and reproducing baselines; little real modelling headroom once the target is saturated."},
+    "J2": {"score": 1, "why": "Some intuition: I caught the AUROC 0.003 sign inversion, but phylogenetic rate modelling is not my strength."},
+    "J3": {"score": 2, "why": "Minimum shareable version already exists: the re-evaluation table I computed in this session stands alone."},
+    "J4": {"score": 1, "why": "Two to three weeks is plausible for a re-analysis note, but nothing is pre-committed."},
+    "J5": {"score": 0, "why": "No kill date or condition written down anywhere yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "EvoAcc (this paper's own algorithm, inside the CNEwrap toolkit)",
+        "open_weights": true,
+        "score_and_split": "Paper claims it beats the other three on simulated data, especially with two or three accelerated lineages. Using the score column its own plotting script uses (ave_score), I measured AUROC 0.371/0.194/0.003 for reptile cases A/B/C and 0.693/0.665/0.016 for ratite A/B/C on balanced 500-vs-500 splits. Its sum_score column does better (0.681-0.839). On real data the paper reports it recovers 34 of 127 validated hCONDELs, the best of the four.",
+        "authors_named_unsolved": "They name deeply divergent lineages (for example teleosts) where homologous non-coding elements diverge too much for alignment-based detection, and say alignment-free deep-learning approaches to this still suffer high false-positive rates and poor interpretability.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PhyloAcc (Bayesian detector of substitution-rate shifts on target lineages; PhyloAcc-GT adds gene-tree discordance)",
+        "open_weights": true,
+        "score_and_split": "On this paper's own released simulated scores I measured AUROC 0.997-1.000 in all six case-by-taxon combinations using its logbf1 column, i.e. it essentially solves the simulated benchmark. On the real set the paper reports it recovers only 4 of 127 validated hCONDELs.",
+        "authors_named_unsolved": "Its authors name gene-tree discordance (addressed by PhyloAcc-GT) and robustness to population-size specification as the hard parts.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "phyloP (from the PHAST package)",
+        "open_weights": true,
+        "score_and_split": "Measured AUROC 0.568-1.000 across the six combinations using its lnlratio column, near-perfect in five of six. Paper reports 6 of 127 validated hCONDELs.",
+        "authors_named_unsolved": "Not retrieved; it is a long-established tool cited here rather than analysed.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ForwardGenomics",
+        "open_weights": true,
+        "score_and_split": "Measured AUROC 0.299-0.932 using its weighted Pearson coefficient; weakest and least consistent of the four. Paper reports 0 of 127 validated hCONDELs, and its Supplementary Table 3 shows 39-53 GB RAM use.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Whalen et al., machine-learning dissection of human accelerated regions (Neuron 2023)",
+        "open_weights": null,
+        "score_and_split": "Found by search, not run. Used machine learning on all human-chimpanzee variants in 2,645 human accelerated regions, reporting large opposing variant effects on chromatin state in 43% and on neurodevelopmental enhancer activity in 14%, confirmed by MPRA in human and chimpanzee neural progenitors.",
+        "authors_named_unsolved": "Compensatory evolution within elements, which makes element-level acceleration a poor guide to net functional change.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Convolutional neural network for detecting interspecific positive selection (Molecular Biology and Evolution, 2025)",
+        "open_weights": null,
+        "score_and_split": "Found by search, not retrieved in full. Reported higher accuracy than existing methods for detecting selection within a specific range of phylogenetic scenarios, trained on simulated alignments.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 (a DNA language model) on 200 bp windows, or gradient-boosted trees on alignment-derived features",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; about 84,000 short sequences (6,000 loci x 14 species) embedded once and cached",
+    "licence": "DNABERT-2 Apache-2.0; data CC BY 4.0 (read off the FigShare record)"
+  },
+  "integration": {
+    "partner_dataset": "Xue et al., Science 2023 table S1: MPRA (massively parallel reporter assay) regulatory activity for all 10,032 human-specific conserved deletions across six cell types, about 800 of them significant (raw reads under SRA PRJNA921914)",
+    "join_key": "hCONDEL identifier, with hg38 genomic coordinates as a fallback (present in the BED as explicit chromosome accessions such as NC_000001.11)",
+    "bigger_question_one_sentence": "Does evolutionary-rate acceleration at a human-specific deletion predict whether that deletion actually changes regulatory activity in a reporter assay, or are the two largely unrelated?"
+  },
+  "controls": {
+    "positive_control": "PhyloAcc's released logbf1 must reproduce AUROC about 0.999 on the simulated loci (I verified it does, 0.997-1.000), and a trivial variable-site count must separate accelerated from null loci (verified, 0.827-0.997).",
+    "negative_control": "Shuffle the accelerated/null label within each case and confirm average precision collapses to 0.5; replace the alignment with random sequence of the same shape; train on the suspected trivial feature (variable-site count) alone to quantify how much is left to learn.",
+    "external_validation": "The 1,701 real 10-mammal hCONDEL alignments with 127 MPRA-validated positives, and the 352 HAR/human-gained-enhancer elements with 12 positives; plus training on one taxon set (reptiles) and testing on the other (ratites)."
+  },
+  "honest_claim_h3": "On alignments generated by this paper's own simulator, a learned model can rank loci by whether a pre-specified clade was given an elevated substitution rate - a task an existing open method (PhyloAcc) already performs at AUROC 0.997-1.000 and a single variable-site count performs at 0.827-0.997 - and transfers to real human-specific deletions only insofar as the 127 reporter-assay-validated elements among 1,701 allow it to be measured at all.",
+  "plain_idea": {
+    "one_liner": "Use a multi-species DNA alignment to predict whether one branch of the family tree evolved unusually fast.",
+    "train_on": "6,000 simulated alignments I counted in the files: 500 loci of 200 base pairs, each generated four ways (one, two or three fast-evolving clades, or none), across three simulation sets of 14-16 species. Each alignment also carries its true simulated slow and fast rates.",
+    "predict": "A score for whether a named group of species evolved faster than expected at that locus. The true answer is the parameter the authors' own simulator used to generate the sequence, so it is exact. The separate real-data test uses reporter-assay measurements of regulatory activity from Xue et al., Science 2023.",
+    "why_worthwhile": "Comparative-genomics labs must pick one of several acceleration detectors before running it on a new genome set, and have little honest head-to-head evidence. Even a failed model would tell them how much of the signal is just 'count the mismatches'."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "6,000 simulated alignments from a single generating model with one parameter set, and a real benchmark with only 127 positives among 1,701 elements. PhyloAcc was developed and validated on comparable simulations, and PhyloAcc-GT on larger ones."},
+    "confidence_score": {"answer": "no", "why": "The release has no replicate scores per locus and no MPRA replicate-level data, so per-prediction noise cannot be estimated. PhyloAcc already reports posterior probabilities and Bayes factors per element, which is exactly a calibrated confidence."},
+    "models_beatable": {"answer": "partly", "why": "EvoAcc (2026) is beatable - I already beat its ave_score with a one-line variable-site count on its own benchmark. PhyloAcc is not: its logbf1 reaches AUROC 0.997-1.000 on these same 500-vs-500 balanced splits, leaving no headroom."},
+    "guaranteed_improvement": {"answer": "no", "why": "PhyloAcc runs as a baseline and the split is shared, but it already scores about 1.0, so improvement is impossible by construction rather than guaranteed. The joinable new data (MPRA activity) measures regulatory change, not substitution-rate acceleration, so it is a different quantity."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Xue et al., Science 2023 table S1 (MPRA regulatory activity for human-specific conserved deletions, raw reads at SRA PRJNA921914) and Whalen et al., Neuron 2023 (MPRA on human accelerated regions in human and chimpanzee neural progenitors). Both found by search; I did not download either. Note the acceleration label itself exists only in this dataset.",
+    "approx_items": 10032,
+    "join_key": "hCONDEL identifier, or hg38 genomic coordinates",
+    "why": "The reporter-assay label is public for all 10,032 deletions while this release supplies alignments for only 1,701 of them, so the functional half of the question has a ready-made external set six times larger than what is here."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The same 500-locus BED underlies all four scenario files, so each locus appears as both a positive (CaseA/B/C) and a negative (CaseZ) carrying the same drawn per-locus rates; a random split would put a locus's positive in training and its own negative in test.",
+      "The number of variable sites in an alignment is almost a direct readout of the simulated acceleration - I measured AUROC 0.827-0.997 from that feature alone - so any model will look good for a trivial reason.",
+      "Using any released EvoAcc, phyloP, PhyloAcc or ForwardGenomics score as a feature would distil those models rather than learn biology.",
+      "On the real set, all 1,701 elements were pre-selected by the authors' own CNE-scanning pipeline, and nearby hCONDELs in the same gene locus are not independent.",
+      "Simulated and real alignments differ in length distribution (200 bp fixed versus median 142 bp, range 4-3,320), so length alone could drive apparent transfer success or failure."
+    ],
+    "split": "Hold out whole locus indices 1-500 across all four scenario files simultaneously, using the elementID in BED column 4 - a column I confirmed is present. Additionally train on one taxon set (reptiles, 14 species) and test on the other (ratites, 16 species). Keep both real sets entirely held out, never trained on.",
+    "checks": [
+      "Shuffle the accelerated/null label within each case and confirm average precision collapses to 0.5 on the balanced splits.",
+      "Fit the variable-site count as a single feature first and report its AUROC as the real baseline, so any model is judged on what it adds beyond mismatch counting.",
+      "Check that no locus index appears on both sides of the split, and compare nearest-neighbour sequence similarity between test and training loci.",
+      "Confirm no released algorithm score leaked into the feature matrix by training on features alone and on features plus scores and comparing."
+    ],
+    "verdict": "Manageable, and the main risk is already quantified: the locus-index overlap is easy to fix with a grouped split, but the variable-site shortcut means an impressive number would mean almost nothing."
+  },
+  "success_criteria": {
+    "metric": "AUROC and average precision on a held-out taxon set, reported against the variable-site-count baseline, because the user's decision is which detector to run on a new genome set. For the real transfer test, precision among the top 100 ranked elements, since a lab would validate roughly that many.",
+    "baselines": "All measured by me from the released files on balanced 500-vs-500 splits: variable-site count alone AUROC 0.827-0.997; PhyloAcc logbf1 0.997-1.000; phyloP lnlratio 0.568-1.000; ForwardGenomics 0.299-0.932; EvoAcc ave_score 0.003-0.693. On the real set the paper's published counts are EvoAcc 34, phyloP 6, PhyloAcc 4, ForwardGenomics 0 of 127 validated hCONDELs. Base rate there is 127 of 1,701, about 7.5%.",
+    "success": "Beat the variable-site count on a held-out taxon set by a clear margin and reach precision above 25% in the top 100 of the 1,701 real elements, against the 7.5% base rate and against EvoAcc's 34 of 127.",
+    "noise_ceiling": null,
+    "kill": "If a model cannot beat the variable-site count on the held-out taxon set within one week, stop - the simulated task is already saturated by PhyloAcc at 0.997-1.000 and there is nothing to win."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Molecular Biology and Evolution", "why": "This is where PhyloAcc and the simulation-benchmark literature for rate-shift detection live; it would take a genuinely better detector than PhyloAcc, which my measurements say is not available here."},
+    "realistic": {"journal": "Bioinformatics (Applications Note or Letter)", "why": "Publishes method benchmarks and re-evaluations; a careful head-to-head on the authors' own released simulated scores, showing a variable-site count beats the new algorithm while PhyloAcc reaches 0.997-1.000, fits a short note."},
+    "fallback": {"journal": "NAR Genomics and Bioinformatics, or a bioRxiv preprint", "why": "Publishes negative and partial benchmark results, so the re-analysis is shareable even if no new model is built and the discrepancy turns out to be a score-convention problem."}
+  },
+  "pitch": {
+    "headline": "The authors released every per-locus score behind their benchmark, so their central claim can be checked in an afternoon - and it does not hold up.",
+    "what_makes_the_data_unusual": "6,000 simulated 200 bp alignments with exact ground truth, plus all four competing algorithms' per-locus scores, 18 MB, CC BY 4.0. Every count in the paper matched the files exactly: 10,032 hCONDELs, 803 validated, 1,701 mapped, 127 both.",
+    "the_win": "Already computed: PhyloAcc reaches AUROC 0.997-1.000 on all six case-by-taxon splits while EvoAcc's own ave_score gives 0.003-0.693, and a bare variable-site count gives 0.827-0.997.",
+    "even_if_it_fails": "If the discrepancy is just a score-direction convention or a stale archive, the honest answer is that nothing new is learned beyond a caveat for CNEwrap users - and no machine-learning result is reachable either way, because PhyloAcc already sits at 1.0.",
+    "who_wants_it": "Comparative-genomics groups choosing an acceleration detector (the PhyloAcc group at Harvard, Zoonomia-style consortia) and the CNEwrap authors themselves, who would want to correct or clarify the released scores."
+  },
+  "ml_idea": "Train a small model (gradient-boosted trees on alignment features, or a frozen DNABERT-2 embedding per species row with a learned head) on the 6,000 simulated 200 bp multi-species alignments to score whether a pre-specified clade evolved at an elevated substitution rate, using the simulator's own generating parameters as ground truth. Benchmark against all four released algorithms on identical loci with a grouped split by locus index and by taxon set, then test transfer to the 1,701 real 10-mammal human-deletion alignments with 127 reporter-assay-validated positives. In practice the modelling half is close to dead on arrival: PhyloAcc already reaches AUROC 0.997-1.000 on the simulated target and a single variable-site count reaches 0.827-0.997, so the defensible deliverable is the honest re-evaluation rather than a new model.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 4,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed, except that I actually parsed every table and computed the full four-method comparison in this session in under a minute on CPU. Embedding estimate assumes 84,000 sequences of 200 bp through a small DNA language model on a laptop CPU.",
+    "cheapest_killing_check": "Compute AUROC of the raw variable-site count against the accelerated/null label on the simulated sets. I did it: 0.827-0.997 across all six case-by-taxon combinations, which kills the machine-learning headroom before any model is written."
+  },
+  "verdict": "park",
+  "verdict_reason": "Part A passes cleanly and this is the rare paper whose every released count matched the files exactly, but the machine-learning target is already saturated: open PhyloAcc reaches AUROC 0.997-1.000 on the authors' own simulated benchmark and a one-line variable-site count reaches 0.827-0.997, so there is no modelling headroom (C2 = 0, I4 = 0, model-readiness 7 of 12, finishability 5 of 10). What I did find is worth keeping: using the exact score column the paper's own plotting script uses, EvoAcc's released per-locus scores give AUROC 0.003-0.693 and no single sign convention repairs them, which contradicts the paper's central claim. Park it as a short reproducibility note - first confirm the discrepancy is not a stale archive or a score-direction convention by opening scripts_for_figures.7z (52.8 MB) - rather than as an ML project."
+}

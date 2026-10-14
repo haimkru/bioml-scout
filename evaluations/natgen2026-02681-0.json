@@ -1,0 +1,139 @@
+{
+  "paper_id": "natgen2026-02681-0",
+  "title": "High-resolution promoter interaction analysis implicates genes involved in activation of type 3 innate lymphoid cells in immune disease risk.",
+  "doi": "10.1038/s41588-026-02681-0",
+  "journal": "Nature Genetics",
+  "data_url": "https://osf.io/aq9fb",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE216267 series record (3 tonsil ILC3 (type 3 innate lymphoid cell) donors, public) and its FTP listing: two merged R objects, 831 MB (5-kb bins) and 970 MB (single restriction fragments). OSF aq9fb file listing via API: 13 entries, among them Data_S5 (ILC3 ABCC table, 196 MB TSV), Data_S9 (CD4 T-cell ABCC table, 247 MB TSV), Data_S4/S8 (ABC enhancer predictions, 149/346 MB gz), Data_S1/S2/S6/S7 (CHiCAGO R objects, 0.9-1.9 GB), Data_S3 (comparison to Javierre 2016, 18 MB). I read the first 400 KB of S5 with a ranged GET: 18 columns, including baitID, oeID (other end), dist, chicago_score_fres, chicago_score_5kb and ABC.Score, with many blanks. I gunzipped the head of S4: ABC-format columns, including hic_contact, ABC.Score and CellType=ILC3.",
+    "what_came_from_paper_text_only": "The total row counts of S5/S9 and the number of significant interactions (I did not download the full files, which are over the 50 MB cap). The CHiCAGO>5 significance threshold, about 400M reads per sample, the hg38 build, and that CD4 T-cell raw data are EGA (European Genome-Phenome Archive) managed access. Whether the R objects hold every tested pair (the negatives) or only significant ones is not verified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: ILC3 processed files on GEO and all OSF tables download without login. CD4 T-cell raw reads are EGA managed access, but the CD4 processed interaction tables (S6, S7, S9) sit openly on OSF."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in S5 head: chicago_score_fres and chicago_score_5kb are columns per bait–other-end pair. Blanks mean not detected or not tested, and which one needs checking against the R objects."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: hg38 coordinates for both ends and the distance are present, so sequence comes from the reference genome with no ID lookups. ILC3 chromatin features appear only as ABC activity in S4; raw ATAC/H3K27ac tracks would have to come from other GEO series (unverified)."},
+    "a4_units_stated": {"pass": true, "note": "CHiCAGO score is a unitless significance score with a documented threshold of 5 (from the paper), and distances are in base pairs (seen in the file)."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "The first 400 KB alone holds about 4,980 rows of chromosome 1, and S5 is 196 MB, so likely millions of rows. The exact count was not verified."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.45 GB (S5 + S9 TSVs); the 1-2 GB R objects are optional", "note": "pandas can load the TSVs on 16 GB. The R objects need R/Bioconductor and about 2 GB each."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not verified: the full files are over the cap and I saw no paper count to compare. Check this first."},
+    "a8_label_provenance": {"pass": true, "note": "CHiCAGO scores are statistics computed from measured ligation read counts against a distance-based background, so the label traces to a measurement. ABC.Score and hic_contact are derived from the same PCHi-C (promoter capture Hi-C) contacts, so they must never be features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Seen: one TSV per cell type (S5 ILC3, S9 CD4) on a shared bait/fragment ID scheme. Negatives may need the R objects."},
+    "B2": {"score": 1, "why": "S5 head parsed as TSV. Many blank cells and an unclear blank-vs-zero meaning. Full parse not tested."},
+    "B3": {"score": 2, "why": "One assay, one lab, one pipeline (CHiCAGO), with fragment and 5-kb scores computed by the authors."},
+    "B4": {"score": 1, "why": "No censoring, but blanks in score columns need a policy: not tested vs below threshold."},
+    "B5": {"score": 1, "why": "Seen: rows repeat the same other end against many adjacent bait fragments. Collapsing to unique pairs is needed."},
+    "B6": {"score": 1, "why": "Column names are self-explanatory, but OSF has no README describing S5 columns. Meaning inferred from the paper."},
+    "C1": {"score": 1, "why": "A transfer question (CD4 T cell to ILC3 contacts) is informative either way, but a crowded field reduces its novelty."},
+    "C2": {"score": 1, "why": "DeepPHiC, DeepTACT, C.Origami, ChromaFold and ENCODE-rE2G exist and are open. None was trained on ILC3s."},
+    "C3": {"score": 1, "why": "Diversity angle: ILC3 is a rare tissue immune cell with no prior contact-prediction training data. Weak beyond that."},
+    "C4": {"score": 2, "why": "PCHi-C needs about 400M reads per sample from scarce primary cells (paper). Prediction would replace a costly assay."},
+    "C5": {"score": 1, "why": "Obvious dummy (distance-only logistic) plus runnable ABC and ENCODE-rE2G. No published ILC3 prediction number."},
+    "D1": {"score": 2, "why": "DNA backbones with open weights: Nucleotide Transformer, DNABERT-2, HyenaDNA, and AlphaGenome (non-commercial)."},
+    "D2": {"score": 1, "why": "Embedding millions of anchor sequences on CPU is slow. Subsetting to unique fragments (around 100k) is feasible."},
+    "D3": {"score": 1, "why": "Nucleotide Transformer and AlphaGenome are non-commercial. DNABERT-2 is Apache-2.0. Data licence on OSF not stated."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes (the baitChr column is seen in S5), the standard split in contact prediction."},
+    "E2": {"ok": true, "why": "22 autosomes give plenty of held-out groups."},
+    "E3": {"ok": true, "why": "Distance-only model and per-bait contact rate are trivial baselines computable from S5 columns."},
+    "E4": {"ok": false, "why": "Only merged replicates are released. Per-donor scores would need the raw reads."},
+    "E5": {"ok": true, "why": "Contact probability decays with distance, and known ILC3 loci (IL22, RORC, IL23R) should be called."},
+    "E6": {"ok": true, "why": "Label shuffling and dropping distance as a feature are both straightforward."},
+    "E7": {"ok": true, "why": "CD4 T-cell PCHi-C (S9, same lab) and Javierre 2016 blood-cell PCHi-C give second datasets. CRISPRi benchmarks are in K562."},
+    "E8": {"ok": true, "why": "The paper reports ABCC precision-recall on K562 CRISPRi-FlowFISH pairs, which could be reproduced with their GitHub code."},
+    "G1": {"score": 2, "why": "hg38 genomic coordinates and gene names (S4 TargetGene) are present in the files."},
+    "G2": {"score": 2, "why": "Javierre 2016 PCHi-C in 17 blood cell types and fine-mapped Crohn's GWAS (genome-wide association study), both coordinate-joinable."},
+    "G3": {"score": 1, "why": "Fragment-to-fragment pairs map one-to-many onto genes and bins. HindIII vs DpnII fragment mismatch with Javierre."},
+    "G4": {"score": 1, "why": "Would answer which ILC3 contacts are predictable from T-cell contacts plus sequence. Only marginally bigger than the paper's analysis."},
+    "H1": {"score": 1, "why": "Non-significant pairs exist only implicitly (blank scores, or the R objects). Explicit negatives need construction."},
+    "H2": {"score": 0, "why": "One cell type, 3 pediatric tonsil donors, one lab (GEO record)."},
+    "H3": {"score": 2, "why": "Claim can be stated precisely. See honest_claim_h3."},
+    "H4": {"score": 1, "why": "Donor count and tonsil origin are explicit. The blank-score meaning and the merging of replicates are not documented."},
+    "I1": {"score": 1, "why": "Spivakov lab and the 3D-genome/immune-GWAS community. No named user waiting for an ILC3 predictor."},
+    "I2": {"score": 1, "why": "Could prioritise GWAS-gene links in unprofiled rare cells, but would not replace experiments."},
+    "I3": {"score": 1, "why": "PR-AUC (precision-recall area under the curve) on contact calls roughly matches the decision of which enhancer-gene pairs to test."},
+    "I4": {"score": 1, "why": "Distance plus CD4 contact likely explains most of the signal. ML gain over a lookup is uncertain."},
+    "J1": {"score": 1, "why": "Real splits and DNA-backbone embeddings, but heavy genomics wrangling of fragments and bins."},
+    "J2": {"score": 1, "why": "Distance decay and known loci give sanity checks. Deeper judgement needs 3D-genome expertise."},
+    "J3": {"score": 1, "why": "The CD4-to-ILC3 transfer baseline is shareable alone, but small."},
+    "J4": {"score": 1, "why": "Roughly 3 weeks is plausible, but not yet committed."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepPHiC (Bioinformatics 2023), a multimodal deep model of promoter-centred contacts", "open_weights": true, "score_and_split": "Reported to beat SPEID, DeepMILO, ChINN and DeepTACT on AUROC/AUPRC across PCHi-C tissues. Split details not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "DeepTACT, a sequence-plus-accessibility model of PCHi-C interactions", "open_weights": true, "score_and_split": "Trained on B-cell and CD4 PCHi-C. Scores not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "C.Origami (Nature Biotechnology 2023), a model predicting Hi-C maps from DNA sequence plus CTCF and ATAC", "open_weights": true, "score_and_split": "Held-out chromosome and held-out cell type evaluation. Numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "ChromaFold (Nature Communications 2024), a model predicting contact maps from single-cell ATAC-seq", "open_weights": true, "score_and_split": "Benchmarked against C.Origami on held-out cell types. Numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "ENCODE-rE2G, a logistic-regression enhancer-to-gene predictor built on ABC", "open_weights": true, "score_and_split": "Evaluated on 10,356 CRISPR-tested element-gene pairs plus eQTL/GWAS benchmarks. State of the art per the authors.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 (DNA language model, Apache-2.0) or Nucleotide Transformer; AlphaGenome as an optional contact-track feature source", "freeze_and_head_viable": true, "hardware": "CPU laptop if limited to about 100k unique anchor fragments; slower for more", "licence": "DNABERT-2 Apache-2.0; Nucleotide Transformer and AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "Javierre et al. 2016 PCHi-C across 17 blood cell types, plus the paper's own CD4 T-cell PCHi-C (OSF S9)", "join_key": "hg38 genomic coordinates / restriction-fragment overlap (liftover from hg19 for Javierre)", "bigger_question_one_sentence": "How much of a rare cell type's promoter contact map can be predicted from contact maps of common blood cells plus DNA sequence, and which GWAS-relevant contacts are truly cell-type-specific?"},
+  "controls": {"positive_control": "Distance-decay recovery, and calling known ILC3 contacts at IL22/RORC/IL23R loci.", "negative_control": "Shuffle CHiCAGO labels within distance bins, and drop distance as a feature.", "external_validation": "Held-out chromosomes, CD4 T-cell PCHi-C from the same lab, and K562 CRISPRi-FlowFISH enhancer-gene pairs used by the paper."},
+  "honest_claim_h3": "Predicts which promoter–distal fragment pairs pass CHiCAGO>5 in merged PCHi-C from three paediatric tonsil ILC3 donors, using sequence, distance and CD4 T-cell contacts, on held-out chromosomes.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence, distance and T-cell contact maps to predict which gene promoters physically touch which distant DNA regions in rare ILC3 immune cells.",
+    "train_on": "Pairs of a gene promoter and a distant DNA fragment, described by their sequences, the distance between them, and whether the pair contacts in CD4 T cells. Number of pairs unknown (likely millions; full file not counted).",
+    "predict": "Whether the pair forms a significant contact in ILC3s, from promoter capture Hi-C (a sequencing assay that captures DNA ligated to promoters) scored by CHiCAGO, a statistical caller.",
+    "why_worthwhile": "Immune-disease geneticists could link risk variants to genes in rare cell types that can't easily be profiled. Even a failure would show how cell-type-specific promoter contacts really are."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Not bigger, since it is one cell type from 3 donors. But it covers ILC3, a cell type absent from the DeepTACT/DeepPHiC training sets (B cells, CD4 T cells, tissues), at higher fragment resolution than HindIII PCHi-C."},
+    "confidence_score": {"answer": "no", "why": "Only merged replicates are released, so per-pair noise can't be estimated without reprocessing raw reads."},
+    "models_beatable": {"answer": "partly", "why": "DeepTACT (2019) and DeepPHiC (2023) are older CNNs (convolutional networks) with no pretrained backbone. ENCODE-rE2G is recent and honestly benchmarked on 10,356 CRISPR pairs, so it is hard to beat."},
+    "guaranteed_improvement": {"answer": "no", "why": "Adding Javierre 2016 contacts fails the same-measurement test: different restriction enzyme (HindIII vs DpnII), genome build and cell types."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Javierre 2016 PCHi-C for 17 blood cell types (known resource, Data S3 compares to it), 4DN Data Portal Hi-C/PCHi-C (known resource), ENCODE CRISPRi enhancer-gene benchmark of 10,356 pairs (search result).", "approx_items": null, "join_key": "genomic coordinates (hg19/hg38) and restriction fragment", "why": "Other cell types' contact maps allow pretraining and cross-cell-type tests, but the assays differ in enzyme and resolution, so they are not drop-in labels."},
+  "leakage_plan": {
+    "risks": [
+      "ABC.Score, hic_contact and powerlaw columns in S4/S5 are computed from the same PCHi-C contacts, so using them as features leaks the label.",
+      "Adjacent bait fragments share the same other end and nearly identical labels, so a random split puts near-duplicates in train and test.",
+      "Distance alone predicts much of CHiCAGO significance, because the background model is distance-based, which can inflate scores without biology.",
+      "CD4 and ILC3 contacts share baits, so a promoter seen in training leaks its shared contacts."
+    ],
+    "split": "Hold out whole chromosomes using baitChr (seen in S5), and keep both ends on the same chromosome so trans pairs can't cross the split.",
+    "checks": [
+      "Shuffle labels within distance bins and confirm collapse to the distance-only baseline.",
+      "Train on distance alone and report its PR-AUC as the floor.",
+      "Confirm no ABC- or contact-derived column is among the features.",
+      "Evaluate separately on ILC3-specific contacts (absent in CD4)."
+    ],
+    "verdict": "Manageable with chromosome hold-out and strict feature hygiene, but the distance confounder is serious."
+  },
+  "success_criteria": {
+    "metric": "PR-AUC (precision-recall area under the curve) for ILC3-specific significant contacts (CHiCAGO>5 in ILC3, not in CD4) on held-out chromosomes, because cell-type-specific contacts are what GWAS gene linking needs.",
+    "baselines": "Distance-only logistic regression and CD4-contact lookup (both computable, numbers unknown). Paper's ABCC on K562 CRISPRi (number not retrieved).",
+    "success": "PR-AUC on ILC3-specific contacts at least 0.10 above the distance+CD4 baseline on held-out chromosomes (threshold set by me, not from a source).",
+    "noise_ceiling": null,
+    "kill": "If the sequence embeddings add under 0.03 PR-AUC over distance+CD4 contacts after one week, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes cross-cell-type 3D-genome prediction methods. It would need sequence models to clearly recover ILC3-specific contacts missed by T-cell maps."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Fits a benchmark-style note on transferring promoter-contact predictors to a rare immune cell type."},
+    "fallback": {"journal": "bioRxiv preprint plus MLCB workshop", "why": "A negative result (distance plus T-cell contacts explain ILC3 contacts) is still a shareable observation."}
+  },
+  "pitch": {
+    "headline": "Open, fragment-resolution promoter contact tables for a rare tissue immune cell (ILC3), with matched CD4 T-cell tables from the same lab.",
+    "what_makes_the_data_unusual": "Primary human ILC3s from 3 tonsils, a cell type absent from the 17-cell Javierre atlas. A 196 MB ILC3 and a 247 MB CD4 table are on OSF without login (checked).",
+    "the_win": "Show that DNA-sequence embeddings recover ILC3-specific contacts beyond a distance-plus-CD4 baseline on held-out chromosomes. No number is available yet.",
+    "even_if_it_fails": "We would learn how much of a rare cell's promoter contact map is predictable from a common cell's map, which matters for GWAS gene linking in unprofiled cells.",
+    "who_wants_it": "The Spivakov lab (MRC LMS) and immune-GWAS gene-prioritisation groups who must decide whether profiling each rare cell type is necessary."
+  },
+  "ml_idea": "Train a classifier on held-out chromosomes to predict ILC3 CHiCAGO>5 promoter contacts from frozen DNA-language-model embeddings of both ends, distance, and the CD4 T-cell contact status (S9), and measure the gain over distance+CD4 on ILC3-specific contacts.",
+  "effort": {
+    "hours_to_feature_table": 16,
+    "working_set_gb": 0.45,
+    "needs_gpu": false,
+    "peak_ram_gb": 6,
+    "embedding_hours": 10,
+    "cv_run_minutes": 20,
+    "compute_note": "Estimated, not timed: S5+S9 TSVs about 0.45 GB on disk. The embedding estimate assumes about 100k unique fragments at around 3 per second on CPU with DNABERT-2.",
+    "cheapest_killing_check": "Download S5 and count unique bait–other-end pairs with a non-blank chicago_score_fres, and how many of those are absent from S9 (the ILC3-specific contacts). If only a few thousand, the transfer question is too thin."
+  },
+  "verdict": "park",
+  "verdict_reason": "Data is open and labelled (CHiCAGO scores in a 196 MB TSV), but contact prediction is crowded (DeepPHiC, C.Origami, ENCODE-rE2G). It comes from one cell type and 3 donors with merged replicates, and blank-score negatives and genomics wrangling make the gain over a distance-plus-T-cell baseline uncertain."
+}

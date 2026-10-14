@@ -1,0 +1,64 @@
+{
+  "paper_id": "nature2026-10695-1",
+  "title": "Replication-stress-induced chromatin loops protect fork stability.",
+  "doi": "10.1038/s41586-026-10695-1",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1218934",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "I listed the full contents of every deposit. BioProject PRJNA1218934 run table (fetched from NCBI SRA): 76 runs, 453.6 GB total raw paired-end reads (largest single run 55.5 GB), all human, 45 runs labelled 'OTHER', 16 'Hi-C', 15 'ChIP-Seq'. A GEO (Gene Expression Omnibus) search for PRJNA1218934 returns 0 records, so no processed matrices, contact maps or peak/loop coordinate files were deposited. The Zenodo record 10.5281/zenodo.19739908 is a software release: one 3,909-byte zip, CC0 licence. The GitHub repository tree contains 14 entries, all Jupyter plotting notebooks plus LICENSE and README, and no data files. I also read the data availability statement and the in-text context of every Supplementary Table mention.",
+    "what_came_from_paper_text_only": "That the Supplementary Tables hold sequencing QC statistics (Table 1), 3C-qPCR primers (Table 2), DNA-FISH probes (Table 3), fragile-site stratification (Table 4), the sequencing sample list (Table 5) and reagents/cell lines/antibodies (Tables 6-9) - inferred from the sentences citing them, because the Europe PMC supplementaryFiles endpoint timed out on two attempts and the files could not be retrieved. Also from text only: the count of 'over 7,000 HU-specific loops' with 'around 60% overlap between biological replicates'."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Only raw sequencing is public: 76 SRA runs, 453.6 GB of FASTQ. No processed loop calls, contact matrices or degradation tracks anywhere (GEO search for the BioProject returns nothing; Zenodo holds a 3.9 kB code zip; GitHub holds only notebooks). The data availability statement says all other data are 'available from the corresponding author on reasonable request'."},
+    "a2_label_is_a_column": {"pass": false, "note": "The prediction target (which genomic sites form stress-induced loops, or which stalled forks get degraded) exists nowhere as a column. It would have to be built from raw reads: align 454 GB of FASTQ, build Hi-C contact maps, call loops, call fork-degradation sites. That is the classic A2 failure."},
+    "a3_inputs_present": {"pass": false, "note": "Cannot be checked: there is no feature table. DNA sequence could be fetched from the human reference, but the coordinates that would index it do not exist in any deposited file."},
+    "a4_units_stated": {"pass": false, "note": "Cannot be checked: no processed table with values or units exists. Units would be whatever a loop caller and a coverage pipeline emit, chosen by us."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "No row count can be verified. The paper reports 'over 7,000 HU-specific loops' with only ~60% replicate overlap, but that number is in the text, not in any file I could open."},
+    "a6_fits_laptop": {"pass": false, "working_set": "453.6 GB raw FASTQ", "note": "Verified from the SRA run table. Reprocessing needs read alignment and Hi-C matrix construction - far beyond a 16 GB CPU-only laptop, and CLAUDE.md forbids downloading raw sequencing."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be compared, but a real metadata defect is visible: all 76 runs are filed under a single BioSample (SAMN46536945) and a single SampleName ('H3K9me3_ChIC_UT_WT_Bio_1'), with only 55 distinct free-text library codes like 'I24-1376-02_S133'. Which run is which assay and condition is not recoverable from the public metadata without Supplementary Table 5."},
+    "a8_label_provenance": {"pass": false, "note": "Any label would be the output of an algorithmic caller (a loop caller on Hi-C, a peak caller on ChIC) run by us on raw reads, not a measured column. With ~60% replicate overlap reported for the loop calls, the label would also be noisy by construction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Akita (Nature Methods 2020), a convolutional network predicting Hi-C contact maps from 1 Mb of DNA sequence", "open_weights": true, "score_and_split": "Retrieved via search snippets only: benchmarked against other models by genome-wide insulation-score correlation in IMR-90 cells; I did not read the paper, so no exact number is recorded.", "authors_named_unsolved": "Not retrieved - I only saw search snippets, not the discussion.", "runnable_as_baseline": true},
+      {"name": "Orca, a sequence-to-contact model extending prediction to whole chromosomes", "open_weights": true, "score_and_split": "Search snippet reports concordance with experimental CTCF- and Polycomb-mediated interactions; no number verified.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "C.Origami (Nature Biotechnology 2023), predicts cell-type-specific 3D organisation from DNA sequence plus CTCF binding and chromatin accessibility", "open_weights": true, "score_and_split": "Search snippet only: cell-type-specific contact prediction enabling in silico genetic screens; no number verified.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Chiron3D (Bioinformatics 2026), an interpretable model of the DNA code of chromatin looping", "open_weights": null, "score_and_split": "Search snippet only; no number verified.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Nucleotide Transformer (DNA language models) would be the natural fit for a sequence-to-chromatin task", "freeze_and_head_viable": false, "hardware": "Irrelevant here - there is no label table to fit a head to; building one needs a cluster for read alignment.", "licence": "AlphaGenome weights are non-commercial; not reached in this evaluation."},
+  "integration": {"partner_dataset": "ENCODE H3K9me3 in K562 (ENCFF812HRW) and 4D Nucleome CTCF CUT&RUN (4DNESMSEE62N), both cited by the paper and both public", "join_key": "genomic coordinates (human genome build must be recorded)", "bigger_question_one_sentence": "Does the DNA sequence alone predict which replication forks stall and are protected by a stress-induced loop - a question that cannot be asked here because this paper deposits no stress-induced loop coordinates."},
+  "controls": {"positive_control": "Would have been: the model must recover enrichment of convergent CTCF motifs at loop anchors, the textbook signal the paper itself reports.", "negative_control": "Label shuffling across matched genomic bins - not reachable, no labels exist.", "external_validation": "In principle ENCODE/4D Nucleome K562 tracks, but those are unstressed cells and measure a different quantity than stress-induced loops."},
+  "honest_claim_h3": "No claim is possible: the paper deposits 454 GB of raw reads and zero processed loop or fork-degradation coordinates, so the thing a model would predict does not exist in any file we can obtain.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around a genomic site to predict whether a stalled replication fork there is enclosed by a protective chromatin loop.",
+    "train_on": "Would have been genomic windows (roughly 100 kb of DNA sequence) centred on candidate sites, each labelled by whether the paper's stress-induced loop encloses it. The paper mentions over 7,000 such loops, but I could not verify any count in a file because none was deposited.",
+    "predict": "A yes/no (or a score) for loop protection and for nascent-DNA degradation. The true answer would come from Hi-C contact maps and Fork-deg-seq run on hydroxyurea-treated human cells - measurements that exist here only as unprocessed sequencing reads.",
+    "why_worthwhile": "Labs studying BRCA2-deficient cancers would like to know which parts of the genome lose fork protection and accumulate mutations, since that maps to where chemotherapy-induced damage lands. Even a failed model would say whether sequence context alone explains fork vulnerability."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Akita, Orca and C.Origami were trained on large public Hi-C compendia; this paper supplies 16 Hi-C runs from essentially one fibroblast line (MRC5) and one cancer line (HCT116), and supplies them only as raw reads."},
+    "confidence_score": {"answer": "no", "why": "Biological replicates exist, but their loop calls agree only ~60% by the paper's own account, and the replicate-level processed calls were never deposited, so no calibration could be computed."},
+    "models_beatable": {"answer": "partly", "why": "The existing models predict unstressed contact maps, so the stress-specific task is genuinely unaddressed - but that opening cannot be taken without stress-condition labels, which this deposit lacks."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition outright: we have no label table, so the existing model cannot be run as a baseline on our data and no comparison is defined."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict, from DNA sequence plus unstressed chromatin tracks, which genomic sites form a hydroxyurea-induced protective chromatin loop and which stalled forks are nucleolytically degraded. Dead on arrival: the loop and degradation coordinates were never deposited.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 453.6,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working-set size is measured, not estimated: summed from the SRA run table (453.6 GB across 76 runs). Everything downstream is unestimable because the processing pipeline - alignment, contact-matrix building, loop calling - was never run by me and is not laptop work.",
+    "cheapest_killing_check": "Search GEO for the BioProject accession. Zero hits means no processed files exist, which takes one minute and kills the project - exactly what happened here."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A1, A2 and A6 together. The only public data is 453.6 GB of raw FASTQ across 76 SRA runs with no processed loop calls, contact maps or degradation tracks anywhere (GEO returns nothing for the BioProject; Zenodo holds a 3.9 kB code zip; GitHub holds only plotting notebooks), and the paper states all other data are available from the corresponding author on request. The prediction target would have to be constructed from raw reads on a cluster, and the public run metadata collapses all 76 runs onto one BioSample so even the conditions are unrecoverable. This is an excellent mechanistic biology paper and a non-starter as a laptop ML project."
+}

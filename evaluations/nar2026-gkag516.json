@@ -1,0 +1,96 @@
+{
+  "paper_id": "nar2026-gkag516",
+  "title": "i-gRINN: a next-generation web server for protein energy network analysis of heterogeneous biomolecular systems with natural language-based data exploration.",
+  "doi": "10.1093/nar/gkag516",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://grinn.bio-cloud.site (example results only); code + one test system at https://github.com/osercinoglu/grinn",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the only machine-readable table tied to this work: gRINN_Dashboard/test_data/prot_lig_1/energies_intEnTotal.csv from the GitHub repo (5.4 MB, 2,687 rows x 113 columns = one residue pair per row, 101 per-frame energy columns, plus residue index/chain/number/name columns; 0 missing values; values range -467 to +~0 kcal/mol). Listed the whole repo tree (132 files): test data covers exactly ONE protein-ligand system (111 files, mostly single-frame PDB snapshots). Probed the web server: https://grinn.bio-cloud.site returns 200 but every path (/results, /example, /download/example, /dashboard) returns the same 55,968-byte single-page-app shell, and /api/examples is 404, so no example-result files could be downloaded. Checked both Zenodo DOIs cited by the paper: 10.5281/zenodo.15867009 is the GromacsWrapper software release, 10.5281/zenodo.3975394 is Komatsu et al.'s raw GROMACS molecular dynamics trajectories of SARS-CoV-2 main protease (raw trajectory data, not a feature/label table).",
+    "what_came_from_paper_text_only": "That interaction energies are reported in kcal/mol (no units appear anywhere in the CSV header or file); that the three application examples (T4 lysozyme, PDK1-staurosporine, SARS-CoV-2 main protease-nelfinavir) exist as browsable example results; the 200-frame and 10/100 MB upload limits; the statement that all output is written as CSV."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The paper's stated data ('example results at https://grinn.bio-cloud.site') is not downloadable as files: the site is an interactive dashboard and every URL I tried returned the same page shell, with no file or application programming interface endpoint. Only an incidental test system bundled in the GitHub code repository downloads (one 5.4 MB comma-separated-values file, verified)."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified in the file: pairwise interaction energy is literally the cell values (101 per-frame columns, one row per residue pair). No construction needed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: the repository ships system_dry.pdb plus ~100 per-frame PDB coordinate files for the one test system, so the three-dimensional structure input is present, not referenced."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "No units anywhere in the comma-separated-values file (columns are bare frame numbers). The paper text says kcal/mol; GROMACS natively outputs kJ/mol, so a silent factor-of-4.184 error is possible and nothing in the file resolves it."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 2687,
+      "note": "Verified: 2,687 residue pairs, but all from ONE protein-ligand system (the 101 columns are time frames of the same pairs, not independent examples). The independent unit is the protein, and there is exactly one. The three application examples in the paper add at most two more systems and are not downloadable."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.1 GB",
+      "note": "Verified: the whole test system (energy tables plus frame PDBs) is tens of megabytes and loads in pandas instantly on a laptop."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Nothing to contradict: the paper states no row, pair or system counts for any dataset, so no disagreement is possible (checked the full text)."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "The label (pairwise van der Waals + electrostatic energy) is a deterministic closed-form function of the same atomic coordinates that would be the model's input, computed by the GROMACS force field via 'mdrun -rerun'. That is leakage-by-construction / distillation of a physics calculator, not a measurement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model) or a geometric graph neural network would be the obvious fit for a residue-pair energy surrogate",
+    "freeze_and_head_viable": null,
+    "hardware": "Not assessed; Part A failed before backbone scoring",
+    "licence": "Not assessed"
+  },
+  "integration": {
+    "partner_dataset": "MDRepo (an open warehouse of community-contributed protein molecular dynamics simulations, cited by this paper) would be the place to get many systems, since this paper supplies only one",
+    "join_key": "UniProt accession / Protein Data Bank identifier",
+    "bigger_question_one_sentence": "Could a learned surrogate replace the expensive per-pair force-field rerun and still rank the residues that carry allosteric signal? — but answering it needs MDRepo's trajectories, not this paper's data."
+  },
+  "controls": {
+    "positive_control": "A model predicting interaction energy from coordinates must recover the near-perfect inverse-distance relationship for charged pairs; it should also rank the known T4 lysozyme catalytic residue Asp20 highly.",
+    "negative_control": "Shuffle the energy labels across residue pairs and confirm collapse to the per-distance-bin mean.",
+    "external_validation": "None available from this paper: only one system is downloadable, so there is no held-out protein."
+  },
+  "honest_claim_h3": "Any model trained on what this paper actually releases could claim only: 'on 2,687 residue pairs of a single protein-ligand complex, a learned function reproduces the GROMACS force-field energy that was itself computed from the same coordinates' — a statement about re-deriving a formula, not about biology.",
+  "plain_idea": {
+    "one_liner": "Use residue atom positions from a simulation snapshot to predict the force-field interaction energy between each pair of residues.",
+    "train_on": "Each example is one pair of amino acid residues (or a residue and a ligand) in one snapshot of a molecular dynamics simulation, described by their atom coordinates, types and charges. Verified count available here: 2,687 pairs x 101 snapshots, all from one protein-ligand complex.",
+    "predict": "The total non-bonded interaction energy of that pair. The 'true answer' is not a measurement at all: it is the GROMACS molecular mechanics force field evaluated on the same coordinates, so it is a formula applied to the inputs.",
+    "why_worthwhile": "If a surrogate were accurate it would let people build protein energy networks for long simulations without the costly pair-by-pair rerun; but the label is a physics formula, so the project teaches regression plumbing rather than biology, and this paper supplies only one protein to learn from."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only project this paper supports is a surrogate model that predicts pairwise residue interaction energies from atomic coordinates, to skip the expensive GROMACS pair-by-pair rerun. It fails here because (a) the target is a deterministic force-field function of the inputs rather than a measurement, and (b) only one protein-ligand system is actually obtainable. A viable version of the idea would ignore this paper and build the training set from MDRepo, which holds many community-deposited trajectories.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed beyond the actual load: the one downloadable energy table is 5.4 MB and read into pandas in under a second; turning the ~100 frame PDB files into per-pair geometric features is a few hours of scripting.",
+    "cheapest_killing_check": "Count the independent biomolecular systems with downloadable per-pair energies. The answer is one (the GitHub test system); the paper's three application examples live only inside an interactive dashboard with no download route. That count alone kills it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "This is a web server / software paper, not a dataset. Four Part A killers fail on checks I made in the files: A1 (the advertised example results are only viewable in a single-page dashboard, no download endpoint exists), A5 (the only downloadable per-pair energy table covers exactly one protein-ligand complex; its 2,687 rows are pairs within that one system and the 101 columns are time frames of the same pairs, so there is one independent example), A4 (the file carries no units and the paper's 'kcal/mol' conflicts with GROMACS's native kJ/mol), and most decisively A8 (the prediction target, pairwise van der Waals plus electrostatic energy, is a closed-form force-field function of the very coordinates that would be the model's input, so any model is distilling a calculator, not learning from measurement). The tool itself looks useful for simulation users; it just offers nothing to train on."
+}

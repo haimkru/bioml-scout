@@ -1,0 +1,148 @@
+{
+  "paper_id": "nar2026-gkag706",
+  "title": "scDifformer: diffusion-based post-training for virtual cell modeling across large-scale single-cell data.",
+  "doi": "10.1093/nar/gkag706",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://huggingface.co/allenxiao/scDIFFormer",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed every file in the paper's HuggingFace deposit via the HuggingFace application programming interface: only .gitattributes, README.md, model.th (767,773,936 bytes) and 14 small Python scripts - zero data files, no config.json, no token_dictionary.pkl and no gene_median_dictionary.pkl. Read the released tokenizer.py and dict_token.py: both hard-code absolute paths on the authors' own machine (/scDifformer/data/240412_test/material/...) for the two dictionaries needed to turn an expression matrix into model input, and neither dictionary is in the repo. Unzipped the Nucleic Acids Research supplement (2.999 MB inner zip): it holds one Word document and one spreadsheet with 8 sheets; I printed every sheet. The sheets are benchmark accuracy/F1 tables (Table S1 7 rows, S2 94 rows, S3 118 rows), gene-set enrichment outputs (S4 62 rows, S5 918 rows, S6 4,161 rows) and the spatial toy example (S7 92 spots x 8 cell types, S8 1,413 cells with x/y coordinates and a cell-type column) - no expression matrices. Listed the Gene Expression Omnibus (GEO, the public repository for expression data) supplementary files for all 8 accessions cited in the paper: GSE115469 and GSE121862 do ship a cell-type/cluster annotation file next to the count matrix; GSE84133, GSE114530, GSE81547 and GSE151302 ship only a RAW .tar or nothing listed; GSE124395 ships cluster numbers without names. Confirmed the Synapse entity syn21041850 is the 'Human Lung Cell Atlas' project (metadata is public, file download needs a Synapse account). Tried the Cell BLAST site, the paper's stated source of harmonised annotations: it serves over an expired TLS certificate (certificate verify failed) and the download page is a JavaScript shell with no file links in the HTML.",
+    "what_came_from_paper_text_only": "The 36.77 million starting and 34.2 million filtered pre-training cells from 7,225 samples (sourced from DISCO and CZ CELLxGENE); that this corpus is stored as .loom HDF5; the per-dataset cell counts (~8,000 to 68,000) and 11-20 cell types per dataset; the claim that the Broad Single Cell Portal accession SCP424 and the Synapse lung atlas were used; the claim that downstream annotations came from Cell BLAST; the statement that 'a minimun data' and fine-tuning training code are available on HuggingFace (the file listing contradicts both)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified by file listing. The paper deposits no data at all: the HuggingFace repo is model weights plus scripts, and the promised 'minimun data' is absent. Reassembling the benchmark needs 8 GEO accessions plus ArrayExpress plus Synapse (account required) plus Broad Single Cell Portal SCP424 (login required), and the stated label source Cell BLAST is unreachable over HTTPS (expired certificate). The 34.2M-cell pre-training corpus was never deposited."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Partly verified: cell type is a genuine column for some sources (GSE115469_CellClusterType.txt.gz, GSE121862 cluster annotations, supplementary Table S8), but for Baron/Enge/Muraro/Muto the harmonised label the paper used would have to be pulled from Cell BLAST or built from per-study files."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Expression count matrices exist in GEO as real files (e.g. GSE115469_Data.csv.gz, GSE121862 raw UMI matrix), so inputs are present rather than referenced - but they are third-party, not this paper's deposit."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are unique molecular identifier counts per gene per cell, stated in the methods and in GEO file names; the model converts them to expression ranks, which removes the unit question."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": null,
+      "note": "Cell numbers are large (paper says ~8,000-68,000 cells per benchmark dataset), but I verified no cell count myself; the only tables I opened are the 92-spot and 1,413-cell supplementary toy sets, which are far too small."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "FAIL as released. The checkpoint is 767 MB, the architecture is a 24-layer transformer over 2,048-token cell inputs, and the authors' own usage snippet calls .to('cuda'). Extracting embeddings for tens of thousands of cells on a 16 GB CPU laptop would run for days, and re-running the diffusion post-training is out of reach entirely."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Mismatch found: the text says gridding produced '253 artificial spots with known cell type compositions', but supplementary Table S7 contains 92 spots. The text also cites a Supplementary Table S9 that is not in the workbook (sheets stop at S8), and the spreadsheet index page says it 'includes Supplementary table 1' only."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL on circularity. The label is a cell-type call produced by clustering and marker inspection of the very same expression matrix the model takes as input, so it is derived from the features rather than independently measured. Worse, the paper's harmonised labels come from Cell BLAST, which is itself a transfer-learning annotation tool, so part of the ground truth is another model's output."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "scDifformer (this paper's own model: a 24-layer transformer with a diffusion denoising stage)",
+        "open_weights": true,
+        "score_and_split": "Cross-study (train on one study, test on another study of the same tissue) mean accuracy 0.8788 across seven tissues versus 0.8633 for Geneformer; within-study five-fold cross-validation accuracy 0.83-0.99 (read in the paper's Table 1 and supplementary Tables S1-S3).",
+        "authors_named_unsolved": "The discussion concedes the corpus is human-only and that the gains from the diffusion stage are 'moderate'; they also note within-study gains were absent for bone marrow and kidney.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Geneformer (a transformer pre-trained on ranked single-cell gene expression)",
+        "open_weights": true,
+        "score_and_split": "Cross-study mean accuracy 0.8633 over seven tissues, and 0.84-0.98 within-study, as tabulated by this paper's own supplementary Tables S1-S3.",
+        "authors_named_unsolved": "Not retrieved - I read only the numbers this paper reports for it.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "scBERT, scFoundation, CellFM and scGPT (other single-cell foundation models)",
+        "open_weights": true,
+        "score_and_split": "All benchmarked in this paper's supplementary Table S3 on cross-study splits, e.g. scBERT 0.8637-0.8977 and scFoundation 0.7734-0.8667 accuracy on peripheral blood mononuclear cells; all four have public code repositories linked in the paper's methods.",
+        "authors_named_unsolved": "Not retrieved for each model individually.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CellTypist (logistic-regression cell-type classifier from the Teichmann lab)",
+        "open_weights": true,
+        "score_and_split": "Ships pre-trained models covering more than 3.6 million cells and ~250 cell types across human tissues, with cross-dataset harmonisation published in Cell 2023 (found via web search of celltypist.org and its GitHub repository); no number on this paper's splits.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Plain logistic regression on highly variable genes (the standard dumb baseline)",
+        "open_weights": true,
+        "score_and_split": "Independent 2026 benchmarks of single-cell foundation models (found via web search: a bioRxiv zero-shot benchmarking preprint and BioLLM in Patterns 2025) report that this baseline matches or beats foundation-model embeddings for supervised cell-type annotation, e.g. macro F1 ~92% on Baron pancreas.",
+        "authors_named_unsolved": "Those benchmark authors name calibration and genuinely novel cell states, not annotation accuracy, as the open problem.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scDifformer's own 767 MB checkpoint, or Geneformer / scGPT as substitutes",
+    "freeze_and_head_viable": false,
+    "hardware": "Graphics processing unit effectively required: 24 transformer layers over 2,048-token cell inputs, and the authors' own example code sends the model to CUDA.",
+    "licence": "No licence file in the HuggingFace repo; tags show only 'region:us', so reuse terms are unstated."
+  },
+  "integration": {
+    "partner_dataset": "CZ CELLxGENE Discover and the Human Cell Atlas, joinable in principle on Ensembl gene identifiers plus Cell Ontology terms.",
+    "join_key": "Ensembl gene ID for features; Cell Ontology term for labels",
+    "bigger_question_one_sentence": "Does any single-cell foundation model's advantage survive when train and test cells come from different studies, platforms and donors - a question that is already being answered by several 2025-2026 benchmark papers using data this paper does not supply."
+  },
+  "controls": {
+    "positive_control": "Available in principle: a working annotation pipeline must separate textbook-distinct types (B cells versus hepatocytes) near-perfectly, and must recover canonical markers such as DCN/LUM for fibroblasts, which the paper reports.",
+    "negative_control": "Label shuffling within study is runnable, but could not be set up here because the tokeniser dictionaries needed to feed data to the released model are missing.",
+    "external_validation": "The paired-study design (two independent studies per tissue) is genuine external validation, but the data must be assembled from third-party repositories, two of which need accounts."
+  },
+  "honest_claim_h3": "A model built on this paper's released artefacts could claim at most that 'the published scDifformer weights reproduce expert cluster labels in a handful of public human tissue datasets', because the paper supplies neither its training corpus, nor its fine-tuning tables, nor the tokeniser dictionaries needed to run the released checkpoint.",
+  "plain_idea": {
+    "one_liner": "Use a cell's gene expression profile to predict which cell type a human annotator would have called it.",
+    "train_on": "Each example would be one cell's gene counts, converted to a ranking of genes by relative expression. Cell counts come from the paper only (roughly 8,000 to 68,000 cells per tissue dataset); I verified none of them.",
+    "predict": "A cell-type label out of 11-20 per dataset. The true answer is the cell type assigned by the original study's authors by clustering the same expression data and reading marker genes, then harmonised through the Cell BLAST database.",
+    "why_worthwhile": "Groups annotating a fresh single-cell experiment would like a classifier that works on a study it was not trained on. Even a negative result ('depth and diffusion add nothing over logistic regression across studies') would be useful - but several 2025-2026 benchmark papers have already reported exactly that."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The paper releases no data whatsoever, so we would be using the same public GEO datasets that Geneformer, scBERT, scFoundation, CellFM and the 2026 benchmark preprints already use. Its 34.2 million-cell corpus, the one genuinely large asset, was not deposited."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements of a cell's identity - each cell is labelled once, by one annotator's clustering - so per-prediction confidence could only be the classifier's own softmax, which every existing tool already reports."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The competitors are 2023-2026 open models evaluated here on honest train-on-one-study/test-on-another splits, and independent 2026 benchmarks report that even plain logistic regression on highly variable genes matches them. Cross-study accuracies already sit at 0.86-0.88, so headroom is small."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: the released checkpoint cannot be run as our baseline, because the repo has no config.json and the gene-median and token dictionaries that tokenise input are referenced only by absolute paths on the authors' machine."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only project this paper offers is 'beat or re-evaluate scDifformer at cross-study cell-type annotation'. That needs data the paper does not provide (its 34.2 million-cell corpus is undeposited and the benchmark tables are not packaged), it cannot use the released weights as a baseline (no config.json, no tokeniser dictionaries), and the task is already served by several open models plus independent 2026 benchmarks showing logistic regression on highly variable genes is competitive. The underlying measurements (public GEO single-cell datasets) are reusable, but nothing about this paper makes that project easier or more novel.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 8.0,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, nothing timed: the 24-layer, 2,048-token checkpoint is 767 MB and the authors' own code requires a graphics processing unit, and the benchmark would have to be rebuilt from 8 GEO accessions plus ArrayExpress plus two login-gated portals, hence the ~40 hour assembly estimate. Embedding and cross-validation times could not be estimated because the released model cannot be run without the missing tokeniser dictionaries.",
+    "cheapest_killing_check": "List the files in the HuggingFace repo (one application programming interface call, under a minute): if there is no config.json, no token dictionary and no data file, neither the model nor its benchmark can be reproduced. That check is what killed this candidate."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A1: the paper deposits no data, only a 767 MB checkpoint. Verified by listing every file in the HuggingFace repo - the 'minimun data' and fine-tuning code promised in the data availability statement are absent, as are config.json and the gene-median and token dictionaries that the released tokeniser needs, so the model cannot even be run as a baseline. Also fails A6 (24-layer model, 2,048-token inputs, the authors' own code requires a graphics processing unit), A7 (text says 253 spatial spots, supplementary Table S7 has 92; a Supplementary Table S9 is cited but missing) and A8 (the cell-type label is produced by clustering the same expression matrix used as input, and the harmonised labels come from Cell BLAST, itself an annotation model). Supporting evidence: the task is crowded with open models (Geneformer, scBERT, scFoundation, CellFM, scGPT, CellTypist) and independent 2026 benchmarks report that plain logistic regression on highly variable genes matches them."
+}

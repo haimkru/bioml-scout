@@ -1,0 +1,100 @@
+{
+  "paper_id": "cellgen2026-101329",
+  "title": "PlantCAD2: A DNA foundation model for interpreting genomes across flowering plants.",
+  "doi": "10.1016/j.xgen.2026.101329",
+  "journal": "Cell Genomics",
+  "data_url": "https://huggingface.co/datasets/plantcad/PlantCAD2_fine_tuning_tasks",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the Hugging Face (HF) repos plantcad/PlantCAD2_fine_tuning_tasks and PlantCAD2_zero_shot_tasks with file sizes. Downloaded and opened all 6 translation parquet files (absolute and on/off; 21,894 train / 5,492 validation / 39,035 test rows, matching the HF README) plus the 12,249-row expression validation file. Confirmed: 500-bp sequences present, no nulls, no duplicate genes, train = Arabidopsis (AT gene IDs, chr 1-5), test = maize (Zm00001eb IDs, chr 1-10); label = log10(tpm+1) exactly (Spearman 1.0, checked arithmetic); on/off label is a TPM threshold (off max 0.30 log units). Expression files carry orthogroup and genome columns.",
+    "what_came_from_paper_text_only": "That the translation 'tpm' is ribosome profiling (ribo-seq) from two cited studies, that sequences are 500 bp upstream of the start codon, that cross-species absolute translation regression 'was less effective', and the expression scores (AUROC 0.8455, Spearman 0.6455) — from the bioRxiv v4 full text via WebFetch, not the Europe PMC text (network lookup failed). Paper-side row counts not verified; no Apache licence tag on the fine-tuning repo (zero-shot repo is Apache-2.0)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public, ungated HF parquet; downloaded translation files directly without login (checked)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Label is a 'label' column in every task file (checked); a 'tpm' column duplicates it and must be dropped."},
+    "a3_inputs_present": {"pass": true, "note": "Full DNA sequence strings in the 'sequence' column (500 bp translation, 2,048 bp expression), no lookups needed (checked)."},
+    "a4_units_stated": {"pass": true, "note": "Units not documented in README, but I verified label = log10(TPM+1) exactly from the tpm column; consistent across splits."},
+    "a5_enough_rows": {"pass": true, "n_rows": 66421, "note": "Translation task: 21,894 train + 5,492 val + 39,035 maize test rows (counted). Expression tasks have ~1.9M rows."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~33 MB for translation task; expression/chromatin tasks 2-10 GB", "note": "Translation task trivially fits; larger tasks need subsetting. PlantCAD2 itself (Mamba2) realistically needs a CUDA GPU, so a CPU backbone like DNABERT-2 would be used."},
+    "a7_counts_match_paper": {"pass": true, "note": "Downloaded row counts match HF README metadata exactly; paper's own counts not retrieved."},
+    "a8_label_provenance": {"pass": true, "note": "Label is measured ribo-seq abundance (per paper), log-transformed; not a model output. Leakage only via the redundant tpm column."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One parquet table per split per task; gene, sequence, label in same rows (checked)."},
+    "B2": {"score": 2, "why": "Parquet parsed first try with pandas+pyarrow (checked)."},
+    "B3": {"score": 1, "why": "Arabidopsis and maize ribo-seq from two different studies; TPM scales not cross-normalised (paper text)."},
+    "B4": {"score": 1, "why": "Zero-TPM genes are floor values: 50% of maize test labels are exactly 0 (checked)."},
+    "B5": {"score": 2, "why": "No duplicate gene IDs in any split (checked)."},
+    "B6": {"score": 1, "why": "README gives column types only; units and assay inferred from paper and arithmetic."},
+    "C1": {"score": 1, "why": "Transfer question (Arabidopsis to maize) informative either way, but authors already report it partly."},
+    "C2": {"score": 0, "why": "PlantCAD2, AgroNT, PlantCaduceus all open and evaluated on this exact cross-species split."},
+    "C3": {"score": 1, "why": "Weak 'better' angle: test whether frozen embeddings beat k-mer baselines where authors say transfer fails."},
+    "C4": {"score": 1, "why": "Ribo-seq is costly per species, but annotation-level translation calls are not a pressing bottleneck."},
+    "C5": {"score": 2, "why": "Published PlantCAD2/AgroNT numbers on same split (Supplemental Table 10 per paper)."},
+    "D1": {"score": 2, "why": "PlantCAD2 and DNABERT-2 weights open on HF (PlantCAD2 Apache-2.0 tag seen)."},
+    "D2": {"score": 1, "why": "PlantCAD2 Mamba2 kernels need GPU; CPU route uses DNABERT-2 embeddings, 66k short sequences."},
+    "D3": {"score": 2, "why": "Apache-2.0 on PlantCAD2 models and zero-shot data (HF tags checked)."},
+    "E1": {"ok": true, "why": "Built-in cross-species split: train Arabidopsis, test maize (checked)."},
+    "E2": {"ok": true, "why": "Chromosomes (5 Arabidopsis, 10 maize) usable as hold-out groups (checked)."},
+    "E3": {"ok": true, "why": "Global mean / majority class dummy computable; 41% positives in maize test (checked)."},
+    "E4": {"ok": false, "why": "No replicate columns; ribo-seq noise not estimable from files."},
+    "E5": {"ok": true, "why": "Upstream ORFs in 5' leaders known to lower translation; must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffle and sequence-shuffle controls trivially runnable."},
+    "E7": {"ok": true, "why": "Maize test is an independent study and species (paper text)."},
+    "E8": {"ok": true, "why": "Reported PlantCAD2 AUROC on maize translation on/off reproducible with released weights (GPU)."},
+    "G1": {"score": 2, "why": "TAIR AGI and maize B73 v5 gene IDs present (checked)."},
+    "G2": {"score": 1, "why": "Matched RNA-seq to compute translation efficiency plausible (e.g. source studies), not yet located."},
+    "G3": {"score": 2, "why": "One row per gene, clean gene-ID join."},
+    "G4": {"score": 1, "why": "Adding mRNA levels would separate translation control from transcription; marginal beyond paper."},
+    "H1": {"score": 2, "why": "Both translated and untranslated genes included; 36% off in Arabidopsis train (checked)."},
+    "H2": {"score": 0, "why": "Two species, one study each, leaf tissue only."},
+    "H3": {"score": 2, "why": "Claim stated precisely below."},
+    "H4": {"score": 1, "why": "Paper flags ribo-seq noise; does not flag ribo-seq tracking mRNA level."},
+    "I1": {"score": 1, "why": "Plant genomics / DNA language model community; no specific decision-maker."},
+    "I2": {"score": 1, "why": "Would inform choice of backbone for crop annotation, marginally."},
+    "I3": {"score": 1, "why": "AUROC/Spearman roughly aligned to genome-annotation use."},
+    "I4": {"score": 1, "why": "k-mer models may do nearly as well; untested."},
+    "J1": {"score": 2, "why": "Real transfer learning, embeddings, cross-species evaluation."},
+    "J2": {"score": 1, "why": "Some domain intuition needed on plant translation regulation."},
+    "J3": {"score": 2, "why": "k-mer baseline vs embedding comparison shareable at each step."},
+    "J4": {"score": 1, "why": "Roughly one to two weekends; not formally set."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PlantCAD2 (Mamba2 DNA language model, 88M-694M params, 2025/2026)", "open_weights": true, "score_and_split": "Arabidopsis-trained, maize-tested translation on/off and absolute (exact values in Supplemental Table 10, not retrieved); expression on/off AUROC 0.8455, absolute Spearman 0.6455 on maize NAM genomes.", "authors_named_unsolved": "Cross-species regression of absolute translation levels was less effective, attributed to ribo-seq noise; regulatory elements beyond 8 kb.", "runnable_as_baseline": true},
+      {"name": "AgroNT (1B-parameter plant Nucleotide Transformer, 2024)", "open_weights": true, "score_and_split": "Same cross-species benchmarks with LoRA (low-rank adapter) fine-tuning; beaten by PlantCAD2 per paper.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "PlantCaduceus (PlantCAD v1, 512-bp context, PNAS 2025)", "open_weights": true, "score_and_split": "Arabidopsis-to-maize transfer on splice/start/stop site tasks; not retrieved for translation.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "PlantCaduceus-embedding sequence-to-expression models across 17 species (bioRxiv 2026)", "open_weights": null, "score_and_split": "Reported to beat PhytoExpr on cross-species expression; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 (CPU-friendly DNA language model) for frozen embeddings; PlantCAD2-Small as GPU comparison", "freeze_and_head_viable": true, "hardware": "CPU laptop for DNABERT-2 on 66k x 500 bp; PlantCAD2 needs a CUDA GPU for Mamba2 kernels", "licence": "Apache-2.0 (PlantCAD2 HF tag); DNABERT-2 Apache-2.0"},
+  "integration": {"partner_dataset": "Matched leaf RNA-seq from the same Arabidopsis and maize ribo-seq studies (not yet located)", "join_key": "TAIR AGI / maize B73 v5 gene ID", "bigger_question_one_sentence": "Does upstream sequence predict translation efficiency (ribosomes per mRNA) across species, or only how much mRNA is there?"},
+  "controls": {"positive_control": "Upstream ORF count in the 500-bp leader should correlate negatively with translation; trivially, predicting GC content from sequence.", "negative_control": "Shuffle labels within chromosome; dinucleotide-shuffled sequences should collapse to dummy.", "external_validation": "Maize test set is a separate species and study (built in)."},
+  "honest_claim_h3": "Predicts whether a maize gene has detectable leaf ribosome-profiling signal from its 500-bp upstream sequence, using a model trained on one Arabidopsis leaf study — which largely reflects mRNA abundance, not translation control.",
+  "plain_idea": {"one_liner": "Use the DNA just upstream of a plant gene's start codon to predict how much it is translated, training in Arabidopsis and testing in maize.", "train_on": "21,894 Arabidopsis genes, each a 500-letter DNA sequence upstream of the start codon (verified); tested on 39,035 maize genes.", "predict": "Ribosome footprint abundance (log TPM, transcripts per million) or on/off, measured by ribosome profiling sequencing in leaves in two published studies.", "why_worthwhile": "Tells plant genomics groups whether cheap frozen DNA-model embeddings transfer across 160 million years of divergence for translation, where the PlantCAD2 authors report regression transfer fails."},
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use exactly the PlantCAD2 authors' benchmark files (21,894 train, 39,035 test); no extra data."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements in the files, so no basis for calibrated per-gene uncertainty."},
+    "models_beatable": {"answer": "partly", "why": "PlantCAD2 (2025/2026, LoRA, honest cross-species split) is strong overall, but its own authors say absolute translation transfer is weak, leaving room for simple baselines."},
+    "guaranteed_improvement": {"answer": "no", "why": "No accessible joined dataset measuring the same quantity identified; matched RNA-seq would change the target to translation efficiency."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Plant ribo-seq studies scattered in GEO/SRA and translatome databases (known resources, not searched); no single joinable table.", "approx_items": null, "join_key": "Species gene ID (TAIR AGI, maize B73 v5)", "why": "Additional ribo-seq from other plants could give a third test species, but would need reprocessing from raw reads."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Would need showing frozen embeddings plus mRNA-aware targets solve cross-species translation prediction where PlantCAD2 fails."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Benchmark note comparing k-mer, DNABERT-2 and PlantCAD2 on cross-species translation transfer."},
+    "fallback": {"journal": "bioRxiv preprint plus MLCB / ICLR GEM workshop", "why": "Negative result that frozen DNA models add little over k-mers for plant translation is still shareable."}
+  },
+  "pitch": {
+    "headline": "A clean, 33 MB Arabidopsis-to-maize translation benchmark with sequences and labels in one parquet table, ready to model.",
+    "what_makes_the_data_unusual": "Built-in cross-species split: 21,894 Arabidopsis training genes, 39,035 maize test genes, zero duplicates, zero nulls (checked); ribo-seq origin is from the paper only.",
+    "the_win": "A CPU frozen-embedding model matching PlantCAD2's published maize translation on/off AUROC (exact value in Supplemental Table 10, not retrieved) without a GPU.",
+    "even_if_it_fails": "Learn whether 500-bp upstream sequence carries transferable translation signal beyond k-mer composition, or whether these labels mostly track mRNA abundance.",
+    "who_wants_it": "The PlantCAD/Kuleshov and Buckler groups and crop-genome annotators choosing whether GPU-heavy plant DNA models are needed."
+  },
+  "ml_idea": "Embed the 66k 500-bp upstream sequences once with DNABERT-2 on CPU, fit logistic/ridge heads on Arabidopsis, test on maize; compare with 6-mer counts, upstream-ORF features and PlantCAD2's published numbers; drop the leaking tpm column.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.04, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 1.5, "cv_run_minutes": 5, "compute_note": "Estimated, not timed: DNABERT-2 at ~10-20 sequences/s for 500 bp on CPU over 66k sequences; heads are linear models on 768-d features.", "cheapest_killing_check": "Fit a 6-mer logistic regression on Arabidopsis and score maize on/off AUROC; if it matches PlantCAD2's published value, the backbone story is dead."},
+  "verdict": "park",
+  "verdict_reason": "Data is clean and laptop-sized, but it is the PlantCAD2 authors' own benchmark with open, honestly evaluated models already on it (C2 = 0), labels from two studies only, and the best backbone needs a GPU; only a small benchmark note is realistic."
+}

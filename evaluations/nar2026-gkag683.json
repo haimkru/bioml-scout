@@ -1,0 +1,96 @@
+{
+  "paper_id": "nar2026-gkag683",
+  "title": "Acquisition of a novel restriction modification system regulates genetic flux and gene expression in the hypervirulent and globally disseminated CC17 lineage of group B Streptococcus.",
+  "doi": "10.1093/nar/gkag683",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/ena/browser/view/PRJEB94460",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the full supplement (1.5 MB): it contains 2 PDF figure legends and one Excel file, 'Supplementary table 1.xlsx', with 4 sheets of DESeq2 differential-expression output (DESeq2 is a standard tool for comparing gene expression between conditions). Each sheet has 2,103 rows (one per gene of strain COH1), columns GeneID, Base mean, log2(FC), StdErr, Wald-Stats, P-value, P-adj; no duplicate GeneIDs; 157-278 missing cells per sheet. I counted the real signal myself: only 3-4 genes per comparison have adjusted p-value < 0.05, and two of those are always the deleted restriction-modification genes themselves (GBSCOH1_0221/0222 or GBSCOH1_1161/1162). I also queried the European Nucleotide Archive project PRJEB94460 and listed all 27 runs (24 Illumina RNA-seq fastq files of ~0.5 GB each, 3 Oxford Nanopore whole-genome runs), and ran a HEAD request on one Nanopore archive: COH1.tar.gz is 9.38 GB. I listed the authors' GitHub repository (nataliering/Strep_methylation) via the GitHub API: it holds only 2 scripts, a conda environment file and a logo image — no data.",
+    "what_came_from_paper_text_only": "That 1,254 publicly available group B Streptococcus genome assemblies (1,030 kept for the tree) were screened by BLAST against REBASE for restriction-modification genes, and the per-genome presence/absence results — these are drawn only as coloured strips on the Figure 2 phylogenetic tree and are not provided as any table I could find. Also from text only: the two discovered methylation target motifs (6mA at 5'-TGGAG-3' for system SagCOH1I; 5mC at 5'-GGNCC-3' for SagCOH1II), the transformation-efficiency and mouse-colonization experiments, and that per-site methylation calls were produced with modkit and Nanomotif — no processed methylation BED files are deposited anywhere I checked."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Supplement zip and European Nucleotide Archive project are both public, no login; I opened the supplement and listed all 27 sequencing runs."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "For the only tabular route, log2(FC) (log2 fold change in expression) is a ready column in the Excel sheets. For any methylation-site task the label would have to be rebuilt from raw Nanopore signal, which fails this check."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The table holds only locus tags (e.g. gene-GBSCOH1_0041); promoter sequences require downloading one genome and annotation for strain COH1 from RefSeq — a single lookup, not thousands, so this passes with effort."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Columns are self-describing DESeq2 output: log2 fold change, standard error, Wald statistic, raw and adjusted p-value; seen in the file header."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 2103,
+      "note": "FAIL. 2,103 rows per sheet looks sufficient, but I counted only 3-4 genes per comparison above an adjusted p-value of 0.05, two of them the deleted genes themselves; the remaining ~2,099 log2 fold changes scatter around zero (mean -0.01 to -0.05). The real labelled units are 4 comparisons of one strain, not thousands of informative examples — the same 'unit is not the row' failure as the scCT-DB candidate."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "1 MB Excel for the expression route; ~24 GB Illumina fastq plus ~28 GB Oxford Nanopore raw archives (COH1.tar.gz alone is 9.38 GB, verified by HEAD) for any sequence- or methylation-level route",
+      "note": "FAIL for every route that needs the underlying measurements: no processed count matrix or methylation pileup is deposited, so you would have to re-basecall raw Nanopore signal with Dorado in super-accurate mode, which needs a GPU and violates the no-raw-sequencing rule. The 1 MB Excel route fits trivially but has no usable label (see A5)."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "2,103 genes is consistent with the COH1 annotation size; the paper states no row count to contradict it, so nothing disagrees, but nothing independently confirms it either."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "log2 fold changes come from real Illumina RNA-seq counts processed by DESeq2, not from another model's predictions; the methylation motifs come from Nanopore signal plus Nanomotif, i.e. an algorithm's call on a physical measurement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models) would have been the natural backbone for promoter sequence input",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only laptop would suffice for 2,103 short promoter sequences",
+    "licence": "Not assessed — project rejected before backbone choice mattered"
+  },
+  "integration": {
+    "partner_dataset": "REBASE (the reference database of restriction enzymes and their recognition sequences) and the 1,254 group B Streptococcus genome assemblies from Crestani et al.",
+    "join_key": "REBASE enzyme identifier / genome accession",
+    "bigger_question_one_sentence": "Does the methyltransferase protein sequence predict which DNA motif a restriction-modification system will methylate — a real question, but the data for it lives in REBASE, not in this paper, which contributes only two new motifs."
+  },
+  "controls": {
+    "positive_control": "The deleted restriction-modification genes themselves must show the largest fold change — they do (log2 fold change 3.7 to 11.7), which is a sanity check on the authors' pipeline, not a learnable signal for us.",
+    "negative_control": "Label shuffling would be meaningless here because the unshuffled labels are already noise for 2,099 of 2,103 genes.",
+    "external_validation": "None available: no second strain background, no second lab's methylation-versus-expression dataset for group B Streptococcus that I found."
+  },
+  "honest_claim_h3": "Any model trained on this table could claim only 'predicts the near-zero expression change of genes in one Streptococcus agalactiae strain when one of two restriction-modification systems is deleted' — a claim about noise, since only two non-deleted genes in the whole dataset move significantly.",
+  "plain_idea": {
+    "one_liner": "Use promoter DNA sequence to predict which bacterial genes change expression when a DNA-methylating defence system is removed.",
+    "train_on": "Each example would be one gene of group B Streptococcus strain COH1: its promoter sequence plus whether it contains the methylation target motif (5'-TGGAG-3' or 5'-GGNCC-3'). I verified 2,103 genes per comparison and 4 comparisons.",
+    "predict": "The log2 fold change in that gene's expression between wild-type bacteria and a mutant missing the methylation system, measured by Illumina RNA-seq with 3-4 replicates and summarised by DESeq2.",
+    "why_worthwhile": "Bacterial geneticists would like a rule for which methylation sites actually matter for gene regulation; the paper shows only one gene (the sialic-acid regulator nanR) is affected, so there is nothing for a model to generalise from."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict per-gene expression change on loss of a DNA-methylation system from promoter sequence and methylation-motif position, using a DNA language model with a frozen backbone and a small regression head. Killed because the deposited table contains 3-4 significant genes per comparison out of 2,103, so the target variable is essentially measurement noise. The adjacent idea worth keeping in mind — predict a restriction enzyme's recognition motif from its methyltransferase protein sequence — needs REBASE as its dataset; this paper would contribute only two validated motifs as external test cases.",
+  "effort": {
+    "hours_to_feature_table": 5.0,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": 0.5,
+    "cv_run_minutes": 2.0,
+    "compute_note": "Estimated, not timed, for the expression route only: 2,103 short promoter sequences through a small DNA language model on CPU is well under an hour, and the Excel file is 0.7 MB. The methylation route is a different world: 9.38 GB of raw Nanopore data per strain (size verified by HEAD) and GPU basecalling.",
+    "cheapest_killing_check": "Open the four DESeq2 sheets and count genes with adjusted p-value < 0.05. I did this: 4, 3, 4, 4 — and two of each are the knocked-out genes. That one count kills the project in five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A6. The only model-ready file is a 4-sheet DESeq2 table in which just 3-4 of 2,103 genes per comparison are significantly changed (two being the deleted genes themselves), so the label is noise and the true unit of analysis is 4 comparisons of one strain. Everything else the paper measured — the genome-wide methylation sites and the restriction-modification repertoire across 1,254 genomes — was never deposited in processed form: the methylome exists only as ~9.4 GB-per-strain raw Nanopore archives needing GPU re-basecalling, and the comparative-genomics result exists only as coloured strips on a figure. Excellent microbiology, no dataset for machine learning."
+}

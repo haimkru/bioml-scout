@@ -1,0 +1,275 @@
+{
+  "paper_id": "cell2026-08-033",
+  "title": "Norway spruce spatiotemporal programs of conifer reproductive development.",
+  "doi": "10.1016/j.cell.2026.08.033",
+  "journal": "Cell, Sep 2026 (PMID 42735688; no PMCID; Europe PMC isOpenAccess=N, inEPMC=N, so abstract only). No preprint found. NCBI elink from the PMID returned no GEO/SRA/BioProject links; the data were found through an ENA study search (taxon 3329) instead.",
+  "data_url": "GEO GSE288244 (Visium: 25 capture areas, each a *_trimmed_stdata.tsv.gz count matrix of 3.8-18.7 MB plus a *.jpg.gz image of 8.2-14.8 MB; BioProject PRJNA1216624, SRA SRP560412). GEO GSE314335 (PaSPL1 DAP-seq narrowPeak, 2 replicates). Mendeley Data 10.17632/b7fppw63v8 v2 (CC BY 4.0, 31 files, 9.85 GB): spot_files_from_json.zip 5.5 MB, a clustered Seurat RDS of 5.5 GB, Brightfield_images_spruce.zip of 3.7 GB, STdeconvolve xlsx files. Code: github.com/giacomellolab/SpruceProject (no licence).",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "(1) GEO SOFT for 25 GSMs: genotype, timepoint and stage per capture area, plus section counts. These sum to 88 sections, 28 buds and 9 bud-type x month groups. (2) Downloaded 3 count TSVs (GSM8761878/892/886). Each has 4,985-4,992 spots by 28,233-30,904 MA_ genes plus __no_feature, integer counts stored as floats. The 3 files share 22,517 genes out of a 37,288 union. On tissue, __no_feature takes 62-78% of UMIs. Median gene UMIs per spot are 531, 2,105 and 5,269. Genes with a mean of at least 1 UMI per spot number 56, 425 and 942. (3) Mendeley spot_files_from_json: 88 files with 29,053 selected spots (39-801 per section). These match the TSVs 1106/1106, 486/486 and 877/877 at a +1 coordinate offset. (4) An overlay of the selected-spot pixel coordinates on the GEO 10000x10000 JPG puts the spots exactly on the 3 sections. (5) The FemOct theta xlsx has 5,258 spots vs 5,292 in the spot files, and its rows sum to 1 (deconvolution output). (6) DAP-seq consensus peaks: 594,894 BED3 regions on PA_chr* (Picab02). Picab02 is not in NCBI Datasets, which lists only Pabies01. (7) Per-section bud labels come from the GitHub R code. (8) SRA holds 25 runs, 386 Gb of bases (metadata only). (9) Licences via API: DINOv2 apache-2.0 and ungated; UNI gated, cc-by-nc-nd-4.0; scPlantLLM 'Other'.",
+    "what_came_from_paper_text_only": "Abstract only: 88 sections over three time points, the acrocona mutant, DAL55 and the YABBY evolution claims. 55-µm resolution and the August-October timepoints come from the GEO design text. The paper's total spot count, QC'd spot number and cluster definitions (16 clusters per the GitHub README) were not seen. The clustered 5.5 GB RDS, the 22 other count TSVs and the 24 other images were not opened. Whether the Picab02 genome is public was not established."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). GEO HTTPS and Mendeley public-files downloads both worked without login. Mendeley is CC BY 4.0 (DataCite and API)."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass for histology-to-expression (checked): the per-spot UMI count per gene is a column in each TSV. Tissue mask and section membership need a deterministic coordinate join to the spot files (verified). Fails for the obvious alternatives: spatial domains are Seurat clusters or STdeconvolve topics, so they would have to be built."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass (checked for 1 of 25 areas). The 10000x10000 RGB JPG and the pixel_x/pixel_y spot centres line up exactly. Gene IDs are Picea abies v1.0 MA_ models, and no sequence lookups are needed for this task."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked plus GEO text). Values are UMI counts from ST Pipeline 1.7.9 with STAR/HTSeq, and are integer-valued. Depth varies about 10x across capture areas, so library-size normalization is mandatory."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 29053,
+      "note": "Pass for spot-level regression (checked): 29,053 tissue spots in 88 sections. The independent unit is the bud (28, with 2-4 per bud-type x month group), so any bud-level label (fate, month) fails A5. Splits must be grouped by bud."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "About 0.5 GB compressed: 25 TSVs (~220 MB total from GEO filelist sizes), 25 JPGs (~265 MB) and 5.5 MB of spot files. Decode one 300 MB image at a time. The 5.5 GB RDS and the 3.7 GB brightfield zip are not needed.",
+      "note": "Pass. A sparse tissue-spot x gene matrix plus about 29k patches is under 1 GB. Frozen-encoder embedding on CPU is estimated, not timed."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass (checked). 88 sections, 25 capture areas and 3 timepoints match the abstract and GEO. Oct-female spots are 5,292 in the spot files vs 5,258 in the authors' deconvolution table, consistent with their QC (≥100 genes, ≥200 UMIs). The paper's total spot count was not seen (paywalled)."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass for measured UMI counts (checked). Image and counts come from the same physical section, as intended. Do not use the Seurat clusters, STdeconvolve theta or hdWGCNA modules as labels: they are computed from the expression features."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "25 count TSVs + 25 JPGs + 88 spot files; coordinate join verified (+1 offset, 1106/1106 spots)."
+    },
+    "B2": {
+      "score": 1,
+      "why": "TSVs parse but counts are stored as '1.0'; gene columns differ per file (22,517 shared of 37,288, 3 files)."
+    },
+    "B3": {
+      "score": 1,
+      "why": "Same lab and assay, but median gene UMIs/spot 531 vs 5,269 across areas; slide-confounded, needs normalization."
+    },
+    "B4": {
+      "score": 2,
+      "why": "Integer UMI counts; no censored or qualitative values in the 3 files checked."
+    },
+    "B5": {
+      "score": 2,
+      "why": "No duplicate spot IDs or gene columns in the 3 files checked."
+    },
+    "B6": {
+      "score": 1,
+      "why": "GEO processing text and Mendeley description are good; spot-file columns undocumented; bud labels only in R code."
+    },
+    "C1": {
+      "score": 1,
+      "why": "Mixed: failure is ambiguous between low sequencing depth (56 genes ≥1 UMI/spot in one area) and absent morphology signal."
+    },
+    "C2": {
+      "score": 1,
+      "why": "Seven open human histology-to-expression methods benchmarked (DeepHis2Exp); none found for plant tissue, likely novel there."
+    },
+    "C3": {
+      "score": 2,
+      "why": "Clear diversity case: retrieved benchmarks are all human H&E; this is gymnosperm toluidine-blue tissue."
+    },
+    "C4": {
+      "score": 2,
+      "why": "Visium plus 386 Gb of sequencing is costly lab work; stained section images are cheap."
+    },
+    "C5": {
+      "score": 2,
+      "why": "Obvious dummies (per-gene mean, position + bud-type ridge) plus open ST-Net/BLEEP code via DeepHis2Exp."
+    },
+    "D1": {
+      "score": 1,
+      "why": "DINOv2 is open (Apache-2.0, ungated, API-checked) but untested on plant sections; no plant-expression backbone applies."
+    },
+    "D2": {
+      "score": 2,
+      "why": "Cache ~29k patch embeddings once on CPU with ViT-S/14, then per-gene ridge heads."
+    },
+    "D3": {
+      "score": 2,
+      "why": "DINOv2 Apache-2.0; data CC BY 4.0; avoid UNI (gated, CC-BY-NC-ND, API-checked)."
+    },
+    "G1": {
+      "score": 1,
+      "why": "Genes are Picea abies v1.0 MA_ IDs; DAP-seq on Picab02 (not in NCBI); no UniProt/Ensembl IDs."
+    },
+    "G2": {
+      "score": 1,
+      "why": "PlantGenIE/ConGenIE spruce resources plausibly share MA_ IDs; no join tested."
+    },
+    "G3": {
+      "score": 1,
+      "why": "MA_ to Arabidopsis orthologs is many-to-many in expanded families (MADS, YABBY); manageable via orthogroups."
+    },
+    "G4": {
+      "score": 1,
+      "why": "Conserved floral-domain question is largely what the paper already did; the join adds little to the image task."
+    },
+    "H1": {
+      "score": 2,
+      "why": "Vegetative (non-reproductive) buds recorded alongside seed cones and acrocona at each month (GEO metadata)."
+    },
+    "H2": {
+      "score": 0,
+      "why": "One lab, one species, one platform, 28 buds; no male cones (GEO metadata)."
+    },
+    "H3": {
+      "score": 2,
+      "why": "Honest claim written precisely in honest_claim_h3, scoped to 28 buds and ~50-300 genes."
+    },
+    "H4": {
+      "score": 1,
+      "why": "Design gaps (no male cones, 3 months) explicit in GEO; the 10x depth disparity is visible only in the files."
+    },
+    "I1": {
+      "score": 1,
+      "why": "Giacomello lab (KTH/SciLifeLab) and UPSC conifer groups are plausible users; no stated demand for this task."
+    },
+    "I2": {
+      "score": 1,
+      "why": "Could triage which buds deserve Visium; marginal at the 0.1-0.3 correlations typical in human benchmarks."
+    },
+    "I3": {
+      "score": 1,
+      "why": "Per-gene correlation on held-out buds only roughly matches 'is this gene on in this tissue zone?'."
+    },
+    "I4": {
+      "score": 1,
+      "why": "Mapping plausibly complex, but a position + bud-type baseline may capture most of the signal; untested."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Frozen backbone, bud-grouped splits, and cross-genotype and cross-month transfer: real modelling."
+    },
+    "J2": {
+      "score": 1,
+      "why": "Outer-layer and meristem markers give sanity checks; conifer developmental expertise needs a collaborator."
+    },
+    "J3": {
+      "score": 2,
+      "why": "A cleaned spot x gene table with patches and bud labels is shareable even if the model fails."
+    },
+    "J4": {
+      "score": 1,
+      "why": "A two-week budget is proposed, not committed by the user."
+    },
+    "J5": {
+      "score": 1,
+      "why": "Kill condition proposed (cheapest check); no date written in NOTES.md."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Leave-one-bud-out (28), leave-one-capture-area-out (25), or held-out month/genotype; groups verified in GEO + R code."
+    },
+    "E2": {
+      "ok": true,
+      "why": "28 buds, 25 capture areas, 7 slides; 39-801 spots per section (checked)."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Per-gene training mean, bud-type x month mean, position-only ridge."
+    },
+    "E4": {
+      "ok": true,
+      "why": "2-8 serial sections per bud give pseudo-bulk replicate correlation; spot-level replicates are unaligned."
+    },
+    "E5": {
+      "ok": true,
+      "why": "Patch mean intensity (trivial); outer-layer/epidermal genes should rank best-predicted; bud type from image."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Shuffle image-spot pairing within section, noise embeddings, label shuffle within bud."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Timepoint column enables train Aug/Sep, test Oct; WT to acrocona hold-out; 2017 spruce ST data not checked."
+    },
+    "E8": {
+      "ok": false,
+      "why": "No published number for any predictive task on this dataset."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepHis2Exp benchmark (Bioinformatics Advances 2026, PMC13445978) of ST-Net, HisToGene, Hist2ST, DeepSpaCE, BLEEP, STimage and DeepPT; code github.com/BiomedicalMachineLearning/DeepHis2Exp",
+        "open_weights": true,
+        "score_and_split": "Leave-one-sample-out CV on 6 human datasets (breast, skin, kidney, liver). Median Pearson 0.1-0.3 for functionally relevant genes among the top methods. No plant data.",
+        "authors_named_unsolved": "Performance drops sharply on unseen sections; many transcriptional changes have no visible morphology; no uncertainty quantification.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "scPlantLLM (Genomics Proteomics Bioinformatics 2025; github compbioNJU/scPlantLLM, licence 'Other')",
+        "open_weights": null,
+        "score_and_split": "Arabidopsis-only pretraining; zero-shot annotation accuracy up to 0.91 on Arabidopsis (abstract snippet). Weight download not stated on the GitHub page.",
+        "authors_named_unsolved": "Not retrieved. The README does not address cross-species use.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Authors' own analysis (Seurat/Harmony clustering, STdeconvolve, hdWGCNA, trajectories; github giacomellolab/SpruceProject, no licence)",
+        "open_weights": null,
+        "score_and_split": "Descriptive, unsupervised analyses only. No predictive model or held-out score.",
+        "authors_named_unsolved": "Not retrieved (paper paywalled).",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DINOv2 ViT-S/14 (facebook/dinov2-small), frozen, as a patch encoder on 224-px crops around each spot, with per-gene ridge heads. No expression backbone applies: scGPT/Geneformer are human/mouse, and scPlantLLM is Arabidopsis-only with unclear weights and would need MA_ to AGI ortholog mapping.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; about 29k patches through ViT-S estimated under an hour (not timed). No GPU.",
+    "licence": "DINOv2 Apache-2.0 (API-checked). Data CC BY 4.0. GitHub code unlicensed. UNI pathology model gated CC-BY-NC-ND."
+  },
+  "integration": {
+    "partner_dataset": "PlantGenIE/ConGenIE Norway spruce gene resources (same Picea abies v1.0 MA_ gene models; not checked). External test set: Giacomello et al. 2017 Nature Plants legacy-ST spruce female cones (PMID 28481330; data not checked).",
+    "join_key": "MA_ gene ID (e.g. MA_70859g0010), one-to-one within v1.0. Ortholog joins to Arabidopsis would be many-to-many and need an orthogroup collapse rule. The DAP-seq peaks use Picab02 coordinates, which do not join to v1.0 without liftover.",
+    "bigger_question_one_sentence": "Does the morphology-to-expression coupling learned in wild-type buds break down in acrocona transition shoots, flagging where mutant tissue looks vegetative but expresses reproductive programs? This is mostly within-dataset; the external join is weak."
+  },
+  "controls": {
+    "positive_control": "(1) Recover patch mean stain intensity from the embedding (near-perfect). (2) Outer-layer/epidermal and YABBY-family genes, which the paper says mark inner/outer layers, should be among the best-predicted genes. (3) Predict bud type (seed cone vs vegetative) from image patches in held-out buds.",
+    "negative_control": "Shuffle image-spot pairing within each section (must fall to the dummy). Swap in random embeddings of the same shape. Position-only ridge (distance to section edge plus bud type) as the bar the image must beat.",
+    "external_validation": "Within-data: train Aug+Sep and test Oct; train wild-type and test acrocona; leave one slide out. External: the 2017 spruce female-cone legacy ST (different platform, 100 µm spots), whose availability was not checked."
+  },
+  "honest_claim_h3": "For 10-µm toluidine-blue cryosections of Norway spruce shoot primordia from one lab, one Visium protocol and 28 buds (August-October; wild-type seed cones, vegetative buds and acrocona), a frozen generic image encoder with a linear head predicts depth-normalized expression of the ~50-300 genes measured well in every capture area, in held-out buds, better or no better than a position-plus-bud-type baseline. It says nothing about other conifers, stains, male cones or single cells.",
+  "pitch": {
+    "headline": "29,053 Visium spots across 88 Norway spruce bud sections, CC BY 4.0, with images verified aligned to spot coordinates — no plant histology-to-expression benchmark exists.",
+    "what_makes_the_data_unusual": "The DeepHis2Exp benchmark's seven methods were evaluated on six human datasets (breast, skin, kidney, liver) and no plant data, while this is conifer tissue: 25 capture areas, 28 buds, three months, wild-type seed cones, vegetative buds and the acrocona mutant per the GEO SOFT genotype and timepoint fields. The image-to-label link is checked rather than assumed — selected spot coordinates matched the count matrices 1106/1106, 486/486 and 877/877 at a +1 offset in the three areas opened, and overlaying them on the 10000x10000 JPG put them exactly on the three sections; the 55-µm spot size comes from GEO's design text, not from the files.",
+    "the_win": "A held-out-bud (leave-one-bud-out) Pearson correlation in the 0.1-0.3 band that DeepHis2Exp's top methods reach on human tissue, for the 50-300 genes measured in every capture area, with a frozen DINOv2 ViT-S/14 ridge beating a position-plus-bud-type ridge — the first such number on a plant, on a 0.6 GB working set and a laptop CPU.",
+    "even_if_it_fails": "A clean negative is informative but bounded: it would say that toluidine-blue bud morphology at 55 µm carries no expression signal beyond position and bud type, for one lab, one Visium protocol and 28 buds, and nothing about other conifers, stains or male cones. The caveat is depth — one capture area has only 56 genes averaging 1 UMI per spot and 62-78% of on-tissue UMIs fall in __no_feature, so a failure may measure the assay's depth rather than the anatomy, which is why the verdict is park rather than do-it.",
+    "who_wants_it": "The Giacomello lab (authors of the public SpruceProject code) and conifer reproductive-development groups using the Picea abies v1.0 MA_ gene models via PlantGenIE/ConGenIE; the decision it changes is whether to spend sequencing on more buds or stain and image them instead. The DeepHis2Exp authors, who named cross-section generalization as unsolved, would get their first non-human, non-mammalian data point."
+  },
+  "plain_idea": {
+    "one_liner": "Use microscope images of stained spruce bud sections to predict which genes are active at each spot in the tissue.",
+    "train_on": "For each of 29,053 tissue spots (55 µm wide) across 88 sections from 28 buds, a small image crop of the stained section centred on that spot.",
+    "predict": "The spot's measured gene activity: molecule counts per gene from the slide-based spatial sequencing assay run on the same section, for the few hundred best-measured genes.",
+    "why_worthwhile": "If cheap staining images carry enough signal, conifer labs could map gene activity in many more buds without sequencing. If not, we learn that bud anatomy at this resolution doesn't reveal expression, which is a useful negative for plant spatial studies."
+  },
+  "ml_idea": "Parse the 25 GEO count TSVs onto a union gene index and keep the 29,053 spot-file tissue spots. Library-normalize and select genes measured in every capture area. Crop 224-px patches from the GEO JPGs at pixel_x/pixel_y, embed them with frozen DINOv2-S on CPU, and fit per-gene ridge heads with leave-one-bud-out CV. Compare against position + bud-type and shuffled-pairing controls. Then run the transfer tests: wild-type to acrocona, and Aug/Sep to Oct.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 0.6,
+    "needs_gpu": false,
+    "cheapest_killing_check": "Download all 25 count TSVs (~220 MB) and the spot files. Count genes with ≥0.5 mean UMI per tissue spot in every capture area (Slide1 C1 has only 172, so the shared set may be under 100). Then, on 3 areas, compare a DINOv2 ridge with a position + bud-type ridge under leave-one-bud-out. Kill if fewer than 50 shared genes, or if the image adds nothing over position.",
+    "peak_ram_gb": null,
+    "embedding_hours": 1,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes come from the GEO filelist (25 TSVs ~220 MB, 25 JPGs ~265 MB, 5.5 MB spot files) and the plan to decode one 300 MB image at a time; the under-one-hour CPU embedding time for ~29k patches is an estimate and nothing was timed."
+  },
+  "verdict": "park",
+  "verdict_reason": "Data is open (GEO + Mendeley CC BY), small (~0.5 GB working set) and verified to align: 88 sections, 29,053 tissue spots, images registered to spots. Every ML-ready label is weak. Spatial domains are clusters or deconvolution outputs (A8), and fate/month labels rest on only 28 buds (A5). That leaves histology-to-expression, a diversity re-run of a crowded human task on low-depth data (as few as 56 genes ≥1 UMI/spot in one area) with modest payoff."
+}

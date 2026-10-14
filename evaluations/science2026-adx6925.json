@@ -1,0 +1,132 @@
+{
+  "paper_id": "science2026-adx6925",
+  "title": "The origin, history, and resistance architecture of an invasive urban malaria mosquito in Africa",
+  "doi": "10.1126/science.adx6925",
+  "journal": "Science",
+  "data_url": "https://malariagen.github.io/vector-data/as1/as1.0.html",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the only openly reachable table: metadata/cease_combinedmetadata.20250212.csv from the authors' GitHub repo AsGARD (336 KB, 551 rows x 24 columns; country 9 values, location 37, analysis_pop 11, pop_code 13, SuperPopulation 3, latitude/longitude, collection_date, collection_method). Listed all 42 files in that repo: analysis code only, no genotype, copy-number or resistance tables. Tested anonymous HTTP access to the Google Cloud Storage (GCS) bucket gs://vo_aste_release_master_us_central1 at five paths (manifest, per-sample-set metadata CSV, Zarr sites store, bucket listing API): all returned HTTP 403 Forbidden or 401 Unauthorized. The sibling Anopheles gambiae bucket vo_agam_release also returned 403. Ran a HEAD request on one anonymously reachable Sanger S3 file: VMF00321-0001.vcf.gz is 1,924,241,994 bytes (1.9 GB) for one mosquito; the same bucket listing shows per-sample BAM alignment files of 3.6 GB each. Read the MalariaGEN Vector Observatory data access page, the As1.0 release page, and the As1 download and cloud pages in full. Retrieved the open bioRxiv preprint full text (PMC11974716) and its data availability statement.",
+    "what_came_from_paper_text_only": "The 645-genome figure, the invasion scenario (South Asia to Djibouti bridgehead, then Sudan, Ethiopia/Kenya, Yemen), and the claim that resistance is mediated by metabolic detoxification genes with copy-number amplifications introduced from South Asia. I never saw any single nucleotide polymorphism (SNP) genotype, copy-number variant (CNV) call, or phased haplotype for any sample. The Europe PMC supplementary-file endpoint timed out at 120 s, so the Science supplementary tables were not retrievable; the NCBI link for this DOI pointed at an unrelated bioRxiv paper (PMC13419477, a habitat-suitability study), so there is no open full text for the Science version."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified by request. Every analysis-ready file (sample metadata CSV, SNP Zarr arrays, site filters, CNV data) sits in the GCS bucket vo_aste_release_master_us_central1, which returns 403 to anonymous requests at all five paths I tried. The MalariaGEN Vector Observatory access page requires a Google account plus a submitted data access request form, 'granted subject to verification checks', and a fair-usage policy asking users to email support before any bulk download outside Google Cloud's US region. That is an access application, not an open download."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The plausible label is already a column: country, location, admin1_name, analysis_pop, pop_code, SuperPopulation, latitude and longitude are all populated for 551/551 rows in the open metadata CSV I parsed. This is the one part of the project that is genuinely ready."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL, verified. The open CSV contains labels and sample identifiers but zero genetic features; its fastq_1_path, bam_path and vcf_path columns are the first author's local filesystem paths (/home/dennist/lstm_data/...), not URLs. The features exist only behind the gated GCS Zarr store, or as 639 separate 1.9 GB all-sites VCF files that must be merged with bcftools to build a genotype matrix."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Not applicable in the usual sense, and fine where it applies: latitude/longitude are decimal degrees, dates are dd/mm/yyyy, DNA concentration is labelled 'conc (ng/ul)'. Checked in the file."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 551,
+      "note": "FAIL for the per-sample task. The unit of analysis is a mosquito: 551 rows in the open file, 639 in the As1.0 release, 645 claimed in the abstract. Above the ~400 classification floor, but with 9 countries and 13 population codes the smallest classes are tiny (Pakistan 15, Djibouti lab colony 14, India 15), and one class, Sudan, is 226/551 (41%)."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": ">1.2 TB to rebuild genotypes from open files; gated Zarr store size unknown",
+      "note": "FAIL, verified by HEAD request. The only anonymously downloadable genomic data are per-sample all-sites VCFs at 1.9-3 GB each and BAMs at 3.6 GB each; 639 samples is roughly 1.2-1.9 TB of VCF before any merging, plus a joint-genotyping step. That breaches both the 50 MB per-file rule and the ~5 GB working-set limit, and the files are near-raw sequencing data this project is told not to download."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "FAIL. Four different sample counts for the same study: 511 (authors' GitHub README), 551 (the metadata CSV I counted), 639 (As1.0 release manifest, which I read), 645 (Science abstract). The versions are probably nested, but with no access to the release metadata I cannot confirm which samples were added or dropped between them."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Clean for the geographic label: country, site and coordinates come from the field collection record, independent of the sequencing. Note that analysis_pop and pop_code are themselves derived from clustering the genomes (ADMIXTURE/PCA in the repo notebooks), so predicting those from genotypes would be circular; country is the honest label."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Locator (Battey, Ralph & Kern 2020, eLife) - a deep neural network that predicts a sample's collection coordinates from its genotypes",
+        "open_weights": true,
+        "score_and_split": "Published applied to 765 Anopheles gambiae/coluzzii mosquitoes from the Ag1000G project across sub-Saharan Africa, reporting median geographic prediction error on held-out individuals; code is open at github.com/kr-colab/locator. I read the search result summary and the eLife listing, not the full paper's numbers.",
+        "authors_named_unsolved": "Not retrieved - I did not open the full text, so I cannot quote what they named as unsolved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Geographical classification of malaria parasites by convolutional neural network (Scientific Reports 2022) - predicts country/GPS of a Plasmodium infection from whole-genome SNPs",
+        "open_weights": null,
+        "score_and_split": "Reported >90% accuracy at country level, with classification beating regression on distance error; parasite not mosquito, so it is a method precedent rather than a direct competitor. From the search summary only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "diploS/HIC-style convolutional neural network for selective sweeps in Anopheles (Xue et al., Mol Biol Evol 2021) - classifies genomic windows as under selection",
+        "open_weights": true,
+        "score_and_split": "Trained on coalescent simulations, applied to eight Ag1000G populations; evaluated on simulated data, so accuracy is simulation-based rather than held-out-field. From the search summary and abstract listing.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate. DNA language models (Nucleotide Transformer, DNABERT-2, HyenaDNA, AlphaGenome) embed reference sequence, not an individual's genotype vector, so they do not fit a population-assignment or copy-number task on 551-645 mosquitoes.",
+    "freeze_and_head_viable": false,
+    "hardware": "Not applicable - the blocker is data access, not compute.",
+    "licence": "Not applicable."
+  },
+  "integration": {
+    "partner_dataset": "Ag3 (Anopheles gambiae 1000 Genomes, ~2,400 genomes) and Af1 (Anopheles funestus) in the same Vector Observatory, joinable in principle on genomic coordinates against the AsteI2/UCI_ANSTEP_V1.0 assembly plus VectorBase gene identifiers.",
+    "join_key": "Gene identifier (VectorBase) or orthologous detoxification gene family (CYP6, CYP9, GSTe), plus genomic coordinates with genome build recorded.",
+    "bigger_question_one_sentence": "Do the same detoxification gene amplifications that drive insecticide resistance in Anopheles gambiae recur independently in the invading Anopheles stephensi, or were they imported wholesale from South Asia? - a good question, but it cannot be asked because both sides of the join are behind the same access form."
+  },
+  "controls": {
+    "positive_control": "Would have been strong if data were open: the Pakistan and Afghanistan samples are the known South Asian source population and should be the easiest to assign, and the Djibouti lab colony (14 samples, inbred) should be near-perfectly separable.",
+    "negative_control": "Label shuffling across the 9 countries, and sample-set ablation to confirm the model is not just learning sequencing batch (sequencing_date has only 27 distinct values and is almost collinear with country).",
+    "external_validation": "A temporal split is available in principle - collection_date spans 2005 to 2025 in the release, and the 2005 Pakistan and 2017 Afghanistan samples predate the African invasion - but there is no second independent genotype set for this species."
+  },
+  "honest_claim_h3": "Not reachable. With the open files alone the only claim possible is 'here is where 551 mosquitoes were collected', because no genetic feature for any individual is openly downloadable; had access been granted, the honest claim would have been 'assigns an Anopheles stephensi genome to one of 9 sampled countries, among sites that eleven surveillance partners chose to sample, with 41% of training data from Sudan alone'.",
+  "plain_idea": {
+    "one_liner": "Use a mosquito's genome-wide genetic variants to predict which country it was caught in, for invasion tracking.",
+    "train_on": "For each mosquito, its genotype at genome-wide single-nucleotide variants plus copy-number state at insecticide-detoxification genes. I verified 551 labelled mosquitoes in the open metadata table (the release says 639, the paper says 645), but I could not open a single genotype for any of them.",
+    "predict": "The country or sampling site where the mosquito was collected, and whether it carries an amplified detoxification gene. The country label is the field collection record; the amplification call comes from sequencing read depth analysed with a hidden Markov model.",
+    "why_worthwhile": "National malaria control programmes in Ethiopia, Sudan and Kenya need to know whether a newly found Anopheles stephensi population is a fresh import or local spread, because that decides whether to spend money on port surveillance or on larval source management. Even a failure would show how far genomic provenance assignment degrades for a recently founded invasive population with little genetic differentiation."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Locator was already applied to 765 Ag1000G Anopheles genomes, more than the 551-645 here, and we cannot obtain our genotypes at all. The only genuinely new slice is the species (Anopheles stephensi) and the Middle East, which is a real gap but not a data-volume edge."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No replicate sequencing of the same mosquito is described, and class sizes of 14-15 for Pakistan, India and the Djibouti colony are too small to calibrate per-group uncertainty. Locator already reports per-sample prediction uncertainty via windowed bootstrap."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "Locator is a 2020 fully-connected network with open code, evaluated on held-out individuals rather than held-out sites, so a site-held-out re-evaluation would be a legitimate and beatable target. But it is open, reproducible and honestly applied to this exact genus, so the margin is narrow."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The first condition fails outright: we cannot run any baseline because we cannot obtain the genotype matrix the baseline consumes. No join key helps when the features are behind an access form."
+    }
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Intended project: train a classifier that assigns an Anopheles stephensi genome to its country or invasion front (9 countries, 13 population codes) from genome-wide SNP genotypes, evaluated with a leave-one-site-out split so it measures provenance assignment for a genuinely new collection site rather than for a new individual from a known site; secondary task, predict copy-number amplification status at detoxification genes (CYP6, CYP9, GSTe) from flanking haplotypes, which would let cheap amplicon panels infer amplifications they cannot measure directly. Both tasks are well posed and the labels are clean, but neither is executable: the genotype features are not openly downloadable.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 1200.0,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated for the modelling, because no feature matrix can be built. The 1,200 GB working set is a measured floor: one HEAD request showed a single-sample all-sites VCF at 1.92 GB, times 639 samples, before joint merging. The gated Zarr store would be far smaller but its size is unknown to me.",
+    "cheapest_killing_check": "Request one file from the Google Cloud Storage bucket without credentials. It takes thirty seconds and returns 403, which kills the project before anything is downloaded. I did this five times, including on the sibling Anopheles gambiae bucket, which also returns 403."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A1 fails, verified by request rather than inferred: the analysis-ready SNP, copy-number and metadata files are in a Google Cloud Storage bucket that returns 403 to anonymous requests and requires a Google account plus an approved MalariaGEN data access request form, with a fair-usage policy that explicitly discourages bulk download outside Google Cloud. A3 fails with it - the one table I could open (551 rows, 24 columns, from the authors' GitHub) holds the labels (country, site, coordinates, collection date) but not a single genetic feature, and its file-path columns are the first author's local disk paths. A6 fails too: the only anonymously reachable genomic files are per-sample all-sites VCFs at 1.9 GB and BAMs at 3.6 GB each, roughly 1.2 TB for the cohort, which is near-raw sequencing data over every size limit here. A7 is shaky as well, with four sample counts for one study (511, 551, 639, 645). Finally the obvious task is not open ground: Locator, an open-weights neural network for predicting collection location from genotypes, has already been applied to 765 Anopheles genomes from Ag1000G. Revisit if MalariaGEN drops the access form or publishes a small derived table of per-sample resistance-gene copy numbers."
+}

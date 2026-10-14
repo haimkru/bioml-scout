@@ -1,0 +1,48 @@
+{
+  "paper_id": "ajhg2026-07-010",
+  "title": "The Gabriella Miller Kids First Data Resource for genomic research in pediatric cancer and congenital anomalies.",
+  "doi": "10.1016/j.ajhg.2026.07.010",
+  "journal": "American Journal of Human Genetics 113(9), Sep 2026 (PMID 42607672). Europe PMC lists isOpenAccess=N, inPMC=N, no PMCID, and 'Subscription required'. The cell.com full text returned HTTP 403.",
+  "data_url": "https://portal.kidsfirstdrc.org (needs a Keycloak login). Genomic files are in per-study S3 buckets arn:aws:s3:::kf-study-us-east-1-prd-sd-*, controlled through dbGaP (e.g. phs001110, phs001138, phs001228, phs001168). Separate open derivative: s3://d3b-openaccess-us-east-1-prd-pbta/open-targets/ (OpenPedCan).",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Anonymous S3 ListObjects on kf-study-us-east-1-prd-sd-46sk55a3 (CDH) and sd-preasa7s (PCGC) both returned 403 AccessDenied. The AWS Open Data registry YAML marks every bucket ControlledAccess via a dbGaP link. From the portal JS bundle I found the arranger API. Its participant GraphQL (kf-api-arranger.kf-strides.org/prd/graphql) returned 403 without a token. Only the aggregate /statistics endpoint is public: 36 studies, 38,183 participants, 149,714 samples, 1,123,665 files, 1.82 PB, 28,404 genomes, 4,089 transcriptomes, 9,373 families. PedcBioPortal /api/studies returned 401. As an aside, the separate OpenPedCan bucket lists anonymously. I read its v15 file listing and the histologies.tsv header (69 columns incl. OS/EFS, molecular_subtype, DKFZ/NIH methylation classes).",
+    "what_came_from_paper_text_only": "I read only the abstract (Europe PMC): >30,000 participants released. The full text is paywalled (403), so I did not read the data availability statement or methods. Two figures come from a web-search snippet of the ScienceDirect page, not from text I retrieved: 38,180 participants with clinical data released by end of 2025, and 30,854 with genomic data."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "CONTROLLED ACCESS (dbGaP). Verified: the genomic S3 buckets return 403 anonymously, and the registry says dbGaP authorization is needed for all of them. Participant-level clinical metadata sits behind a portal login (arranger GraphQL 403). Only aggregate counts are public."},
+    "a2_label_is_a_column": {"pass": null, "note": "Not checked (login wall). The /statistics endpoint shows diagnosis is harmonised to MONDO IDs, so a diagnosis label likely exists as a participant column. Any variant-level or outcome label would have to be built from the WGS."},
+    "a3_inputs_present": {"pass": false, "note": "The inputs are WGS/RNA-seq CRAM/VCF under dbGaP. Nothing feature-level is openly present."},
+    "a4_units_stated": {"pass": null, "note": "Not checked; no files opened."},
+    "a5_enough_rows": {"pass": true, "n_rows": 38183, "note": "38,183 participants and 28,404 genomes per the public /statistics API (aggregate only). The abstract says >30,000 participants. No row-level table was opened."},
+    "a6_fits_laptop": {"pass": false, "working_set": "1.82 PB across 1,123,665 files (per /statistics API)", "note": "The resource is raw/aligned genomics at petabyte scale and is meant to be analysed in CAVATICA (cloud). Any usable variant-level working set would be far over 5 GB."},
+    "a7_counts_match_paper": {"pass": null, "note": "Approximate only. The API gives 38,183 participants and 28,404 genomes + 4,089 transcriptomes. The search snippet of the paper gives 38,180 participants and 30,854 with genomic data. It is a live DB, and the genomic counts may be defined differently."},
+    "a8_label_provenance": {"pass": null, "note": "Not evaluable without access. Diagnoses are clinical (MONDO-mapped), which would be fine. In the open OpenPedCan derivative, though, molecular_subtype is partly assigned by the DKFZ/NIH methylation classifiers and RNA classifiers ('Subtype based on methylation'). That is circular if used as a target."}
+  },
+  "part_a_verdict": "reject",
+  "scores": {
+    "b_model_readiness": null,
+    "c_worth_asking": null,
+    "d_backbone_fit": null,
+    "g_integration": null,
+    "h_missing_data": null,
+    "i_does_anyone_care": null,
+    "j_fit_finishability": null
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "AI forecasting of post-surgical outcomes from exome sequencing in 2,253 PCGC CHD patients (Nature Communications 2025, 'Genome sequencing is critical for forecasting outcomes following congenital cardiac surgery')", "open_weights": null, "score_and_split": "Not retrieved (search snippet only).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Heart-specific splice-disrupting variant model (Genome Medicine 2024, 10.1186/s13073-024-01383-8), built on GS from 1,101 CHD probands plus myocardial RNA-seq", "open_weights": null, "score_and_split": "Not retrieved (search snippet only).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "OpenPBTA/OpenPedCan RNA-expression medulloblastoma subtype classifier (SHH/WNT/Group 3/Group 4) applied in the OpenPBTA analysis repo", "open_weights": true, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "None viable on the open tier. For the controlled WGS, AlphaGenome or Nucleotide Transformer variant-effect heads would need dbGaP approval and cloud compute.", "freeze_and_head_viable": null, "hardware": "Cloud (CAVATICA) required for the controlled data. Not laptop-feasible.", "licence": "NIH Genomic Data Sharing Policy, dbGaP Data Use Certification per study. The paper is CC BY-NC-ND."},
+  "integration": {"partner_dataset": "Not scored (Part A reject). If access were granted: gnomAD/AlphaGenome Atlas on GRCh38 coordinates, or GTEx/Open Targets on Ensembl gene.", "join_key": "GRCh38 coordinates; Ensembl gene; MONDO/HPO for phenotype", "bigger_question_one_sentence": "Not written; Part A failed."},
+  "controls": {"positive_control": "Not defined (Part A reject).", "negative_control": "Not defined (Part A reject).", "external_validation": "Not defined. Cancer cohorts could use TARGET/CBTN through OpenPedCan; CHD cohorts could use PCGC exomes."},
+  "honest_claim_h3": "Not written. No open label table exists to make a claim about.",
+  "ml_idea": "None on this resource without a dbGaP application. Spin-off worth its own evaluation: OpenPedCan v15 (open S3, no login) has histologies.tsv (21 MB) with OS_days/EFS_days plus gene TPM (285 MB .rds) and fusions/CNV/TMB tables. Beware that subtype labels there are classifier outputs (A8), and methylation-based histology classification is crowded.",
+  "effort": {"hours_to_feature_table": null, "cheapest_killing_check": "Done: the anonymous S3 list on two Kids First study buckets and the arranger participant query both return 403, so the data is dbGaP-controlled and login-gated."},
+  "roi": null,
+  "verdict": "reject",
+  "verdict_reason": "A1 fails (controlled access, dbGaP). Every Kids First genomic bucket returned 403 anonymously and the registry lists dbGaP authorization for each. Participant-level clinical data needs a portal login. A6 also fails (1.82 PB, CAVATICA cloud workflow). The open OpenPedCan derivative (d3b-openaccess bucket) is a separate resource and should get its own evaluation."
+}

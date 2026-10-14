@@ -1,0 +1,149 @@
+{
+  "paper_id": "natgen2026-02692-x",
+  "title": "Prevalence and chronology of colibactin-associated mutational processes and their microbiome spectra in Japanese colorectal cancer.",
+  "doi": "10.1038/s41588-026-02692-x",
+  "journal": "Nature Genetics",
+  "data_url": "https://humandbs.dbcls.jp/en/data-use (controlled access; JGAS000696, JGAS000872) + open fecal metagenome reads PRJDB18241/18242/38070/4176",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the only public data file, the 161 KB supplementary workbook (41588_2026_2692_MOESM4_ESM.xlsx, 24 sheets). Supplementary Table 1 has exactly 255 patient rows with clinical fields plus a microbiome-subtype label (117/27/35/17 in subtypes 1-4, 59 marked 'Metagenome data(-)'); Table 20 has 150 clbP qPCR rows; Table 24 has 138 rows of structural-variant counts; Table 18 has 34 mutation rows. No sheet contains per-patient mutational-signature exposures and no sheet contains bacterial species abundances. I also queried NCBI SRA: PRJDB18241 (84 runs), PRJDB18242 (62), PRJDB38070 (61), PRJDB4176 (645) are public, but one run (DRR571492) is 7.5 Gbp / 4.3 GB of raw fecal metagenome fastq. I confirmed the DDBJ JGA study page for JGAS000696 loads but the study is a controlled-access human-genome archive entry.",
+    "what_came_from_paper_text_only": "That access to the human whole-genome, transcriptome and some metagenome datasets requires an application to the National Bioscience Database Center (NBDC) via the DDBJ portal; that 44.8% of non-hypermutated patients carry SBS88/ID18; that 141 patients had both whole-genome and whole-genome metagenomic sequencing and 395 had metagenomic sequencing; that a random forest with SHAP produced the four subtypes. I did not see any of the signature exposures, abundance profiles or the classifier itself."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL. The data availability statement states access to JGAS000696, JGAS000872 and the PRJDB accessions is controlled and requires an application to the NBDC (National Bioscience Database Center) through the DDBJ portal. The only thing I could actually download is the supplementary workbook of summary tables. The fecal metagenome reads are public in SRA but only as ~207 raw fastq runs (~4.3 GB each, roughly 0.9 TB total), which is raw sequencing data this project does not download."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The intended label, each patient's colibactin signature exposure (SBS88 and ID18 fractions), appears nowhere as a per-patient column. Supplementary Tables 11-16 report only subgroup medians and P values. It would have to be reconstructed by running signature fitting on controlled-access whole genomes."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL. The model inputs, bacterial species relative abundances per stool sample, are not in any public file. Supplementary Table 4 gives only 307 rows of SHAP (SHapley Additive exPlanations) importance values, not the abundance matrix. Building the inputs means assembling ~0.9 TB of raw reads with MetaPhlAn-style profiling."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "What is public is well labelled: age in years, body mass index, Brinkman Index (cigarettes/day x years), survival in months, clbP copies/mL. Checked in the workbook."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 255,
+      "note": "FAIL. Supplementary Table 1 has 255 patients; only 196 have metagenome data; the paper's colibactin analysis covers 183 non-hypermutated tumours and 141 have both assays. All are far below the ~1,500-row bar and below the ~400-row classification bar. Counts verified in the file."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "~0.9 TB of raw fecal metagenome fastq if rebuilt from the open SRA runs; 161 KB for the public summary tables",
+      "note": "FAIL for the only route to real features. One SRA run alone is 4.3 GB (DRR571492, verified via NCBI esummary), and there are ~207 runs across the three new BioProjects. Taxonomic profiling of that is a server job, not a laptop job."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Supplementary Table 1 has exactly 255 rows, matching the paper's cohort 1 n = 255; Supplementary Table 2 has 146 healthy controls as stated. Verified in the file."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL as a practical matter. The microbiome subtype that IS public (Table 1) is itself the output of the authors' own random forest plus SHAP clustering, so predicting it would be distilling their unreleased model. The physically measured label, signature exposure from whole-genome sequencing, is not public."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "This paper's own random forest plus SHAP (SHapley Additive exPlanations) microbiome classifier, which defines the four colorectal cancer subtypes",
+        "open_weights": false,
+        "score_and_split": "No accuracy figure is reported for the subtyping itself; the code availability statement releases only callallSV (a structural-variant caller), not the classifier.",
+        "authors_named_unsolved": "They note that Escherichia coli was detected in the metagenomes but was not among the taxa driving subtype assignment, leaving the link between the bacterium that makes colibactin and the mutational signature unexplained.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Cross-cohort metagenomic colorectal cancer classifiers built on MetaPhlAn2 species profiles (Thomas-style meta-analysis of 969 fecal metagenomes, retrieved as PMC9533319)",
+        "open_weights": true,
+        "score_and_split": "Random forest models trained and tested across cohorts; the retrieved summary names Peptostreptococcus stomatis and Fusobacterium nucleatum as top-ranked discriminative species, the same taxa this paper highlights.",
+        "authors_named_unsolved": "Cross-cohort transfer of microbiome classifiers, and whether gene-family or pathway profiles beat species abundances.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CCPred, a population-specific colorectal cancer predictor from metagenomes (Computers in Biology and Medicine, 2024)",
+        "open_weights": null,
+        "score_and_split": "Retrieved as a title/abstract only; it reports global and population-specific prediction at several molecular levels. I did not retrieve a number.",
+        "authors_named_unsolved": "Population specificity of microbiome biomarkers.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Comparative machine-learning study for microbiome-based colorectal cancer diagnosis and staging (Scientific Reports)",
+        "open_weights": null,
+        "score_and_split": "Random forest gave the highest and most consistent area under the curve across validation cohorts, 0.8633-0.8672, for the binary cancer-versus-control task.",
+        "authors_named_unsolved": "Multi-class staging remains much weaker than binary diagnosis.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Random forest classifier of colibactin-induced damage per tumour type in the Hartwig Medical Foundation cohort (Cancer Cell 2024, 'Improved detection of colibactin-induced mutations by genotoxic E. coli in organoids and colorectal cancer')",
+        "open_weights": null,
+        "score_and_split": "Classifies colibactin-positive samples from genome sequence; the paper reports overlap between signature refitting, -3-4AA motif counting and the random forest. I retrieved the abstract-level description only, not a split-specific number.",
+        "authors_named_unsolved": "Detecting low-level colibactin exposure when other mutational processes dominate.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable. There is no public sequence or abundance matrix to embed; DNA backbones such as Nucleotide Transformer would need the controlled-access tumour genomes, and no microbiome foundation model could be applied without the species abundance table.",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "curatedMetagenomicData, which already contains processed species abundance profiles for the earlier Japanese cohort (YachidaS_2019, BioProject PRJDB4176), could in principle be joined to this paper's patients",
+    "join_key": "Metagenome ID / DDBJ sample accession",
+    "bigger_question_one_sentence": "Does the fecal microbiome predict which tumours carry the colibactin mutational signature? The join cannot be made because this paper publishes neither the per-patient signature exposures nor the abundance profiles for its new cohort."
+  },
+  "controls": {
+    "positive_control": "Would have been recovering the known Fusobacterium nucleatum and Peptostreptococcus stomatis enrichment in colorectal cancer versus healthy stool, which the authors report and which the public meta-analyses also find. Not runnable without the abundance matrix.",
+    "negative_control": "Label shuffling would be trivially runnable if a feature/label table existed; it does not.",
+    "external_validation": "curatedMetagenomicData's Japanese and European colorectal cancer cohorts would be a genuine external set, but there is nothing in this paper to train on."
+  },
+  "honest_claim_h3": "No honest claim is possible from the public files: the strongest statement they support is a description of 255 Japanese colorectal cancer patients' clinical variables and their assigned microbiome subtype, with no measured molecular outcome attached.",
+  "plain_idea": {
+    "one_liner": "Use gut bacteria measured in stool to predict whether a colorectal tumour carries the colibactin DNA-damage fingerprint.",
+    "train_on": "One row per patient: the relative abundance of each bacterial species in their stool, plus age, sex, body mass index, smoking and drinking history. At most 141 patients have both the stool and the tumour genome, verified from the paper text; only 255 clinical rows are actually public.",
+    "predict": "Whether the tumour genome carries the colibactin mutational signatures SBS88 and ID18, and how much of each. The true answer comes from fitting known mutational patterns to the tumour's whole-genome sequence, which lives in a controlled-access archive.",
+    "why_worthwhile": "If stool bacteria predicted the colibactin fingerprint, a cheap non-invasive test could flag people whose colon is being mutated right now, which matters for the rise in colorectal cancer among people under 50. Even a negative result would show the toxin exposure is historical and not readable from today's microbiome."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The usable public part of this paper is 255 clinical rows. The published metagenomic colorectal cancer classifiers were trained on 969 fecal metagenomes with processed abundance profiles already available, which is both larger and actually downloadable."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No replicate measurements are public. The only repeated measurement I found is clbP qPCR in 12 matched tumour and normal mucosa pairs (Supplementary Table 20, 150 rows total), which is far too few to calibrate per-patient uncertainty."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The cross-cohort random forest classifiers reach 0.86-0.90 area under the curve on held-out cohorts, which is honest external validation. The one model unique to this paper, its own subtyping random forest, is unreleased, so we could not even compare."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Every condition fails: the paper's model cannot be run as a baseline (no code or weights), we cannot see everything it sees (no abundance matrix), and there is no shared evaluation split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The intended project was: predict each tumour's colibactin mutational signature burden (SBS88 and ID18 fractions, derived from whole-genome sequencing) from that patient's fecal bacterial species abundances plus clinical covariates, with the four microbiome subtypes as an interpretable intermediate. It is not executable here because neither the labels nor the features are public, and the cohort is ten times too small even if they were.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.00016,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "The only working set I could build is the 161 KB supplementary workbook, which I opened with openpyxl in under a second. Any real version of this project requires taxonomic profiling of ~0.9 TB of raw reads plus controlled-access human genomes, which I estimated from one SRA run's reported size (4.3 GB) times ~207 runs; nothing beyond the workbook was timed.",
+    "cheapest_killing_check": "Open the supplementary workbook and search every sheet for a per-patient SBS88 or ID18 value. There are none; the signature results are published only as subgroup medians. That one grep kills the project in five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A1, A2, A3, A5, A6 and A8. The whole-genome and transcriptome data that carry the colibactin signature labels are in the Japanese Genotype-phenotype Archive behind an NBDC application; the bacterial abundance matrix that would be the model input is published nowhere; and the only public file is a 24-sheet summary workbook whose largest per-patient sheet is 255 clinical rows, with no measured molecular outcome. The fecal metagenome reads that are open in SRA are ~0.9 TB of raw fastq, which is both out of policy and off-laptop. Even with full access the cohort (183 non-hypermutated tumours, 141 with paired stool and genome) is an order of magnitude below the row threshold, and the one public label, the microbiome subtype, is the output of the authors' own unreleased random forest, so predicting it would distill a model rather than learn biology."
+}

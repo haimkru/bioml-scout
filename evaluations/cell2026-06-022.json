@@ -1,0 +1,102 @@
+{
+  "paper_id": "cell2026-06-022",
+  "title": "LEF1 and niche factors determine T cell stemness across chronic diseases.",
+  "doi": "10.1016/j.cell.2026.06.022",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE336474 (single-cell paired RNA+ATAC) and https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE336436 (CUT&RUN protein-DNA binding)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the two public GEO (Gene Expression Omnibus) deposits by title search since the paper has no PubMed Central copy. Read both series metadata records and both FTP file lists (every deposited file is enumerated there). Downloaded and parsed all six CUT&RUN peak files (narrowPeak format: 11,434-37,681 peaks each, median peak width 322-376 bp, mouse mm10-style chromosome names mixed with Ensembl scaffold names) and computed all pairwise peak overlaps. Downloaded and opened the 14.8 MB single-cell matrix (GSM9835978): 4,041 cells, 32,285 genes plus 49,049 chromatin-accessibility peaks, genome mm10, produced by cellranger-arc 2.0.2, integer UMI (unique molecular identifier) counts, no cell annotation of any kind inside the file.",
+    "what_came_from_paper_text_only": "Everything scientific: the abstract only. Cell is paywalled, there is no PubMed Central full text, so I never saw the methods, the data availability statement, or any reported cell counts. The second single-cell matrix (GSM9835980, 117 MB) and the ATAC fragment files (195 MB and 1.7 GB) I only checked by HTTP size, not by opening."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both GEO series are public (released 1 Jul 2026) and open without login; I downloaded seven files successfully from the NCBI FTP server."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. The paper's labels - stem T cell, progenitor T cell, terminally differentiated T cell - appear nowhere in the deposit. I listed every file in both series: two raw count matrices, two fragment files, six peak files, seven coverage tracks. No cell-type, cluster, or gate assignment is deposited, so the thing to predict would have to be built from scratch by clustering and marker gating."},
+    "a3_inputs_present": {"pass": true, "note": "For the single-cell task the inputs (gene counts, accessibility counts) are present. For a sequence-based task only genomic coordinates are given, but mouse genome mm10 is a single reference download, not thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "Single-cell matrix holds integer UMI counts in standard 10x Genomics HDF5 layout; narrowPeak files use the documented ENCODE column set (signal, p-value, q-value, summit offset). Verified by opening both."},
+    "a5_enough_rows": {"pass": false, "n_rows": 4041, "note": "FAIL on the unit that matters. Only 2 single-cell samples exist (one autoimmune pancreatic lymph node pooled from >150 mice, one chronic-infection spleen), so any cell-state model has n=2 independent biological groups. The CUT&RUN side is 2 proteins (LEF1, TCF7) x 3 replicates in 1 cell state. 4,041 cells and ~27,000 peaks are large row counts but not independent examples."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.2 GB if you use the two count matrices and the peak files; 2.4 GB if you also take the ATAC fragment files", "note": "Smallest matrix is 14.8 MB, largest deposited file is a 1.7 GB fragments table that can be skipped or streamed. Not a size problem."},
+    "a7_counts_match_paper": {"pass": true, "note": "Cannot be checked either way: the paper is paywalled with no PubMed Central text, so no claimed cell count exists to compare against. Nothing in the files contradicts itself; recorded as unverifiable rather than mismatched."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL for the paper's own question. The stem/progenitor/differentiated label is defined by LEF1 and TCF1 protein or RNA level, i.e. computed from the very features a model would be given - textbook leakage by construction. Predicting 'is this cell LEF1-high' from an expression matrix containing Lef1 is circular."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ChromBPNet (convolutional neural network predicting base-resolution chromatin accessibility and transcription factor footprints from DNA sequence)",
+        "open_weights": true,
+        "score_and_split": "Published 2025 in Nature Methods with code and trained models on GitHub (kundajelab/chrombpnet); evaluated on held-out chromosomes across many cell types and reported competitive with far larger models on variant-effect and pioneer-factor binding tasks.",
+        "authors_named_unsolved": "Enzyme/assay bias and cooperative motif syntax; not retrieved in detail because I only read the abstract-level summary.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BPNet (convolutional neural network predicting base-resolution transcription factor binding profiles from sequence)",
+        "open_weights": true,
+        "score_and_split": "2021 Nature Genetics; trained on ChIP-nexus profiles of pluripotency factors, evaluated on held-out chromosomes; code open.",
+        "authors_named_unsolved": "Transfer of learned motif syntax to new cell types and factors.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ProjecTILs (reference-atlas projection method that assigns CD8 T cell states, including stem-like/progenitor-exhausted and terminally exhausted, to new single-cell data)",
+        "open_weights": true,
+        "score_and_split": "2021 Nature Communications; open R package and published reference atlases of mouse tumour- and virus-infection CD8 T cells; evaluated by projection of held-out studies.",
+        "authors_named_unsolved": "Detecting states that genuinely deviate from the reference rather than being forced onto it.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "scGPT / Geneformer (single-cell foundation models usable as frozen backbones for cell-state classification)",
+        "open_weights": true,
+        "score_and_split": "Both released 2023-2024 with open weights; benchmarked on cell-type annotation transfer across datasets. No published number specific to this paper's T cell states.",
+        "authors_named_unsolved": "Whether pretraining helps on rare, finely split states with few donors.",
+        "runnable_as_baseline": true
+      }
+    ],
+    "note": "Any task this deposit supports - transcription factor binding from sequence, or CD8 T cell state calling from single-cell data - already has several open, reproducible, honestly evaluated models. That is a C2 score of 0."
+  },
+  "backbone": {
+    "name": "Not applicable; the candidates would have been Geneformer/scGPT (single-cell) or ChromBPNet/Nucleotide Transformer (DNA sequence)",
+    "freeze_and_head_viable": null,
+    "hardware": "Laptop CPU would suffice for the data size, but there is no honest label to fit a head to.",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "Not pursued past the Part A failure. The obvious partners would be the mouse CD8 T cell reference atlases used by ProjecTILs, joinable on gene symbol, and ENCODE mouse CUT&RUN/ChIP data, joinable on mm10 genomic coordinates.",
+    "join_key": "mouse gene symbol / mm10 genomic coordinates",
+    "bigger_question_one_sentence": "Not written: the evaluation stopped at the missing-label failure."
+  },
+  "controls": {
+    "positive_control": "Would have been: the model must recover the known enrichment of the TCF/LEF DNA motif under LEF1 peaks. This control is actually available and cheap.",
+    "negative_control": "Label shuffling across peaks and GC-matched background regions - runnable, but on a task nobody needs solved again.",
+    "external_validation": "ENCODE mouse TCF7/LEF1 binding data in other cell types would serve, but was not checked because the project was rejected earlier."
+  },
+  "honest_claim_h3": "The only claim this deposit honestly supports is 'in naive mouse CD8 T cells, LEF1 and TCF1 occupy essentially the same genomic regions, so DNA sequence alone cannot separate them' - which I already established in one hour by overlapping the deposited peak files, without training anything.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence to predict which genome regions two stem-cell transcription factors bind in mouse CD8 immune cells.",
+    "train_on": "The deposited peak calls from CUT&RUN, a method that maps where a protein sits on DNA: 11,434-37,681 peaks per sample across three LEF1 replicates and three TCF7 replicates, all from naive mouse CD8 T cells (counts verified by opening the files).",
+    "predict": "Whether a given stretch of mouse genome is bound by LEF1 versus TCF1 (gene name TCF7), with the truth coming from the CUT&RUN sequencing signal peak-called by the authors.",
+    "why_worthwhile": "It would have said whether two closely related stemness factors are steered to different sites by DNA sequence itself. I tested the premise directly and it fails: the two factors' peak sets overlap each other as much as replicates of the same factor overlap, so there is nothing to predict."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Two single-cell samples and six peak files from one mouse cell state, versus ChromBPNet and BPNet trained on hundreds of cell types and ProjecTILs built from many integrated CD8 T cell studies."},
+    "confidence_score": {"answer": "partly", "why": "Three replicates per transcription factor do allow a reproducibility-based noise floor (I measured 83-99% replicate peak overlap), but with only one cell state there is nothing to calibrate confidence across."},
+    "models_beatable": {"answer": "no", "why": "ChromBPNet (2025) and BPNet (2021) are open, evaluated on held-out chromosomes, and ProjecTILs (2021) is an open package with published reference atlases; none is a weak target."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: there is no label in this deposit on which an existing model could be run as a baseline, so no comparison is even definable."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: (1) classify stem / progenitor / terminally differentiated CD8 T cell states from the paired single-cell RNA and chromatin data - dead because the labels are not deposited and would be defined from Lef1 and Tcf7 levels, which are themselves input features; (2) predict LEF1 versus TCF1 binding sites from mm10 DNA sequence - dead because I measured the peak overlaps and the two factors bind the same regions; (3) plain binding-site-versus-background prediction - alive but worthless, since ChromBPNet and BPNet already do exactly this with open code on far more data.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Measured, not guessed: downloading six peak files plus one count matrix took under two minutes, and the full pairwise peak-overlap analysis ran in about 30 seconds in pandas/numpy on this laptop. Size was never the obstacle.",
+    "cheapest_killing_check": "Overlap the deposited LEF1 and TCF7 peak files. I ran it: LEF1 replicate 2 shares 85% of its peaks with a TCF7 sample and 83% with another LEF1 sample, and the smallest TCF7 sample has 99-100% of its peaks inside every other sample. The two label classes are the same regions."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A fails three ways, all verified in the files rather than inferred from the paper. A2: the paper's central labels (stem, progenitor, terminally differentiated T cells) are not in either GEO deposit - the two single-cell matrices are raw counts with no annotation, and I enumerated every deposited file to confirm it. A8: those labels are defined by LEF1 and TCF1 levels, so reconstructing them from the expression matrix and then predicting them is circular. A5: the independent-unit count is 2 single-cell samples and 2 transcription factors in 1 cell state, not the 4,041 cells it superficially looks like. The one task where a label does exist in a column - LEF1 versus TCF1 binding - I tested directly and killed: cross-factor peak overlap (85-99%) matches within-factor replicate overlap (83-99%), so the classes are indistinguishable. Excellent paper, genuinely public data, but it is a wet-lab mechanism study whose deposit is raw evidence for figures rather than a modelling resource."
+}

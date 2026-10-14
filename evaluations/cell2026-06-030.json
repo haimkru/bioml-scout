@@ -1,0 +1,101 @@
+{
+  "paper_id": "cell2026-06-030",
+  "title": "Bacteriophage genome-wide transposon mutagenesis.",
+  "doi": "10.1016/j.cell.2026.06.030",
+  "journal": "Cell",
+  "data_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13428642/ (supplementary Tables S2 and S3, listed but not downloadable programmatically); Addgene https://www.addgene.org/browse/article/28263768/ for plasmids",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Fetched and read the full PubMed Central (PMC) article text for PMC13428642, including the Resource Availability and STAR Methods sections, and extracted the complete supplementary file listing with sizes (Table S1 .xlsx 15.6 KB; Table S2 .csv 35 KB; Table S3 .csv 36.2 KB; Figures S1-S7 in a 5.4 MB PDF). Attempted the data download five different ways and all failed: PMC's own /bin/ file endpoint returned a 1,817-byte anti-bot challenge page and a 404 on the alternate path, Europe PMC's supplementaryFiles endpoint refused with 'Article with id PMC13428642 is not open access one', Europe PMC fullTextXML returned HTTP 500, NCBI's open-access package service returned 404, and bioRxiv (preprint 10.1101/2025.11.23.690004) rate-limited every request with HTTP 429. Also confirmed via the bioRxiv application programming interface that the separate preprint cited in the text (10.64898/2025.12.19.695335) is a different group's phage transposon paper, not this one's preprint.",
+    "what_came_from_paper_text_only": "Every count and every column description: 371 predicted genes in the 280,334 bp jumbo phage PhiKZ genome, ~110 fitness-conferring and ~261 non-essential genes, 6,667 unique transposon insertion sites (one every 42 bp), ~3.4 million sequencing reads of which 55.7% mapped to the phage, the >=3-reads-per-insertion and trim-first-and-last-10%-of-gene filters, and the use of the TraDIS pipeline script tradis_essentiality.R to call essentiality. The contents of Tables S2 and S3 are known only from their captions ('Raw TraDIS output for gene essentiality after trimming' and 'Raw TraDIS output for all insertions across the PhiKZ genome'). I never saw a single row of real data."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The paper's own statement is explicit: 'Insertion sequencing data and PhiKZ whole-genome sequencing data will be deposited in a public repository and accession numbers will be provided upon publication' - i.e. no accession exists yet - and 'Custom analysis scripts are available from the lead contact upon request'. The only released data are two 35 KB summary comma-separated-value (CSV) files behind PMC's anti-bot download endpoint, which I could not retrieve by any of five routes."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Table S2 is captioned as the TraDIS (transposon-directed insertion-site sequencing) essentiality output, so the insertion index and essentiality call should be columns. Taken from the caption only - I never opened the file."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The tables hold gene identifiers, not sequences, but all 371 protein sequences come from one GenBank lookup of the PhiKZ genome (accession AF399011 appears in the text), so this is one lookup, not thousands."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The methods define the quantities as read counts, unique insertion counts and insertion index (insertions divided by gene length), which are self-describing. Read in the methods text, not confirmed in a header row."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 371,
+      "note": "The labelled unit is a gene, and only one phage genome has a released table: 371 predicted PhiKZ genes, below the ~400-row floor for a classification task and far below ~1,500 for regression on the insertion index. The second phage profiled, KTN4, is 96.7% identical in nucleotide sequence to PhiKZ, so it adds near-duplicate rows rather than independent ones, and neither its table nor YuA's was released (both appear only as figure summaries, S4 and S7)."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.07 GB",
+      "note": "Two CSV files of 35 KB and 36.2 KB; trivially small. Sizes read from the PMC supplementary listing."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No disagreement observed, but also nothing to compare: I could not download the files, so the 371-gene and 6,667-insertion-site figures rest on the paper text alone."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label traces to a physical measurement - counting surviving transposon insertions by Illumina sequencing - not to another model's output. One caveat worth recording: the paper itself notes all 16 genes longer than 2,154 bp lacked insertions, so gene length is heavily entangled with the label and would have to be ablated as a feature."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": null,
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "megaDNA, a long-context genome language model trained on unannotated bacteriophage genomes (Nature Communications 2024)",
+        "open_weights": true,
+        "score_and_split": "Its authors report predicting phage gene essentiality zero-shot - with no training on essentiality labels - by measuring the change in model loss when a gene is perturbed, scored as area under the receiver operating characteristic curve against published experimental essentiality screens. I did not retrieve the exact number, so I am not quoting one.",
+        "authors_named_unsolved": "Not retrieved in this evaluation.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2, a protein language model (small checkpoints run on a laptop CPU); megaDNA as a DNA-level alternative",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU only; 371 proteins is a few minutes of embedding",
+    "licence": "ESM-2 is MIT-licensed and permissive"
+  },
+  "integration": {
+    "partner_dataset": "Other published phage essentiality screens with deposited data - HIDEN-SEQ (Nature Microbiology 2026, raw data under NCBI BioProject PRJNA1381746), the Fineran lab phage Tn-seq paper (Nature Microbiology 2026), Mutalik et al. 2024 and Piya et al. 2023 - plus Pfam/InterPro protein family annotations",
+    "join_key": "protein sequence (via clustering) and Pfam family identifier; no shared gene identifier exists across phage genomes",
+    "bigger_question_one_sentence": "Does gene essentiality learned in one phage family transfer to phages with no homologous genes, or is essentiality host- and lifestyle-specific?"
+  },
+  "controls": {
+    "positive_control": "The model must rank the largest structural genes (orf181 tape measure, major capsid gp120, portal gp129, terminase gp25) as essential - the paper states all 16 genes over 2,154 bp lacked disruptive insertions.",
+    "negative_control": "Shuffle essentiality labels and confirm collapse to the majority-class rate; ablate gene length, which the paper's own data shows is strongly confounded with the label.",
+    "external_validation": "The antisense-oligonucleotide knockdown results shown in Figure 3A for a subset of PhiKZ genes, and the independent phage Tn-seq and HIDEN-SEQ screens on other phages."
+  },
+  "honest_claim_h3": "A model trained here could only claim to predict, for genes of a single Pseudomonas-infecting jumbo phage and its 96.7%-identical sibling, whether a transposon insertion in the middle 80% of the gene is recovered after pooled infection of one laboratory host - which is essentiality under one condition in one genome, not phage gene essentiality in general.",
+  "plain_idea": {
+    "one_liner": "Use a phage gene's protein sequence to predict whether the phage needs that gene to grow.",
+    "train_on": "The protein sequence of each predicted gene in the giant phage PhiKZ, which infects the bacterium Pseudomonas aeruginosa. There are 371 such genes - the only genome in this paper with a released data table.",
+    "predict": "Whether the gene is required for the phage to grow (and a continuous fitness score). The truth comes from counting, by Illumina DNA sequencing, how many transposon insertions inside each gene survive a pooled infection; genes with no surviving insertions are called required.",
+    "why_worthwhile": "Phage therapy and phage engineering groups need to know which genes they can safely replace with cargo, and they currently find out one gene at a time in the lab. Even a failed model would tell us whether sequence alone carries essentiality signal in phage genes of unknown function."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Freeze ESM-2 embeddings of phage proteins and fit a small classifier head to predict transposon-insertion-derived gene essentiality, held out by protein-family cluster, then test transfer to phages from other families. Attractive in principle, but this paper supplies only 371 labelled genes from one genome and has not yet deposited the underlying data; the idea should instead be built on the screens that did deposit (HIDEN-SEQ's BioProject PRJNA1381746 and the 2024-2026 phage essentiality papers), which also already have megaDNA as a zero-shot baseline.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.07,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 0.5,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, nothing timed: the two released tables total 71 KB, and 371 proteins through a small ESM-2 checkpoint on a laptop CPU is well under an hour. Compute was never the constraint here; the row count is.",
+    "cheapest_killing_check": "Open Table S2 and count the rows. If it is one row per PhiKZ gene (371), the ~400-row classification floor is already missed before any modelling - and it is, according to the paper's own gene count."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Only 371 labelled genes from a single phage genome, and the raw data has no accession yet (deposit promised 'upon publication', scripts on request)."
+}

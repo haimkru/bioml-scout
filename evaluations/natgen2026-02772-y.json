@@ -1,0 +1,147 @@
+{
+  "paper_id": "natgen2026-02772-y",
+  "title": "Genome-wide mapping of common and rare variant effects on adiposity across childhood.",
+  "doi": "10.1038/s41588-026-02772-y",
+  "journal": "Nature Genetics",
+  "data_url": "https://doi.org/10.5281/zenodo.19608167",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 19608167: 13 files, 2.44 GB total, licence CC-BY-4.0, no login. I fully downloaded and parsed the 0.4 MB gSEM file (10,001 rows, 9 columns SNP/CHR/BP/ALLELE1/ALLELE0/A1FREQ/BETA/SE/P; top row rs1421085 at chr16:53,800,954, which is the FTO position in genome build GRCh37, so build = GRCh37). For 5 of the 12 genome-wide files I range-downloaded the first 120-300 KB and decompressed them: 13-column REGENIE output (CHROM GENPOS ID ALLELE0 ALLELE1 A1FREQ N TEST BETA SE CHISQ LOG10P EXTRA), space-delimited, parses cleanly. Per-variant sample size N read directly: birth about 72,401, 6 weeks about 43,650, 1 year about 54,209, 5 years about 33,319, 8 years about 26,284. From the gzip trailers I got exact uncompressed sizes (615 MB for birth, 612 MB for 8 years), which at 86 bytes per line gives about 7.14M and 7.10M variant rows per file.",
+    "what_came_from_paper_text_only": "Everything about the paper's findings. The article is paywalled, not in PubMed Central, and Europe PMC has no full text, so I never saw the data availability statement, the methods or any supplementary table; the journal's supplementary-file URLs returned errors. The 624 common signals, the effective sample size of 599,924, the n = 62,276 with objectively measured adiposity, the rare-variant genes (ADCY3, CALCR, MC4R, MRAP2, POMC, MYH13) and the single-nucleus RNA sequencing cell populations all come from the abstract and press coverage. Critically, the Zenodo description states that the meta-analysis feeding the headline 624 signals includes 23andMe data under controlled access, so only the top 10,000 variants of that analysis are public."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified: Zenodo 19608167, CC-BY-4.0, anonymous HTTP download worked (I pulled one file in full and byte ranges from five others). The individual-level MoBa (Norwegian Mother, Father and Child Cohort) genotypes and the UK Biobank whole-genome sequences are controlled access, but the project here uses only the open summary statistics."},
+    "a2_label_is_a_column": {"pass": true, "note": "BETA (per-allele effect), SE (its standard error) and LOG10P are literal columns in every file, seen in the decompressed headers. A 'childhood-specific versus adult-shared' class label would instead have to be built by joining to an adult body-mass-index scan and applying a rule - that is extra effort, recorded in hours_to_feature_table, not a Part A failure."},
+    "a3_inputs_present": {"pass": true, "note": "Pass, but thin: the files carry no predictor features at all, only chromosome, position (GRCh37), rsID, alleles, allele frequency and sample size. Every input must come from elsewhere - DNA sequence from one local reference genome FASTA, annotations from public resources. That is a bulk local join, not thousands of per-item lookups, so it passes."},
+    "a4_units_stated": {"pass": true, "note": "Units are documented in the Zenodo description ('standardized BMI' at each age), not in a units column: BETA is in standard-deviation units of age- and sex-standardised body mass index per copy of the effect allele. REGENIE column meanings are standard and documented upstream. Genome build is not stated anywhere; I inferred GRCh37 from the rs1421085 coordinate."},
+    "a5_enough_rows": {"pass": true, "n_rows": 7144318, "note": "About 7.14M variant rows per file (computed from the gzip trailer, 615,182,694 uncompressed bytes / 86.1 bytes per line), across 12 age files. Caveat: because of linkage disequilibrium (neighbouring variants being inherited together) the independent units are roughly 1,700 genomic blocks, not 7 million rows."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.5 GB after subsetting to a standard ~1.2M-variant reference set across 12 ages", "note": "Download is 2.44 GB compressed, about 7.4 GB uncompressed across 12 files - too big to hold at once but trivially streamed line by line and subset. A gradient-boosting baseline on annotations runs on CPU. A DNA language model over millions of variants would not; that variant needs a GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Partly reconcilable. The abstract says n = 62,276 with objectively measured traits; the released files give per-age N from about 26,284 (8 years) to about 72,401 (birth), none equal to 62,276. This is consistent with 62,276 being the union of children measured at least once between 6 weeks and 8 years, with birth coming from the national birth registry for more children, but I could not confirm it because the full text is paywalled. Nothing contradicts the abstract."},
+    "a8_label_provenance": {"pass": true, "note": "BETA is a REGENIE linear-regression coefficient against clinic- and registry-measured body mass index in real children, not another model's output. REGENIE's step-1 whole-genome ridge is used only as a covariate adjustment, which is standard. Note the paper's larger meta-analysis mixes in UK Biobank recalled childhood body size, a four-category questionnaire memory rather than a measurement - but that merged file is not public anyway."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "12 genome-wide files plus 1 summary file; clean join on rsID or chromosome:position, verified in headers."},
+    "B2": {"score": 2, "why": "Gzipped space-delimited REGENIE text; decompressed chunks of five files parsed on first try."},
+    "B3": {"score": 1, "why": "Same cohort and pipeline at all ages, but N varies 2.7-fold, so effects need z-score normalisation."},
+    "B4": {"score": 1, "why": "No censored values in ~4,000 sampled rows per file, but row counts differ ~0.6% between ages, so joining 12 files creates missingness."},
+    "B5": {"score": 1, "why": "No duplicate rsIDs in sampled chromosome-1 rows; multi-allelic duplicates across the full 7.1M rows not checked."},
+    "B6": {"score": 1, "why": "Zenodo names each file's phenotype and REGENIE columns are standard, but no per-column README, no units column, no genome build stated."},
+    "C1": {"score": 2, "why": "Framed as 'how far does adult-trained variant-effect prediction transfer to each childhood age', it is informative whichever way it resolves."},
+    "C2": {"score": 1, "why": "No model targets age-resolved childhood adiposity, but open, honestly evaluated sequence models (AlphaGenome, Enformer, Borzoi) cover the generic variant-effect task."},
+    "C3": {"score": 2, "why": "Clear unique-application and diversity angle: 12 ages in the same children, open licence, never used for machine learning."},
+    "C4": {"score": 1, "why": "Collecting the cohort was decades-long and costly, but the analysis methods (LD score regression, genomic SEM) are already cheap and standard."},
+    "C5": {"score": 2, "why": "Obvious baselines: predict zero, per-block mean, and the public adult body-mass-index scan's z-score as a direct predictor."},
+    "D1": {"score": 2, "why": "Open-weight DNA backbones match exactly: Nucleotide Transformer, DNABERT-2, HyenaDNA, plus AlphaGenome (non-commercial)."},
+    "D2": {"score": 1, "why": "Caching embeddings for millions of variants is not CPU-feasible; only a pruned subset of tens of thousands is, realistically with a GPU."},
+    "D3": {"score": 2, "why": "Data is CC-BY-4.0 (seen in the Zenodo metadata); Nucleotide Transformer and DNABERT-2 weights are openly redistributable."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes or precomputed independent linkage-disequilibrium blocks, built from CHROM and GENPOS, both present in the files."},
+    "E2": {"ok": true, "why": "22 autosomes, or roughly 1,700 independent genomic blocks in European-ancestry samples - far more than the five needed."},
+    "E3": {"ok": true, "why": "Dummy baselines are trivial: predict zero effect, or the per-block mean z-score."},
+    "E4": {"ok": true, "why": "Every row carries its own SE column, so sampling noise is known per variant; adjacent ages give an empirical replicate ceiling."},
+    "E5": {"ok": true, "why": "FTO and MC4R must be recovered; I verified rs1421085 (FTO) is the single top row of the released gSEM file."},
+    "E6": {"ok": true, "why": "Label shuffling within chromosome and annotation ablation are both one-line operations on the assembled table."},
+    "E7": {"ok": true, "why": "Independent public childhood body-mass-index scans exist: EGG consortium longitudinal growth summary statistics and a 2025 trans-ancestry childhood scan."},
+    "E8": {"ok": true, "why": "Heritability and cross-age genetic correlations from the released MoBa files can be re-derived with LD score regression; the 624-signal count cannot, since that meta-analysis is not public."},
+    "G1": {"score": 2, "why": "rsID plus chromosome and position in build GRCh37 present in every row, verified in the decompressed headers."},
+    "G2": {"score": 2, "why": "Named partners joinable on rsID: GIANT/Pan-UK Biobank adult body-mass-index summary statistics, Open Targets Genetics, GTEx expression QTLs."},
+    "G3": {"score": 1, "why": "rsID-to-rsID is one-to-one for biallelic sites, but multi-allelic sites and a GRCh37-to-GRCh38 lift-over add mess."},
+    "G4": {"score": 2, "why": "Combined question neither answers alone: which regulatory programmes drive body fat only in childhood and stop mattering in adults?"},
+    "H1": {"score": 2, "why": "Genome-wide scan reports every variant including all nulls; no publication bias toward positive findings."},
+    "H2": {"score": 0, "why": "One cohort, one country, European ancestry, one analysis pipeline - the released files are MoBa-only."},
+    "H3": {"score": 2, "why": "The honest claim can be written in one precise sentence (see honest_claim_h3)."},
+    "H4": {"score": 2, "why": "Gaps are explicit: Zenodo states the 23andMe restriction limiting the meta-analysis to 10,000 variants, and file names name the cohort."},
+    "I1": {"score": 2, "why": "Named: the MRC Epidemiology Unit (Perry, Ong, Day), the Bergen group (Johansson, Njolstad), the EGG consortium."},
+    "I2": {"score": 1, "why": "Would at most re-rank loci for hypothalamic follow-up; unlikely to redirect a programme on its own."},
+    "I3": {"score": 1, "why": "Correlation on z-scores is only roughly aligned with the real decision, which is which top loci to assay."},
+    "I4": {"score": 1, "why": "Stratified LD score regression and genomic SEM already do much of this; machine learning adds interactions, not a new capability."},
+    "J1": {"score": 1, "why": "Real grouped splits and transfer evaluation, but a large share of the work is streaming and joining 12 big files."},
+    "J2": {"score": 1, "why": "FTO and MC4R give clear sanity anchors, but linkage-disequilibrium and heritability subtleties need a genetics check."},
+    "J3": {"score": 2, "why": "A harmonised 12-age by pruned-variant z-score matrix is a shareable artefact even if no model works."},
+    "J4": {"score": 1, "why": "Roughly three weeks is realistic, but no budget has actually been committed."},
+    "J5": {"score": 0, "why": "No kill date written down anywhere yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "AlphaGenome (DeepMind, 2025/2026 sequence-to-function DNA model)", "open_weights": true, "score_and_split": "Reported to match or beat the strongest external models in 25 of 26 variant-effect evaluations; comparable to CADD on a GWAS-variant identification task with matched negative variants. Evaluated on molecular tracks, not on body-mass-index effect sizes.", "authors_named_unsolved": "Linking regulatory predictions to organism-level complex traits, and distinguishing causal GWAS variants from their linkage-disequilibrium partners, remain open.", "runnable_as_baseline": false},
+      {"name": "Enformer / Borzoi (open sequence-to-expression models)", "open_weights": true, "score_and_split": "Strong on held-out-gene expression prediction; multiple independent reports find they explain only a small fraction of GWAS signal for complex traits. No childhood-adiposity evaluation found.", "authors_named_unsolved": "Transfer from molecular predictions to complex-trait effect sizes is explicitly not solved.", "runnable_as_baseline": false},
+      {"name": "Annotation-to-effect-size models trained by accelerated linear algebra (ICML 2025)", "open_weights": null, "score_and_split": "Predicts a variant's prior effect size from functional annotations using full marginal likelihood with linkage-disequilibrium matrices; evaluated on standard complex traits, not age-stratified ones. I found a paper note, not the code.", "authors_named_unsolved": "Scaling and whether larger networks help outside full-likelihood training.", "runnable_as_baseline": null},
+      {"name": "EGG consortium time-varying GWAS framework (Nature Communications 2024)", "open_weights": false, "score_and_split": "Statistical, not machine learning: modelled repeated body-mass-index measures from 2 weeks to 18 years in 5 cohorts, finding 28 significant variants at 13 loci. Summary statistics are public at egg-consortium.org.", "authors_named_unsolved": "Loci driving change in body mass index differ from those driving mean level; what distinguishes them is not explained.", "runnable_as_baseline": true},
+      {"name": "Explainable-AI longitudinal body-mass-index prediction with polygenic scores (International Journal of Obesity, 2026)", "open_weights": null, "score_and_split": "Kolmogorov-Arnold Network reported R-squared 0.81 predicting later body mass index, but from individual-level early-life and familial variables plus polygenic scores - a different task (predicting a child's weight, not a variant's effect), and it needs controlled-access individual data.", "authors_named_unsolved": "That childhood-specific polygenic scores are lacking because genetic architecture changes with age.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer v2 or DNABERT-2 for sequence windows; AlphaGenome via alphagenome-ft for heads-only training", "freeze_and_head_viable": false, "hardware": "CPU is fine for a gradient-boosting baseline on tabular annotations; any DNA language model over even a pruned 50,000-variant subset realistically needs a GPU", "licence": "Data CC-BY-4.0 (verified on Zenodo); Nucleotide Transformer and DNABERT-2 weights openly redistributable; AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "GIANT / Pan-UK Biobank adult body-mass-index genome-wide summary statistics, plus Open Targets Genetics variant-to-gene scores", "join_key": "rsID, with chromosome:position in build GRCh37 as a fallback", "bigger_question_one_sentence": "Which regulatory programmes raise body fat only during childhood and stop mattering in adults, and can DNA sequence alone tell them apart from the lifelong ones?"},
+  "controls": {"positive_control": "The FTO locus (rs1421085) and MC4R must come out as the strongest signals - I verified rs1421085 is the single top row of the released gSEM file; a second control is predicting allele frequency from the sequence context, which should be easy.", "negative_control": "Shuffle z-scores within each chromosome and confirm collapse to the dummy; train on allele frequency and sample size alone to measure how much is pure statistical power rather than biology.", "external_validation": "EGG consortium longitudinal childhood body-mass-index summary statistics (public at egg-consortium.org) and the 2025 trans-ancestry childhood body-mass-index scan in HGG Advances."},
+  "honest_claim_h3": "Among common imputed variants in one Norwegian birth cohort of European ancestry, the model ranks which genomic regions have age-specific effects on measured childhood body mass index between birth and 8 years; it says nothing about rare variants, non-European populations, or causality.",
+  "plain_idea": {
+    "one_liner": "Use a DNA variant's position and surrounding regulatory context to predict how strongly it affects body weight at each age in childhood.",
+    "train_on": "One row per common DNA variant: chromosome, position, the two alleles, how common the allele is, and how many children were measured - about 7.14 million rows per age file, a number I computed from the compressed file's trailer. All predictor features would have to be added from public annotation resources, since the files contain none.",
+    "predict": "The strength of each variant's association with age- and sex-standardised body mass index (effect size divided by its standard error) at 12 ages from birth to 8 years. The truth comes from height and weight measured by nurses and national registries in 26,284 to 72,401 Norwegian children, read directly from the files.",
+    "why_worthwhile": "Obesity-genetics groups want to know which genes act only in a childhood window, because that is when an intervention would have to land. Even if the model fails, we get a concrete measurement of how little DNA sequence tells us about when a variant acts."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Twelve age-resolved scans in the same children (26,284 to 72,401 each, verified) is unusual - the EGG consortium framework pooled 5 cohorts into derived trajectory phenotypes rather than per-age scans. But the public slice is MoBa-only and far smaller than the ~700,000-adult GIANT body-mass-index resource, and the paper's own 599,924-effective-sample meta-analysis is withheld except for 10,000 variants."},
+    "confidence_score": {"answer": "yes", "why": "Every row carries a standard error (verified in the header and data rows), so per-variant uncertainty and an exact noise ceiling are computable, and adjacent ages act as near-replicates. AlphaGenome, Enformer and Borzoi output track predictions without calibrated uncertainty on a trait effect size."},
+    "models_beatable": {"answer": "partly", "why": "AlphaGenome (2025/2026) and Borzoi are recent, strong and honestly evaluated, so beating them at their own task is unrealistic. But none of them was trained or evaluated on age-stratified adiposity effects, and the annotation-to-effect-size approach (ICML 2025) has not been benchmarked on age-varying traits."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first and third conditions: AlphaGenome and Enformer predict molecular tracks, not body-mass-index effect sizes, so they cannot be run as a like-for-like baseline, and the quantity they measure is not the quantity we would predict. There is no setting where our model trivially sees everything theirs sees plus more."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "GWAS Catalog (its API reported 231,865 studies when I queried it), which hosts full summary statistics for thousands of traits; GIANT consortium adult body-mass-index scans; Pan-UK Biobank and the Neale lab UK Biobank releases; EGG consortium childhood growth summary statistics (all known public resources; I queried the GWAS Catalog API and found the EGG download page via search).",
+    "approx_items": null,
+    "join_key": "rsID, or chromosome:position:alleles in build GRCh37",
+    "why": "Variant effect sizes on body mass index and dozens of related traits are already published for millions of the same variants, giving both far more training signal and a ready-made external test set for whether a model generalises beyond this one cohort."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Linkage disequilibrium: neighbouring variants are inherited together and have almost identical effect estimates, so a random variant split puts near-duplicates in both train and test and inflates every number.",
+      "The 12 age files come from the same children, so treating ages as independent folds leaks the same individuals across the split.",
+      "Many attractive annotation features (Open Targets variant-to-gene scores, published fine-mapping posteriors, previously reported body-mass-index loci) are themselves derived from body-mass-index genome-wide studies, so they are computed from the label.",
+      "Allele frequency and per-variant sample size drive the standard error and therefore the magnitude of the z-score, giving an easy non-biological shortcut.",
+      "MoBa is a family cohort with related individuals; residual relatedness is inside the association statistics themselves and cannot be removed downstream."
+    ],
+    "split": "Hold out whole chromosomes (22 folds), or precomputed approximately-independent linkage-disequilibrium blocks in European-ancestry samples. Both are built from the CHROM and GENPOS columns, which I confirmed are present in every file.",
+    "checks": [
+      "Shuffle z-scores within each chromosome and confirm performance collapses to the per-block mean baseline.",
+      "Train a model on allele frequency and sample size alone, to quantify how much apparent skill is just statistical power.",
+      "Compute linkage-disequilibrium correlation between each test variant and its nearest training variant, and report performance stratified by it.",
+      "Confirm FTO is only predicted well when its own block is in the training set, not when held out."
+    ],
+    "verdict": "Manageable with chromosome- or block-level splits, but a serious risk if done naively - linkage disequilibrium alone would make a random-split result meaningless and very impressive-looking."
+  },
+  "success_criteria": {
+    "metric": "Spearman rank correlation between predicted and observed per-variant z-score on held-out chromosomes, plus precision among the top 100 predicted blocks for recovering independently reported childhood-adiposity loci - the second matches the real decision, which is which loci to put into a cell assay.",
+    "baselines": "Predict zero (Spearman 0 by construction); the per-block mean; and the strongest honest baseline, the adult body-mass-index z-score from GIANT used directly as a predictor of the childhood z-score at each age. No published number exists for this exact task.",
+    "success": "Beating the adult-GIANT-z baseline's Spearman by at least 0.05 on held-out chromosomes at three or more of the 12 ages, while recovering FTO and MC4R in the top 100 blocks when their own chromosome is held out.",
+    "noise_ceiling": null,
+    "kill": "If, after one week, the adult body-mass-index z-score alone already explains essentially all of the predictable childhood signal and the annotation model adds under 0.02 Spearman, stop. Also stop if fewer than about 15 independent loci reach genome-wide significance at any age in the public MoBa-only files."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Cell Genomics", "why": "Publishes biology-first computational genomics; would need the model to name and externally validate regulatory programmes that act on fat mass only during childhood."},
+    "realistic": {"journal": "HGG Advances", "why": "Publishes childhood body-mass-index genetic architecture work including age-specific-effect studies; a careful benchmark of how far sequence and annotation models predict age-resolved adiposity effects, positive or negative, fits there."},
+    "fallback": {"journal": "bioRxiv/medRxiv preprint plus the harmonised 12-age variant table deposited on Zenodo, or Bioinformatics as an applications note", "why": "Even a negative result plus a clean, reusable 12-age by pruned-variant z-score matrix is a citable artefact for anyone studying age-varying genetic effects."}
+  },
+  "pitch": {
+    "headline": "Twelve genome-wide scans of measured body mass index in the same Norwegian children, birth to age 8, openly licensed - about 7.14 million variants each.",
+    "what_makes_the_data_unusual": "Same children, same pipeline, 12 ages, each variant with its own effect size and standard error. Verified on Zenodo: CC-BY-4.0, 2.44 GB, sample sizes 26,284 to 72,401 per age. Most childhood weight resources pool cohorts or report one age.",
+    "the_win": "Show annotation or sequence features predict when a locus acts, beating the adult body-mass-index z-score baseline by 0.05 Spearman on held-out chromosomes while still recovering FTO and MC4R in the top 100.",
+    "even_if_it_fails": "We learn, with a number, that the public MoBa-only release is too underpowered per age to support locus-level modelling - a concrete, citable limit on what open childhood-adiposity summary statistics can do.",
+    "who_wants_it": "The MRC Epidemiology Unit (Perry, Ong, Day) and the Bergen group (Johansson, Njolstad) who produced it, plus the EGG consortium, choosing which loci to take into hypothalamic cell models."
+  },
+  "ml_idea": "Stream the 12 released MoBa REGENIE files, subset to a standard pruned reference variant set, and build a matrix of per-age z-scores (effect size over standard error). Add public functional annotations and, on a pruned subset, embeddings from an open DNA language model. Train a model to predict the age-resolved effect profile with whole-chromosome held-out folds, and ask the transfer question: how well does a model fitted on adult body-mass-index effects predict childhood effects at each age, and which loci it systematically misses - those misses are the childhood-specific biology.",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 6,
+    "embedding_hours": 40,
+    "cv_run_minutes": 15,
+    "compute_note": "Estimated, not timed end to end. Working set from a measured 86.1 bytes per line and a verified 7.14M rows per file, subset to about 1.2M variants across 12 ages. Gradient boosting with 22-fold chromosome cross-validation on roughly 1.2M rows is a standard 10-20 minute job on CPU. The 40 embedding hours assume a DNA language model over about 50,000 pruned variants times two alleles on CPU and is the least reliable number here.",
+    "cheapest_killing_check": "Stream the 12 files once and count how many independent loci reach genome-wide significance at any single age in the public MoBa-only release. If that is under about 15, the open data cannot support locus-level modelling and only noisy variant-level regression remains. About 30 minutes of streaming after the 2.44 GB download."
+  },
+  "verdict": "park",
+  "verdict_reason": "The data is real, open (CC-BY-4.0), well made and verified: 12 age-resolved genome-wide scans of measured body mass index in the same Norwegian children, about 7.14 million variants each, with a standard error on every row. Part A passes and the evaluation design is unusually strong (chromosome splits, FTO as a positive control, EGG consortium for external validation). But three things hold it back: the paper's powered meta-analysis is withheld except for 10,000 variants because of 23andMe restrictions, so the public release is MoBa-only with as few as 26,284 children at age 8; the files contain no predictor features at all, so every input must be imported; and the independent units are roughly 1,700 linkage-disequilibrium blocks rather than 7 million rows, which makes this a genetics analysis wearing machine-learning clothes (model-readiness 7 of 12, and stratified LD score regression already answers much of it). Park it; revive if the full meta-analysis summary statistics are ever deposited, or if a GPU makes a sequence-model transfer experiment affordable."
+}

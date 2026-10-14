@@ -1,0 +1,44 @@
+{
+  "paper_id": "natgen2026-02733-5",
+  "title": "Single-nucleus atlas of cell-type specific genetic regulation in the human brain.",
+  "doi": "10.1038/s41588-026-02733-5",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.synapse.org/Synapse:syn61929918",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Queried the Synapse REST API (Synapse is Sage Bionetworks' data-sharing platform) without logging in. Project syn61929918 'PsychAD_eQTL_release' has no access requirements and restrictionLevel OPEN, but anonymous canDownload=false and isEntityOpenData=false, so files need a logged-in Synapse account. Listed the results folder syn61929919: 12 summary tables (coloc, mashr, cell-type-specific eQTL, dynamic eQTL; about 108 MB in total) plus a cis_analysis folder of 34 per-cell-type parquet files totalling about 95.2 GB. Read the wiki's column preview (Source, Level, CellType, chr, start, end, variant, nonassessed_allele, ...).",
+    "what_came_from_paper_text_only": "5.6M nuclei, 1,384 donors, 8 classes and 27 subclasses, 14,258 eGenes (genes with a detected eQTL), 2,073 dynamic eQTL genes and 1,655 trans-eQTL genes all come from the abstract and the Synapse wiki. Row counts, units and effect-size columns were not seen because no file could be downloaded. Paper has no PMCID (not open access in Europe PMC); the medRxiv preprint is in PMC (PMC11661307)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Summary statistics on Synapse (syn61929918) are tagged OPEN with no access application, but downloading needs a free Synapse login (checked via API: anonymous canDownload=false). Donor-level genotypes and snRNA-seq (single-nucleus RNA sequencing) data are on the AD Knowledge Portal and need a data-use agreement. Under the rubric, needing a login fails A1."},
+    "a2_label_is_a_column": {"pass": true, "note": "Not verified in files. Per the wiki, cis-eQTL (expression quantitative trait locus: a variant linked to gene expression) effects and cell-type-specificity calls are columns in the parquet and tsv files, so a label such as 'cell-type-specific eQTL yes/no' would not need constructing."},
+    "a3_inputs_present": {"pass": false, "note": "Not verified. Rows carry rsIDs and coordinates, not sequences. Sequence inputs would have to be pulled from a reference genome, which is easy, but the build (presumably GRCh38) is not stated in the wiki preview."},
+    "a4_units_stated": {"pass": false, "note": "Columns beyond the first 8 (effect size, standard error, p-value) were not seen. Units cannot be checked without downloading."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Not counted. The paper reports 14,258 eGenes, and 981/857 cell-type-specific genes at class/subclass level, which is enough for classification if the tables match."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 108 MB of summary tables; full cis parquet set is about 95 GB", "note": "Sizes come from the Synapse API folder sums. A gene-level specificity task fits easily. Full variant-level cis results need per-file streaming."},
+    "a7_counts_match_paper": {"pass": false, "note": "Could not check. The abstract and Synapse wiki also disagree on which of 981/857 belongs to class vs subclass."},
+    "a8_label_provenance": {"pass": true, "note": "eQTL effects are statistical estimates from measured genotypes and measured expression, not another model's predictions. The mashr (multivariate shrinkage method) specificity calls are model-derived, though, and would need care."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scEEMS (single-cell Enhanced Expression Modifier Scores), CatBoost on 4,839 genomic features (medRxiv 2025.12.03.25341562)", "open_weights": null, "score_and_split": "Not retrieved; seen only as a search-result title and snippet. Predicts causal eQTL status for 6 brain cell types.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Enformer-style DNA sequence models (variant-effect scoring)", "freeze_and_head_viable": null, "hardware": "CPU for cached scores; GPU for scoring many variants", "licence": "AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "GTEx brain eQTLs; SingleBrain snRNA-seq eQTL meta-analysis (Nature Genetics 2026)", "join_key": "rsID / GRCh38 coordinates + Ensembl gene", "bigger_question_one_sentence": "Do sequence-model variant scores explain which bulk-tissue eQTLs are really driven by one brain cell type?"},
+  "controls": {"positive_control": "Known cell-type marker genes should show eQTLs in their own cell type (for example microglial AD (Alzheimer's disease) risk genes in microglia).", "negative_control": "Shuffle cell-type labels across genes.", "external_validation": "SingleBrain meta-analysis or the Emani et al. 2024 (Science) 388-brain single-cell eQTL set."},
+  "honest_claim_h3": "Among eQTLs detectable in about 1,384 mostly older post-mortem prefrontal cortex donors, the model predicts which variant-gene effects are restricted to one cell type.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around a genetic variant to predict which brain cell types its effect on gene expression shows up in.",
+    "train_on": "For each variant-gene pair, the DNA sequence around the variant (or a sequence model's score for it), labelled from the atlas tables. Row count unknown because the files could not be downloaded.",
+    "predict": "Whether the variant's effect on expression is specific to a brain cell type, taken from the authors' statistical tests on single-nucleus RNA-seq and genotypes from 1,384 donors.",
+    "why_worthwhile": "Statistical geneticists linking disease variants to cell types could rank candidate causal cell types for variants in donors or tissues never profiled."
+  },
+  "pitch": null,
+  "ml_idea": "Classify cell-type-specific versus shared cis-eQTLs from frozen DNA-model variant scores, holding out chromosomes, and test on SingleBrain.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.11, "needs_gpu": null, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Only the Synapse folder sizes were seen; nothing was timed.", "cheapest_killing_check": "Create a free Synapse account, download specific_eQTL_class.tsv.gz, and count rows and columns, including effect-size units."},
+  "verdict": "reject",
+  "verdict_reason": "A1 fails: the openly licensed summary statistics on Synapse still need a logged-in account (anonymous download is refused), and donor-level data is controlled access on the AD Knowledge Portal. This is a free login, not an application, so it can be reopened if the user accepts a Synapse account. The task (cell-type-specific eQTL prediction) is also getting crowded."
+}

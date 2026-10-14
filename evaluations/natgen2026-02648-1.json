@@ -1,0 +1,51 @@
+{
+  "paper_id": "natgen2026-02648-1",
+  "title": "U2AF1 mutations rescue deleterious exon skipping induced by KRAS mutations.",
+  "doi": "10.1038/s41588-026-02648-1",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE328821",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened all three processed files of GEO series GSE328821 (short-read RNA-seq, 53 samples): each is a gene-level read-count table with 58,735 genes (Ensembl IDs) by 5, 28 and 21 sample columns, plus gene annotation columns. Also opened the long-read transcript count table of GSE328804 (12 samples, 436,441 transcript rows, IsoQuant/StringTie counts). Listed the remaining file (25 MB merged GTF annotation). No exon-level or splicing (percent-spliced-in) tables are deposited.",
+    "what_came_from_paper_text_only": "Abstract only: the paper is paywalled, has no PMCID, and no supplement was retrievable. The pan-cancer splicing-factor/oncogene co-occurrence analysis and the KRAS exon-skipping measurements are described in the abstract but their tables were not seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO processed files download openly (checked); raw reads in SRA. Supplementary tables of the paywalled article were not retrievable."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked files: only gene-level counts and long-read transcript counts. Any splicing label (exon skipping per exon, U2AF1-sensitive 3' splice sites) would have to be constructed by re-aligning raw reads and running a splicing caller; the only ready labels are sample genotypes."},
+    "a3_inputs_present": {"pass": true, "note": "Ensembl gene and transcript IDs present; sequences would need genome lookup but that is routine."},
+    "a4_units_stated": {"pass": true, "note": "Raw integer read counts (short-read) and grouped counts (long-read); units implicit but standard."},
+    "a5_enough_rows": {"pass": false, "n_rows": 65, "note": "Unit of observation is the sample: 53 short-read plus 12 long-read samples (counted in files) across a handful of genotypes in two cell lines (A549, H441). Far below the 400-row classification floor."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~11 MB compressed processed tables", "note": "Processed files are small; the raw reads needed to build splicing labels are excluded by policy."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO metadata says 53 and 12 samples; the file headers sum to 54 short-read columns (one cell line duplicated across files) and 12 long-read columns, consistent."},
+    "a8_label_provenance": {"pass": true, "note": "Genotypes come from prime editing, a physical intervention; not model-derived."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "SpliceAI (general splicing predictor from DNA sequence, Jaganathan et al., Cell 2019)", "open_weights": true, "score_and_split": "Predicts splice sites genome-wide, evaluated on held-out chromosomes; not specific to splicing-factor-mutant cells.", "authors_named_unsolved": "Not retrieved for this task.", "runnable_as_baseline": true},
+      {"name": "Pangolin (tissue-aware splicing predictor, Genome Biology 2022)", "open_weights": true, "score_and_split": "Splice-site usage across tissues; not trained on U2AF1-mutant contexts.", "authors_named_unsolved": "Not retrieved for this task.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "SpliceAI or Pangolin (sequence-to-splicing models) would be the natural backbone", "freeze_and_head_viable": null, "hardware": "CPU", "licence": "Not checked (project rejected)"},
+  "integration": {"partner_dataset": "TCGA / AACR GENIE mutation calls (for co-occurrence), not deposited with this paper", "join_key": "gene symbol + protein change", "bigger_question_one_sentence": "Which oncogene mutations create splicing defects that splicing-factor mutations are selected to rescue — but the labels needed to model it are not in the deposited files."},
+  "controls": {"positive_control": "KRAS exon 2 skipping in KRAS G12S cells reverted by U2AF1 S34F (from abstract only).", "negative_control": "Parental and back-edited wild-type U2AF1 clones (seen as sample columns).", "external_validation": "None in the deposited data."},
+  "honest_claim_h3": "With ~65 samples of gene-level counts, a model could at best classify the U2AF1 genotype of an A549 or H441 clone from its expression profile, which is neither hard nor useful.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around each exon to predict whether a cancer splicing-factor mutation changes that exon's inclusion.",
+    "train_on": "Sequence windows around 3' splice sites, labelled by splicing change between mutant and wild-type cells; the number of labelled exons is unknown because no exon-level table is deposited.",
+    "predict": "Whether each exon is skipped more or less in U2AF1-mutant cells; the true answer would have to be computed from raw RNA-seq reads, which are not processed in the deposit.",
+    "why_worthwhile": "Cancer biologists could flag which oncogene mutations create splicing defects that splicing-factor mutations rescue, but the labels would have to be built from raw reads first."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict U2AF1-mutant-sensitive splicing events from splice-site sequence, with a frozen SpliceAI-style backbone plus a head. Not feasible from the deposited files: they hold only gene-level and transcript-level counts for 65 samples, so exon-level labels would need re-alignment of raw reads.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated; rejected at Part A. Processed tables are ~11 MB compressed (checked).", "cheapest_killing_check": "Look for an exon-level splicing table in GEO: none exists (checked), so labels need raw-read processing."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A5 (checked in the files). The GEO deposit holds only gene-level counts for 53 short-read samples and transcript counts for 12 long-read samples. Any splicing label would have to be built from raw sequencing reads, and the sample-level unit gives about 65 rows."
+}

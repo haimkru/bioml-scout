@@ -1,0 +1,102 @@
+{
+  "paper_id": "cellgen2026-101383",
+  "title": "Disease-associated loci share properties with response eQTLs under common environmental exposures.",
+  "doi": "10.1016/j.xgen.2026.101383",
+  "journal": "Cell Genomics",
+  "data_url": "https://doi.org/10.5281/zenodo.15307006",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo 15307006 (CC-BY-4.0): listed all three zips through their central directories (data.zip 743 MB, 222 entries; result.zip 11.95 GB, 1,245 entries, 1,232 of them per-condition/cell-type/chromosome cis-eQTL files, 11.9 GB compressed). Pulled single entries with ranged reads: control_Myeloid chr22 cis file (129,965 SNP-gene rows; columns snps, gene, statistic, pvalue, FDR, beta; 0 rows at FDR<0.1), the Myeloid expression matrix (10,284 genes; 35/38/26/43 donors for caffeine/control/ethanol/nicotine), chr22 genotypes (130,846 SNPs coded 0/1/2, HapMap YRI sample IDs), and coloc_res_all.csv (13,545 rows, 14 cell types, 255 GWAS traits). GEO GSE292909 holds 10x count matrices (18 GB tar).",
+    "what_came_from_paper_text_only": "Response-eQTL counts (380 ethanol, 336 caffeine, 276 nicotine), 6,198 standard eGenes, 5,119 dynamic eQTLs and the contents of Table S5 come from the preprint text (PMC12247639). The supplement could not be retrieved (Europe PMC timed out), so I never saw a file listing response eQTLs. The only mash input in Zenodo is an R .qs file, which I did not open."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo, CC-BY-4.0, no login; ranged reads worked. Genotypes come from public HapMap YRI (Yoruba) lines, so there is no controlled access."},
+    "a2_label_is_a_column": {"pass": true, "note": "Borderline. The response-eQTL call is in Table S5 according to the paper, but I didn't verify it. The Zenodo files only hold per-condition betas, so the label would come from Table S5 or be rebuilt from the control-versus-treatment difference in the same pipeline (same SNP-gene keys)."},
+    "a3_inputs_present": {"pass": true, "note": "SNP IDs carry chromosome:position:alleles (hg38 implied, build not stated in the files), so sequence windows for a DNA model can be pulled directly."},
+    "a4_units_stated": {"pass": true, "note": "Expression is TMM (trimmed mean of M-values) log-CPM (counts per million), inverse-normal transformed, as the filenames say; betas are on that scale. Units are implied by filenames, not documented in a README."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "About 992 response eQTL calls according to the paper (not verified, and many may be the same locus seen in several cell types). Passes only as a classification task against the 6,198 standard eGenes as negatives."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<1 GB if using Table S5 plus sequence windows; 11.9 GB compressed if rebuilding from all cis files (streamable per file)", "note": "AlphaGenome scoring of about 7,000 variants on CPU is slow but feasible; the API route is free for non-commercial use."},
+    "a7_counts_match_paper": {"pass": true, "note": "14 cell types × 4 conditions × 22 chromosomes = 1,232 cis files, which matches the paper's 14 eQTL cell types. Response-eQTL counts could not be checked against the files."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a statistical call (a mash, multivariate adaptive shrinkage, test of the treatment-versus-control effect) on measured single-cell expression from 51 donors. It is not another model's prediction, and it is independent of sequence features. With 26–43 donors per cell type, false negatives will be common."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 0, "why": "Label in the unretrieved Table S5 or an R .qs file; summary stats split across 1,232 files."},
+    "B2": {"score": 1, "why": "The cis and expression text files parsed cleanly; the key mash and pseudobulk files are R-only (.qs, .rds, .fst)."},
+    "B3": {"score": 2, "why": "One lab, one pipeline, one normalization across all conditions (seen in filenames and the expression file)."},
+    "B4": {"score": 1, "why": "No censoring, but the binary call depends on a significance threshold, with many low-power false negatives."},
+    "B5": {"score": 1, "why": "Linked SNPs share identical statistics (seen in the chr22 file); the same locus repeats across cell types and treatments."},
+    "B6": {"score": 1, "why": "No README seen in the zip listings; column meaning had to be inferred from MatrixEQTL-style headers."},
+    "C1": {"score": 1, "why": "Asking whether DNA models can separate response eQTLs from standard eQTLs is informative either way, but the labels are noisy."},
+    "C2": {"score": 2, "why": "No retrieved model that classifies environment-responsive eQTLs; AlphaGenome predicts eQTL effects but not which ones respond to exposure."},
+    "C3": {"score": 1, "why": "Unique-application angle, but the paper already reports enhancer and constraint enrichments, which a classifier would partly restate."},
+    "C4": {"score": 2, "why": "Measuring a response eQTL needs donor panels, exposures and single-cell sequencing: 1.4M cells across 51 lines."},
+    "C5": {"score": 1, "why": "Obvious dummy (distance to TSS, transcription start site, plus enhancer annotation); no published classifier number."},
+    "D1": {"score": 2, "why": "AlphaGenome (weights released, non-commercial) and Enformer give variant-effect embeddings from DNA."},
+    "D2": {"score": 1, "why": "About 7,000 variants; AlphaGenome on CPU is slow, but the API or precomputed scores make caching once viable."},
+    "D3": {"score": 1, "why": "AlphaGenome is non-commercial; the data is CC-BY-4.0."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes, or hold out one exposure (train ethanol, test caffeine)."},
+    "E2": {"ok": true, "why": "22 chromosomes and 14 cell types are available as groups."},
+    "E3": {"ok": true, "why": "Majority class, and a TSS-distance-only logistic model."},
+    "E4": {"ok": false, "why": "No replicate donors; noise is only estimable roughly from mash posterior uncertainty, which is not in the plain-text files."},
+    "E5": {"ok": true, "why": "The paper's reported enrichment in distal enhancers should be recovered by an annotation-only model."},
+    "E6": {"ok": true, "why": "Label shuffling within chromosome, and feature-block ablation."},
+    "E7": {"ok": false, "why": "No retrieved independent response-eQTL set for these exposures; other response-eQTL studies use different stimuli."},
+    "E8": {"ok": false, "why": "No published classifier number to reproduce; only the enrichment odds ratios."},
+    "G1": {"score": 2, "why": "chr:pos:alleles SNP IDs and gene symbols seen in the files; GWAS GCST (GWAS Catalog study) IDs in coloc_res_all.csv."},
+    "G2": {"score": 2, "why": "GTEx eQTLs and ENCODE cCREs (candidate cis-regulatory elements) join on coordinates; AlphaGenome scores join on variant."},
+    "G3": {"score": 1, "why": "SNP-gene pairs are many-to-many with LD (linkage disequilibrium); a lead-SNP collapse rule is needed."},
+    "G4": {"score": 1, "why": "Whether sequence models trained on steady-state data carry signal for exposure response is only marginally beyond the paper."},
+    "H1": {"score": 1, "why": "Negatives are non-significant tests at 26–43 donors, so many are really undetected positives."},
+    "H2": {"score": 0, "why": "One lab, 51 Yoruba iPSC (induced pluripotent stem cell) lines, in vitro cultures, three exposures at one dose."},
+    "H3": {"score": 2, "why": "The claim is stateable precisely; see honest_claim_h3."},
+    "H4": {"score": 1, "why": "The paper states the sample size and design; the false-negative rate of the response calls isn't quantified."},
+    "I1": {"score": 1, "why": "GxE (gene-by-environment) and eQTL researchers such as the Gilad and Battle labs; a vague downstream community."},
+    "I2": {"score": 1, "why": "Could prioritise GWAS loci for exposure experiments, but only marginally given the noise."},
+    "I3": {"score": 1, "why": "AUPRC (precision-recall area under the curve) roughly matches 'which loci to test under exposure'."},
+    "I4": {"score": 1, "why": "Annotation enrichment may explain most of the signal; ML helps only somewhat."},
+    "J1": {"score": 1, "why": "Mostly feature extraction from DNA models plus a logistic head; little modelling depth."},
+    "J2": {"score": 1, "why": "eQTL results are hard to sanity-check without someone from statistical genetics."},
+    "J3": {"score": 1, "why": "A negative transfer result is shareable as a note."},
+    "J4": {"score": 1, "why": "Roughly 2–3 weeks; not formally set."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "AlphaGenome (DeepMind DNA sequence-to-function model)", "open_weights": true, "score_and_split": "GTEx eQTL effect sign auROC (area under the ROC curve) 0.80, coefficient Spearman 0.49 across tissues (per its preprint); steady-state tissues only.", "authors_named_unsolved": "Not retrieved for context-dependent effects; search summaries note distal regulatory effects on expression remain hard.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome variant-effect scores (or Enformer as a permissive fallback)", "freeze_and_head_viable": true, "hardware": "CPU for about 7,000 variants via API or precomputed scores; local inference is slow without a GPU", "licence": "AlphaGenome non-commercial; Enformer Apache-2.0; data CC-BY-4.0"},
+  "integration": {"partner_dataset": "GTEx v8 eQTLs plus ENCODE cCREs, and AlphaGenome precomputed variant scores", "join_key": "hg38 chromosome:position:alleles", "bigger_question_one_sentence": "Do sequence models trained only on steady-state tissue data already encode which regulatory variants change effect under environmental exposure?"},
+  "controls": {"positive_control": "Recover the paper's distal-enhancer enrichment of response eQTLs using annotation features alone.", "negative_control": "Shuffle response labels within chromosome; performance must drop to the TSS-distance dummy.", "external_validation": "None independent for these exposures; leave-one-exposure-out (train ethanol, test caffeine/nicotine) is the closest substitute."},
+  "honest_claim_h3": "Among eQTLs detectable with 26–43 Yoruba donors in in-vitro differentiating cultures, the model separates those whose effect shifted after one dose of nicotine, caffeine or ethanol from those that didn't.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around a gene-regulating variant to predict whether its effect changes when cells are exposed to nicotine, caffeine or alcohol.",
+    "train_on": "DNA-model scores and annotations for each variant-gene pair: roughly 992 environment-responsive calls (paper count, unverified) against variants from about 6,198 genes with ordinary, unchanged effects.",
+    "predict": "Whether the variant is a response eQTL (expression quantitative trait locus), meaning its effect on gene expression differs between treated and untreated cells. The answer comes from single-cell RNA sequencing of 51 donors' stem-cell-derived cultures, with each donor's variant effect compared across conditions.",
+    "why_worthwhile": "If DNA models can flag exposure-sensitive variants, geneticists could prioritise disease loci for environment experiments without running them. If they can't, that shows steady-state training data misses this regulation."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "AlphaGenome trained on steady-state tracks and GTEx; this data adds 3 exposures × 14 cell types of response effects, but only about 992 calls."},
+    "confidence_score": {"answer": "no", "why": "No replicate donors, and the mash posterior uncertainty sits only in R objects; there's nothing to calibrate per-prediction confidence."},
+    "models_beatable": {"answer": "partly", "why": "AlphaGenome (2025, transformer, held-out chromosomes) is strong on steady-state eQTLs but was never evaluated on response eQTLs."},
+    "guaranteed_improvement": {"answer": "no", "why": "No second response-eQTL dataset that measures the same exposures the same way is available to add."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Response or context eQTLs from other stimuli exist (known resources: immune-stimulation eQTL studies, eQTL Catalogue), but none for these three exposures; not searched in detail.", "approx_items": null, "join_key": "hg38 variant coordinates plus gene", "why": "Other stimulus eQTL sets could test whether 'responsiveness' generalises across exposures, but they measure a different quantity."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes analyses of sequence models applied to new regulatory data; it would need a clear cross-exposure transfer result."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Fits a modest benchmark of DNA models on response eQTLs, whichever way it comes out."},
+    "fallback": {"journal": "bioRxiv preprint plus an ML-for-genomics workshop", "why": "A negative 'steady-state models miss exposure response' note fits there."}
+  },
+  "pitch": {
+    "headline": "Open CC-BY genotypes, expression and summary statistics for 51 donors under four exposure conditions in 14 cell types, with nothing behind access control.",
+    "what_makes_the_data_unusual": "1,232 per-condition cis-eQTL files, plus matched genotype and normalized expression matrices, all public (I checked the Zenodo listing). Most response-eQTL data covers immune stimuli; this covers nicotine, caffeine and ethanol.",
+    "the_win": "AlphaGenome-derived features separate response eQTLs from standard eQTLs with AUPRC clearly above a TSS-distance-plus-enhancer baseline on held-out chromosomes.",
+    "even_if_it_fails": "Shows that steady-state-trained sequence models carry no extra signal about exposure-responsive regulation beyond enhancer annotation, a short negative note.",
+    "who_wants_it": "Gene-by-environment eQTL groups (Gilad, Battle labs) deciding which GWAS loci to test under exposures."
+  },
+  "ml_idea": "Binary classifier on frozen AlphaGenome or Enformer variant-effect features plus annotations (TSS distance, ENCODE cCRE, gene constraint): response eQTL versus standard eQTL. Evaluate with leave-chromosome-out and leave-one-exposure-out splits against an annotation-only baseline.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 1, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": null, "cv_run_minutes": 2, "compute_note": "Estimated, not timed; variant scoring cost depends on AlphaGenome API versus local CPU, so embedding hours are unknown. The classifier itself is tiny.", "cheapest_killing_check": "Get Table S5 and count unique response-eQTL lead SNP-gene pairs after collapsing across cell types and LD; if under about 400, stop."},
+  "verdict": "park",
+  "verdict_reason": "Data is open and clean, but the label (about 992 response-eQTL calls, unverified) wasn't found in the files and is noisy at 26–43 donors per cell type. The paper already reports the main annotation enrichments, so expected ML gain is marginal."
+}

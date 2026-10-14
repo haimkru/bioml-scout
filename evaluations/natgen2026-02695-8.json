@@ -1,0 +1,128 @@
+{
+  "paper_id": "natgen2026-02695-8",
+  "title": "Mapping enhancer-gene regulatory interactions from single-cell data.",
+  "doi": "10.1038/s41588-026-02695-8",
+  "journal": "Nature Genetics",
+  "data_url": "https://github.com/EngreitzLab/CRISPR_comparison/blob/main/resources/crispr_data/EPCrisprBenchmark_combined_data.training_K562.GRCh38.tsv.gz",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both CRISPR benchmark TSVs (training: 10,356 rows x 42 columns, 471 Regulated=True, all K562, 3 screens; held-out: 4,378 rows, 190 positives across 5 cell types: K562 118, HCT116 34, GM12878 16, WTC11 15, Jurkat 7). No missing values, 0 duplicate element-gene keys, Regulated exactly equals Significant & EffectSize<0. 0 held-out K562 elements overlap a training element for the same gene, but 1,479/1,918 held-out K562 rows share a gene with training. Computed a distance-to-TSS (transcription start site) baseline: AUPRC (area under the precision-recall curve) 0.438 on training, 0.31-0.85 per held-out cell type. Listed all 5 Zenodo records (code only, MIT/GPL-3.0, 3-269 MB).",
+    "what_came_from_paper_text_only": "The scE2G single-cell features (from 10x Multiome ATAC/RNA data) were not opened; their locations sit in Supplementary Table 6, which was not retrievable (Europe PMC supplement endpoint timed out). scE2G's absolute AUPRC was not found in the text (only deltas, e.g. -0.022 vs ENCODE-rE2G). ENCODE-rE2G's AUPRC 0.63-0.66 and AlphaGenome's results come from search-result snippets, not papers I read in full."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both CRISPR benchmark TSVs downloaded from GitHub without login (1.0 MB and 0.37 MB gzipped); code on Zenodo under MIT licence. Checked in files."},
+    "a2_label_is_a_column": {"pass": true, "note": "'Regulated' (boolean) is a column in the downloaded file, alongside EffectSize and pValueAdjusted. Nothing has to be constructed. Checked in files."},
+    "a3_inputs_present": {"pass": true, "note": "Element coordinates (GRCh38), gene TSS (transcription start site) coordinates, Ensembl IDs, distance and bulk K562 chromatin features (H3K27ac, DNase, CTCF) are in the table. The paper's own single-cell features need separate Multiome processing; DNA sequence would be pulled from the reference genome by coordinate (no lookups)."},
+    "a4_units_stated": {"pass": true, "note": "EffectSize is fractional change in expression, distance in base pairs, chromatin signal in RPM (reads per million); units are implied by column names and consistent across rows. Checked in files."},
+    "a5_enough_rows": {"pass": true, "n_rows": 10356, "note": "10,356 training pairs with 471 positives (classification), plus 4,378 held-out pairs with 190 positives. Per held-out cell type the positives are tiny (Jurkat 7, WTC11 15)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~10 MB uncompressed for both tables", "note": "The tabular baseline is trivial on CPU. Sequence-model features (Borzoi, AlphaGenome) over 1 Mb windows would be slow on CPU and are optional."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says '>10,000 evaluated element-gene pairs' and 466 positives; the file has 10,356 pairs and 471 positives. Small gap (5 positives), probably a file revision; not checked further."},
+    "a8_label_provenance": {"pass": true, "note": "Label is measured: CRISPR interference knockdown of the element followed by measuring the gene's expression (FlowFISH or Perturb-seq), with power filtering. It is not a model output, and none of the feature columns is computed from it."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One 10,356-row training table; the held-out table has the identical 42-column schema. Seen in files."},
+    "B2": {"score": 2, "why": "Both gzipped TSVs parsed first try with pandas; zero missing values."},
+    "B3": {"score": 1, "why": "Labels from different screen types (FlowFISH, Perturb-seq, DC-TAP-seq) harmonised by authors; prevalence varies 0.8%-24% by cell type."},
+    "B4": {"score": 2, "why": "No censored values; underpowered pairs already removed (ValidConnection all True). Seen in files."},
+    "B5": {"score": 2, "why": "0 duplicate element-gene keys in either file; no exact train/held-out overlap."},
+    "B6": {"score": 1, "why": "Column names are self-explanatory but I did not find or read a column dictionary."},
+    "C1": {"score": 1, "why": "Cell-type transfer is informative, but the paper and ENCODE-rE2G already report it."},
+    "C2": {"score": 0, "why": "scE2G, ENCODE-rE2G, ABC, AlphaGenome, MPRabc all open and evaluated on this exact benchmark."},
+    "C3": {"score": 1, "why": "Only weak angle: calibrated or sequence-based transfer to held-out cell types, already partly explored."},
+    "C4": {"score": 2, "why": "Ground truth needs CRISPR screens per cell type, which are expensive lab assays."},
+    "C5": {"score": 2, "why": "Published AUPRCs exist (ENCODE-rE2G ~0.63-0.66); distance baseline computed here at 0.438."},
+    "D1": {"score": 2, "why": "Borzoi and AlphaGenome DNA sequence models have downloadable weights."},
+    "D2": {"score": 1, "why": "Scoring 10k element deletions in 0.5-1 Mb windows is slow on CPU; a GPU is practical."},
+    "D3": {"score": 1, "why": "AlphaGenome weights non-commercial; Borzoi believed permissive (not checked here)."},
+    "E1": {"ok": true, "why": "Hold out chromosomes or genes; separate held-out cell-type file exists. Seen in files."},
+    "E2": {"ok": true, "why": "2,113 genes, 23 chromosomes, 5 held-out cell types in the files."},
+    "E3": {"ok": true, "why": "Distance-to-TSS baseline computed: AUPRC 0.438 vs 0.045 prevalence."},
+    "E4": {"ok": false, "why": "No replicate measurements in the table; only power columns."},
+    "E5": {"ok": true, "why": "Distance and H3K27ac known to predict enhancer effects; positives median 26 kb vs 387 kb."},
+    "E6": {"ok": true, "why": "Label shuffle and feature-block ablation trivial on a 10k-row table."},
+    "E7": {"ok": true, "why": "Held-out CRISPR file (5 cell types), eQTL Catalogue fine-mapped eQTLs, UK Biobank GWAS."},
+    "E8": {"ok": true, "why": "CRISPR_comparison benchmark pipeline open on GitHub/Zenodo to reproduce published AUPRCs."},
+    "G1": {"score": 2, "why": "GRCh38 coordinates and Ensembl gene IDs present in files."},
+    "G2": {"score": 2, "why": "eQTL Catalogue v7 fine-mapped eQTLs and ENCODE chromatin tracks join on coordinates."},
+    "G3": {"score": 1, "why": "Elements overlap multiple variants or peaks; collapse rule needed."},
+    "G4": {"score": 1, "why": "CRISPR plus eQTL combination already done by this paper and ENCODE-rE2G."},
+    "H1": {"score": 2, "why": "9,885 negatives vs 471 positives, all power-filtered. Seen in files."},
+    "H2": {"score": 1, "why": "Training is K562 only (one leukaemia line); held-out covers 5 cell lines."},
+    "H3": {"score": 2, "why": "Claim stated precisely below, restricted to tested elements within ~2 Mb."},
+    "H4": {"score": 2, "why": "Paper explicitly names the 466 positives and K562-only training as limitations."},
+    "I1": {"score": 2, "why": "Engreitz lab and IGVF consortium build and use these enhancer-gene maps."},
+    "I2": {"score": 1, "why": "Better maps marginally change which variant-gene links get tested."},
+    "I3": {"score": 1, "why": "AUPRC roughly matches ranking links for follow-up; precision at fixed recall closer."},
+    "I4": {"score": 1, "why": "Distance alone reaches AUPRC 0.44; trained models reach ~0.63-0.66, so ML helps somewhat."},
+    "J1": {"score": 2, "why": "Real modelling: imbalanced classification, grouped splits, cell-type transfer, sequence-model features."},
+    "J2": {"score": 1, "why": "Enhancer biology intuition needed; distance and H3K27ac priors help sanity-check."},
+    "J3": {"score": 2, "why": "A re-run benchmark is shareable at every stage."},
+    "J4": {"score": 1, "why": "No budget stated yet; a two-week cap is suggested."},
+    "J5": {"score": 1, "why": "Kill condition proposed below but not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scE2G (this paper), logistic-regression classifier on single-cell ATAC/Multiome features", "open_weights": true, "score_and_split": "Trained on K562 CRISPR with chromosome-held-out CV; Multiome version within -0.022 AUPRC of ENCODE-rE2G (absolute value not found in text); also tested on 5 held-out cell types.", "authors_named_unsolved": "Only 466 positives, K562-only training, 'modest' performance on other cell types; 'we have not yet reached the maximum performance achievable in this CRISPR dataset.'", "runnable_as_baseline": true},
+      {"name": "ENCODE-rE2G, logistic regression on DNase-seq plus ABC features", "open_weights": true, "score_and_split": "AUPRC 0.63-0.66 on the K562 CRISPR set vs ABC 0.55-0.56 (from search snippet of the Nature 2026 paper).", "authors_named_unsolved": "Not read in full.", "runnable_as_baseline": true},
+      {"name": "AlphaGenome, DNA sequence-to-function model (zero-shot)", "open_weights": true, "score_and_split": "Zero-shot within 1% AUPRC of ENCODE-rE2G-extended on the ENCODE-rE2G CRISPR set (search snippet).", "authors_named_unsolved": "Distal elements remain hard.", "runnable_as_baseline": null},
+      {"name": "MPRabc, ABC model informed by massively parallel reporter assays (NAR 2026)", "open_weights": null, "score_and_split": "AUPRC 0.707 on the same benchmarking pipeline (search snippet).", "authors_named_unsolved": "Not read.", "runnable_as_baseline": null},
+      {"name": "Genomics x AI blog benchmark of Enformer, Borzoi, NTv3, AlphaGenome", "open_weights": true, "score_and_split": "Zero-shot Pearson r 0.67 (Fulco) and 0.45 (Gasperini) for AlphaGenome on K562 CRISPRi effect sizes.", "authors_named_unsolved": "All models underpredict knockdown magnitude, worsening with distance from the TSS.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Borzoi (or Flashzoi), a DNA sequence-to-expression model; AlphaGenome as alternative", "freeze_and_head_viable": true, "hardware": "CPU possible but slow for ~10k in-silico deletions in 524 kb windows; a GPU is practical", "licence": "Borzoi believed Apache-2.0 (not verified); AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "eQTL Catalogue v7 fine-mapped eQTLs; ENCODE chromatin tracks for the held-out cell lines", "join_key": "GRCh38 genomic coordinates + Ensembl gene ID", "bigger_question_one_sentence": "Do enhancer-gene rules learned from CRISPR screens in one leukaemia line explain natural genetic variation in gene expression across tissues? (Already addressed by this paper and ENCODE-rE2G.)"},
+  "controls": {"positive_control": "Distance to TSS alone must give AUPRC near 0.44 on training data (verified here); H3K27ac signal should add to it.", "negative_control": "Shuffle Regulated labels within chromosome and confirm AUPRC falls to the 0.045 prevalence.", "external_validation": "Held-out CRISPR file covering WTC11, HCT116, GM12878, Jurkat and new K562 DC-TAP-seq screens (4,378 pairs, verified); fine-mapped eQTLs."},
+  "honest_claim_h3": "Among candidate elements within ~2 Mb that someone chose to perturb by CRISPR interference, mostly in K562 cells, the model ranks which ones measurably reduce a nearby gene's expression.",
+  "plain_idea": {
+    "one_liner": "Use an element's chromatin marks, DNA sequence and distance to a gene to predict whether silencing that element lowers the gene's expression.",
+    "train_on": "10,356 element-gene pairs tested by CRISPR in K562 leukaemia cells (verified), each with distance and chromatin-signal columns, optionally plus DNA-sequence model scores.",
+    "predict": "Whether the gene's expression dropped significantly when the element was silenced by CRISPR interference, measured by FlowFISH or single-cell RNA sequencing in the original screens.",
+    "why_worthwhile": "Geneticists linking non-coding disease variants to genes need these maps; but several open models already do this on the same data, so the gain would be marginal."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same 10,356 K562 pairs and 4,378 held-out pairs that scE2G, ENCODE-rE2G and AlphaGenome were all evaluated on."},
+    "confidence_score": {"answer": "partly", "why": "The power columns (PowerAtEffectSize10-50) could support per-pair confidence, but there are no replicates and only 7-34 positives in most held-out cell types."},
+    "models_beatable": {"answer": "no", "why": "scE2G and ENCODE-rE2G are 2026 papers with chromosome-held-out and held-out-cell-type evaluation; MPRabc reports 0.707 AUPRC; AlphaGenome matches them zero-shot."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new accessible CRISPR data beyond the held-out file, which is already used for testing; adding eQTLs measures a different quantity."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "The EngreitzLab CRISPR_comparison resource itself (training and held-out files, opened); IGVF consortium CRISPR screens and the eQTL Catalogue (known resources; eQTLs are a proxy label, not the same measurement).", "approx_items": 14734, "join_key": "GRCh38 coordinates + Ensembl gene ID", "why": "The held-out file gives a ready external test on 5 cell types, but beyond that, measured enhancer-gene CRISPR labels are scarce."},
+  "leakage_plan": {
+    "risks": [
+      "1,479 of 1,918 held-out K562 rows share a target gene with training, so gene-level effects (e.g., highly expressed GATA1, 212 rows) can leak.",
+      "Overlapping or adjacent elements tested against the same gene in different screens can sit on both sides of a random split.",
+      "Screen of origin (Gasperini 6.8% positive vs Schraivogel 1.8%) correlates with the label, so screen-specific features could act as a batch shortcut."
+    ],
+    "split": "Hold out whole chromosomes (column 'chrom', seen in files) for cross-validation, then test once on the held-out-cell-type file grouped by 'CellType' (seen).",
+    "checks": [
+      "Shuffle Regulated within chromosome and confirm AUPRC collapses to prevalence (0.045).",
+      "Train on distanceToTSS alone and report the gain of every other feature over the 0.438 baseline.",
+      "Report AUPRC separately for held-out K562 genes seen versus unseen in training."
+    ],
+    "verdict": "Manageable: chromosome and cell-type columns exist, and the benchmark pipeline already enforces sensible splits."
+  },
+  "success_criteria": {
+    "metric": "AUPRC on the held-out-cell-type file pooled over non-K562 cell types, since users rank candidate links for follow-up in new cell types.",
+    "baselines": "Distance-to-TSS: 0.31 (HCT116), 0.46 (WTC11), 0.49 (Jurkat), 0.85 (GM12878), computed here; scE2G and ENCODE-rE2G held-out numbers via the open pipeline (not yet reproduced).",
+    "success": "Pooled held-out non-K562 AUPRC at least 0.05 above ENCODE-rE2G run through the same pipeline.",
+    "noise_ceiling": null,
+    "kill": "If after one week the model is not at least 0.03 AUPRC better than ENCODE-rE2G on held-out cell types, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes enhancer-gene methods; would need a clear, robust gain on held-out cell types over scE2G and ENCODE-rE2G."},
+    "realistic": {"journal": "Bioinformatics", "why": "Takes benchmark notes comparing sequence-model features against chromatin-based linkers on a shared CRISPR benchmark."},
+    "fallback": {"journal": "bioRxiv preprint plus a machine-learning-in-genomics workshop", "why": "A negative result ('sequence models add nothing beyond distance in new cell types') fits a workshop note."}
+  },
+  "pitch": {
+    "headline": "A 10,356-pair CRISPR-measured enhancer-gene table that parses in one line, plus a 4,378-pair test set from 5 other cell types.",
+    "what_makes_the_data_unusual": "Labels are direct CRISPR knockdown measurements, power-filtered, with 0 missing values and 0 duplicate keys (verified), released under MIT-licensed code.",
+    "the_win": "A sequence-model head beating ENCODE-rE2G's held-out-cell-type AUPRC by 0.05; unlikely given AlphaGenome already matches it zero-shot.",
+    "even_if_it_fails": "A clean measurement of how much beyond distance-to-gene (AUPRC 0.44, verified) any feature adds in new cell types: useful, but largely already reported.",
+    "who_wants_it": "Engreitz lab and IGVF consortium groups choosing which enhancer-gene model to apply to new single-cell atlases."
+  },
+  "ml_idea": "Train on K562 CRISPR pairs with distance, bulk chromatin and frozen Borzoi/AlphaGenome deletion scores; evaluate transfer to the 5 held-out cell types with the open CRISPR_comparison pipeline. Best used as a clean learning project, not a publication edge.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Tables loaded and baselines computed in seconds (timed informally); sequence-model scoring cost not estimated because CPU throughput for 524 kb-1 Mb windows is unknown.", "cheapest_killing_check": "Count positives per held-out cell type (done: Jurkat 7, WTC11 15, GM12878 16), which already limits per-cell-type claims; next, reproduce ENCODE-rE2G's held-out AUPRC with the open pipeline."},
+  "verdict": "park",
+  "verdict_reason": "Data is fully model-ready and passes Part A in the files, but this exact benchmark is saturated: scE2G, ENCODE-rE2G, ABC, MPRabc and AlphaGenome are open and honestly evaluated on it, and held-out cell types have only 7-34 positives. Good for learning, weak publication edge."
+}

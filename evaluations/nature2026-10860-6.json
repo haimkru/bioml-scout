@@ -1,0 +1,127 @@
+{
+  "paper_id": "nature2026-10860-6",
+  "title": "Antigen presentation by CD40+MHC-II+ astrocytes promotes CNS autoimmunity.",
+  "doi": "10.1038/s41586-026-10860-6",
+  "journal": "Nature",
+  "data_url": "https://zenodo.org/records/19803100",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded 7 of 10 Zenodo files (CC-BY-4.0, no login) and listed the 3 large ones by a ranged read of their zip directories. Opened and counted: the cell-contact matrix EAE.T.Cells.Astrocytes.network.csv (902 T cells x 1,652 astrocytes, all values 0/1, 38,510 contact edges, 829/902 T cells and 1,290/1,652 astrocytes with at least one edge), its metadata (2,554 cells, 18 columns, 4 mice, 15 samples, 2 pools, no gene columns), the larger network (1,643 x 18,353; 21,871-cell metadata with only a cell-type column), four gene-level differential-expression tables (21,169 / 13,083 / 1,611,971-byte files with genes, log2 fold change, p, adjusted p), the proximity-proteomics summary (1,388 proteins, UniProt IDs, log2 fold change; only 17 with adjusted p < 0.05), the full mass-spectrometry workbooks (2,220 protein groups, 6 CD40-BioID2 vs 3 control LFQ intensity columns, 56 proteins passing SAINTexpress), and the AlphaFold-Multimer score sheet (1,120 prediction rows over ~224 protein pairs, 79 'positive' rows). Queried NCBI GEO/SRA/BioProject links for PubMed 42557325 and PRIDE for a proteomics deposit: none exist.",
+    "what_came_from_paper_text_only": "The experimental design (rabies-barcode contact mapping, SorTag-based contact labelling, in vivo CRISPR knockouts, multiple sclerosis single-nucleus data) comes from the abstract plus the data-availability statement on the publisher page; the full text is paywalled and not in PubMed Central, so no methods, figure counts or sample tables were read. The data-availability statement itself states that only 'analysis results and bioinformatics data' are on Zenodo and 'all other data are available from the corresponding author on reasonable request'."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo record 19803100 is open, CC-BY-4.0, and downloaded on the first try; but it holds only derived results. The paper's own single-cell, single-nucleus, bulk RNA and mass-spectrometry data have no GEO, SRA or PRIDE accession (checked) and are 'on reasonable request'."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The contact label is a real matrix: 902 x 1,652 zeros and ones, so 'did this T cell touch this astrocyte' is one row-sum away. Verified in EAE.T.Cells.Astrocytes.network.csv."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL. No gene-expression values for any of the 2,554 barcoded cells are deposited; the metadata file has 18 columns, all quality-control or cluster fields (counts, features, percent mitochondrial, cluster number), and zero genes. The only expression content is pre-computed differential-expression summaries, which cannot serve as per-cell features."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are stated where they exist: LFQ (label-free quantification) intensity columns, log2 fold change, TPM (transcripts per million), SAINTscore and BFDR (Bayesian false-discovery rate). Checked in the files."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "note": "FAIL for every task whose inputs are actually present. Proximity proteomics: 2,220 protein groups but only 56 positives after SAINTexpress and 17 proteins with adjusted p < 0.05 in the 1,388-row table. Knockout experiments: 4 differential-expression comparisons (the unit is the perturbation, not the gene). Sorted-astrocyte bulk RNA: 8 samples. AlphaFold pairs: ~224. The 1.49M labelled cell pairs are the only large set, and they have no features.",
+      "n_rows": 56
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "note": "Everything tabular is under 60 MB; working set well under 1 GB. Only the 500 MB Seurat R object (c_TDTOMATO) is large, and I recorded it by name and size rather than downloading it."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No contradictions found, but nothing could be cross-checked either: the full text is paywalled, so the 1,652 astrocytes / 902 T cells and 2,220 protein groups I counted have no published figure to be compared against."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The contact label is a physical measurement (shared rabies barcodes read out by sequencing) and the proteomics label is mass-spectrometry intensity, so neither is a model output. One caveat: the AlphaFold-Multimer score sheet (pIS, LIS, ipTM) is entirely another model's output and would fail A8 if used as a target."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Gloss (Group Lasso on scRNA-seq), Azad et al., Cell Reports Methods 2026 - links a cell's transcriptome to how strongly it physically interacted with a partner cell",
+        "open_weights": true,
+        "score_and_split": "Reports R-squared on held-out cells over 50 random 80/20 train-test splits with 5-fold nested cross-validation for tuning; beats correlation, ridge, lasso and elastic-net baselines (numbers read from the article page, not re-run).",
+        "authors_named_unsolved": "Their framing is that interaction-strength readouts are still scarce and that moving from gene associations to causal mediators of contact remains open.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "GEARS, Roohani et al., Nature Biotechnology 2023 - predicts the transcriptome-wide response to knocking out a gene",
+        "open_weights": true,
+        "score_and_split": "Published on Perturb-seq screens with unseen-perturbation splits; a 2025 Nature Methods re-evaluation (Ahlmann-Eltze et al.) found it and single-cell foundation models do not beat predicting the mean across training perturbations.",
+        "authors_named_unsolved": "Generalising to perturbations of genes never seen in training.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (single-cell transcriptome models) would be the natural backbone for the contact-prediction task; ESM-2 (protein language model) for the proteomics task",
+    "freeze_and_head_viable": false,
+    "hardware": "Laptop CPU would suffice for the small tables, but there is nothing to embed: no per-cell expression matrix is deposited, and the protein task has 56 positives.",
+    "licence": "Zenodo deposit is CC-BY-4.0, so reuse of the derived tables is unrestricted."
+  },
+  "integration": {
+    "partner_dataset": "GSE150858 (the 2021 RABID-seq rabies-barcode contact dataset from the same lab, public) plus GSE275471 and GSE253000 (the public contact-intensity datasets used by the Gloss model)",
+    "join_key": "mouse gene symbol / Ensembl gene ID for genes; UniProt accession for the proteomics table",
+    "bigger_question_one_sentence": "Does a model trained on one lab's barcode-based cell-contact data predict which cells touched each other in a different contact assay - but this paper contributes only summary statistics to that question, because its own per-cell expression is not released."
+  },
+  "controls": {
+    "positive_control": "Would have been easy if features existed: the model must recover Cd40, H2-Ab1 and T helper 17 genes as markers of contact-experienced cells, since the paper reports them. With only summary tables, there is nothing to run the control on.",
+    "negative_control": "Shuffling the 0/1 contact matrix is possible, but pointless without features to pair it with.",
+    "external_validation": "GSE150858 (the lab's earlier barcode-contact dataset) is public and would be the external set; none of this paper's own data can be validated against it."
+  },
+  "honest_claim_h3": "Nothing can honestly be claimed from a model built on this deposit: the only large label set (38,510 measured cell-cell contacts among 1.49M possible pairs) comes with no measurements of the cells themselves, so any model would be predicting contact from quality-control statistics such as read count.",
+  "plain_idea": {
+    "one_liner": "Use a cell's gene-activity profile to predict whether it physically touched an astrocyte during brain autoimmune disease.",
+    "train_on": "Intended input: the gene-activity profile of each immune cell and each astrocyte recovered from inflamed mouse spinal cord. The contact labels exist for 902 T cells x 1,652 astrocytes (1.49M pairs, 38,510 measured contacts), but the gene profiles for those exact cells are not in the deposit.",
+    "predict": "Output: a probability that a given T cell and astrocyte were in physical contact. The true answer comes from a barcoded rabies virus that spreads from astrocytes to touching cells, so two cells carrying the same barcode are recorded as having touched.",
+    "why_worthwhile": "Groups studying multiple sclerosis would get a way to flag contact-experienced cells in ordinary single-cell datasets, where no barcode is available; even a failure would quantify how much of physical contact is visible in a transcriptome at all."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Gloss was developed on public contact-intensity datasets (GSE275471, GSE253000) with full expression matrices; this paper offers 38,510 contact edges with no expression at all, so it is strictly less usable, not more."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are 4 mice and 2 sequencing pools in the contact metadata, which could in principle support per-group uncertainty, but with no features there is no prediction to attach a confidence to."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Gloss is a 2026 method with open code and repeated held-out-cell evaluation; GEARS-style perturbation models were re-benchmarked honestly in Nature Methods in 2025. Both are current and evaluated on splits we could not improve on with these files."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The first condition already fails: we cannot give our model everything the baseline sees, because the per-cell expression matrix the baseline requires is not deposited."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Intended project: predict from a single cell's transcriptome whether it physically contacted an astrocyte, training on rabies-barcode contact labels, with a scGPT or Geneformer backbone frozen and a small classifier head, held out by mouse. The project cannot be built from this paper because the contact labels are released without the matching expression matrices; a fallback task (predicting CD40 proximity-interactome membership from ESM-2 protein embeddings) has only 56 positive proteins out of 2,220 quantified.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed beyond the loads I ran: the contact matrix (902 x 1,652) and all differential-expression tables load in seconds and together occupy well under 1 GB; the only heavy object, a 500 MB Seurat R file, was deliberately not downloaded.",
+    "cheapest_killing_check": "Print the column names of EAE.T.Cells.Astrocytes.network.meta.tsv: 18 columns, all quality-control or cluster fields, zero genes. That single command kills the project in under a minute."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A3 fails: the measured cell-cell contact labels (38,510 edges over 902 T cells x 1,652 astrocytes) are deposited without any per-cell gene expression, and the paper's sequencing and proteomics data have no GEO, SRA or PRIDE accession - they are 'available from the corresponding author on reasonable request'. A5 also fails for every task whose inputs do exist: 56 positive proteins out of 2,220 in the CD40 proximity proteomics, 4 knockout comparisons, 8 sorted-astrocyte bulk samples, ~224 AlphaFold-Multimer pairs (whose scores are a model's output anyway, so they would fail A8 as labels). The Zenodo record is genuinely open and tidy, but it is a set of figure-backing summaries, not a modelling dataset."
+}

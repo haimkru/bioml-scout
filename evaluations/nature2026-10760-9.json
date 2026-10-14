@@ -1,0 +1,126 @@
+{
+  "paper_id": "nature2026-10760-9",
+  "title": "Highly fragmented European wetlands with uneven restoration needs.",
+  "doi": "10.1038/s41586-026-10760-9",
+  "journal": "Nature",
+  "data_url": "https://github.com/mkovac03/eu-wetland-area-inference/tree/main/source_data (labelled points); map at https://doi.org/10.17894/ucph.1999212a-ee8f-41aa-bc47-02e2646564f4",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened three GeoPackages from the authors' GitHub source_data folder. eu_design_based_area_estimation_samples.gpkg: 10,975 points (WGS84 coordinates), columns Code_18 (CORINE class), Class (the paper's map prediction), reference (expert label, 8 classes: 7,622 non-wetland, 438 inland marshes, 555 peatbogs, 399 salt marshes, 199 salines, 403 intertidal flats, 723 moors/heathland, 636 inland water). Disturbance file: 10,938 points; column distur gives 2,157 least / 423 intermediate / 134 most disturbed among 2,714 wetland points. Country file: 10,938 points, CNTR_ID with 38 countries (ES 1,342 down to LU 6). Map-vs-reference crosstab gives 94.1% unweighted agreement. ERDA file listing via its JSON endpoint: a single 55.7 GB EUwet_dist_merged.gpkg plus two style files. GitHub repo has no licence; DataCite record has no rights field.",
+    "what_came_from_paper_text_only": "That the reference labels were made by on-screen expert interpretation of high-resolution Google imagery following CORINE nomenclature; that distur is the interpreted disturbance reference rather than the mapped value (inferred from the column name and the design-based estimator, not confirmed); the 101,000 CORINE-labelled training points and their Sentinel feature stacks, which are not released; 96.6% area-weighted overall accuracy. Not checked: the internal tile size of the AlphaEarth embedding files, so the network cost of feature extraction is an estimate."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: the three labelled-point GeoPackages (1.2–1.3 MB each) download from GitHub with no login. The 55.7 GB map on ERDA (University of Copenhagen archive) is public but over the size cap; it isn't needed."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked: the 'reference' column (wetland type, 8 classes) and the 'distur' column (3 disturbance levels) are already present per point. Nothing has to be built."},
+    "a3_inputs_present": {"pass": true, "note": "Partial pass. The files hold only coordinates, no satellite features. Features have to be pulled from a public raster, such as the AlphaEarth 64-dimensional 2018 embeddings (open COG (cloud-optimised GeoTIFF) files on Source Cooperative, no login). That's about 11k automated windowed reads, not identifier lookups, but it is real work and the network cost is unverified."},
+    "a4_units_stated": {"pass": true, "note": "Categorical labels, so no units to get wrong. Class codes follow CORINE Land Cover nomenclature; the code-to-name map is in the 'Class Label' column (checked)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 10975, "note": "Checked: 10,975 labelled points for classification, of which 3,353 are wetland. The smallest class (salines) has 199. Disturbance has 2,714 wetland points, with only 134 in the 'most disturbed' level."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~3 MB of labels + ~11k × 64-dim embeddings (<10 MB)", "note": "The table is tiny. The only heavy step is reading embeddings from cloud COGs, which may move tens of GB over the network (not stored). A tree model or logistic regression runs on CPU in seconds."},
+    "a7_counts_match_paper": {"pass": true, "note": "Area sample: 10,975 matches the paper's N_val = 10,975 exactly. The disturbance and country files have 10,938 (37 fewer), which is unexplained but small. Unweighted agreement of 94.1% matches the ERDA description's 94%."},
+    "a8_label_provenance": {"pass": true, "note": "Per the paper, labels were assigned by expert visual interpretation, independent of model training. The paper's model was trained on separate CORINE points. Caveat: Code_18 (the CORINE map class) is a map product that sampling was stratified on, and 'Class' is the paper's model output; both must be excluded as features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three small GeoPackages joining on fid. Features must come from a separate embedding raster; there is no feature table."},
+    "B2": {"score": 2, "why": "GeoPackages opened first try with sqlite3; WGS84 points, clean integer codes (checked)."},
+    "B3": {"score": 2, "why": "One expert interpreter, one protocol, CORINE nomenclature; ambiguous cases jointly reviewed (paper text)."},
+    "B4": {"score": 2, "why": "No censored values; categorical labels. Disturbance is -1 only for water and non-wetland, by design (checked)."},
+    "B5": {"score": 2, "why": "One point per row and no repeated coordinates expected from stratified random sampling. Not explicitly deduplicated."},
+    "B6": {"score": 1, "why": "README documents required columns. The meaning of distur (reference vs mapped) is not stated explicitly."},
+    "C1": {"score": 1, "why": "A cross-country transfer test is informative either way, but the headline accuracy comparison against the map is marginal."},
+    "C2": {"score": 1, "why": "Wetland mapping from satellite is a busy remote-sensing field. The paper's own map is open, but its trained model and features aren't released."},
+    "C3": {"score": 1, "why": "Weak angle: disturbance-level prediction and country transfer on expert points. Likely novel for these points, but not for the task."},
+    "C4": {"score": 2, "why": "Labels need expert on-screen interpretation of each point; CORINE updates every six years at 25-hectare minimum units."},
+    "C5": {"score": 2, "why": "The paper's map prediction ('Class' column) is a baseline at every point: 94.1% unweighted agreement (computed)."},
+    "D1": {"score": 2, "why": "AlphaEarth Foundations satellite embeddings, open COGs 2017–2025 on Source Cooperative (search result, not opened)."},
+    "D2": {"score": 2, "why": "Embeddings are precomputed per 10-m pixel; sample once, then fit a head on CPU."},
+    "D3": {"score": 1, "why": "Embeddings are CC-BY 4.0, but the labelled points carry no licence (GitHub repo and ERDA record checked)."},
+    "E1": {"ok": true, "why": "Leave-country-out or leave-region-out split from the CNTR_ID column (seen, 38 countries)."},
+    "E2": {"ok": true, "why": "16 countries have over 150 points each (checked counts)."},
+    "E3": {"ok": true, "why": "Majority class (69% non-wetland) and the paper's map prediction at each point."},
+    "E4": {"ok": false, "why": "Single interpreter per point; no replicate labels released, so interpreter disagreement can't be estimated."},
+    "E5": {"ok": true, "why": "Intertidal flats and salines should be near-trivial (map agreement 97% and 92%); peatbog vs moor confusion is known."},
+    "E6": {"ok": true, "why": "Label shuffle and embedding-noise replacement are easy on an 11k-row table."},
+    "E7": {"ok": true, "why": "LUCAS 2018 in-situ land-cover survey points include wetland classes; independent field visits (cited in paper)."},
+    "E8": {"ok": true, "why": "The map-vs-reference confusion matrix reproduces 94.1% unweighted; the repo scripts reproduce the 96.6% weighted figure."},
+    "G1": {"score": 1, "why": "Geographic coordinates (WGS84) and ISO-style country codes; no biological identifiers."},
+    "G2": {"score": 2, "why": "LUCAS 2018 topsoil carbon and land-cover points, joinable on coordinates; the paper used ~22,000 soil-carbon measurements."},
+    "G3": {"score": 1, "why": "Point-to-pixel join is clean; point-to-LUCAS needs nearest-neighbour matching within a distance threshold."},
+    "G4": {"score": 1, "why": "Could ask whether embedding-predicted disturbance tracks measured topsoil carbon loss; plausible but loosely joined."},
+    "H1": {"score": 2, "why": "7,622 non-wetland and 2,157 undisturbed points recorded alongside positives (checked)."},
+    "H2": {"score": 2, "why": "38 countries, from Iceland to Turkey; one interpretation team, though."},
+    "H3": {"score": 2, "why": "Claim is precise: wetland type and disturbance as judged by one expert from 2018-era imagery."},
+    "H4": {"score": 1, "why": "Paper documents the sampling design; interpreter subjectivity and the 25-hectare CORINE frame are only partly discussed."},
+    "I1": {"score": 1, "why": "EU Nature Restoration Law national planners and the Global Wetland Center (Copenhagen); none have stated a need for a point model."},
+    "I2": {"score": 1, "why": "A better disturbance classifier could refine restoration candidate areas; the map already exists."},
+    "I3": {"score": 1, "why": "Per-class F1 roughly matches mapping decisions; area estimation needs design-based weighting, not plain accuracy."},
+    "I4": {"score": 1, "why": "The paper's gradient-boosting model already reaches 94%; extra gains from embeddings may be small."},
+    "J1": {"score": 1, "why": "Geospatial feature extraction, then tabular modelling; grouped splits are real but the backbone is fixed."},
+    "J2": {"score": 1, "why": "Remote sensing of wetlands is outside the molecular-biology focus; would need a domain checker."},
+    "J3": {"score": 2, "why": "An embedding table at 11k expert points is shareable even if the model doesn't beat the map."},
+    "J4": {"score": 1, "why": "One to two weeks is plausible; not yet written down."},
+    "J5": {"score": 0, "why": "No kill date recorded in NOTES.md yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Kovács et al. XGBoost (gradient-boosted trees) wetland map (this paper)", "open_weights": false, "score_and_split": "96.6% area-weighted overall accuracy on 10,975 independent stratified expert points (94.1% unweighted, computed from the file). The model was trained on 101,000 CORINE-labelled points.", "authors_named_unsolved": "CORINE's 25-hectare minimum mapping unit and labelling bias against small, managed patches; inland marshes have the lowest precision (67% per the ERDA description).", "runnable_as_baseline": true},
+      {"name": "European Wetland Map (EWM, Tegetmeyer et al. 2025, Zenodo 10.5281/zenodo.14745285)", "open_weights": null, "score_and_split": "Compiled from existing sources rather than a trained model; accuracy not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "AlphaEarth Foundations Satellite Embedding V1 (64-dim annual 10-m embeddings, 2018 layer)", "freeze_and_head_viable": true, "hardware": "Laptop CPU; network reads from public S3 cloud storage", "licence": "Embeddings CC-BY 4.0; labelled points unlicensed (no LICENSE in repo)"},
+  "integration": {"partner_dataset": "LUCAS 2018 topsoil organic carbon and land-cover survey (EU in-situ points)", "join_key": "Coordinates (nearest LUCAS point within a set distance)", "bigger_question_one_sentence": "Does disturbance predicted from satellite embeddings at expert-checked wetland points track measured topsoil carbon loss across Europe?"},
+  "controls": {"positive_control": "Intertidal flats and salines should come out near-perfect (map agreement 97% and 92% at these points); a non-wetland vs water split should be trivial.", "negative_control": "Shuffle labels within country and confirm a collapse to the majority-class baseline; drop Code_18 and Class from the features to rule out leakage.", "external_validation": "LUCAS 2018 in-situ land-cover points with wetland classes, held out entirely."},
+  "honest_claim_h3": "Predicts the wetland type and disturbance level that one expert team would assign from 2018 high-resolution imagery at stratified random points in 38 European countries, not field-verified wetland condition.",
+  "plain_idea": {
+    "one_liner": "Use precomputed satellite image summaries at expert-checked points to predict wetland type and how disturbed it is, and test transfer across countries.",
+    "train_on": "For each of 10,975 points across 38 European countries (verified), a 64-number summary of the 2018 satellite signal at that 10-metre pixel, taken from a public precomputed embedding layer.",
+    "predict": "One of 8 land classes (6 wetland types, water or non-wetland) and, for 2,714 wetland points, a 3-level human-disturbance score. Both were assigned by an expert looking at high-resolution imagery.",
+    "why_worthwhile": "EU restoration planners need wetland condition maps. Learning whether a generic satellite embedding matches a bespoke model, and whether it transfers between countries, tells mappers if they can skip custom feature engineering."
+  },
+  "paper_type": "resource",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Our labels are 10,975 expert points, versus the paper's 101,000 noisier CORINE-derived training points. That's fewer rows, but better labels and the only disturbance labels."},
+    "confidence_score": {"answer": "no", "why": "Single interpreter per point and no replicate labels, so there's no basis for calibrated per-point confidence beyond standard model probabilities."},
+    "models_beatable": {"answer": "partly", "why": "The 2026 gradient-boosting map reaches 94.1% unweighted on these points; the weakest classes are inland marshes (precision 67%) and moors. Gains are possible there, not overall."},
+    "guaranteed_improvement": {"answer": "no", "why": "The paper's model and feature stacks aren't released, so we can't give our model everything it saw plus more; only its map output is a baseline."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "LUCAS in-situ land-cover survey (known resource, cited in the paper as d'Andrimont 2020) has wetland land-cover classes at field-visited points; CORINE Land Cover 2018 covers all of Europe but is itself a mapped product.", "approx_items": null, "join_key": "Geographic coordinates", "why": "LUCAS field points give an independent, ground-visited test set for wetland type, beyond the paper's screen-interpreted sample."},
+  "leakage_plan": {
+    "risks": [
+      "Code_18 (the CORINE class) was used to stratify sampling and strongly predicts the label, so including it as a feature would inflate scores.",
+      "The 'Class' column is the paper's model output, and using it as a feature would just distil that map.",
+      "Points close together in the same wetland complex share imagery, so random splits leak through spatial autocorrelation.",
+      "AlphaEarth embeddings were trained on global data that might include labels correlated with CORINE, so part of the signal could be inherited rather than learned."
+    ],
+    "split": "Hold out whole countries (CNTR_ID column, seen in the country GeoPackage, 38 values), or group countries into biogeographic regions and hold out regions.",
+    "checks": [
+      "Shuffle labels within country and confirm a collapse to the majority-class baseline.",
+      "Compare random-split and leave-country-out scores; a large gap means spatial leakage.",
+      "Train on Code_18 alone to measure how much the stratification variable explains."
+    ],
+    "verdict": "Manageable: the leaky columns are obvious and a country column exists for grouped splits."
+  },
+  "success_criteria": {
+    "metric": "Macro-averaged F1 over the 6 wetland classes on leave-country-out splits, because restoration mapping cares about each wetland type, not about the dominant non-wetland class.",
+    "baselines": "Majority class (69% non-wetland, macro F1 near 0); the paper's map 'Class' at the same points (94.1% unweighted accuracy, per-class F1 computable from the file; ERDA reports a 73–95% F1 range).",
+    "success": "Macro wetland F1 at least 0.03 above the paper's map on leave-country-out, or disturbance-level macro F1 at least 0.6 with no published baseline.",
+    "noise_ceiling": null,
+    "kill": "If embeddings fall more than 0.05 macro F1 below the paper's map after the first leave-country-out run, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Remote Sensing of Environment", "why": "Publishes continental wetland-mapping methods. It would need embeddings to clearly beat bespoke features on held-out countries, plus validation against LUCAS."},
+    "realistic": {"journal": "International Journal of Applied Earth Observation and Geoinformation", "why": "Takes benchmark studies of foundation-model embeddings for specific land-cover tasks; fits a cross-country transfer result."},
+    "fallback": {"journal": "arXiv preprint plus a NeurIPS/ICLR climate-change AI workshop", "why": "A negative result that generic embeddings underperform bespoke wetland features is still a workshop-sized finding."}
+  },
+  "pitch": {
+    "headline": "10,975 expert-checked points across 38 countries, with wetland type and 3-level human disturbance, sitting in 4 MB of GeoPackages.",
+    "what_makes_the_data_unusual": "Independent stratified sample with disturbance labels for 2,714 wetland points (134 most disturbed), plus the paper's map prediction at every point for a free baseline. Labelling method rests on the paper text.",
+    "the_win": "Wetland macro F1 at least 0.03 above the paper's map on leave-country-out splits, using only frozen public embeddings.",
+    "even_if_it_fails": "We learn whether generic satellite embeddings can replace bespoke wetland features, and which countries the transfer fails in.",
+    "who_wants_it": "The Global Wetland Center (Copenhagen) and EU Nature Restoration Law national mapping teams deciding whether to rebuild custom wetland classifiers."
+  },
+  "ml_idea": "Sample 2018 AlphaEarth 64-dim embeddings at the 10,975 expert reference points. Train a gradient-boosting or logistic head for wetland type and disturbance level with leave-country-out cross-validation, and compare against the paper's map prediction at the same points.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": 2, "cv_run_minutes": 2, "compute_note": "Estimated, not timed: embeddings are precomputed, so the cost is about 11k windowed remote reads from COG tiles (tile size unverified, possibly tens of GB transferred). The model runs on an 11k × 64 table.", "cheapest_killing_check": "Read AlphaEarth 2018 embeddings at 100 points, fit a quick model, and check whether peatbog vs moors/heathland separates at all versus the map's own confusion."},
+  "verdict": "park",
+  "verdict_reason": "Passes Part A: 10,975 expert labels downloaded and counts match. But this is remote-sensing land cover rather than molecular biology, the labels have no licence, the field is busy, and the likely gain over the paper's 94% map is marginal."
+}

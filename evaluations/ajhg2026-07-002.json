@@ -1,0 +1,93 @@
+{
+ "paper_id": "ajhg2026-07-002",
+ "title": "Allele frequency trajectories across age groups reveal ongoing natural selection shaping disease susceptibility.",
+ "doi": "10.1016/j.ajhg.2026.07.002",
+ "journal": "American Journal of Human Genetics (AJHG)",
+ "data_url": "https://github.com/jlian121/ongoing-selection",
+ "verified": {
+  "opened_data_files": true,
+  "what_i_actually_checked": "Listed the GitHub repo (MIT code licence). Downloaded summary_stats/TWB_LRT_results_all_variants.csv (62 MB): 509,816 rows x 10 columns (CHROM, POS, ID, REF, ALT, freq, beta, LR, pval, FDR), no missing values, no duplicate IDs or positions, 93% rsIDs. 168 rows have FDR (false discovery rate) <0.05, 230 <0.1; genomic inflation about 1.03; mean FDR 0.97. The 168 hits have median frequency 0.00069, sitting right at the table's 0.0005 frequency floor; 95% have positive beta. Opened Table S2 (168 x 17, with gene, consequence, ClinVar columns). Spread of beta is 8x larger in the rarest fifth of variants than in the commonest.",
+  "what_came_from_paper_text_only": "That beta measures allele-frequency change across age groups after ancestry adjustment; the genotyping platform (Taiwan Biobank array); the 72,635 individuals; the PheWAS (phenome-wide association) design; the claim that individual-level data need a Taiwan Biobank access application."
+ },
+ "part_a_killers": {
+  "a1_downloadable": {
+   "pass": true,
+   "note": "Summary statistics download freely from GitHub (checked). Individual genotypes and ages are controlled access via the Taiwan Biobank committee, so any per-person model is unavailable."
+  },
+  "a2_label_is_a_column": {
+   "pass": true,
+   "note": "Checked in file: the age-trend effect (beta), likelihood ratio and FDR are columns per variant; nothing to construct."
+  },
+  "a3_inputs_present": {
+   "pass": true,
+   "note": "Only chromosome, position, alleles and frequency are present; any predictive features (conservation, CADD, AlphaMissense) would have to be joined on coordinates, which is easy."
+  },
+  "a4_units_stated": {
+   "pass": true,
+   "note": "beta is a logistic-regression coefficient per age group, frequency is a fraction; genome build not stated in the file (positions look like GRCh38, unconfirmed)."
+  },
+  "a5_enough_rows": {
+   "pass": false,
+   "n_rows": 509816,
+   "note": "A5 in disguise: 509,816 rows, but only 168 positives (FDR<0.05), well under the ~400 needed even for classification. The continuous beta is almost pure noise (mean FDR 0.97, inflation 1.03), and its spread is dominated by allele frequency. So there is essentially no learnable label."
+  },
+  "a6_fits_laptop": {
+   "pass": true,
+   "working_set": "62 MB CSV",
+   "note": "Trivially fits."
+  },
+  "a7_counts_match_paper": {
+   "pass": true,
+   "note": "509,816 rows in the file vs 509,817 variants in the paper (off by one); 168 hits matches exactly."
+  },
+  "a8_label_provenance": {
+   "pass": true,
+   "note": "The label is a statistic from measured genotypes versus participant age, not another model's output. However, the hits cluster at the 0.0005 frequency floor, which raises a risk that they reflect genotyping or recruitment-batch artifacts."
+  }
+ },
+ "part_a_verdict": "reject",
+ "score_items": {},
+ "c2_audit": {
+  "existing_models": []
+ },
+ "backbone": {
+  "name": "AlphaGenome or Nucleotide Transformer variant scores as features (not pursued)",
+  "freeze_and_head_viable": null,
+  "hardware": "CPU",
+  "licence": "n/a"
+ },
+ "integration": {
+  "partner_dataset": "gnomAD constraint and ClinVar, or AlphaMissense scores",
+  "join_key": "chromosome + position + alleles (build to be confirmed)",
+  "bigger_question_one_sentence": "Do variant-deleteriousness predictors forecast which variants decline in frequency across age groups? With 168 noisy hits this cannot be answered with power."
+ },
+ "controls": {
+  "positive_control": "ClinVar pathogenic variants should be enriched among negative-direction hits (the paper reports 71 of 168 are pathogenic or likely pathogenic).",
+  "negative_control": "Shuffle beta within frequency bins.",
+  "external_validation": "UK Biobank / GERA (Genetic Epidemiology Research on Adult Health and Aging) age-trajectory results (Mostafavi et al. 2017), different population and few overlapping rare variants."
+ },
+ "honest_claim_h3": "At most: 'among array-genotyped variants in 72,635 Han Taiwanese adults, annotation scores weakly rank the 168 variants whose frequency differs by age', a claim with too few positives to test reliably.",
+ "plain_idea": {
+  "one_liner": "Use a variant's predicted harmfulness and genomic context to predict whether its frequency drops in younger versus older people.",
+  "train_on": "509,816 genotyped variants (verified), each with frequency plus joined annotation scores; only 168 are significant.",
+  "predict": "The per-variant age-trend coefficient, or whether it passes FDR<0.05, computed by the authors from genotypes and ages of 72,635 Taiwan Biobank participants.",
+  "why_worthwhile": "Population geneticists would learn whether ongoing selection is predictable from function. But the label is mostly sampling noise, so a negative result would be uninformative."
+ },
+ "crowded_field_case": null,
+ "label_elsewhere": null,
+ "publication_target": null,
+ "pitch": null,
+ "ml_idea": "Regress the age-trend beta (or classify the 168 hits) on joined variant annotations such as CADD, AlphaMissense and gnomAD constraint. Rejected because the positive class is tiny and the continuous label is noise-dominated.",
+ "effort": {
+  "hours_to_feature_table": 4,
+  "working_set_gb": 0.1,
+  "needs_gpu": false,
+  "peak_ram_gb": 1,
+  "embedding_hours": null,
+  "cv_run_minutes": 5,
+  "compute_note": "Loaded the 62 MB CSV with pandas in seconds; other figures are estimates.",
+  "cheapest_killing_check": "Done: counted FDR<0.05 rows = 168, median frequency 0.00069 at the frequency floor."
+ },
+ "verdict": "reject",
+ "verdict_reason": "The data are open and clean (509,816 variants in one table), but the learnable label is only 168 significant variants. Those sit at the rare-frequency floor, possibly as artifacts, and the continuous effect is near-pure noise (mean FDR 0.97). The individual-level data needed for anything richer are controlled access through the Taiwan Biobank."
+}

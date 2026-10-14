@@ -1,0 +1,97 @@
+{
+  "paper_id": "nature2026-11055-9",
+  "title": "Identification of broadly tumour-reactive γδ TCRs from multiple myeloma.",
+  "doi": "10.1038/s41586-026-11055-9",
+  "journal": "Nature",
+  "data_url": "https://zenodo.org/records/20028241",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened all 8 files of the only public deposit (Zenodo 10.5281/zenodo.20028241). README.txt states verbatim that the labels supplied are 'randomized tumor-reactivity labels' for a 200-cell subset, and that 'The full training data and/or PreGame models can be provided upon reviewer request'. Parsed PreGame_testing_labels.tsv (200 rows, one column, 166 zeros / 34 ones), PreGame_testing_matrix.feather (200 rows x 27 columns: cell-cycle scores, 21 genes such as GNLY, GZMB, TRDV1, and 5 antibody-derived CITE-seq markers), meta_discovery_tested.tsv (200 rows x 15 Seurat metadata columns, no reactivity label), and both Jupyter notebooks (a 100-member random-forest ensemble with SMOTENC oversampling). Searched NCBI GEO, BioProject, Europe PMC accessions and Zenodo for the underlying CITE-seq (cellular indexing of transcriptomes and epitopes by sequencing) data by topic and by author; found nothing matching.",
+    "what_came_from_paper_text_only": "Only the Europe PMC abstract was readable; the Nature full text is paywalled (no PMCID, isOpenAccess = N), so I could not read the Data Availability statement itself. The reported area under the receiver operating characteristic curve of 0.864 for PreGame came from a web-search summary of the article page, not from text I retrieved, and is unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "FAIL, verified in the files. The only public artefact is a code + demo bundle on Zenodo whose README says the full training data is available 'upon reviewer request'. No GEO, SRA, BioProject, EGA or dbGaP deposit of the single-cell CITE-seq data was found by topic or author search."},
+    "a2_label_is_a_column": {"pass": false, "note": "A 0/1 tumour-reactivity column exists (PreGame_testing_labels.tsv), but the README states these specific values are randomized, so no real label is publicly downloadable. The real labels come from a separate TCR-cloning and tumour-killing assay that is not deposited."},
+    "a3_inputs_present": {"pass": true, "note": "For the 200 demo cells the 27 input features are present as numbers in the feather file; no identifier lookups needed. Only 200 cells, though."},
+    "a4_units_stated": {"pass": false, "note": "No units or documentation anywhere. Columns are presumably Seurat SCT-normalised RNA counts and CITE-seq antibody-derived counts, but neither the README nor the notebooks say which, and 'Phase' is an undocumented 1/2/3 integer encoding."},
+    "a5_enough_rows": {"pass": false, "n_rows": 200, "note": "FAIL, counted in the file. 200 cells, 34 positives. The checklist floor is ~400 even for pure classification."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.05 MB", "note": "Entire public deposit is about 110 KB; the feature matrix is 26 KB. Trains in under 2 minutes per the README."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked. The paper is paywalled so no cell counts, patient counts or cohort sizes are retrievable to compare against the 200-cell demo."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL, stated in the README I read. The public labels are explicitly randomized placeholders, i.e. pure noise, not a measurement. The genuine labels are in-vitro tumour-reactivity assays on cloned γδ T cell receptors, which would be fine, but they are not released."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "PreGame (the paper's own random-forest ensemble for tumour-reactive γδ T cell receptors)",
+        "open_weights": false,
+        "score_and_split": "A web-search summary of the article reports an area under the receiver operating characteristic curve of 0.864; I could not retrieve the paper text to confirm the number or the split. The training notebook sets up 10-fold stratified cross-validation but the released notebook never actually uses it, so the released code trains 100 forests on all data with SMOTENC oversampling and no held-out split.",
+        "authors_named_unsolved": "Not retrievable: the discussion is behind the paywall.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "predicTCR (machine-learning classifier of tumour-reactive tumour-infiltrating T cells from single-cell RNA sequencing, Nature Biotechnology 2024)",
+        "open_weights": true,
+        "score_and_split": "Reported to raise the geometric mean of sensitivity and specificity from 0.38 (earlier gene-set scoring) to 0.74 across tumour-infiltrating lymphocytes from several cancers; split details not verified by me. Code at github.com/ssciwr/predicTCR.",
+        "authors_named_unsolved": "Not verified; I read only search summaries, not the paper.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TRTpred / MixTRTpred (antigen-agnostic tumour-reactive T cell predictor, Nature Biotechnology 2024)",
+        "open_weights": null,
+        "score_and_split": "Benchmarked against external datasets within a machine-learning framework; exact numbers and splits not retrieved by me.",
+        "authors_named_unsolved": "Not verified.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (single-cell transcriptome foundation models) would be the natural backbone for cell-level tumour-reactivity prediction",
+    "freeze_and_head_viable": null,
+    "hardware": "Not assessable: the 200-cell demo carries 27 pre-selected features, not the full gene-by-cell count matrix a single-cell backbone needs.",
+    "licence": "Zenodo record lists no licence at all, which is itself a reuse problem."
+  },
+  "integration": {
+    "partner_dataset": "None usable. In principle VDJdb or the Adaptive/IMGT γδ T cell receptor repertoires could join on CDR3 sequence, but no T cell receptor sequences are present in the public deposit (only a clonotype ID column with no sequence).",
+    "join_key": "none available",
+    "bigger_question_one_sentence": "Cannot be written, because the public files contain no sequences, no patient identifiers and no real labels to join anything to."
+  },
+  "controls": {
+    "positive_control": "None possible on the public data: with randomized labels, a working pipeline and a broken one both score at chance by construction.",
+    "negative_control": "Label shuffling is meaningless here because the released labels are already shuffled.",
+    "external_validation": "No second γδ T cell tumour-reactivity dataset was found in GEO, BioProject or Zenodo."
+  },
+  "honest_claim_h3": "On the public data the only honest claim is 'this code runs', since the 200 released labels are randomized and the real training set was never deposited.",
+  "plain_idea": {
+    "one_liner": "Use a T cell's gene and surface-protein profile to predict whether its receptor actually recognises tumour cells.",
+    "train_on": "Each example would be one gamma-delta T cell from a cancer patient, described by its messenger RNA levels and roughly 5 antibody-measured surface proteins. Publicly I verified only 200 such cells; the real cohort size is unknown because the paper is paywalled.",
+    "predict": "A yes/no call on whether that cell's T cell receptor kills tumour cells. The true answer comes from cloning the receptor into reporter cells and measuring activation or killing against tumour targets in the lab.",
+    "why_worthwhile": "Cell-therapy groups currently clone and test receptors one at a time, which is slow and expensive; a reliable in-silico filter would let them pick the few worth testing. Gamma-delta receptors are especially attractive because they do not need matched tissue typing, so one receptor could in principle treat many patients."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would have 200 cells with fake labels. predicTCR and TRTpred were each trained on real tumour-reactivity assays across multiple cancer types and are published with code."},
+    "confidence_score": {"answer": "no", "why": "With 34 nominal positives and randomized labels there is no replicate structure and no way to estimate per-prediction uncertainty."},
+    "models_beatable": {"answer": "no", "why": "PreGame itself cannot be reproduced without its withheld training set, and predicTCR (2024) and TRTpred (2024) are recent, externally benchmarked and in predicTCR's case openly coded."},
+    "guaranteed_improvement": {"answer": "no", "why": "The first condition fails outright: neither PreGame's weights nor its training data are available, so it cannot be run as our baseline and our model could not see everything it saw."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was to retrain or improve PreGame: predict, from a single gamma-delta T cell's transcriptome plus CITE-seq surface-protein readout, whether its T cell receptor is tumour-reactive, and compare a frozen single-cell foundation model (scGPT or Geneformer) plus a logistic head against the paper's 27-feature random forest. It is a reasonable idea and the underlying biology is valuable, but it is not executable on anything public.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.0001,
+    "needs_gpu": null,
+    "peak_ram_gb": 0.1,
+    "embedding_hours": null,
+    "cv_run_minutes": 2,
+    "compute_note": "Measured sizes directly: the whole Zenodo deposit is about 110 KB and the README states the demo trains in under 2 minutes. These numbers describe the toy demo, not the real task, which cannot be sized because its data is not released.",
+    "cheapest_killing_check": "Read README.txt in the Zenodo deposit. It took one minute and says in plain English that the labels are randomized and the full training data is available only on request."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A fails on four counts, all verified by opening the files. A1: the only public deposit is code plus a 200-cell demo, and its README says the full training data is available 'upon reviewer request'; no GEO, SRA, BioProject or EGA record exists. A8 and A2: the released tumour-reactivity labels are explicitly randomized placeholders, so there is no real target to learn. A5: 200 cells with 34 nominal positives is far below the ~400-row floor. A4: no units or column documentation. Revisit only if the authors later deposit the real CITE-seq matrix and assay-validated labels."
+}

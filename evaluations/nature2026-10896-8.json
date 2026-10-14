@@ -1,0 +1,135 @@
+{
+  "paper_id": "nature2026-10896-8",
+  "title": "Neural basis of compositional control.",
+  "doi": "10.1038/s41586-026-10896-8",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.6084/m9.figshare.32572764.v3",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the Figshare record through its API (CC BY 4.0 licence, 139 non-junk files, 216 MB in total). Downloaded all 69 neuronData.mat and 69 events_info.mat files plus readMe.docx; all parse with scipy.io.loadmat (MATLAB v5 struct arrays). 19 sessions contain spike-count matrices: 2,002 trial rows and 1,115 neurons (hippocampus 546, ACC (anterior cingulate cortex) 254, OFC (orbitofrontal cortex) 103, amygdala 69, plus others), binned at 60 Hz. 50 sessions are behaviour-only: 13,465 trial rows. Two-prey trials where the caught prey can be told apart by its reward value: 1,032 in patients and 7,000 in healthy participants; 287 and 3,932 two-prey trials have equal-value prey, so the caught prey is ambiguous. Event times are in ms for patients but appear to be in seconds for healthy participants (median chase lasts about 2–15 'units'), contradicting the readme. Field sets vary across sessions (pred_val, predators_num, starting_pos, paused).",
+    "what_came_from_paper_text_only": "Per-patient trial counts (81±9 per patient, 227±8 per healthy participant), the decoding accuracies (ACC switch direction 61–62.5%, hippocampus 64%), the methods (Poisson GAM (generalised additive model), dPCA (demixed principal component analysis), linear readouts) and the GitHub code URL all come from the bioRxiv v2 full text. I did not open the Nature full text, which is paywalled with no PMC copy, and did not clone the GitHub repo."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked in files: the Figshare record is public under CC BY 4.0, and all 138 .mat files downloaded without a login."},
+    "a2_label_is_a_column": {"pass": true, "note": "The measured outcome is in the files: reward_val together with prey1_val/prey2_val gives which prey was caught (resolvable in 1,032 patient and 7,000 healthy two-prey trials), and x/y positions are measured continuous targets. The paper's policy-blend weight is NOT a column: it would have to be rebuilt with their control-theoretic model."},
+    "a3_inputs_present": {"pass": true, "note": "Checked in files: spike-count matrices (time bins × neurons), a brain-region label for each neuron, and self/prey x-y trajectories at 60 Hz are all present inline."},
+    "a4_units_stated": {"pass": true, "note": "The readme states ms and 60 Hz bins, and spikes are counts per 16 ms bin. But healthy-cohort event times look like seconds, so the units are inconsistent across cohorts; this is fixable by checking the chase duration in each session."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1032, "note": "For the neural task the unit is the trial: 1,032 patient trials with an unambiguous caught prey across 19 patients (classification, so above the ~400 bar). The behaviour-only task has 7,000 healthy trials. Few patients is the real limit."},
+    "a6_fits_laptop": {"pass": true, "working_set": "216 MB of .mat files; about 1.2M patient time bins × up to 104 neurons", "note": "Checked: the whole dataset was downloaded and scanned on a laptop in minutes. Baseline decoders (logistic regression on binned counts) need no GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Neuron counts match the paper exactly (hippocampus 546, ACC 254, OFC 103). Trial rows (2,002 patient, 13,465 healthy) exceed the paper's ~81 and ~227 per participant, probably because the paper excluded some trials; the exclusion rule is unstated."},
+    "a8_label_provenance": {"pass": true, "note": "The caught-prey label is a physical event in the game (reward_val is logged by the task software), independent of the spikes. The paper's main variable, the policy-blend weight w_t, is a model output fitted to the trajectories, so using it as a label would mean distilling their model and would leak from the kinematics; avoid it."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two .mat files per session (69 sessions); events and neural data join on trial order, row counts equal in every session (checked)."},
+    "B2": {"score": 1, "why": "Parses with scipy, but nested object arrays and field sets that vary by session need a flattening script (checked)."},
+    "B3": {"score": 1, "why": "Same task software throughout, but event times are in ms for patients and seconds for healthy participants (checked)."},
+    "B4": {"score": 1, "why": "Uncaught trials (reward_val=0) and equal-value two-prey trials make the label ambiguous; both are easy to drop (checked)."},
+    "B5": {"score": 2, "why": "One file pair per session, no duplicate sessions seen; trial_num is unique within a session (checked)."},
+    "B6": {"score": 1, "why": "A short readme covers the main fields; pred_val, paused and the time units are undocumented or wrong."},
+    "C1": {"score": 1, "why": "'Does neural activity predict the eventual target beyond trajectory geometry, and how early?' is informative either way, but with low statistical power."},
+    "C2": {"score": 1, "why": "Only the paper's own linear decoders (61–64% switch accuracy) exist; open code on GitHub, within-session analysis."},
+    "C3": {"score": 1, "why": "Unique-application angle: no one has done an ML caught-prey forecast or healthy-to-patient behavioural transfer. Weak, because the dataset is new and small."},
+    "C4": {"score": 2, "why": "Human single-neuron recordings need epilepsy-surgery patients; the data cannot be recollected cheaply."},
+    "C5": {"score": 1, "why": "Published switch-decoding accuracies exist, but not for the caught-prey label; nearest-prey and higher-value-prey dummies are computable."},
+    "D1": {"score": 1, "why": "NDT3 and POYO are open spiking foundation models, but they were trained on motor cortex, not hippocampus or ACC."},
+    "D2": {"score": 1, "why": "Adapting to new neurons needs fine-tuning of input layers, realistically on a GPU; no frozen-embedding route for unseen units."},
+    "D3": {"score": 1, "why": "Data CC BY 4.0 (checked); backbone licences not verified."},
+    "E1": {"ok": true, "why": "Hold out contiguous trial blocks within a session, and whole participants for the behaviour model; session IDs are implicit per file."},
+    "E2": {"ok": true, "why": "19 patient sessions and 50 healthy sessions, each a natural held-out group (checked)."},
+    "E3": {"ok": true, "why": "Majority class, higher-value prey and nearest-prey-at-start baselines all come straight from the event and trajectory fields."},
+    "E4": {"ok": false, "why": "No repeated trials with identical starts; no replicate-based noise ceiling."},
+    "E5": {"ok": true, "why": "Decoding the participant's own x-y velocity from spikes, and recovering the paper's hippocampal and ACC effects."},
+    "E6": {"ok": true, "why": "Label shuffling within session and neuron-identity shuffles are trivial on these arrays."},
+    "E7": {"ok": true, "why": "The healthy cohort (50 participants, two sites per paper) is an independent behavioural set for the trajectory-only model."},
+    "E8": {"ok": true, "why": "GitHub code (BCM-Neurosurgery/PreyPursuit, per bioRxiv) should reproduce the 61–64% switch decoding; not run."},
+    "G1": {"score": 0, "why": "No standard identifiers; neurons have only electrode names and coarse region labels."},
+    "G2": {"score": 1, "why": "Other human single-neuron sets on DANDI exist, but none in this task; joining would be by brain region only."},
+    "G3": {"score": 1, "why": "Region-level pooling only; no item-level join is possible."},
+    "G4": {"score": 0, "why": "Cannot write a combined question that a region-level join answers better."},
+    "H1": {"score": 2, "why": "Both prey outcomes and missed trials (reward_val=0) are recorded for every trial (checked)."},
+    "H2": {"score": 1, "why": "One hospital for patients, with uneven region coverage per patient (e.g. one patient has 17 neurons, all hippocampal)."},
+    "H3": {"score": 2, "why": "Claim is precise: within-session forecast of which prey epilepsy patients catch, from early hippocampal/ACC activity."},
+    "H4": {"score": 1, "why": "Paper notes the small patient count; the time-unit mismatch and trial exclusions are not documented."},
+    "I1": {"score": 1, "why": "Hayden/Sheth labs and human single-neuron decision researchers; a vague community beyond them."},
+    "I2": {"score": 1, "why": "Could sharpen claims about ACC versus hippocampus roles; would not change an experiment directly."},
+    "I3": {"score": 1, "why": "AUC (area under the ROC curve) for the caught prey roughly matches the scientific question of how early the goal is encoded."},
+    "I4": {"score": 1, "why": "Geometry (nearest prey) may explain most of the choice; ML helps only if neurons add information."},
+    "J1": {"score": 1, "why": "Real decoding and grouped evaluation, but small-n statistics dominate; little transfer learning."},
+    "J2": {"score": 1, "why": "Behavioural sanity checks are intuitive; judging neural results needs a neuroscientist."},
+    "J3": {"score": 2, "why": "A clean flattened trial table plus a behavioural baseline on 7,000 trials is shareable at every stage."},
+    "J4": {"score": 1, "why": "Roughly two weeks is plausible; not yet committed."},
+    "J5": {"score": 0, "why": "No kill date written in NOTES.md yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Chericoni et al. control-theoretic decomposition plus linear neural readouts (this paper)", "open_weights": true, "score_and_split": "Switch-direction decoding: ACC 61% at onset and 62.5% at offset, hippocampus 64% at offset, OFC not significant; permutation tests within the patient set (bioRxiv v2 text).", "authors_named_unsolved": "The number of intracranially monitored participants is limited, and other brain regions likely contribute but were not examined.", "runnable_as_baseline": true},
+      {"name": "NDT3 (Neural Data Transformer 3, a pretrained spiking decoder)", "open_weights": true, "score_and_split": "Evaluated on motor-cortex brain-computer-interface tasks, not on this data; scores not checked.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "NDT3 or POYO+ (pretrained spiking-population transformers); realistically none, use logistic regression or a GLM (generalised linear model) on binned counts", "freeze_and_head_viable": false, "hardware": "CPU for linear baselines; GPU for any transformer fine-tuning", "licence": "Data CC BY 4.0; backbone licences unverified"},
+  "integration": {"partner_dataset": "None at item level; human single-neuron datasets on DANDI could be pooled only by brain region", "join_key": "brain region label (coarse)", "bigger_question_one_sentence": "None that a region-level join answers better than this dataset alone."},
+  "controls": {"positive_control": "Decode the participant's instantaneous cursor velocity from spikes, and reproduce the paper's ~61–64% switch-direction decoding with their GitHub code.", "negative_control": "Shuffle caught-prey labels within each session and shuffle neuron identities; performance must fall to the geometry-only baseline.", "external_validation": "Behaviour-only model trained on the 50 healthy participants and tested on the 19 patients' trajectories (or the reverse)."},
+  "honest_claim_h3": "Within a single recording session, early-chase hippocampal and ACC spiking from 19 epilepsy patients predicts which of two different-value prey they will catch, beyond what the starting geometry predicts — or it does not.",
+  "plain_idea": {
+    "one_liner": "Use brain-cell activity in the first second of a chase to predict which of two moving targets a person will catch.",
+    "train_on": "For each two-prey trial: spike counts from individually recorded brain cells (hippocampus, anterior cingulate and orbitofrontal cortex) early in the chase, plus the starting positions of the player and both prey; 1,032 usable patient trials (verified).",
+    "predict": "Which prey the player ends up catching, as logged by the game itself (the reward value matches one prey's value).",
+    "why_worthwhile": "It tests whether these brain areas commit to a goal before behaviour shows it, which matters to human decision neuroscience labs; a null result bounds what 19 patients can show."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use exactly the paper's own 1,115 neurons and 2,002 trials; no larger dataset for this task was found."},
+    "confidence_score": {"answer": "no", "why": "No replicate trials; with ~50–100 trials per session, per-prediction calibration would be very noisy."},
+    "models_beatable": {"answer": "partly", "why": "The paper's 2026 linear readouts reach only 61–64% on switch direction, but they target a different, model-derived label, so they are not directly comparable."},
+    "guaranteed_improvement": {"answer": "no", "why": "No accessible new neural data from the same task joins to this one; the healthy cohort adds behaviour only, not neurons."}
+  },
+  "label_elsewhere": {"score": 0, "sources": "None found; the caught-prey outcome exists only in this task (an earlier monkey prey-pursuit study from the same group appeared in search titles, but its data availability was not checked).", "approx_items": null, "join_key": "none", "why": "With no external labels, all validation must come from within this dataset's 69 sessions."},
+  "leakage_plan": {
+    "risks": [
+      "Trajectory features from late in the chase reveal the target trivially, because the player moves toward it.",
+      "Neighbouring trials in a session share drift in firing rates and strategy, so random trial splits inflate accuracy.",
+      "Using the paper's policy-blend weight as a label or feature brings in a model fitted to the same trajectories.",
+      "Prey value and distance at the start are confounded with the outcome; neurons encoding value could look like goal prediction."
+    ],
+    "split": "Within each patient session, hold out contiguous blocks of trials (5-fold blocked by trial_num, a field seen in the files); for behaviour models, hold out whole participants (one file pair per participant).",
+    "checks": [
+      "Within-session label shuffle: AUC must fall to about 0.5 above the geometry baseline.",
+      "Fit geometry and value features alone, and report how much neural features add.",
+      "Repeat with the feature window truncated earlier and earlier; any gain should shrink toward chase start, not stay flat."
+    ],
+    "verdict": "Manageable, provided the feature window is restricted to early chase and geometry is always a baseline."
+  },
+  "success_criteria": {
+    "metric": "AUC (area under the ROC curve) for the caught prey from the first 500 ms of the chase, pooled across held-out trial blocks, reported as the gain over the geometry-plus-value baseline.",
+    "baselines": "Majority class or higher-value prey, and logistic regression on starting distances and prey values; the numbers are unknown until computed. The paper's switch decoding (61–64%) is a different label.",
+    "success": "Neural plus geometry features beat geometry alone by at least 0.03 AUC, with a within-session shuffle p<0.01, in at least 10 of 19 patients' pooled held-out blocks.",
+    "noise_ceiling": null,
+    "kill": "Geometry-only AUC above 0.9, or a neural gain under 0.01 AUC after 3 days."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "eLife", "why": "Publishes human single-neuron decision work; would need a clear early neural goal signal beyond geometry in multiple regions."},
+    "realistic": {"journal": "Journal of Neuroscience", "why": "A short report on early goal decoding from human hippocampus and ACC fits there, given a positive but modest effect."},
+    "fallback": {"journal": "bioRxiv preprint plus a NeurIPS neuroscience workshop", "why": "A negative result (geometry explains the choice) or a cleaned trial table is still shareable there."}
+  },
+  "pitch": {
+    "headline": "1,115 human single neurons, 546 of them hippocampal, recorded during a continuous two-target chase; openly downloadable, 216 MB, CC BY 4.0.",
+    "what_makes_the_data_unusual": "Human single-neuron data during continuous goal pursuit rather than discrete button choices, paired with 13,465 behaviour-only trials from 50 healthy participants playing the same game (both checked in files).",
+    "the_win": "Show that early-chase neurons predict the caught prey at least 0.03 AUC above starting geometry across 19 patients.",
+    "even_if_it_fails": "A flattened, unit-corrected trial table and a measured answer to how much of continuous 'choice' is just starting geometry.",
+    "who_wants_it": "Hayden and Sheth labs (Baylor) and human single-neuron decision researchers deciding whether goal commitment is decodable before movement."
+  },
+  "ml_idea": "Within-session classifiers (regularised logistic regression on binned spike counts per region) to forecast which prey is caught from the early chase window, benchmarked against geometry and value features; plus a behaviour-only trajectory model trained on the 50 healthy participants and transferred to patients.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.22,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": null,
+    "cv_run_minutes": 5,
+    "compute_note": "Download and full scan of all 138 files took minutes on this laptop (timed loosely); CV estimate assumes logistic regression on about 1,000 trials × up to 104 neurons per session.",
+    "cheapest_killing_check": "Fit logistic regression on starting distances and prey values alone for the 1,032 resolvable patient trials; if AUC exceeds 0.9, the neural question has no room."
+  },
+  "verdict": "park",
+  "verdict_reason": "The data is genuinely open, small and verified (1,115 neurons, matching the paper), but the measured labels are low-power within-session tasks across 19 patients. There is no standard identifiers or partner data, the spiking backbones don't fit (they were trained on motor cortex), and model-readiness is 7/12 because of unit inconsistencies. It is a modest neuroscience-analysis project, not a strong ML one."
+}

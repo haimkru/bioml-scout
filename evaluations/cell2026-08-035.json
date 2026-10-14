@@ -1,0 +1,159 @@
+{
+  "paper_id": "cell2026-08-035",
+  "title": "Tahoe-100M: Mapping drug-induced molecular phenotypes at single-cell resolution.",
+  "doi": "10.1016/j.cell.2026.08.035",
+  "journal": "Cell 189(19), Sep 2026 (PMID 42753697; no PMCID; Europe PMC isOpenAccess=N). Preprint bioRxiv 10.1101/2025.02.20.639398 (Europe PMC PPR982096): full-text XML returned HTTP 500 and bioRxiv returned HTTP 429. I used the abstracts only and did not fetch the publisher supplement (per CLAUDE.md).",
+  "data_url": "https://huggingface.co/datasets/tahoebio/Tahoe-100M (CC0 1.0, not gated). Model-ready slice: https://huggingface.co/datasets/tahoebio/tahoe-de-rhaister cell_eval/ (CC0). Partner: PRISM Repurposing 20Q2, figshare 20564034 (CC BY 4.0).",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed:\n(1) Tahoe-100M metadata parquets. drug_metadata has 379 drugs; 377 have SMILES and PubChem CID; Sacubitril/Valsartan and Verteporfin have no SMILES. sample_metadata has 1,344 samples on 14 plates of 96, with 28 DMSO wells (2 per plate) and 1,138 drugname_drugconc values (379 drugs x 3 doses + DMSO). Every dose is in uM: 0.05, 0.5 or 5. Plate is confounded with dose: plates 1/4/7/10 are 0.05, plates 2/5/8/11 are 0.5, plates 3/6/9/12/14 are 5, and only plate 13 is mixed. 158 drug-doses have 2 replicate samples. cell_line_metadata lists 102 lines (a panel superset). gene_metadata has 62,710 genes (Ensembl 109).\n(2) HF API and datasets-server. Expression table: 95,624,334 rows, 337.6 GB in 3,388 shards. obs_metadata: 100,648,790 rows, 2.29 GB. pseudobulk_differential_expression: 4,089,820,780 rows, 88.9 GB, exactly 65,218 conditions x 62,710 genes. Its columns are DESeq2-style log2FoldChange/padj plus n_cells_trt/n_cells_ctrl.\n(3) HTTP range reads of obs. Exactly 50 cell lines (49 with DepMap IDs; hTERT-HPNE has none), about 50 lines per sample, a median of about 1,300 cells per (sample, line), and 3.9% of cells with pass_filter=minimal.\n(4) tahoe-de-rhaister cell_eval. 14 wide parquets, 994.9 MB in total, 65,218 rows x 2,000 HVG pseudobulk deltas, which matches the DE condition count. Positive control on plate 3 (5 uM): dabrafenib suppresses the MAPK targets EGR1/DUSP4/IER3 by -0.57 in BRAF-V600 lines vs -0.17 in other lines (encorafenib -0.56 vs -0.04).\n(5) Cell-abundance viability proxy from obs, plate 3. It fails. Total cells per well range from 11k to 120k (DMSO 41.6k/49.1k), dabrafenib does not deplete BRAF-V600 lines, and the DMSO replicate log2 SD is 0.24.\n(6) PRISM 20Q2 primary LFC (46.7 MB) plus cell-line/treatment info. 39 Tahoe lines x 252 name-matched drugs give 9,424 non-NaN pairs, and 43 drugs are selective (5 or more lines with LFC < -1, but not all lines). Exact SMILES matches: 0. 135 drugs are also in the secondary screen. Within-drug Spearman on plate 3 (42 drugs, 1,564 pairs): Tahoe delta magnitude vs PRISM LFC median 0.002; abundance proxy vs PRISM -0.064.\n(7) State ST-HVG-Tahoe aggregate results for held-out lines, plus licences (LICENSE.md, GitHub API, HF cards).",
+    "what_came_from_paper_text_only": "Taken from the abstract only: 1,100 drug-dose conditions, the Mosaic 'cell villages', and the proliferation/cytotoxicity/cell-cycle phenotype metrics. I did not open the paper's own phenotype tables or treatment duration, so the time point is not verified. Not opened: expression shards, the full pseudobulk DE, rhaister pdex (40.6 GB), EmeraldBay (57.7 GB), Tx1 embeddings (969 GB), the PRISM secondary dose-response file (290 MB, over the limit), and LINCS. The ~43 selective drugs and the drug name matching are approximate (regex salt stripping, not InChIKey)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). HF is gated=false and downloads anonymously with HTTP 200/206 range reads. LICENSE.md is CC0 1.0. tahoe-de-rhaister is CC0. PRISM on figshare is open, CC BY 4.0."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass for transcriptional response (checked): cell_eval has 2,000 delta columns per (line, treatment), and the DE table has log2FoldChange/padj. FAIL for viability: no viability column was found in the HF release. It would have to be built from cell counts, and that proxy failed a BRAF positive control (checked). So any viability target must come from PRISM."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass (checked). SMILES and PubChem CID are present for 377 of 379 drugs; Cellosaurus plus DepMap IDs for 49 of 50 lines; Ensembl/gene symbols. Trap: the SMILES carry no stereochemistry (doxorubicin and epirubicin have identical SMILES, as do crizotinib and (S)-crizotinib). Drug names have trailing spaces ('Selinexor ', 'Erdafitinib ') that break sample-to-drug joins."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked). Concentration plus a 'uM' unit on every sample, log2FC stated. The cell_eval delta is on a 'linear (normalized) scale', but the normalization is not specified (minor)."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 65218,
+      "note": "Pass (checked). 65,218 (drug-dose x line x plate) conditions. The effective units are 379 drugs and 50 lines. The PRISM bridge has 9,424 pairs (39 lines x 252 drugs), of which only ~43 drugs are selective across lines, so it is A5-borderline in disguise."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "The full release is ~430 GB (expression 337.6 GB, DE 88.9 GB, obs 2.29 GB), so it fails A6 as a whole. The usable slice is cell_eval at 995 MB on disk (65,218 x 2,000 doubles; ~0.5 GB in RAM as float32), plus metadata <200 MB and PRISM 47 MB, about 1.2 GB in total.",
+      "note": "Pass only through the cell_eval slice. CPU is fine for ridge/GBM/MLP on 2,000-dim deltas. Do not touch per-cell data."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Mostly pass (checked). Abstract '100 million' vs obs 100,648,790 vs expression 95,624,334 (filtered). 50 lines confirmed. 1,100 drug-doses matches 1,137 + DMSO. The DE table (65,218 conditions) agrees exactly with cell_eval. Inconsistencies: the rhaister README says '384 drugs' vs 379, and cell_line_metadata has 102 lines vs 50 used."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass with flags. The DE/delta labels are statistics on measured counts vs plate-matched DMSO, not model outputs. targets, moa-broad/fine and approval are GPT-4o-assigned (README), so MOA classification would be distilling GPT-4o. Tx1 and State were pretrained on Tahoe-100M itself, which makes them leaky as frozen backbones for Tahoe targets."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 9,
+    "c_worth_asking": 6,
+    "d_backbone_fit": 5,
+    "g_integration": 7,
+    "h_missing_data": 6,
+    "i_does_anyone_care": 5,
+    "j_fit_finishability": 6
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "State (Arc Institute; bioRxiv 10.1101/2025.06.26.661135; github ArcInstitute/state; HF arcinstitute/ST-HVG-Tahoe, ST-SE-Tahoe)",
+        "open_weights": true,
+        "score_and_split": "Read from HF eval files: few-shot held-out lines C32/PANC-1 have pearson_delta 0.919/0.928, overlap_at_N 0.53/0.54 and discrimination_l1 0.98/1.00. Five held-out lines in total (C32, HOP62, HepG2-C3A, Hs 766T, PANC-1).",
+        "authors_named_unsolved": "Abstract: 'models currently struggle to generalize to unobserved cellular contexts'. Discussion not retrieved (bioRxiv 429).",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Tahoe-x1 (Tx1, 70M/1B/3B; bioRxiv 10.1101/2025.10.23.683759; github tahoebio/tahoe-x1, Apache-2.0)",
+        "open_weights": true,
+        "score_and_split": "Abstract claims SOTA on perturbation response in held-out contexts and on DepMap essentiality. No numbers retrieved. Pretrained on Tahoe-100M.",
+        "authors_named_unsolved": "Not retrieved. The README requires an A100+ with flash-attention, so CPU inference is unverified.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Leakage-safe 47-line LOCO benchmark (Research Square 10.21203/rs.3.rs-10846736/v1)",
+        "open_weights": null,
+        "score_and_split": "Leave-one-line-out, 377 drugs at 5 uM, 12,705 genes. No model beats the drug-mean baseline: the best residual R2 is +0.004, and basal-PC ridge is -0.068.",
+        "authors_named_unsolved": "The context-specific residual is barely reproducible (median repeat reliability 0.067; only 4 drugs above 0.2), which caps any context predictor.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Rhaister + EmeraldBay (Tahoe; bioRxiv 10.64898/2026.06.09.731197; HF tahoebio/Rhaister Apache-2.0, tahoebio/tahoe-de-rhaister CC0)",
+        "open_weights": true,
+        "score_and_split": "Abstract: a summary-statistic predictor that 'matches or exceeds' virtual-cell models, trains in seconds, and predicts phenotypic endpoints on its new EmeraldBay viability-plus-transcriptomics dataset. No numbers retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BioPert (bioRxiv 10.64898/2026.09.28.755146)",
+        "open_weights": null,
+        "score_and_split": "Tahoe-100M plus LINCS. A reference-line response used as the compound representation reaches r=0.79, +0.34 over the next-best; chemical-structure embeddings give 'limited improvements over random controls'.",
+        "authors_named_unsolved": "On LINCS, performance tracks the reproducibility of the test conditions (batch effects).",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "scPPDM (arXiv 2510.11726) and PerturbLDM (bioRxiv 10.64898/2026.08.07.743610)",
+        "open_weights": null,
+        "score_and_split": "scPPDM: +36% DEG-logFC Spearman on the unseen-drug split. PerturbLDM: 13,942 held-out combinations, beats the additive baseline in 95.2% of conditions. Both are diffusion models that need a GPU.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "FORGE (Nat Commun 10.1038/s41467-026-73977-2, PMC13396380)",
+        "open_weights": null,
+        "score_and_split": "Joint factorization of drug response and DepMap dependency. Uses Tahoe-100M only as external validation for erlotinib benefit scores.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Drug side: ChemBERTa-77M or MolFormer-XL on 377 SMILES (BioPert reports structure embeddings are near-random for this task). Cell side: DMSO HVG centroids (cell_line_centroids_dmso_hvg, 9.8 MB) or scGPT whole-human. Tx1-70M (284 MB) is optional but was pretrained on Tahoe and needs flash-attention.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: embed 377 SMILES once (minutes), then a ridge/GBM/MLP head on about 65k x 2,000 or 9.4k pairs. No GPU needed unless Tx1/State are run.",
+    "licence": "Tahoe-100M and tahoe-de-rhaister CC0; EmeraldBay CC-BY 4.0; PRISM CC BY 4.0; Tx1 and Rhaister Apache-2.0; State model under the Arc non-commercial licence (code CC BY-NC-SA 4.0)."
+  },
+  "integration": {
+    "partner_dataset": "PRISM Repurposing 20Q2 (Broad/DepMap; figshare 20564034). Primary LFC (2.5 uM, single dose) checked; the secondary 8-dose AUC/IC50 was not opened. Alternatives: LINCS L1000 and the DepMap CRISPR Chronos (not checked).",
+    "join_key": "Cell_ID_DepMap (ACH-) to PRISM depmap_id: 39 of 50 lines in primary, 43 in secondary. Drugs join by normalized name to broad_id: 252 of 379 primary, ~135 secondary; exact SMILES matches are 0, so InChIKey matching is needed. Collapse rule: average salt forms and Tahoe replicates, take the Tahoe 5 uM plates only, and take one broad_id per compound.",
+    "bigger_question_one_sentence": "Does a drug's single-time-point transcriptional response in a pooled village predict which cell lines its 5-day PRISM viability screen calls sensitive, beyond what basal expression and drug identity already predict?"
+  },
+  "controls": {
+    "positive_control": "(1) BRAF-V600 lines show stronger MAPK-target (EGR1/DUSP4/IER3) suppression under dabrafenib/encorafenib: -0.57 vs -0.17 and -0.56 vs -0.04 (checked, plate 3). (2) Palbociclib/trametinib/sapanisertib lower the G2M fraction to 0.19-0.21 vs DMSO 0.28-0.29 (checked). (3) Selective PRISM drugs (topoisomerase, EGFR, CDK, MEK inhibitors) must carry the cross-line signal.",
+    "negative_control": "Shuffle PRISM labels within drug and confirm the model collapses to the per-drug mean. Replace deltas with DMSO-replicate differences or noise. Inert drugs such as allopurinol and omeprazole should give near-zero deltas.",
+    "external_validation": "PRISM primary vs secondary as two independent viability readouts. Plate 13 (mixed doses) deconfounds plate from dose. EmeraldBay (same platform, multi-day viability) could serve as a later external set. There is no year column."
+  },
+  "honest_claim_h3": "Among 39 adherent cancer lines (lung/bowel/pancreas-heavy, no blood lines) and ~250 mostly non-oncology compounds, a model given one-time-point pooled-village pseudobulk deltas at 5 uM ranks which lines PRISM's 5-day pooled screen at 2.5 uM calls sensitive, X better than the per-drug mean and basal-only models. Only ~43 drugs carry selective signal, and dose and duration differ between the two assays.",
+  "pitch": {
+    "headline": "995 MB CC0 table of 65,218 drug-by-line transcriptional deltas, 9,424 of them joinable to Broad PRISM viability labels.",
+    "what_makes_the_data_unusual": "The model-ready slice is 14 parquets totalling 994.9 MB holding 65,218 conditions x 2,000 gene deltas that match the 4.09B-row differential-expression table's condition count exactly, under CC0 1.0 and ungated (checked by download). Inputs need no second database: 377 of 379 drugs carry SMILES and PubChem CIDs and 49 of 50 lines carry DepMap IDs (checked), which is what makes the PRISM join a name-matching job rather than an identifier-resolution project.",
+    "the_win": "A within-drug Spearman, across the 39 shared lines and the ~43 PRISM-selective drugs, showing that basal expression plus the Tahoe delta ranks sensitive lines better than both the per-drug mean and a basal-only ridge. The bar is low and measured: the naive delta-magnitude baseline scores a median 0.002 on plate 3 (42 drugs, 1,564 pairs, checked), so any real gain is a number worth reporting.",
+    "even_if_it_fails": "A null is a quantified concordance result: how far a 5 uM pooled-village transcriptional response agrees with a 5-day 2.5 uM pooled viability screen over 9,424 pairs, read against the PRISM primary-vs-secondary ceiling. Two caveats stay on the record either way — the Tahoe treatment duration was not verified (the pooled 'cell villages' come from the abstract only), and dose and duration differ between the assays.",
+    "who_wants_it": "The Tahoe/Arc virtual-cell groups behind State, Tahoe-x1 and Rhaister, who currently benchmark on transcriptional deltas, and the DepMap/PRISM repurposing users who need viability. The decision it changes: whether a transcriptional-delta benchmark earns its keep, given that the leakage-safe 47-line leave-one-line-out benchmark reports no model beating the drug mean (best residual R2 +0.004)."
+  },
+  "plain_idea": {
+    "one_liner": "Use how a drug changes gene activity in a cancer cell line to predict whether that drug kills that cell line in a separate screen.",
+    "train_on": "Each example is one drug paired with one cancer cell line. The model sees three things: how much 2,000 genes changed after one exposure to the drug at 5 micromolar (single-cell measurements averaged per line, with many lines grown together in one dish); the line's untreated gene activity (cells given only the solvent, dimethyl sulfoxide); and a numeric summary of the drug's chemical structure. There are about 9,424 pairs (39 lines x 252 drugs), a number taken from the identifier-matching counts. Only about 43 of the drugs act differently across lines.",
+    "predict": "How much the drug reduces survival of that cell line. The true answer comes from the Broad Institute's PRISM repurposing screen (Profiling Relative Inhibition Simultaneously in Mixtures). In that screen, many cell lines are pooled together and exposed to the drug for 5 days at 2.5 micromolar, and survival is recorded as a log-fold change versus control. A secondary 8-dose version of the screen gives a second target: the area under each line's dose-response curve.",
+    "why_worthwhile": "It tests whether a drug's quick gene-activity response shows which cancer lines it kills, beyond what the lines' baseline gene activity and the drug's identity already reveal. If the model fails, that is still a publishable finding on how far the two kinds of measurement agree."
+  },
+  "ml_idea": "Build a 9.4k-pair table: Tahoe 5 uM cell_eval delta (2,000 genes) + DMSO basal centroid + drug embedding, predicting PRISM LFC (and the secondary AUC). Compare basal-only, delta-only and basal+delta ridge/GBM under leave-one-line-out and leave-one-drug-out. Report within-drug Spearman against the PRISM primary-vs-secondary ceiling. A null is still a publishable concordance finding.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "cheapest_killing_check": "Download the PRISM secondary dose-response file (290 MB) and compute the within-drug Spearman of primary LFC vs secondary AUC for the ~43 selective drugs across the 39 shared lines. Kill if this viability ceiling is below about 0.3, or if a basal-only ridge already matches basal+delta (gain under 0.05). The naive delta-magnitude baseline already scores about 0 (checked).",
+    "working_set_gb": 1.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Figures come from stated file sizes (cell_eval 995 MB on disk, 65,218 x 2,000 as ~0.5 GB float32, metadata <200 MB, PRISM 47 MB) rather than timing; only the naive delta-magnitude baseline was actually run (scored ~0), and SMILES embedding is given vaguely as 'minutes'."
+  },
+  "roi": 11.5,
+  "verdict": "verify_first",
+  "verdict_reason": "Part A passes through a verified 995 MB CC0 slice (cell_eval, 65,218 x 2,000 deltas, matching the 4.09B-row DE exactly), and the BRAF positive control works. But generic Tahoe perturbation prediction is saturated: State, Tx1, Rhaister, PerturbLDM and BioPert, with a leakage-safe LOCO benchmark showing nothing beats the drug mean. The only angle left is the PRISM viability bridge (39 lines x 252 drugs, 9.4k pairs, ~43 selective drugs), and it hinges on the PRISM primary/secondary reproducibility ceiling and on dose/time mismatch.",
+  "c2_backfill": {
+    "score": 1,
+    "why": "State, Tx1 predict expression not viability; Rhaister predicts viability on EmeraldBay, open but unquantified; no Tahoe→PRISM model evaluated."
+  }
+}

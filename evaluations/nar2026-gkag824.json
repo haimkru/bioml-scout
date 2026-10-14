@@ -1,0 +1,104 @@
+{
+  "paper_id": "nar2026-gkag824",
+  "title": "CpG content contributes to tissue-resident macrophage enhancer selection.",
+  "doi": "10.1093/nar/gkag824",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE317131",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Opened the GEO (Gene Expression Omnibus) series record and its machine-readable file manifest (filelist.txt) for GSE317131: 23 samples, and every processed file is a genome coverage track - 8 ATAC-seq (assay for transposase-accessible chromatin) and 2 ChIP-seq files in IGV's binary TDF format (35-99 MB each) plus 12 RNA-seq bigWig files (55-80 MB each), with one 1.5 GB RAW.tar. There is no peak table, no count matrix and no differential-region table anywhere in the deposit. I also opened the article's full text and its XML, which lists exactly one supplementary item, gkag824_supplemental_files.zip; I failed to retrieve it through four routes (Europe PMC supplementaryFiles timed out twice, PMC /bin/ returned the 1,817-byte challenge page, Europe PMC fulltextRepo returned HTTP 500, PMC open-access package service returned 404).",
+    "what_came_from_paper_text_only": "All region counts come from the Methods text, not from a file I opened: an initial consensus peak set of 173,596 fixed 100-base-pair peaks and a final tissue-resident-macrophage set of 64,490 promoter-distal peaks, quantified as decile-normalised RPKM (reads per kilobase per million mapped reads). The existence and contents of Supplementary Tables S9/S10 (clusters of regions specific to exactly one macrophage population) and S19 (list of public datasets reused) are known only from the text."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GSE317131 is public with no login (manifest and metadata opened directly). The supplementary zip is also openly posted at the journal, but I could not retrieve it through four routes in this session - a tooling failure, not an access restriction."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL, verified in the manifest. The target (is this region open specifically in alveolar macrophages, in another tissue-resident macrophage, or in bone-marrow-derived macrophages?) is not a column in anything downloadable: GEO holds only binary coverage tracks, so the label would have to be built by MACS2 peak calling, consensus-peak merging and differential analysis - starting from raw FASTQ sequencing reads, which this project does not download. The supplementary tables may hold the region clusters, but I could not open them to check."},
+    "a3_inputs_present": {"pass": false, "note": "No per-region table exists in the deposit, so there are no coordinates to turn into sequence; even with the supplementary tables, DNA sequence is absent and would need extraction from the mm10 mouse reference genome (~2.6 GB). Not verified - stopped at A2."},
+    "a4_units_stated": {"pass": true, "note": "Methods state units clearly (decile-normalised RPKM for chromatin accessibility, FPKM for expression), but no file with those values was downloadable or opened."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Paper text implies tens of thousands of 100-base-pair regions (173,596 initial, 64,490 final promoter-distal consensus peaks). I verified no row count in any file; n_rows is therefore null."},
+    "a6_fits_laptop": {"pass": false, "working_set": "1.5 GB RAW.tar of coverage tracks; reprocessing would need SRA FASTQ files (tens of GB) plus mm10", "note": "Because A2 forces re-deriving the label, the real working set is raw sequencing data plus alignment, which is neither laptop-scale nor allowed here. Not verified - stopped at A2."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked: there is no table in the deposit whose row count could be compared with the paper's 173,596 / 64,490 figures."},
+    "a8_label_provenance": {"pass": true, "note": "The label would trace back to a physical measurement (Tn5 transposase accessibility), not to another model's output, so A8 itself is fine; the problem is that the measurement is only distributed as smoothed coverage tracks."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ChromBPNet models trained on alveolar macrophage ATAC-seq (used in a 2025/2026 study of tissue-resident versus monocyte-derived alveolar macrophages, PMC12934662)",
+        "open_weights": true,
+        "score_and_split": "Five models trained on five chromosome-based folds (different train/validation/test chromosome groups), with a custom Tn5 cut-bias model regressed out; exact accuracy numbers not retrieved, only the abstract-level description from search results.",
+        "authors_named_unsolved": "Not retrieved - I read only the search summary, not the paper's discussion.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AI-TAC, a convolutional neural network predicting chromatin accessibility across 81 mouse immune cell types from sequence (Maslova et al., PNAS 2020)",
+        "open_weights": true,
+        "score_and_split": "Predicts per-region accessibility across 81 immune populations including macrophages; code and weights at github.com/smaslova/AI-TAC. I did not retrieve its reported accuracy or split, so no number is claimed.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Bag-of-Motifs, gradient-boosted trees on transcription-factor motif counts for cell-type-specific distal regulatory elements (Nature Communications 2025)",
+        "open_weights": null,
+        "score_and_split": "Reported accurate prediction of cell-type-specific enhancers across several species; numbers and split not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "CREsted, a framework for modelling cell-type-specific enhancers across tissues and species (Nature Methods 2026)",
+        "open_weights": true,
+        "score_and_split": "Presented as a general toolkit for sequence models of cell-type-specific enhancer activity; numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer / DNABERT-2 / HyenaDNA (open DNA language models) would fit 100-base-pair to 1-kilobase regions, and AlphaGenome is available non-commercially",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU embedding of ~60,000 short regions is feasible overnight; training a head is minutes",
+    "licence": "Nucleotide Transformer and DNABERT-2 are openly licensed; AlphaGenome is non-commercial"
+  },
+  "integration": {
+    "partner_dataset": "ImmGen ATAC atlas (chromatin accessibility across 81 mouse immune cell types) and ENCODE mouse whole-genome bisulphite methylation data, joinable on mm10 genomic coordinates",
+    "join_key": "mm10 genomic coordinates (chromosome, start, end)",
+    "bigger_question_one_sentence": "Does the CpG-rich versus CpG-poor split that separates alveolar from bone-marrow-derived macrophage enhancers generalise across all 81 immune cell types, or is it specific to tissue residency? - a good question, but it needs a region table this deposit does not provide."
+  },
+  "controls": {
+    "positive_control": "A model must recover CpG dinucleotide fraction as the dominant feature, since the paper shows that single number separates the two enhancer classes - which is also why the model adds little.",
+    "negative_control": "Shuffle region labels and confirm collapse to the majority class; also train on CpG percentage alone to see how much of the signal one trivial feature explains.",
+    "external_validation": "ImmGen ATAC atlas and other tissue-resident macrophage ATAC datasets listed in Supplementary Table S19 (microglia, Kupffer cells, peritoneal macrophages) - but those are the same public sets the paper already used for its labels."
+  },
+  "honest_claim_h3": "A sequence model here could claim only that it separates 100-base-pair regions called open in alveolar macrophages from those called open in cultured bone-marrow-derived macrophages, in female mice from one laboratory, using regions that the authors' own peak-calling pipeline defined - and that CpG content alone does most of that separation.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence to predict whether a regulatory region is open in lung-resident macrophages or in cultured blood-derived macrophages.",
+    "train_on": "Each example would be a 100-base-pair to 1-kilobase stretch of mouse genome around an accessible-chromatin peak, represented as its DNA letters. The paper's Methods imply roughly 64,490 promoter-distal regions, but I verified no count in any file.",
+    "predict": "A label saying which macrophage population the region is open in. The truth comes from ATAC-seq, which cuts DNA where chromatin is loose, followed by the authors' peak calling and differential-accessibility analysis.",
+    "why_worthwhile": "Immunologists studying why cultured macrophages never fully become tissue macrophages would learn which sequence features gate enhancer use; even a failed model would quantify how much of enhancer identity is sequence-encoded versus environment-driven."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Eight ATAC-seq samples (two replicates per condition) from one laboratory, one mouse strain, one sex. AI-TAC was trained on the ImmGen atlas spanning 81 immune cell types, and ChromBPNet alveolar macrophage models already exist; this deposit adds no scale."},
+    "confidence_score": {"answer": "no", "why": "Only two ATAC replicates per condition, and the deposit contains no per-region values at all, so replicate-level noise cannot even be estimated from what is downloadable."},
+    "models_beatable": {"answer": "no", "why": "The competing models are recent and honestly evaluated: ChromBPNet alveolar macrophage models use five chromosome-held-out folds with Tn5 cut-bias correction, and AI-TAC (2020) ships open weights for 81 mouse immune populations."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition - we have no feature/label table to run any baseline on, since the processed data are coverage tracks rather than quantified regions."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify mouse accessible-chromatin regions as alveolar-macrophage-specific, other-tissue-resident-macrophage-specific or bone-marrow-derived-macrophage-specific from DNA sequence alone, using a frozen DNA language model plus a small head, and test whether anything beyond CpG dinucleotide content carries the signal.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "No estimate is honest here: the deposit has no quantified regions, so the real first step is re-aligning raw sequencing reads and re-running MACS2 peak calling - a server job, not a laptop job. Nothing was timed.",
+    "cheapest_killing_check": "List the GEO supplementary files (one request): if every processed file is a coverage track rather than a peak or count table, the label has to be rebuilt from raw reads and the project is dead. That is exactly what happened."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A2 fails in the files: GSE317131 ships only IGV TDF and bigWig coverage tracks, so the cell-type-specificity label would have to be reconstructed by peak calling and differential analysis from raw sequencing reads; the supplementary tables that might contain the regions were not retrievable through four routes. Even granting the best case, the task (sequence predicting cell-type-specific accessibility in mouse macrophages) is already served by open, chromosome-split-evaluated models - ChromBPNet alveolar macrophage models and AI-TAC - and the paper's own result says one trivially computed feature, CpG content, carries most of the signal."
+}

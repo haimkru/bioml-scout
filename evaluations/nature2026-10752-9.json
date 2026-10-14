@@ -1,0 +1,132 @@
+{
+  "paper_id": "nature2026-10752-9",
+  "title": "Aneuploidy selects for the acquisition of driver genes in breast cancer.",
+  "doi": "10.1038/s41586-026-10752-9",
+  "journal": "Nature 657(8132):800-810, September 2026 (PMID 42420452; no PubMed Central identifier; Europe PMC isOpenAccess = N, hasSuppl = N, subscription only)",
+  "data_url": "Screen result tables (the label source): the CC BY 4.0 preprint of the same study, https://www.researchsquare.com/article/rs-4941895/v1 (DOI 10.21203/rs.3.rs-4941895/v1), Supplementary Tables 1-10 as .xlsx. Expression data: NCBI Gene Expression Omnibus series GSE274219, https://ftp.ncbi.nlm.nih.gov/geo/series/GSE274nnn/GSE274219/suppl/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "I downloaded and parsed seven real files. (1) From the Gene Expression Omnibus (GEO, a public gene-expression repository), reached by NCBI elink from PubMed 42420452: GSE274219_tpm_values_CRISPR_samples.txt.gz (2.84 MB) and GSE274219_tpm_values_ORF_samples.txt.gz (1.21 MB) - both gunzip-valid, each 35,999 gene rows, 24 and 10 tumour columns respectively (34 mouse tumours total), values are transcripts per million (TPM, an expression unit), gene symbols as row names. (2) The published Nature paper itself has nothing openable: Europe PMC reports hasSuppl = 'N', hasDbCrossReferences = 'N', no PubMed Central copy, and its supplementaryFiles and fullTextXML endpoints both return HTTP 404. (3) The Europe PMC record links a preprint (PPR906186) of the same work; its Research Square metadata application programming interface lists 10 supplementary .xlsx tables under a CC BY 4.0 licence. I downloaded five: Supplementary Table 1 (9 sheets, one per chromosome-arm library, 3,752 human genes with mouse homologue, no gene in two arms), Table 2 (guide RNA sequences, 20,303 targeting plus 3,778 non-targeting control guides across 11 sheets, actual 14- or 20-nucleotide sequences present), Table 3 (the key one: 3,752 rows x 7 columns - Human_Gene, Pten_hits, Rb1_hits, Total_hits, Percent_hits_within_Library, Number_of_Guides, Confidence), Table 4 (DESeq2 differential-expression outputs per perturbation), Table 9 (human-to-mouse gene identifier conversions). (4) Counts I computed myself from Table 3: 3,752 unique gene symbols, zero duplicates, 90 genes with Confidence High or Low (13 High including one typo 'HIgh', 77 Low) and 3,662 'No'; 884 genes with at least one hit, 196 with at least two; positives per arm 2 (Chr6p, of 482 genes) to 23 (Chr10p, of 134) - a 40-fold base-rate difference; 46 of the 90 drivers were hits in both mouse models, 42 in the Pten model only, 2 in the Rb1 model only; three gene symbols were silently converted by Excel into dates (2024-03-01, 2024-03-03, 2024-09-08) and therefore fail the join to the arm lists (3,749 of 3,752 join). I also reverse-engineered the undocumented Percent_hits_within_Library column: its denominator is the total hit count within that gene's own arm library (Chr14q 292, Chr15q 251, Chr12q 241, Chr4p_q 163, Chr5q 142, Chr10p 122, Chr12p 112, Chr9p 90, Chr6p 65; grand total 1,478-1,488). (5) Zenodo returned 0 records for the DOI and for a title search; Dryad 0; a Figshare search for CRISPR-KOALA returned nothing relevant.",
+    "what_came_from_paper_text_only": "Everything about method and biology, because only the abstract is accessible. From the abstract and the GEO series description: CRISPR-KOALA is a knockout- and activation-linked assay run in immunocompetent mouse models; the ten most frequent chromosome-arm alterations in basal-like breast cancer were covered (nine libraries, because 4p and 4q are combined in one sheet); 90 driver genes were identified; PLGRKT on 9p is the oncogene followed up. Crucially, the rule that turns raw guide RNA counts into a 'hit' and then into the High/Low/No Confidence call is in the paywalled methods and I could not read it - and it is not a simple cut on Total_hits, because 106 genes with two or more hits are labelled 'No'. The claim I saw in a news summary that 81 of the 90 were previously unrecognised is from press coverage, not from a file. I did not read the Nature version's own supplementary tables; the table I analysed is from the September 2024 preprint, so a version mismatch is possible, although its two headline counts (3,752 genes, 90 drivers) match the Nature abstract exactly."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Passes, but by a side door. The Nature paper is subscription-only with no supplementary files exposed anywhere I am allowed to look. The same supplementary tables are openly available (CC BY 4.0) from the linked preprint on Research Square, and I downloaded five of them; the expression data is in GEO GSE274219 and I downloaded both matrices. No login, no application, no 'available on request'."},
+    "a2_label_is_a_column": {"pass": true, "note": "Passes, and this is the resource's strongest point. Supplementary Table 3 has the outcome already in columns: Confidence (High/Low/No) and the underlying counts Pten_hits, Rb1_hits, Total_hits. Nothing has to be inferred or matched across sources to get the label. I opened the file and counted the classes."},
+    "a3_inputs_present": {"pass": true, "note": "Passes only in the narrow sense that no mass identifier lookup is needed - but be clear-eyed: the table supplies a gene symbol and nothing else, so every feature must be imported (protein sequence from UniProt, expression from GEO or The Cancer Genome Atlas, dependencies from DepMap). Symbol-to-Ensembl mapping is one bulk file, and the paper even ships human-to-mouse identifier conversions in Table 9. The guide RNA sequences in Table 2 are real sequences, not accessions, but they carry no per-guide label."},
+    "a4_units_stated": {"pass": true, "note": "Passes weakly. Pten_hits, Rb1_hits, Total_hits and Number_of_Guides are plain integer counts and Percent_hits_within_Library is a percentage, all evident from the column names. There is no legend sheet: I had to work out the percentage's denominator myself (total hits in that gene's arm library) and the definition of a 'hit' lives in the paywalled methods."},
+    "a5_enough_rows": {"pass": true, "n_rows": 3752, "note": "Passes on the letter and only just. 3,752 labelled rows clears the ~400 needed for classification, but there are only 90 positive examples (2.4%), and with the natural leave-one-chromosome-arm-out split the folds hold 2 to 23 positives each. Counted in the file, not read in the paper."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.6 MB for all five screen tables plus 4 MB for the two compressed expression matrices; ~0.5 GB if the DepMap dependency matrix is added as a partner", "note": "Trivially fits 16 GB. No graphics processing unit needed: embedding 3,752 proteins once with a small protein language model, then a linear or tree head."},
+    "a7_counts_match_paper": {"pass": true, "note": "Passes cleanly, which is rare here. The abstract says 3,752 genes screened and 90 drivers found; the file has exactly 3,752 unique gene rows, and High plus Low Confidence sums to exactly 90. Supplementary Table 1's nine arm sheets also sum to exactly 3,752. The one caveat is version: I checked the preprint's tables, not the Nature version's."},
+    "a8_label_provenance": {"pass": true, "note": "Passes: the label traces to a physical measurement - guide RNA abundance sequenced out of mouse tumours - and not to another model's prediction, and it cannot leak from the features because the features are all external. One real caveat: Confidence is an author-assigned category whose rule is undisclosed and is not monotonic in the published counts (106 genes with two or more hits are called 'No'), so it carries a layer of human judgement."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Label is one 3,752-row sheet; arm annotation a second 9-sheet file; join matched 3,749/3,752; opened both."},
+    "B2": {"score": 1, "why": "Both .xlsx files parsed first try with openpyxl, but Excel had silently turned 3 gene symbols into dates."},
+    "B3": {"score": 1, "why": "Counts pooled from two mouse models (750 versus 204 hit genes); per-arm percentage is the authors' only normalisation."},
+    "B4": {"score": 1, "why": "No censored text, but zero means 'not detected', and 106 genes with 2+ hits are labelled non-drivers."},
+    "B5": {"score": 2, "why": "3,752 unique gene symbols, zero duplicates; counted directly in the file."},
+    "B6": {"score": 0, "why": "No legend sheet; I reverse-engineered the percentage denominator; hit-calling rule only in paywalled methods."},
+    "C1": {"score": 1, "why": "Transfer question informative either way, but 90 positives make a null result ambiguous: underpowered versus unlearnable."},
+    "C2": {"score": 1, "why": "Adjacent task (driver-gene prediction) has open models such as EMOGI; nothing models in-vivo screen labels."},
+    "C3": {"score": 2, "why": "Unique application: experimentally defined in-vivo driver labels as a test set for predictors trained on patient data."},
+    "C4": {"score": 2, "why": "In-vivo mouse CRISPR screens cost years and thousands of animals; abstract describes a dedicated 3,752-gene programme."},
+    "C5": {"score": 2, "why": "Obvious dummy exists: per-arm positive rate, 2/482 to 23/134, which I computed from the file."},
+    "D1": {"score": 2, "why": "ESM-2, an open-weight protein language model, covers these human proteins; Geneformer offers gene-level embeddings."},
+    "D2": {"score": 2, "why": "3,752 proteins embed once on a laptop CPU in a few hours; head is logistic regression."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT licensed; the screen tables carry CC BY 4.0 in the preprint metadata I read."},
+    "E1": {"ok": true, "why": "Leave-one-chromosome-arm-out split available; 9 arm libraries in the file, no gene in two arms."},
+    "E2": {"ok": true, "why": "9 arm groups of 134-648 genes, but only 2-23 positives each; counted in the file."},
+    "E3": {"ok": true, "why": "Majority-class and per-arm base-rate dummies computable straight from the 3,752-row table."},
+    "E4": {"ok": true, "why": "Two mouse models give a reproducibility floor: 46 of 90 drivers hit in both; I computed this."},
+    "E5": {"ok": true, "why": "Known cancer genes FBXW7, CSNK1A1, TRAF3, SAV1 are top rows and must rank high."},
+    "E6": {"ok": true, "why": "Shuffling labels within arm and ablating feature blocks are trivial at 3,752 rows."},
+    "E7": {"ok": true, "why": "DepMap cell-line dependencies and the Cell Reports 2025 arm-loss candidate list are independent sources."},
+    "E8": {"ok": false, "why": "No published machine-learning number on this label; only the 90-driver count, which I did reproduce."},
+    "G1": {"score": 1, "why": "Only HUGO gene symbols, needing conversion to Ensembl or UniProt; three already corrupted into dates."},
+    "G2": {"score": 2, "why": "DepMap gene-effect matrix joins on gene symbol; so do Cancer Gene Census and the arm-loss candidate list."},
+    "G3": {"score": 2, "why": "One row per gene on both sides; only small synonym loss expected, verified for the internal arm join."},
+    "G4": {"score": 2, "why": "Asks which in-vivo drivers cell-line screens miss, and whether that gap is itself predictable."},
+    "H1": {"score": 2, "why": "All 3,752 arm genes were screened; 3,662 non-hits reported in the file, not just the 90 successes."},
+    "H2": {"score": 0, "why": "One laboratory, mouse orthologues, two genetic backgrounds, one breast cancer subtype."},
+    "H3": {"score": 2, "why": "Honest claim writes as one sentence; recorded in honest_claim_h3 field."},
+    "H4": {"score": 1, "why": "Abstract explicit about mouse models and subtype; methods and the hit-calling rule are paywalled."},
+    "I1": {"score": 2, "why": "The Schramek laboratory and other in-vivo screening groups choosing the next guide library."},
+    "I2": {"score": 1, "why": "Could reorder which genes enter a next library, but 90 positives limit how far anyone would trust it."},
+    "I3": {"score": 2, "why": "Precision among the top-k ranked genes is literally the library-design decision."},
+    "I4": {"score": 1, "why": "Real risk a 9-value per-arm base rate plus a known-cancer-gene flag captures most of the signal."},
+    "J1": {"score": 2, "why": "Grouped cross-validation, severe class imbalance, frozen-backbone embeddings: genuine modelling practice."},
+    "J2": {"score": 1, "why": "Cancer-gene plausibility is literature-checkable, but mouse in-vivo screen intuition is specialised."},
+    "J3": {"score": 2, "why": "A cleaned, arm-annotated, symbol-repaired gene table plus the base-rate finding is shareable on its own."},
+    "J4": {"score": 2, "why": "Scoped at two weeks: one day of table building, then embeddings and grouped cross-validation."},
+    "J5": {"score": 1, "why": "Kill condition stated here (base-rate dummy matches the model) but not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "EMOGI, a graph convolutional network that predicts cancer genes from multi-omics data plus protein-protein interaction networks (Nature Machine Intelligence, 2021)",
+        "open_weights": true,
+        "score_and_split": "Code and data manifests are public at github.com/schulter/EMOGI; evaluation is cross-validation over curated cancer-gene label sets, reported as precision-recall curves and the area under them across several interaction networks, where it beat the comparison methods on average. I read a web search summary of the paper and the repository description, not the full paper, so I verified no specific number myself.",
+        "authors_named_unsolved": "Not verified by me - I did not retrieve the discussion section.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Trans-Driver, DriverMONI and a transformer-plus-graph-convolution framework: three 2025-2026 deep-learning cancer driver gene predictors (IEEE Transactions on Computational Biology and Bioinformatics)",
+        "open_weights": null,
+        "score_and_split": "Not verified. I retrieved only titles and metadata through Europe PMC (identifiers 40971265, 41396756, 40811209); all three are closed access and I read no numbers or split descriptions.",
+        "authors_named_unsolved": "Not verified by me.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Chromosome-arm-loss driver pipeline of Cell Reports 2025 (DOI 10.1016/j.celrep.2025.116455), a statistical integration of mutation, copy-number and expression data rather than a trained model",
+        "open_weights": false,
+        "score_and_split": "No trained model and no held-out score; per the abstract summary it nominates 322 candidate driver genes for 159 recurrent arm-loss events across about 7,500 tumours in The Cancer Genome Atlas. Retrieved through Europe PMC (identifier 41129317), closed access, so I read only the abstract-level summary.",
+        "authors_named_unsolved": "Not verified by me, but the setup implies it: their candidates are computational nominations with no experimental test, which is exactly what this mouse screen provides.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "DepMap-based gene essentiality predictors (for example the layered ensemble of autoencoders and predictors, LEAP, 2026, and the deep-learning tumour dependency map in Science Advances 2021)",
+        "open_weights": null,
+        "score_and_split": "Not verified. These predict cell-line CRISPR dependency, a different label from in-vivo tumour driver status; I saw only search summaries.",
+        "authors_named_unsolved": "Not verified by me.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (small checkpoint, for example the 35-million or 150-million-parameter model), a protein language model, used to embed the 3,752 human proteins once; Geneformer, a single-cell transformer whose gene-token embeddings give a gene-level vector, is the alternative if gene context matters more than protein sequence",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM; no graphics processing unit needed at this scale",
+    "licence": "ESM-2 is MIT licensed; the screen tables are CC BY 4.0 per the preprint metadata I read. Geneformer's licence I did not verify."
+  },
+  "integration": {
+    "partner_dataset": "DepMap CRISPR gene-effect matrix (about 1,100 cancer cell lines, including basal-like breast lines), plus the COSMIC Cancer Gene Census and the 322 computational arm-loss candidates from Cell Reports 2025 as orthogonal driver labels",
+    "join_key": "Human gene symbol, promoted to Ensembl gene identifier (the three Excel-corrupted symbols must be repaired first; expect a few percent synonym loss, and record the Ensembl release)",
+    "bigger_question_one_sentence": "Which genes that drive tumours in a living mouse are invisible to cell-line dependency screens, and is that in-vivo-versus-in-vitro gap predictable from gene features?"
+  },
+  "controls": {
+    "positive_control": "Two, chosen in advance. (1) The known cancer genes among the top hits - FBXW7, CSNK1A1, TRAF3 and the Hippo-pathway gene SAV1 - must be ranked high by any feature set with cancer-gene information. (2) A trivially learnable target: predict protein length or amino-acid composition from the protein language model embedding, which must come out near-perfect, proving the embedding plumbing works.",
+    "negative_control": "Shuffle the driver label within each chromosome arm and re-run: performance must collapse to the per-arm base rate. Then ablate feature blocks (sequence embedding only, expression only, dependency only) to see whether any single block does all the work.",
+    "external_validation": "DepMap cell-line CRISPR dependency for the same genes - and the paper's own claim that most of these drivers are missed in cell culture makes this a sharp test rather than a formality. Secondary: the COSMIC Cancer Gene Census and the 322 arm-loss candidates from Cell Reports 2025 (DOI 10.1016/j.celrep.2025.116455)."
+  },
+  "honest_claim_h3": "Among the 3,752 genes lying on the nine chromosome arms most often altered in basal-like breast cancer, the model ranks which ones a knockout-and-activation CRISPR screen in two Trp53-mutant mouse models, run by one laboratory, would call a driver - not which genes drive human breast cancer, and not which genes would score in a different tumour context.",
+  "plain_idea": {
+    "one_liner": "Use gene-level features to predict which genes on cancer-altered chromosome arms act as tumour drivers.",
+    "train_on": "One row per gene. The verified table holds 3,752 human genes sitting on nine chromosome arms that are gained or lost in basal-like breast cancer, each tagged with its arm. The features are not in the table and must be imported per gene: protein sequence (for a language-model embedding), expression in breast tumours, and cell-line dependency scores.",
+    "predict": "A probability that the gene is a driver. The truth comes from a physical experiment: guide RNAs that knock out or switch on each gene were put into mouse mammary tumours, and guides that became enriched were sequenced and counted; the authors then graded each gene High, Low or No confidence, giving 90 drivers against 3,662 non-drivers (counts I verified in the file).",
+    "why_worthwhile": "Groups that run in-vivo CRISPR screens - which cost years and thousands of animals - would use a ranking to decide which genes go into the next guide library. Even if the model fails, comparing the 90 in-vivo drivers against cell-line dependency data quantifies how badly cell culture misses drivers that only appear in a living animal."
+  },
+  "ml_idea": "Two framings, and the second is the honest one. Framing A (train here): gene-level binary classification of screen-called driver versus non-driver over 3,752 genes, with leave-one-chromosome-arm-out cross-validation, features from a frozen ESM-2 protein embedding plus imported expression and dependency annotations, scored by precision among the top-ranked genes against a per-arm base-rate dummy. The weakness is arithmetic: 90 positives, 2-23 per fold, and a 40-fold difference in base rate between arms, so the arm indicator alone may carry most of the signal. Framing B (test here) fixes that: train the classifier on a large external driver-gene resource (Cancer Gene Census or the Cell Reports 2025 arm-loss candidates, thousands of labelled genes), then use this screen as a genuinely independent, experimentally defined test set, asking how well predictors built from human patient statistics recover drivers defined by a living-animal experiment. Framing B cannot produce a useless answer and uses the 90 positives where they are strongest - as evaluation, not as training data.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 2.0,
+    "embedding_hours": 2.0,
+    "cv_run_minutes": 2,
+    "compute_note": "Measured: the five supplementary tables are 1.6 MB total and parsed in seconds with openpyxl, and I ran all the counting above on this laptop in under a minute. Estimated, not timed: about 2 hours to embed 3,752 human proteins with a small ESM-2 checkpoint on CPU at roughly one protein per second; about 10 hours of human work to repair the three Excel-corrupted symbols, map symbols to Ensembl, and subset the DepMap gene-effect matrix (the only download near half a gigabyte); 2 minutes for one nine-fold leave-one-arm-out run of a linear or gradient-boosted head.",
+    "cheapest_killing_check": "Already done, and it is the reason for the park verdict: count positives per chromosome arm. There are 90 positives in 3,752 genes, ranging from 2 of 482 genes on Chr6p to 23 of 134 on Chr10p. The follow-up that would kill Framing A outright is one line of code - does a nine-value per-arm base-rate lookup match the model's precision-recall area? If yes, the project is a one-page note."
+  },
+  "verdict": "park",
+  "verdict_reason": "Everything in Part A passes and I verified it in the files, which is unusual: the label is already a column (90 drivers, 3,662 non-drivers), the counts match the abstract exactly (3,752 and 90), and the tables are open under CC BY 4.0 via the linked preprint even though the Nature paper is paywalled. But model-readiness is weak (6 of 12): no data dictionary, the hit-calling rule is paywalled and is not monotonic in the published counts, three gene symbols are Excel-corrupted into dates, and every feature must be imported from elsewhere. The statistics are thinner than the row count suggests - 90 positives, 2 to 23 per chromosome-arm fold, a 40-fold base-rate spread across arms, and only 46 of 90 drivers reproducing across the study's own two mouse models. Park it as a high-quality independent test set for driver-gene predictors (and for the in-vivo-versus-cell-line comparison, which cannot produce a useless answer), not as training data for a first project."
+}

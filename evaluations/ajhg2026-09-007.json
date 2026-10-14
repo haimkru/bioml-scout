@@ -1,0 +1,48 @@
+{
+  "paper_id": "ajhg2026-09-007",
+  "title": "Effect heterogeneity reveals complex pleiotropic effects of rare coding variants.",
+  "doi": "10.1016/j.ajhg.2026.09.007",
+  "journal": "American Journal of Human Genetics, Sep 2026, ahead of print (PMID 42815477). Europe PMC says 'Subscription required', with isOpenAccess=N, inPMC=N, hasSuppl=N, hasData=N. Crossref lists only Elsevier TDM licences. The open preprint is bioRxiv 10.1101/2024.10.01.614806 (v1-v3, CC BY).",
+  "data_url": "Input summary stats (Genebass UKB 500k exomes): gs://ukbb-exome-public/500k/results/{results.mt, variant_results.mt, pheno_results.ht}. This is a requester-pays GCS bucket. Code: https://github.com/atgu/ALLSPICER (MIT). The authors' intermediate tables sit in the private bucket gs://ukbb-exome-pharma-wlu.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Europe PMC core records for the paper and preprint PPR918900. NCBI elink to gds/sra/bioproject/gap (none) and Zenodo/Figshare DOI searches (0 hits). I extracted the Genebass downloads text from the app JS bundle. storage.googleapis.com returned HTTP 400 UserProjectMissing for the bucket listing, for results.mt metadata and for the advertised 'tsv' phenotype link: every file needs a billed GCP project. Repo atgu/ALLSPICER holds R/Python code plus one example CSV (36 KB, 418 rows: locus, alleles, pop_AF, gene=ALB, annotation, BETA/Pvalue for fields 30600 albumin and 30680 calcium, no units). The open Genebass browser API (main.genebass.org/api/phenotypes) returned 4,529 phenotypes, but these are the 300k tranche (SAIGE 0.44.5), not the 500k one; all 1,233 continuous traits have inv_normalized=False.",
+    "what_came_from_paper_text_only": "From the abstract: ALLSPICE is a likelihood test of proportional vs heterogeneous rare-variant effects across trait pairs. It was applied to 359 continuous UKB traits and found 124 significant heterogeneous events among 11,810 gene-trait association pairs. From the repo scripts: inputs are Genebass 500k gene burden (P<2.5e-6 in more than one trait) and variant-level BETA, filtered by AF cap. I could not retrieve the preprint full text or supplementary tables: bioRxiv returned Cloudflare 1015 and HTTP 429. The AJHG version is paywalled."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "Fails. Bulk Genebass 500k summary stats are only in a requester-pays GCS bucket in Hail MatrixTable format, which needs a billed Google Cloud account (checked: HTTP 400 UserProjectMissing). Individual-level UK Biobank data is controlled access through a UKB application. The paper's result tables are paywalled, and the bioRxiv supplements were not reachable."},
+    "a2_label_is_a_column": {"pass": false, "note": "Fails. The paper's natural target (heterogeneous vs proportional effect for a gene x trait pair) is ALLSPICE's output and would have to be rebuilt by running the test. The only column-like label is per-variant BETA in Genebass, and that is a different, already-benchmarked project."},
+    "a3_inputs_present": {"pass": true, "note": "Pass in the example file only: locus, alleles, gene symbol, annotation (pLoF/missense/synonymous) and AF are present (checked). Protein-level inputs for a backbone would need VEP/HGVSp resolution, and the full set could not be opened."},
+    "a4_units_stated": {"pass": false, "note": "Fails. BETA columns carry no units. Continuous traits are not inverse-normalised (inv_normalized=False for all 1,233 in the 300k metadata), so betas are in raw per-field units across 359 traits, and the units live only in the UKB Showcase."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Not counted. The paper says 11,810 gene-trait pairs but only 124 heterogeneous positives, which is below 400 for classification. The one opened file has 418 variant rows for one gene."},
+    "a6_fits_laptop": {"pass": false, "working_set": "Unknown. Full Genebass variant_results.mt is Hail MT over ~359+ traits (size not verified). The example CSV is 36 KB.", "note": "Fails in practice: reading Hail MatrixTables from a requester-pays bucket needs Hail/Spark plus cloud egress. A subset would fit once exported, but exporting it needs cloud compute."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot check. Neither the 11,810 pairs nor the 124 events could be compared with any downloadable table. Phenotype counts differ by tranche: 4,529 in the 300k browser, and the repo filters to 'final_599_phenotypes' with 359 continuous, which I did not verify."},
+    "a8_label_provenance": {"pass": false, "note": "Fails. The heterogeneity label is a likelihood-ratio test computed from the same per-variant BETA and SE summary statistics a model would take as input. That is leakage by construction, and predicting it distils ALLSPICE. BETA itself is a SAIGE regression estimate, not a direct measurement."}
+  },
+  "part_a_verdict": "reject",
+  "scores": {
+    "b_model_readiness": null,
+    "c_worth_asking": null,
+    "d_backbone_fit": null,
+    "g_integration": null,
+    "h_missing_data": null,
+    "i_does_anyone_care": null,
+    "j_fit_finishability": null
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepRVAT (deep set network gene impairment score; Nat Genet 2024, PMID 39322779)", "open_weights": null, "score_and_split": "Abstract only: 'substantial gains in gene discoveries' and better high-risk detection on 34 quantitative and 63 binary UKB WES traits. No split detail was retrieved.", "authors_named_unsolved": "Not retrieved (abstract only).", "runnable_as_baseline": false},
+      {"name": "RareEffect (empirical-Bayes rare-variant effect sizes; Nat Genet 2026, PMID 42608548)", "open_weights": null, "score_and_split": "Abstract: validated on 100 UKB WES traits, beating recent rare-variant PRS methods. No numbers retrieved.", "authors_named_unsolved": "Not retrieved (abstract only).", "runnable_as_baseline": false},
+      {"name": "VEP benchmark on UKB and All of Us rare-variant burden traits (Tabet et al., Genome Biol 2024, PMID 38951922)", "open_weights": null, "score_and_split": "24 predictors ranked by correlation with traits in carriers of rare missense variants. AlphaMissense came first, and the rankings agreed between UKB and AoU.", "authors_named_unsolved": "Abstract frames circularity and bias in VEP evaluation as the problem; no further unsolved point retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (missense variant embeddings) would be the natural fit for per-variant effect heterogeneity, but this was not scored because Part A failed.", "freeze_and_head_viable": null, "hardware": "n/a", "licence": "ALLSPICER code is MIT. Genebass data terms not reviewed. Paper is under Elsevier TDM licence; preprint is CC BY."},
+  "integration": {"partner_dataset": "Not scored; Part A failed.", "join_key": "Gene symbol and GRCh38 locus/alleles (present in the example CSV)", "bigger_question_one_sentence": "Not scored; Part A failed."},
+  "controls": {"positive_control": "Not applicable (rejected). Salvage: known allelic-series genes such as ALB on albumin vs calcium (the repo's own test case) should come out heterogeneous.", "negative_control": "Not applicable (rejected). Salvage: synonymous-only variant sets should show no heterogeneity.", "external_validation": "Not applicable (rejected). Salvage: All of Us or Genebass 300k vs 500k tranche."},
+  "honest_claim_h3": "At best a model would claim to reproduce ALLSPICE's heterogeneity calls among genes with burden P<2.5e-6 in more than one of 359 continuous traits, in mostly European-ancestry UK Biobank participants. That would be learning a statistic computed from its own inputs.",
+  "ml_idea": "None viable here. Salvage (a separate candidate): predict per-variant cross-trait effect-ratio deviations from ESM-2 missense embeddings, validated on All of Us. It would need open variant-level betas, which this source does not provide without a billed cloud account.",
+  "effort": {"hours_to_feature_table": null, "cheapest_killing_check": "Done: anonymous HTTP to gs://ukbb-exome-public/500k returns UserProjectMissing (requester pays), and the paper and its supplements are paywalled."},
+  "roi": null,
+  "verdict": "reject",
+  "verdict_reason": "A1 fails. The input Genebass 500k summary stats sit in a requester-pays GCS bucket (needs billed cloud), individual UKB data is controlled access, and the result tables are paywalled with the bioRxiv supplements unreachable. A8 and A2 also fail: the heterogeneity label is ALLSPICE's own test statistic, computed from the per-variant betas that would be the inputs."
+}

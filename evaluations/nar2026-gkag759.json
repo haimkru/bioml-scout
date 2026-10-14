@@ -1,0 +1,142 @@
+{
+  "paper_id": "nar2026-gkag759",
+  "title": "XYomics: detecting sex-dependent molecular mechanisms in omics data.",
+  "doi": "10.1093/nar/gkag759",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE138852 ; https://zenodo.org/records/17623749",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both GEO GSE138852 processed files: GSE138852_covariates.csv.gz (13,214 rows x 6 columns: cell barcode, AD/control, cell type, cell-type+condition, subcluster ID, subcluster condition - NO sex column, NO donor column) and GSE138852_counts.csv.gz (10,850 gene rows x 13,214 cell columns, integer UMI (unique molecular identifier) counts, max 13 in a 200-gene x 300-cell sample, 12 MB gzipped). Parsed the GEO SOFT metadata file: 8 deposited libraries, characteristics list only tissue, sample type, pooled individual pair (e.g. 'AD5-AD6'), disease state - no sex field. Barcodes carry only a pooled-library suffix; the processed data contains 6 libraries (Ct3_Ct4 3043, AD1_AD2 3028, AD3_AD4 2605, Ct5_Ct6 2376, Ct1_Ct2 1122, AD5_AD6 1040 cells) and 2,171 astrocytes in total. Computed mean expression of XIST and 8 Y-chromosome genes per library: AD3_AD4 and Ct1_Ct2 are female (XIST 1.04 and 0.47, Y genes ~0), the other four are male - so only 1 female Alzheimer's library and 1 female control library exist. Read the CRAN single-cell vignette: it demonstrates the package on a SIMULATED Seurat object, not on the real Alzheimer's data. Checked the Zenodo record metadata via the API.",
+    "what_came_from_paper_text_only": "That the paper's real-data demonstration used astrocytes from this dataset and found sex-dimorphic genes. The Zenodo file example.rda (83.5 MB, R data file, CC-BY-4.0, single file in record 17623749) was NOT downloaded - it is over the 50 MB cap - so whether that derived object carries an author-added sex column is unverified. Donor-level age and sex for the 12 individuals are in the original Grubman et al. 2019 Nature Neuroscience supplement, which I did not open."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Both GEO processed files downloaded without login (12 MB and 85 KB); Zenodo record 17623749 is open CC-BY-4.0. Verified in the files."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. Sex is not a column anywhere in the public data I opened: the covariates table has no sex and no donor field, and the GEO sample metadata records only tissue, pooled individual pair and disease state. The sex label must be constructed, either by inferring it from XIST/Y-gene expression or by hand-mapping library names to the original 2019 paper's donor table."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Expression values are present as an actual matrix (10,850 genes x 13,214 cells of integer counts), not accession references. Verified in the file."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Values are integer unique-molecular-identifier counts (all 60,000 sampled values were whole numbers, max 13); the file name says counts, though there is no README stating this. Verified in the file."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 6,
+      "note": "FAIL. For any sex-dependent question the independent unit is the donor or sequencing library, not the cell. The processed data holds 6 pooled 10x Genomics libraries covering 12 donors, and by my own XIST/Y-gene check only 2 of the 6 libraries are female - one Alzheimer's and one control. That is n=1 pooled library per female group, versus the ~400 minimum."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "12 MB gzipped; ~1.1 GB if held dense as float64, ~0.2 GB sparse",
+      "note": "Parses comfortably on a 16 GB laptop by streaming rows. Verified by streaming the file."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "13,214 cells in both the covariates table and the counts header, matching the 13,214 high-quality nuclei reported for this dataset. Verified in the files."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the project the paper suggests. A 'sex-specific / sex-dimorphic / sex-modulated' gene label is XYomics' own limma statistic computed from the very expression matrix that would serve as features, so it is both a software output and leakage by construction. The alternative label, sex itself, is only obtainable by inference from XIST/Y-chromosome genes that are in the feature matrix - again computed from the features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "XYomics (this paper's own R package, on CRAN)",
+        "open_weights": true,
+        "score_and_split": "No predictive performance number exists - it is a statistical pipeline (limma differential expression, sex-disease interaction terms, pathway enrichment, network analysis), not a predictor, so there is no split or accuracy to beat. Confirmed from the CRAN page and vignettes I fetched.",
+        "authors_named_unsolved": "The paper's own quality-control function warns when the number of donors per sex group is too low, and the methods state that cells from one individual are not independent replicates - an admission that donor-level power is the unsolved part, and exactly what their demonstration dataset lacks.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CellSexID (machine-learning donor-sex prediction from single-cell RNA sequencing, Cell Reports Methods 2025)",
+        "open_weights": null,
+        "score_and_split": "Search snippets report 93-95% accuracy for sex-dependent-gene models versus 88-90% for sex-chromosome-only models, using a 14-gene set; I retrieved only the search result and abstract-level snippet, not the paper, so I did not verify the split.",
+        "authors_named_unsolved": "Not verified - paper not retrieved in full.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "classifySex, part of the speckle R package (Oshlack lab)",
+        "open_weights": true,
+        "score_and_split": "Logistic regression on XIST plus Y-chromosome genes; code is public on GitHub. No performance number retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Sex-expression-based deconvolution of pooled single-nucleus RNA sequencing (2025, PMC12639244)",
+        "open_weights": null,
+        "score_and_split": "Search result only: reports that chromosome-Y and XIST models are 99% accurate when they agree, but agree on only 77% of cells. Not retrieved in full.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (single-cell transcriptome foundation models)",
+    "freeze_and_head_viable": true,
+    "hardware": "Embeddings for 13,214 cells would run on a CPU in hours",
+    "licence": "Both have open weights; moot here because the labels fail Part A"
+  },
+  "integration": {
+    "partner_dataset": "Larger Alzheimer's single-nucleus atlases with per-donor sex recorded (for example ROSMAP/Mathys, SEA-AD, GSE157827), joinable on gene symbol or Ensembl gene plus donor metadata",
+    "join_key": "Gene symbol / Ensembl gene ID; donor-level sex and diagnosis from each study's metadata",
+    "bigger_question_one_sentence": "Do sex-dimorphic expression changes in Alzheimer's brain replicate across independent cohorts, or do they vanish once sequencing batch and donor are held out - a question this 6-library dataset cannot answer on its own."
+  },
+  "controls": {
+    "positive_control": "Recovering sex itself from XIST and Y-chromosome genes - which I verified works perfectly at the library level - but that is a sanity check, not a project.",
+    "negative_control": "Label shuffling would be runnable; a second independent re-analysis of this exact dataset (Zenodo 22234047, 2026) already reports that leave-one-donor-out Alzheimer's-versus-control classification from microglial pseudobulk performs at chance, 0.548 accuracy against a 0.548 chance rate.",
+    "external_validation": "Other Alzheimer's single-nucleus datasets exist (for example GSE157827), but nothing within this paper's data supports validation."
+  },
+  "honest_claim_h3": "Any model built on this paper's demonstration data could only claim 'these genes differ between one pooled female brain sample and four pooled male brain samples sequenced in separate 10x Genomics wells' - a statement about sequencing batch as much as about sex.",
+  "plain_idea": {
+    "one_liner": "Use single-cell expression of brain cells to predict which genes behave differently between women and men in Alzheimer's disease.",
+    "train_on": "Per-cell gene expression (integer counts for 10,850 genes) for 13,214 brain nuclei, which I verified in the files; but only 6 pooled sequencing libraries and 12 donors underlie them, and only 2 libraries are female.",
+    "predict": "For each gene, whether its disease-related change differs by sex. The 'true answer' would come from XYomics' own statistical test on the same expression table, so it is a software output rather than an independent measurement.",
+    "why_worthwhile": "The scientific question matters - drug response and Alzheimer's risk differ by sex - but this particular dataset cannot answer it, and demonstrating that it cannot is the only result available here."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The dataset is 13,214 nuclei from 6 pooled libraries and 12 donors, with 2 female libraries; current Alzheimer's single-nucleus atlases such as SEA-AD and ROSMAP cover hundreds of donors with sex recorded per individual."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements and no per-donor structure in the processed data - donors are pooled two per library with no demultiplexing information - so per-prediction uncertainty cannot be estimated honestly."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "XYomics is a statistical pipeline with no performance number to beat, and the adjacent predictive task (calling cell sex) is already served by open tools - classifySex in the speckle R package and the 2025 CellSexID method - that reach roughly 93-95% accuracy per the search snippet."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: there is no existing model to run as a baseline, because this paper's contribution is a hypothesis test rather than a predictor, and joining other cohorts changes the assay batch and the evaluation split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The candidate project was: train a classifier or foundation-model head on single-nucleus expression to flag genes whose Alzheimer's-related change is sex-dependent, using XYomics' categories as labels. It dies three ways, all verified in the files: sex is not a column in any public file for this dataset; the only sex-dependent labels available are XYomics' own statistics computed from the feature matrix; and there are 6 pooled libraries with just 1 female Alzheimer's pool and 1 female control pool, so sex is perfectly confounded with sequencing batch. The salvageable idea lives in a different dataset, not this one: a sex-stratified transfer test across large Alzheimer's atlases with per-donor sex (SEA-AD, ROSMAP), which this paper's software could then be applied to.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 1.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 2.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Measured: the 12 MB gzipped counts file streams row by row in seconds and the 85 KB covariates file loads instantly; the 1.1 GB figure is the dense float64 size of a 10,850 x 13,214 matrix, computed not timed.",
+    "cheapest_killing_check": "Count the independent units per sex. I did it: mean XIST and Y-gene expression per sequencing library shows 2 female libraries out of 6 (one Alzheimer's, one control), which ends the project in one command."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails three Part A killers, all checked in the downloaded files. A2: sex appears in no column of the GEO processed data or sample metadata - the covariates table has only barcode, disease state, cell type and subcluster, and the sample records list a pooled pair of individuals with no sex field - so the label would have to be inferred. A5: the independent unit is the donor or sequencing library, and there are 6 pooled libraries covering 12 donors, of which my own XIST/Y-chromosome check shows exactly 1 female Alzheimer's pool and 1 female control pool. A8: the only sex-dependent label on offer is XYomics' own differential-expression statistic computed from the same expression matrix that would be the model's input, which is leakage by construction and distillation of a statistical test rather than learning biology. An independent 2026 re-analysis of this same dataset (Zenodo 22234047) separately found that leave-one-donor-out disease classification here performs exactly at chance and that 42-74% of its differentially expressed genes depend on a single sequencing well, which confirms the dataset is batch-dominated. The software itself is good and openly on CRAN; the demonstration data cannot support a machine-learning project."
+}

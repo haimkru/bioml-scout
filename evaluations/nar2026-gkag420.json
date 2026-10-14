@@ -1,0 +1,46 @@
+{
+  "paper_id": "nar2026-gkag420",
+  "title": "bio.tools: an expanded web service for research software in the life sciences.",
+  "doi": "10.1093/nar/gkag420",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://bio.tools/api/t/?format=json",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the bio.tools API: /api/stats reports 34,448 entries (Oct 2026), and /api/t page 1 reports count 34,450, served at 50 per page. Sampled 250 records from 5 pages: 219 have EDAM (bioinformatics ontology) topic terms and 214 have operation terms. Owners: 'pub2tools2024' (automated literature mining) owns 50 and 'gh2biotools' (automated GitHub import) owns 28; 150 have validated=0. Opened supplement SupplementaryTableCuration.xlsx: 1,277 literature-mined candidates, all with LLM (gemma3:12b) or rule-based decisions, but only 254 with a human 'manual_revision' and 161 with 'old_manual_revision'. Scores use decimal commas and are mixed text/number.",
+    "what_came_from_paper_text_only": "The 32,950-entry count and the annotation breakdown (211,404 EDAM annotations) in the paper's table; that Pub2Tools proposes EDAM terms through EDAMmap (a text-to-ontology matcher); and the curator agreement figures (65 confirmed, 16 flagged, 4 rejected). The Zenodo archive (10.5281/zenodo.19662200) holds source code, not data; I did not open it."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: public JSON API with no login, plus a 1.3 MB supplementary zip from Europe PMC. A full dump means about 690 paged API calls."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked: EDAM topic/operation terms are nested list fields in each JSON record. The supplementary curation decision is a column, but it is filled for only 254 rows."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: free-text tool descriptions are in each record (81 to 943 characters in the sample), along with publication DOIs and PMIDs (PubMed IDs)."},
+    "a4_units_stated": {"pass": true, "note": "Not applicable. Labels are ontology terms, not measurements. The supplement's scores use decimal commas ('0,9') mixed with integers, which needs parsing."},
+    "a5_enough_rows": {"pass": true, "n_rows": 34450, "note": "Checked: the API count is 34,450 tools. For the curation-triage task, though, only 254 human-labelled rows exist (checked), which is under the 400 threshold."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~100 MB of JSON for the full registry (estimated from 100-190 KB per 50-record page)", "note": "Text-only data; easily fits in 16 GB."},
+    "a7_counts_match_paper": {"pass": true, "note": "The paper says 32,950 and the API now says 34,450. The gap is explained by registry growth since writing, because the registry is live and has no frozen release."},
+    "a8_label_provenance": {"pass": false, "note": "Checked: at least 31% of sampled records (78/250) are owned by automated importers. Per the paper, Pub2Tools gets EDAM terms from EDAMmap, which matches them against the same abstract/description text. A text-to-EDAM model would partly re-learn EDAMmap, and no field records which terms a human confirmed."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "EDAMmap (text-to-EDAM term matcher used inside Pub2Tools)", "open_weights": true, "score_and_split": "No benchmark shown on the GitHub page I retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "NLP classifier of metagenomics tools into EDAM classes (arXiv 2210.00831)", "open_weights": null, "score_and_split": "PR-AUC (precision-recall area under the curve) 0.85 with BioBERT embeddings plus logistic regression, 13 classes, metagenomics tools only, per the search snippet.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "biotoolsLLMAnnotate (gemma3:12b LLM scoring, from this paper)", "open_weights": true, "score_and_split": "Of curated candidates, 65 confirmed by the earlier manual method, 16 flagged, 4 rejected (paper text).", "authors_named_unsolved": "Paper: falsely scored candidates such as large research projects and non-life-science software still need manual revision.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "BioBERT or PubMedBERT (biomedical text encoders) used as a frozen embedder", "freeze_and_head_viable": true, "hardware": "CPU laptop", "licence": "Apache-2.0 / MIT"},
+  "integration": {"partner_dataset": "Europe PMC citation counts via publication DOI/PMID (PubMed ID)", "join_key": "DOI / PMID", "bigger_question_one_sentence": "Which kinds of bioinformatics tools get reused, which is a meta-science question rather than a biological one."},
+  "controls": {"positive_control": "Predicting toolType from description should be easy.", "negative_control": "Label shuffle.", "external_validation": "Temporal split on additionDate (present in the records)."},
+  "honest_claim_h3": "The model would predict the EDAM terms a mix of automated text matchers and human curators assigned to tool descriptions, which is partly a copy of EDAMmap's output on the same text.",
+  "plain_idea": {
+    "one_liner": "Use a software tool's text description to predict which ontology categories (topic, operation) it belongs to in a bioinformatics software registry.",
+    "train_on": "Free-text descriptions of 34,450 registered bioinformatics tools (checked API count), each with a list of ontology terms.",
+    "predict": "Ontology topic and operation terms. These come from curators and from automated text mining with EDAMmap, and the data does not say which.",
+    "why_worthwhile": "It could speed up registry curation, but the labels partly come from an existing text matcher, so success would mostly measure agreement with that tool."
+  },
+  "pitch": null,
+  "ml_idea": "Multi-label text classification from tool description to EDAM topic/operation terms, using frozen biomedical text embeddings and a linear head. Alternatively, triage literature-mined candidates (add / review / do-not-add) against the 254 human curation labels.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.1, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": 0.5, "cv_run_minutes": 5, "compute_note": "Estimated, not timed: about 34k short texts through a BERT-base encoder on CPU at roughly 20 per second.", "cheapest_killing_check": "Count the records whose EDAM terms were set by a human-owned, validated=1 entry with no Pub2Tools origin. If that is under a few thousand, the circularity cannot be avoided."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A8 (label provenance). The registry's EDAM labels are partly produced by EDAMmap from the same description text, with no per-term human-vs-automated flag. The only human-labelled curation table has 254 rows. It is also a software-metadata task with no biological measurement."
+}

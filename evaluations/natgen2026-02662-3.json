@@ -1,0 +1,103 @@
+{
+  "paper_id": "natgen2026-02662-3",
+  "title": "Mutational scanning reveals substrate-assisted autoregulation of the WNT destruction complex.",
+  "doi": "10.1038/s41588-026-02662-3",
+  "journal": "Nature Genetics",
+  "data_url": "https://github.com/RohatgiLab/Murugesh_DC_base_editing_analysis (archived at Zenodo 10.5281/zenodo.20031065)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the processed screen tables from the authors' GitHub/Zenodo code deposit: dc_abe_for_z_score_plots.xlsx (4,897 rows x 17 cols), dc_cbe_for_zscore_plots.xlsx (5,271 x 17), dc_cbe_wnt_raw_countsavg_LFC.xlsx (5,395 x 14, two replicates per sorted bin), dc_cbe_aa_3_10_distinct.xlsx (6,549 guide-to-predicted-mutation annotations). Confirmed: guide sequence present, z-scores for the top and bottom reporter bins present with zero missing values, 0 duplicate guide sequences, 279/278 non-targeting control guides, 1-9 predicted amino-acid changes per guide, replicate read-count correlation r = 0.96-0.98 (log scale), and a working positive control (CTNNB1 degron residues 30-50 mean top-bin z = 2.05 versus -0.22 for the rest of CTNNB1).",
+    "what_came_from_paper_text_only": "The claim of ~150 previously unreported signalling-altering mutations, the identity of the reporter cell line and sorting gates, and the biological conclusions about the AXIN1-beta-catenin interface. Nature's own supplementary tables could not be retrieved (Europe PMC supplementaryFiles endpoint timed out), so the paper's stated library sizes were not cross-checked against the files. Raw sequencing is in NCBI SRA BioProject PRJNA1344315 and was deliberately not downloaded."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Processed tables download anonymously from the authors' GitHub repository and its Zenodo archive; no login. Verified by downloading four files."},
+    "a2_label_is_a_column": {"pass": true, "note": "At the guide level the label is already a column (z_score_top, z_score_bot, plus B_U_lFC/T_U_lFC log fold changes). Caveat verified in the files: a per-amino-acid-variant label is NOT a column, because only 1,206 of 4,897 adenine-base-editor guides and 1,555 of 5,271 cytosine-base-editor guides have a single predicted mutation; the rest would need deconvolution."},
+    "a3_inputs_present": {"pass": true, "note": "20-nt guide sequence, gene symbol, residue number and predicted amino-acid substitutions are all in the table; protein sequences for the four genes come from UniProt with four lookups."},
+    "a4_units_stated": {"pass": true, "note": "Columns are reads per million, log-normalized counts, log fold change versus unsorted, and z-scores standardized to non-targeting controls; non-targeting mean z is exactly 0.000 in both files, confirming the normalization."},
+    "a5_enough_rows": {"pass": true, "n_rows": 10168, "note": "4,897 adenine-base-editor + 5,271 cytosine-base-editor guides = 10,168 labelled rows (counted). Only 1,401 of these are single-mutation missense guides, which is below the ~1,500 threshold if you insist on clean variant-level labels."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~3 MB of spreadsheets plus four protein sequences", "note": "Entire processed dataset is under 5 MB; verified by downloading it."},
+    "a7_counts_match_paper": {"pass": true, "note": "Row counts are internally consistent (5,395 raw cytosine-editor rows filter to 5,271 scored rows). Paper-side library sizes could not be checked because the supplementary tables were not retrievable, so this is a partial pass."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a physical measurement: cells sorted by a WNT fluorescent reporter, guides counted by sequencing, z-scored against non-targeting guides. Not a model output. Important caveat: the mutation annotation used as a FEATURE is predicted by the authors' base-editor design tool, not genotyped, so feature noise (not label circularity) is the risk."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two screen tables with identical 17-column schemas, trivially concatenable; annotation tables join on guide sequence."},
+    "B2": {"score": 1, "why": "Excel files, not csv/parquet, but parsed first try with pandas/openpyxl, no header mangling."},
+    "B3": {"score": 1, "why": "Z-scores already normalized to non-targeting controls by authors, but adenine and cytosine screens normalized separately."},
+    "B4": {"score": 2, "why": "Zero missing z-scores; only control rows lack mutation annotation. No censored values in files."},
+    "B5": {"score": 2, "why": "Verified 0 duplicated guide sequences within each of the two screen tables."},
+    "B6": {"score": 1, "why": "Column names self-explanatory and an R pipeline is provided, but no data dictionary; mutation_category semantics inferred."},
+    "C1": {"score": 1, "why": "Transfer question is informative, but with weak per-guide signal a null result could just be assay noise."},
+    "C2": {"score": 1, "why": "ESM-2 and ProteinGym give open, honestly benchmarked variant-effect predictors; BE-Hive/DeepBE open for editing outcomes; none on this readout."},
+    "C3": {"score": 1, "why": "Unique-application angle (base-editor screen scores as a protein language model target) but only four genes, one pathway."},
+    "C4": {"score": 2, "why": "Base-editor screens with fluorescence sorting and sequencing are months of wet-lab work per gene."},
+    "C5": {"score": 1, "why": "ESM-2 zero-shot and a mutation-class/position dummy are obvious baselines; no published number on this dataset."},
+    "D1": {"score": 2, "why": "ESM-2 protein language model has open downloadable weights and the data are four human proteins."},
+    "D2": {"score": 2, "why": "Only four sequences to embed, so embeddings cache in minutes on CPU; APC at 2,843 residues needs windowing."},
+    "D3": {"score": 2, "why": "ESM-2 weights are MIT-licensed; the screen data sit in a GitHub repo with a permissive LICENSE file."},
+    "E1": {"ok": true, "why": "Can hold out whole genes, or contiguous residue blocks/domains, to prevent neighbouring-guide leakage."},
+    "E2": {"ok": false, "why": "Only four target genes; domain-level groups exist but gene-level holdout gives fewer than five groups."},
+    "E3": {"ok": true, "why": "Per-gene mean and per-mutation-class mean are computable directly from the table."},
+    "E4": {"ok": true, "why": "Verified two replicates per sorted bin (read-count r = 0.96-0.98) and silent/non-targeting guide spread gives a noise floor."},
+    "E5": {"ok": true, "why": "Verified in files: CTNNB1 degron residues 30-50 mean top-bin z = 2.05 vs -0.22 elsewhere; CTNNB1 nonsense guides lose signalling."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation (guide sequence vs mutation annotation vs position) are one-liners."},
+    "E7": {"ok": true, "why": "A separate Nature Genetics saturation-editing study of all 342 CTNNB1 degron missense variants (PMC12900645) gives an independent second measurement."},
+    "E8": {"ok": false, "why": "No published machine-learning number exists on this dataset to reproduce."},
+    "G1": {"score": 1, "why": "Gene symbols and residue numbers present, but UniProt accession and isoform numbering must be resolved (only four lookups)."},
+    "G2": {"score": 2, "why": "Named partners: the CTNNB1 saturation-editing dataset, MaveDB/ProteinGym, and AlphaFold DB / PDB destruction-complex structures."},
+    "G3": {"score": 1, "why": "Guide-to-mutation is one-to-many (up to 9 predicted changes per guide); a collapse rule must be decided first."},
+    "G4": {"score": 1, "why": "Combined question (does structural interface context explain signalling effect better than sequence alone?) is real but modest in scope."},
+    "H1": {"score": 2, "why": "Silent (564/498), intron and non-targeting (279/278) controls present, and effects measured in both reporter directions."},
+    "H2": {"score": 0, "why": "One lab, one reporter cell line, four genes, one pathway; verified from gene_names column."},
+    "H3": {"score": 2, "why": "The honest claim can be stated precisely in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 1, "why": "Paper discusses base-editing coverage limits, but bystander-edit ambiguity is only visible once you count mutations per guide."},
+    "I1": {"score": 2, "why": "Rohatgi lab (Stanford), Gerlach/Cook groups and WNT-inhibitor developers such as StemSynergy are named stakeholders."},
+    "I2": {"score": 1, "why": "Could prioritize which AXIN1-beta-catenin interface mutations to test next, but the paper already names its top hits."},
+    "I3": {"score": 1, "why": "Users need a ranked shortlist of hits; regression on z-score is roughly aligned but not the decision itself."},
+    "I4": {"score": 1, "why": "A lookup by mutation class plus residue position likely captures much of the signal; machine learning helps somewhat."},
+    "J1": {"score": 2, "why": "Involves grouped splits, protein language model transfer, honest negative controls - the skills worth learning."},
+    "J2": {"score": 1, "why": "WNT destruction-complex biology is readable from the paper, but judging individual predictions needs an expert check."},
+    "J3": {"score": 2, "why": "A cleaned, deconvolved variant-level table of 10,168 guides is a shareable artefact even if the model is mediocre."},
+    "J4": {"score": 1, "why": "Scope is small (days) but no time budget was committed."},
+    "J5": {"score": 0, "why": "No kill date written anywhere yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ESM-2 (protein language model, Meta)", "open_weights": true, "score_and_split": "Zero-shot benchmarked across 217 deep mutational scanning assays in ProteinGym; typical Spearman correlation roughly 0.4 averaged over assays, random-variant splits", "authors_named_unsolved": "Zero-shot scores are poor for assays where fitness is a cellular signalling readout rather than stability or binding, and for mutations in disordered regions", "runnable_as_baseline": true},
+      {"name": "ProteinGym benchmark suite", "open_weights": true, "score_and_split": "Provides leaderboard scores for ~80 predictors on random, modulo and contiguous-position splits", "authors_named_unsolved": "Generalization to new proteins and to multi-mutant and indel variants", "runnable_as_baseline": true},
+      {"name": "BE-Hive (base-editing outcome predictor, Broad)", "open_weights": true, "score_and_split": "Predicts base-editing efficiency and bystander genotype outcomes from target sequence; reported Pearson correlations around 0.7-0.9 on held-out target libraries", "authors_named_unsolved": "Bystander-edit uncertainty and transfer across editor variants and cell types", "runnable_as_baseline": true},
+      {"name": "DeepBE (deep learning, 63 base editors)", "open_weights": true, "score_and_split": "Editing efficiency/outcome prediction across 63 editor-Cas9 combinations, held-out target sequences", "authors_named_unsolved": "Prediction for untested editor-cell-type combinations", "runnable_as_baseline": true},
+      {"name": "Base-editor sgRNA fitness-score model (Orro et al., preprint)", "open_weights": true, "score_and_split": "Classifies depleting base-editor guides in proliferation screens, AUC-ROC above 0.93 across cell lines; split described as held-out guides within cell lines", "authors_named_unsolved": "Predictions are driven by guide sequence rather than editing efficiency, so the mutation-level biology is not captured", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (esm2_t12_35M or t33_650M), with windowing for APC's 2,843 residues", "freeze_and_head_viable": true, "hardware": "CPU laptop; only four protein sequences to embed", "licence": "MIT"},
+  "integration": {"partner_dataset": "The companion Nature Genetics CTNNB1 degron saturation-editing dataset (all 342 missense variants, PMC12900645) plus AlphaFold DB / PDB structures of the destruction complex", "join_key": "UniProt accession plus residue number (CTNNB1 P35222, APC P25054, AXIN1 O15169, GSK3B P49841)", "bigger_question_one_sentence": "Do base-editor screen scores, which average over bystander edits, recover the same per-variant signalling effects as saturation genome editing, and does adding structural interface distance explain the residual?"},
+  "controls": {"positive_control": "Verified in the files: CTNNB1 degron residues 30-50 are strongly enriched in the high-WNT bin (mean z = 2.05 adenine editor, 1.39 cytosine editor, versus -0.22 and -0.84 for the rest of CTNNB1), and CTNNB1 nonsense guides lose signalling (bottom-bin z = 2.30).", "negative_control": "Shuffle z-scores within gene and confirm collapse to the per-gene mean; ablate the mutation-annotation feature block and keep only raw guide sequence.", "external_validation": "The independent CTNNB1 saturation-editing dataset covering all 342 degron missense variants; also train on the cytosine-editor screen and test on the adenine-editor screen."},
+  "honest_claim_h3": "From a guide RNA's predicted amino-acid changes and a protein language model embedding, we can rank base-editing guides by their effect on a WNT fluorescent reporter in one engineered cell line, across four destruction-complex genes only, with per-variant resolution limited by bystander edits.",
+  "plain_idea": {
+    "one_liner": "Use protein sequence context of base-edited positions to predict how strongly each edit changes WNT signalling output.",
+    "train_on": "10,168 CRISPR base-editing guide RNAs (4,897 adenine-editor, 5,271 cytosine-editor, counted in the files), each with its 20-nucleotide guide sequence, target gene, residue number and 1-9 predicted amino-acid substitutions in CTNNB1, APC, AXIN1 or GSK3B.",
+    "predict": "A continuous enrichment z-score for how much the edit pushes cells into the high- or low-WNT-reporter bin. The truth comes from sorting reporter cells by fluorescence and counting guides by sequencing, normalized to non-targeting guides.",
+    "why_worthwhile": "WNT drug-discovery groups want to know which destruction-complex interface mutations strengthen or break the complex; a model that ranks them would tell them which mutations to make next without running another screen."
+  },
+  "pitch": {
+    "headline": "10,168 base-editing guides with WNT-reporter enrichment z-scores, 557 control guides, and a positive control I confirmed works in the files.",
+    "what_makes_the_data_unusual": "Two orthogonal base editors scanned the same four destruction-complex genes in the same reporter line, so the cytosine screen can externally validate the adenine screen - rare in mutational-scanning data.",
+    "the_win": "Beat ESM-2's zero-shot correlation on held-out residue blocks, and show base-editor z-scores agree with the independent CTNNB1 saturation-editing scores at the same positions.",
+    "even_if_it_fails": "You learn how much bystander-edit averaging destroys per-variant signal in base-editor screens - a number nobody has published and that anyone reusing such screens needs.",
+    "who_wants_it": "The Rohatgi lab (Stanford) and WNT-inhibitor developers deciding which AXIN1-beta-catenin interface residues to mutate next; also anyone mining base-editor screens as mutational-scanning data."
+  },
+  "ml_idea": "Concatenate the adenine- and cytosine-editor tables, attach ESM-2 embeddings of the edited residue window for each predicted substitution, aggregate over the 1-9 predicted mutations per guide, and regress the reporter z-score with a ridge/gradient-boosting head. Evaluate with contiguous-residue-block and held-out-gene splits, with a mutation-class plus position dummy and ESM-2 zero-shot as baselines; validate CTNNB1 predictions against the independent saturation-editing dataset.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 0.3,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed: four protein sequences to embed with ESM-2 on CPU (APC in sliding windows) takes minutes; the model table is ~10k rows so cross-validation is seconds to minutes. Files were downloaded and parsed, so sizes are measured.",
+    "cheapest_killing_check": "Count how many guides have exactly one predicted amino-acid change AND a well-separated z-score: I already counted 1,401 single-mutation missense guides, below the 1,500-row comfort threshold - next check whether the silent-guide z-score spread swallows most missense effects (silent mean z differs from missense by under 0.1 in both screens)."
+  },
+  "verdict": "park",
+  "verdict_reason": "Clean, small, fully downloadable data with a real measured label and a positive control I verified in the files, but the scope is narrow (four genes, one reporter cell line, one lab) and the label is per-guide averaged over up to nine bystander edits, so only 1,401 guides give clean single-variant labels. With only four genes there are too few groups for a convincing held-out-protein split, and open zero-shot variant-effect predictors are already honestly benchmarked. Worth parking as a short transfer/agreement study against the independent CTNNB1 saturation-editing dataset rather than a main project."
+}

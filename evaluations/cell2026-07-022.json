@@ -1,0 +1,43 @@
+{
+  "paper_id": "cell2026-07-022",
+  "title": "Milk osteopontin alters the infant microbiome to drive DC hematopoiesis and disease tolerance.",
+  "doi": "10.1016/j.cell.2026.07.022",
+  "journal": "Cell",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE306nnn/GSE306448/suppl/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE306448 (mouse single-cell RNA sequencing plus hashtag-oligo sample barcodes): listed the supplement folder and filelist.txt; downloaded and parsed results.tsv.gz (actually comma-separated: 182,287 cells x cluster, Celltype, Group, UMAP coordinates), barcodes.tsv.gz (182,287 rows) and features.tsv.gz (23,687 genes). Counted 18 cell-type labels and 32 Group strings (4 groups x 2 timepoints, PND10 = postnatal day 10 and 5DPI = 5 days post infection, x 2 tissues, Lung and MLN = mediastinal lymph node, x 2 replicates). Did not download matrix.mtx.gz (803 MB, over the 50 MB cap).",
+    "what_came_from_paper_text_only": "Only the abstract is available (Cell, paywalled, no PMCID, no full text in Europe PMC). What Group1-4 mean (genotype/supplement arms) is not stated in GEO or in the files; microbiome 16S and metabolomics data mentioned in the abstract were not found in any linked repository (BioProject PRJNA1310854 links only this GEO series)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: GEO files download openly; the full count matrix is 803 MB compressed, so only metadata was recorded for it."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked: the only columns are author cell-type calls and an opaque Group string; the experimental arm (genotype / osteopontin supplement) would have to be decoded from 'Group1-4' with no documentation in GEO."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: per-cell gene counts exist (23,687 genes) in the large matrix; not opened."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI (unique molecular identifier) counts in Matrix Market format; standard, units implicit but conventional."},
+    "a5_enough_rows": {"pass": false, "n_rows": 182287, "note": "Checked: 182,287 cells, but the independent units for any condition label are 32 pooled samples, about 2 per arm-tissue-timepoint; far below 400 independent labelled units."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~3-5 GB sparse in memory for 182k cells x 23.7k genes (estimate)", "note": "Feasible with subsetting to highly variable genes; not timed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Barcodes and results tables agree at 182,287 cells; no paper count available to compare (no full text)."},
+    "a8_label_provenance": {"pass": false, "note": "Checked: Celltype comes from Louvain clustering (pheno_louvain column) of the same expression data, so predicting it from expression is circular; the treatment-arm label is a real experimental fact but too few replicates."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "scGPT / Geneformer (single-cell foundation models; human-trained, mouse requires ortholog mapping)", "freeze_and_head_viable": null, "hardware": "CPU possible on a subset", "licence": "not checked"},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "At best: classifies which of four undocumented mouse treatment groups a lung or lymph-node cell came from, with about two pooled replicates per group, so any signal is confounded with sample batch.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from neonatal mouse lung and lymph node to predict which feeding or genotype group the mouse belonged to.",
+    "train_on": "Gene counts per cell for 182,287 cells (verified), from 32 pooled samples across 4 groups, 2 ages, 2 tissues.",
+    "predict": "The experimental group of the source mouse, known from hashtag barcodes, or the cell type, which the authors assigned by clustering the same expression data.",
+    "why_worthwhile": "Little: with about two replicates per condition, a classifier would learn sample batch, and cell-type labels are circular."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "None viable: per-cell condition classification is confounded by ~2 pooled replicates per arm; cell-type labels are derived from the expression clustering itself.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 4, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from the 803 MB compressed matrix and 182,287 x 23,687 dimensions; nothing timed.", "cheapest_killing_check": "Count independent biological replicates per condition in the Group column: 2 per arm-tissue-timepoint (done; it kills the project)."},
+  "verdict": "reject",
+  "verdict_reason": "Mouse single-cell atlas with no usable label: cell types are clustering outputs of the same expression (A8), and the treatment arms are undocumented Group codes with about two pooled replicates each (A2, A5). Existing-models search skipped because Part A failed."
+}

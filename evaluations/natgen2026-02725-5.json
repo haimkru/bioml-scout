@@ -1,0 +1,45 @@
+{
+  "paper_id": "natgen2026-02725-5",
+  "title": "A single-cell atlas of multiple myeloma defines malignant archetypes and proliferative states.",
+  "doi": "10.1038/s41588-026-02725-5",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE305971",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found GEO (Gene Expression Omnibus) SuperSeries GSE305971 (subseries GSE305967-70, BioProject PRJNA1308544, 2,105 public SRA runs) by searching GEO, because PubMed elink returned no dataset links. Listed the files: 2,105 per-plate count tables (txt.gz, about 0.5 MB each; 1.4 GB tar in total) and one 29 MB cell-annotation xlsx. Opened the xlsx: 416,184 cells x 13 columns (plate, sequencing batch, patient code, biopsy number, cell population, disease stage, tissue, method, UMAP coordinates). It has 311 patient codes, 366 patient-biopsy pairs, 2,043 plates, 0 duplicate cell IDs, and 121,112 'Malignant' cells from 283 patients (154 with at least 100). Opened one plate file: 57,874 genes x 384 cells of integer UMI (unique molecular identifier) counts. GEO sample characteristics hold only tissue, gate and batch.",
+    "what_came_from_paper_text_only": "Abstract only (paywalled, no PMCID): 341 individuals, five archetypes, proliferation program, CoMMpass validation, FCRL2 CAR-T. The GEO design text says 342 patients and that survival, FISH, response and treatment data exist 'for subsets', but none of these are in the deposited files. I did not check the Nature supplementary tables, since publisher scraping is not allowed."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: GEO count tables and the annotation xlsx download openly. SRA (Sequence Read Archive) runs are public; there is no dbGaP or EGA controlled access."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked the files: the paper's headline labels are missing. There is no archetype (MM1-MM5) column, no proliferation score, and no survival, response or FISH (fluorescence in situ hybridization, a test for chromosomal changes) column. The only label columns are cell population and disease stage."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: per-cell UMI count matrices with gene symbols are present, keyed to the annotation by plate ID."},
+    "a4_units_stated": {"pass": true, "note": "Checked: values are raw integer UMI counts and disease stage is categorical, so no unit ambiguity."},
+    "a5_enough_rows": {"pass": false, "n_rows": 311, "note": "Checked: the independent unit for any clinical or stage label is the patient, and there are 311 patient codes (366 biopsies), with only 15 MGUS, 15 SMM and 25 untreated NDMM. That is under the ~400 threshold. Cell counts (416,184) are not independent samples."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 1.4 GB compressed counts; a plasma-cell pseudobulk is under 100 MB", "note": "Estimated from file sizes: streaming plate by plate fits easily in 16 GB."},
+    "a7_counts_match_paper": {"pass": false, "note": "Checked: the annotation has 311 patient codes. The abstract says 341 individuals and the GEO design says 342 (322 MM plus 20 healthy). There are 2,105 GSMs but only 2,043 plates in the annotation. The gap is unexplained without the paper's methods."},
+    "a8_label_provenance": {"pass": false, "note": "Checked: 'Malignant' vs 'Normal_PC' and the other cell populations are the authors' clustering calls on these same expression profiles. Predicting them from expression is circular. Only disease stage is an independent clinical label."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Single-cell cNMF (consensus non-negative matrix factorization) subtyping of CoMMpass plasma cells (ASH 2023 abstract, Blood 142 Suppl 1:762)", "open_weights": null, "score_and_split": "Unsupervised, so no held-out split. 5 subsets in 95 patients; association with time to second-line therapy p=0.0027 vs p=0.13 for bulk NMF.", "authors_named_unsolved": "Not retrieved (abstract only).", "runnable_as_baseline": false},
+      {"name": "This paper's archetype classifier plus proliferation score, ported to bulk CoMMpass RNA-seq", "open_weights": null, "score_and_split": "The abstract reports validation in the independent CoMMpass cohort. No numbers were retrieved.", "authors_named_unsolved": "Not retrieved (paywalled).", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Geneformer or scGPT (single-cell foundation models)", "freeze_and_head_viable": true, "hardware": "CPU embedding of about 150k plasma cells is slow (hours) but feasible", "licence": "Apache-2.0 (Geneformer) / MIT (scGPT)"},
+  "integration": {"partner_dataset": "MMRF CoMMpass bulk RNA-seq with survival data (controlled access via dbGaP or the MMRF portal)", "join_key": "gene symbol (signature transfer only; no shared patients)", "bigger_question_one_sentence": "Do single-cell-derived malignant programs predict outcome in bulk-profiled patients? The paper already did this, and the partner needs an access application."},
+  "controls": {"positive_control": "Recover the authors' Malignant vs Normal_PC split, or immunoglobulin light-chain restriction, from the counts.", "negative_control": "Shuffle disease-stage labels across patients and confirm the score falls to majority-class level.", "external_validation": "Earlier open MARS-seq myeloma sets from the same lab (GSE117156, GSE161195). These are not independent labs, and may share patients."},
+  "honest_claim_h3": "With the deposited files, a model could only claim to separate disease stages among about 311 patients from one Israeli centre network, all profiled with MARS-seq (one plate-based single-cell method). The archetype and outcome claims cannot be tested without unreleased clinical tables.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene activity of a patient's bone-marrow plasma cells to predict their myeloma archetype, disease stage or outcome.",
+    "train_on": "Per-patient summaries of plasma-cell gene expression from 416,184 profiled cells in 311 patients (verified counts).",
+    "predict": "Disease stage (healthy, MGUS, smoldering, newly diagnosed, relapsed) as recorded clinically. Archetype and survival labels were not deposited.",
+    "why_worthwhile": "Haematologists would gain a cheaper way to stratify patients. But with the labels withheld and only 311 patients, the result would mostly re-derive known stage differences."
+  },
+  "pitch": null,
+  "ml_idea": "Patient-level pseudobulk (expression summed per patient) or a cell-embedding classifier for disease stage or archetype. Blocked: archetype and outcome labels are absent from GEO and there are only 311 patients.",
+  "effort": {"hours_to_feature_table": 10, "working_set_gb": 1.4, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 8, "cv_run_minutes": 2, "compute_note": "Estimated from file sizes (2,105 plates x 57,874 genes x 384 cells, sparse) and typical Geneformer CPU throughput. Nothing was timed.", "cheapest_killing_check": "Check whether the Nature supplementary tables give a per-patient archetype and survival table keyed to Hospital.Code. If not, the project is dead."},
+  "verdict": "reject",
+  "verdict_reason": "The data are open (GEO GSE305971), but the paper's labels (archetypes MM1-MM5, proliferation score, survival, response, FISH) are not in the deposited files. Patients number only 311, short of the 341 in the abstract, and the cell-type labels are the authors' own clustering of the same data. This fails A2, A5, A7 and A8."
+}

@@ -1,0 +1,142 @@
+{
+  "paper_id": "nature2026-10998-3",
+  "title": "TRI-611, a selective, brain-penetrant molecular glue degrader of ALK",
+  "doi": "10.1038/s41586-026-10998-3",
+  "journal": "Nature",
+  "data_url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000099079 ; https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE329452 ; https://www.rcsb.org/structure/9XZG",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed two files. (1) MassIVE MSV000099079 'search/report.pg_matrix_final.tsv.txt' (2.3 MB): 10,206 protein groups x 24 mass-spectrometry run columns, with UniProt accession, gene symbol and description; 14-18% missing values per run; raw DIA-NN MaxLFQ intensities with no units column; ALK present as Q9UM73. (2) GEO GSE329452_TPM_values.csv.gz (2.1 MB): 57,500 rows x 20 columns (Ensembl gene ID, 18 TPM columns named only X1-X18, gene name). Listed all 30 files in the MassIVE deposit via the GNPS dataset cache: 24 raw instrument files of 5.0-6.1 GB each, 4 Skyline search archives of 14.8-15.9 GB each, one parameters file, and the one 2.3 MB processed matrix. No sample-annotation file exists in either deposit. I tried to recover the experimental design myself: hierarchical clustering of run-to-run correlations gave exactly 4 clusters of 6 runs (matching the four cell-line names in the Skyline filenames: A549, H2228, H3122, SNU), and ALK intensity was about 1 log2 unit lower in the last three runs of each cluster. Testing that inferred grouping, I counted 168-198 proteins apparently falling more than 2-fold per cell line, with ALK not among the top five, which contradicts the paper's central selectivity claim and shows the inferred grouping and/or the low-abundance noise make the label unreliable. Confirmed PDB 9XZG via the RCSB application programming interface: cryo-electron microscopy structure of ALK with CRBN/DDB1 and TRI-611, 2.7 angstrom, released 2026-08-05.",
+    "what_came_from_paper_text_only": "The article is not open access and has no PubMed Central record, so I never saw the full text, methods, data availability statement or supplementary tables. The accession list (PDB 9XZG, EMD-752353/72684/72685, GEO GSE329452, MassIVE MSV000099079) came from a web search snippet of the article page, not from the article itself. The experimental design of the proteomics (doses, timepoints, replicate structure, which run is control) was never stated in anything I could read; the GEO summary states the RNA-seq design (NCI-H3122, NCI-H2228 or SNU2535 cells, DMSO or 3 micromolar TRI-611, 3 hours) but does not say which of columns X1-X18 is which. Any processed log2 fold-change tables are presumably in the paywalled supplementary information, which I did not retrieve."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified by downloading: the GEO expression table and the MassIVE protein matrix both fetch without login, and PDB 9XZG is public. No access application anywhere."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The thing to predict, degradation (treated-versus-control fold change per protein), is not a column in any downloadable file. The MassIVE matrix holds only raw intensities in 24 columns named by instrument file ID, and the deposit contains no sample-annotation table mapping run to cell line, dose or treatment; the GEO table's 18 columns are labelled X1-X18 with no condition. I had to infer the grouping by clustering, and that inference produced 168-198 'degraded' proteins per cell line with ALK not in the top five, which contradicts the paper's selectivity claim and proves the reconstructed label is not trustworthy."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: UniProt accessions and gene symbols are columns in the protein matrix, Ensembl gene IDs in the expression table, so protein sequences are one clean lookup away."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "FAIL. The 24 intensity columns carry no units and no header documentation; they are DIA-NN MaxLFQ arbitrary intensities inferred from the filename, not stated anywhere in the deposit. The expression table is TPM (transcripts per million) only because the filename says so."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 10206,
+      "note": "FAIL in the unit that matters. 10,206 protein groups sounds ample, but the experiment tests exactly ONE compound, so for the only interesting task (which proteins does a cereblon-recruiting glue degrade?) there is effectively one true positive, ALK, against ~8,900 quantified negatives per cell line. The RNA-seq side is 18 samples. No compound-side variation means no model can be fitted."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~4.5 MB (one 2.3 MB protein matrix plus one 2.1 MB compressed expression table)",
+      "note": "Verified: the two processed tables are tiny and parse in seconds. The 24 raw files (5-6 GB each) and 4 Skyline archives (15-16 GB each) are far over the 50 MB cap and were recorded as metadata only."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot verify, and what I can check disagrees. The paper is paywalled with no PubMed Central copy, so no stated counts were available to compare. The one cross-check I could run contradicts the abstract: my reconstructed treated-versus-control contrast flags 168-198 proteins dropping more than 2-fold per cell line, whereas the abstract claims proteome-wide selectivity."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The underlying measurement is honest: mass-spectrometry protein abundance on an Orbitrap Astral, and RNA sequencing. Nothing is another model's prediction, though DIA-NN quantification and missing-value handling sit between spectra and numbers."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Interpretable XGBoost models from 'Integrated proteomic screening reveals design principles of CRBN molecular glue degraders' (bioRxiv 2026). XGBoost is a gradient-boosted decision-tree method; CRBN (cereblon) is the protein these drugs hijack to destroy a target.",
+        "open_weights": null,
+        "score_and_split": "Not retrieved. Reported as predicting protein abundance change from chemical fingerprints across a 960-compound library, with over 230 proteins depleted and 124 newly reported cereblon neosubstrates; accompanied by an open browsable resource, NeosubstratesDB. No split or score seen.",
+        "authors_named_unsolved": "More than half of the new neosubstrates lack a predicted G-loop degron, the glycine-containing loop motif previously thought required, so the recognition rules are incomplete.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Structure- and surface-based matchmaking from 'Mining the CRBN target space redefines rules for molecular glue-induced neosubstrate recognition' (Science)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved. Reported to predict more than 1,600 cereblon-compatible G-loop proteins across the human proteome, including a newly described helical G-loop motif.",
+        "authors_named_unsolved": "Which of the predicted compatible proteins are actually degraded by a given compound, rather than merely structurally compatible.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Proteochemometric machine-learning models for cereblon glue activity (Artificial Intelligence in the Life Sciences, 2024). Proteochemometric means the model takes both a compound description and a protein description as input.",
+        "open_weights": null,
+        "score_and_split": "Not retrieved directly. Reported: built on internal screening across thousands of cereblon glues; 89% of models reach area under the receiver operating characteristic curve above 0.8 and 70% reach Matthews correlation coefficient above 0.2; combined compound-plus-protein models beat compound-only models in over 80% of cases. Split not stated in what I saw.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Unbiased mapping of the cereblon neosubstrate landscape by high-throughput proteomics (Nature Communications, 2025)",
+        "open_weights": null,
+        "score_and_split": "A dataset rather than a model; a large proteomics survey of cereblon neosubstrates. Not retrieved in detail.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model that turns a protein sequence into a numeric vector); small checkpoints run on a laptop CPU",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU would suffice for 10,206 proteins, but there is no usable label to fit a head to.",
+    "licence": "MIT, permissive"
+  },
+  "integration": {
+    "partner_dataset": "NeosubstratesDB plus the published 960-compound cereblon proteomic screen, joinable on UniProt accession",
+    "join_key": "UniProt accession (present as the 'Protein.Group' column, verified in the file)",
+    "bigger_question_one_sentence": "Does a protein's sequence and predicted structure determine whether any cereblon-recruiting glue can destroy it, independent of the particular compound? That question is answerable, but it needs the 960-compound screen as the data source, not this single-compound paper, which contributes one row to it."
+  },
+  "controls": {
+    "positive_control": "ALK (UniProt Q9UM73) must come out as the top degraded protein. Verified in the file that ALK is quantified, but my reconstructed contrast does NOT put it in the top five, which is exactly why this fails.",
+    "negative_control": "Known cereblon neosubstrates (IKZF1, GSPT1, CSNK1A1) should be unchanged, since the paper's claim is selectivity against them.",
+    "external_validation": "The published 960-compound cereblon screen and NeosubstratesDB would serve, joined on UniProt accession."
+  },
+  "honest_claim_h3": "With one compound and one unannotated proteomics matrix, no model trained on this paper's data could claim anything beyond 'this is what twenty-four mass-spectrometry runs of a single drug look like'; there is no compound variation to generalise over and no reliable per-protein degradation label.",
+  "plain_idea": {
+    "one_liner": "Use a protein's sequence and structure to predict whether a cereblon-recruiting glue drug will cause the cell to destroy it.",
+    "train_on": "Each example would be one human protein, described by its amino-acid sequence and predicted structure, labelled with how much its abundance fell after drug treatment. Verified count available here: 10,206 protein groups, of which 8,696-8,945 are actually quantified per cell line.",
+    "predict": "The log2 fold change in protein abundance after treatment, from mass spectrometry on an Orbitrap Astral instrument comparing drug-treated to vehicle-treated cells.",
+    "why_worthwhile": "Targeted-protein-degradation chemists want to know in advance which proteins a glue will hit, both to find new drug targets and to anticipate toxic off-target destruction. Even a failed model would map how far sequence alone can go."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper contributes one compound and 24 mass-spectrometry runs. The competing bioRxiv 2026 screen profiled 960 compounds with both proteomics and ubiquitin profiling and found over 230 depleted proteins; a proteochemometric study used thousands of cereblon glues. We would be bringing one data point to a field holding three orders of magnitude more."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are three apparent replicates per condition, which in principle estimates noise, but 14-18% of values are missing per run and my reconstructed contrast produced 168-198 spurious 2-fold drops, so the noise model would be calibrating artifacts, not biology."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The relevant models are from 2024-2026 and trained on 960 to several thousand compounds. We have one compound, so there is nothing to beat them with, regardless of their splits or architectures."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on the first condition: we cannot run the existing models as our baseline (weights and code not confirmed open), and more fundamentally our data does not contain the compound variation their data has, so our model would not see everything theirs sees."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: predict, from protein sequence and predicted structure, which human proteins a cereblon-recruiting molecular glue degrades, training on the per-protein abundance change in the deposited proteomics. It dies because the paper's whole selling point is that TRI-611 hits essentially one protein (ALK), so the dataset contains roughly one positive example against ~8,900 negatives, and because no sample-annotation file was deposited, so the fold-change label cannot be constructed correctly. The right home for this question is the published 960-compound cereblon screen with its open NeosubstratesDB resource, to which this paper would contribute a single row.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.005,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": 6.0,
+    "cv_run_minutes": 5.0,
+    "compute_note": "Measured, not estimated, for the data handling: both processed tables total about 4.5 MB and parsed in seconds with pandas on this laptop, and clustering 24 runs took under a second. The 6-hour embedding figure is an estimate for running ESM-2 (a protein language model) over ~10,000 sequences on a CPU at roughly half a sequence per second. hours_to_feature_table is null because the sample-annotation key does not exist, so there is no bounded amount of work that produces a correct label table.",
+    "cheapest_killing_check": "Count how many proteins actually drop after treatment. I ran it: using the only treatment grouping recoverable from the files, 168-198 of ~8,900 quantified proteins fall more than 2-fold per cell line and ALK is not among the top five, versus the paper's claim of near-complete selectivity. That single count takes ten minutes and kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A on three counts, all verified by opening the files rather than reading the paper. A2: the degradation label is nowhere a column, and no sample-annotation file was deposited in either MassIVE or GEO, so the treated-versus-control contrast has to be guessed; the 24 proteomics columns are named by instrument file ID and the 18 expression columns are named X1-X18. A5: the experiment tests one compound, so the only interesting prediction task has roughly one positive example (ALK) against ~8,900 negatives. A4: intensity units are nowhere stated. A7 compounds the problem: my best reconstruction of the design flags 168-198 proteins dropping more than 2-fold per cell line without ALK in the top five, flatly contradicting the abstract's selectivity claim, which means the reconstructed label is noise. Separately, the field is well served by a 960-compound cereblon proteomic screen with an open NeosubstratesDB resource and published XGBoost and proteochemometric models, against which one compound contributes nothing. The deposited data is a clean, honest supplement to a drug-discovery paper; it is simply not a machine-learning dataset."
+}

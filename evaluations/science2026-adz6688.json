@@ -1,0 +1,102 @@
+{
+  "paper_id": "science2026-adz6688",
+  "title": "Transcriptome-based classification in mice with ASD-risk mutations.",
+  "doi": "10.1126/science.adz6688",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE293709",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found GEO SuperSeries GSE293709 (1,565 bulk samples) by searching GEO, since PubMed had no links. Opened its batch sheet: 1,008 discovery cortex samples at P25 (postnatal day 25) across 17 sub-series and 8 batches, plus 175 validation, 269 hippocampus and 113 P40 samples. Downloaded all 20 cortex DESeq-normalized matrices (170 MB). Each parses first try, with 18,088 Ensembl genes (51,456 in the validation sets), 0 NA, 0 duplicate genes, and genotype/drug/sex encoded in column names; the matrices hold 1,010 discovery columns. Quick leave-one-line-out logistic regression: sex AUC (area under the ROC curve) 1.0, lithium 0.99 median, fluoxetine 0.81 median, mutant vs wild-type 0.53, shuffled labels 0.50. Also listed snRNA-seq (single-nucleus RNA sequencing) series GSE330728: 13.6 GB of MTX files and a 212-row mouse-to-pool table.",
+    "what_came_from_paper_text_only": "The two-group (group 1 / group 2) assignments, the human 40-vs-17 cortex comparison, and the paper's classifier method and accuracy all come from the abstract and press coverage. There is no open full text, so I did not see the data availability statement or the code."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All bulk sub-series matrices download from GEO FTP without login. Checked in the files."},
+    "a2_label_is_a_column": {"pass": true, "note": "Genotype (H/W), drug (v/f/L) and sex (M/F) are encoded in every sample column name and in the batch sheet. The paper's group 1/group 2 label is NOT a column and would have to be reconstructed from expression."},
+    "a3_inputs_present": {"pass": true, "note": "Full normalized expression matrices are present: 18,088 genes × samples per line. Checked."},
+    "a4_units_stated": {"pass": true, "note": "Files are labelled 'processed_data_DESeq': DESeq2 size-factor-normalized counts, one normalization per sub-series. Units are implied by the file name rather than documented."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1008, "note": "1,008 discovery samples in the batch sheet (1,010 columns in the matrices), plus 175 validation samples. But the independent unit is the mouse line (17 discovery, 3 validation), or about 34 line×sex groups."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~170 MB compressed; ~1,200 × 18,088 float matrix, about 0.2 GB in RAM", "note": "Whole probe ran in seconds on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "The batch sheet's 1,008 matches the abstract. The matrices have 1,010 columns (2 extra, e.g. GSE293627 has 59 columns vs 57 in the sheet), which is trivially reconcilable."},
+    "a8_label_provenance": {"pass": true, "note": "Genotype, drug and sex are experimental-design facts, not model outputs. The paper's group labels are clusters computed from this same expression data, so predicting them would be circular and they must not be used as a target."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "20 per-line matrices with an identical 18,088-gene index plus one batch sheet; joins cleanly (checked)."},
+    "B2": {"score": 2, "why": "All tab-separated gz files parsed first try: 0 NA, 0 duplicate genes, all numeric."},
+    "B3": {"score": 1, "why": "DESeq normalization is done per line, so the line is confounded with normalization and batch; cross-line rescaling is needed."},
+    "B4": {"score": 2, "why": "No censored values; continuous normalized counts and categorical design labels."},
+    "B5": {"score": 2, "why": "No duplicate genes or samples found; 2-column surplus versus the batch sheet is minor."},
+    "B6": {"score": 1, "why": "Column-name code (H/W, v/f/L, M/F) is decodable via the batch sheet, but there is no README."},
+    "C1": {"score": 2, "why": "'Does a drug or mutation signature learned on 17 lines transfer to new lines/region/age?' is informative either way."},
+    "C2": {"score": 1, "why": "Only the paper's own classifier exists; code availability unseen. No other ML on this dataset found."},
+    "C3": {"score": 1, "why": "Weak unique-application angle: drug-exposure transfer across genotypes; the main classification is the paper's own result."},
+    "C4": {"score": 1, "why": "Mouse-line RNA-seq is costly, but the classification step itself is cheap clustering."},
+    "C5": {"score": 2, "why": "Obvious dummies verified: shuffled AUC 0.50; mutant-vs-WT 0.53; sex 1.0; lithium 0.99."},
+    "D1": {"score": 1, "why": "No bulk-mouse-brain backbone; Geneformer/scGPT are single-cell, mostly human; fit is poor."},
+    "D2": {"score": 1, "why": "Could embed the snRNA-seq with scGPT, but 13.6 GB needs subsetting; bulk does not benefit."},
+    "D3": {"score": 1, "why": "GEO data is open; backbone licences vary; nothing restrictive found."},
+    "E1": {"ok": true, "why": "Leave-one-line-out split is natural; separate validation lines, hippocampus and P40 series exist (checked)."},
+    "E2": {"ok": true, "why": "17 discovery lines plus 3 validation lines, each with about 60 mice."},
+    "E3": {"ok": true, "why": "Majority class and shuffled-label baselines computed: AUC 0.50."},
+    "E4": {"ok": true, "why": "About 5 replicate mice per genotype×drug×sex cell give a within-group noise floor."},
+    "E5": {"ok": true, "why": "Sex classification across held-out lines gives AUC 1.0 (verified); the mutated gene's own dosage is a second control."},
+    "E6": {"ok": true, "why": "Within-line label shuffle ran; collapsed to 0.50."},
+    "E7": {"ok": true, "why": "Validation lines (Shank2, Chd8-S62X, Ank2), hippocampus and P40 series are separate batches (checked)."},
+    "E8": {"ok": false, "why": "The paper's classifier accuracy and code were not seen; there is no full text."},
+    "G1": {"score": 2, "why": "Ensembl mouse gene IDs (ENSMUSG) in every matrix."},
+    "G2": {"score": 1, "why": "Plausible partners: human ASD cortex RNA-seq (PsychENCODE), SFARI gene list; not verified joinable."},
+    "G3": {"score": 1, "why": "Mouse-to-human ortholog mapping is one-to-many in places."},
+    "G4": {"score": 1, "why": "Transferring the mouse two-state signature to human cortex is the paper's own extension."},
+    "H1": {"score": 2, "why": "Wild-type littermates, vehicle controls and both sexes in every line (checked)."},
+    "H2": {"score": 1, "why": "One lab, one strain (C57BL/6J), one age per series, heterozygous mutants only."},
+    "H3": {"score": 2, "why": "Claim is precise: transfer across these 20 lines in one lab's P25 prefrontal cortex."},
+    "H4": {"score": 1, "why": "Single-lab design is obvious; per-line normalization confound is not stated in the abstract."},
+    "I1": {"score": 1, "why": "ASD mouse-model and SFARI community; Eunjoon Kim's lab (KAIST)."},
+    "I2": {"score": 1, "why": "Might guide which drug to test per line; marginal."},
+    "I3": {"score": 1, "why": "AUC for drug/genotype detection only roughly matches a 'responder' decision."},
+    "I4": {"score": 1, "why": "Sex and lithium are trivially separable; genotype transfer fails linearly; ML adds little beyond clustering."},
+    "J1": {"score": 1, "why": "Grouped CV and transfer on clean bulk data; little transfer learning."},
+    "J2": {"score": 1, "why": "Needs neurogenetics intuition to judge synaptic/chromatin signatures."},
+    "J3": {"score": 2, "why": "A clean 1,200-sample combined matrix plus transfer benchmark is shareable at each step."},
+    "J4": {"score": 1, "why": "About 1–2 weeks plausible; not formally set."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Roh et al. 2026 transcriptome-based two-group classifier (this paper)", "open_weights": null, "score_and_split": "Reported to classify independent mouse lines; exact metric and split not seen (no full text).", "authors_named_unsolved": "Not seen. Press coverage says group membership flips by sex in 7 of 17 lines and is less distinct in human cortex.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "none suitable for bulk; scGPT (single-cell foundation model) only for the snRNA-seq subset", "freeze_and_head_viable": false, "hardware": "CPU laptop for bulk; snRNA-seq would need subsetting", "licence": "GEO public data; scGPT MIT"},
+  "integration": {"partner_dataset": "PsychENCODE / human ASD postmortem cortex RNA-seq", "join_key": "Ensembl gene via mouse-human orthologs", "bigger_question_one_sentence": "Do drug-response signatures learned across 17 mouse mutation lines predict which human ASD cortex subgroup a sample resembles?"},
+  "controls": {"positive_control": "Sex prediction across held-out lines (verified AUC 1.0); lithium exposure (verified median AUC 0.99).", "negative_control": "Within-line label shuffle (verified AUC 0.50).", "external_validation": "Validation lines GSE294123/5/7 (Shank2, Chd8-S62X, Ank2), hippocampus GSE319614, P40 cortex GSE319615-20."},
+  "honest_claim_h3": "Within one lab's P25 prefrontal cortex from heterozygous C57BL/6J mice, a drug- or mutation-exposure classifier trained on 17 lines does (or does not) transfer to 3 new lines, the hippocampus and P40.",
+  "plain_idea": {
+    "one_liner": "Use brain gene-expression profiles from mutant mice to predict drug exposure and mutation status in mouse lines the model never saw.",
+    "train_on": "Prefrontal-cortex expression of 18,088 genes for each of 1,008 mice from 17 autism-risk mutant lines and their wild-type littermates (verified).",
+    "predict": "Whether a mouse carries the mutation and which drug (vehicle, fluoxetine or lithium) it received; truth comes from the breeding genotype and the treatment the experimenters gave.",
+    "why_worthwhile": "Tells autism mouse-model labs whether a shared mutation or drug signature exists across genes; a quick check found generic mutation detection at chance (AUC 0.53), which supports the paper's two-opposing-states finding."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same 1,008 + 175 samples the paper's classifier used."},
+    "confidence_score": {"answer": "partly", "why": "About 5 replicate mice per condition allow per-line uncertainty estimates; unknown whether the paper reports them."},
+    "models_beatable": {"answer": "partly", "why": "The paper's 2026 classifier is unseen; it is likely clustering-based, but it is the authors' own framing on their own data."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new joinable data measures the same quantity the same way; other labs' mouse-model RNA-seq differs in age, region and batch."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Other GEO mouse ASD-model brain RNA-seq series, e.g. GSE134526 (Tbr1-K228E whole brain, 15 samples), seen in a GEO search; also GSE271853 (human stem-cell ASD models, 476 samples).", "approx_items": null, "join_key": "Ensembl mouse gene ID; mutated gene symbol", "why": "Independent mutant-vs-wild-type brain profiles from other labs could test whether signatures survive lab and batch changes, but ages and regions differ."},
+  "publication_target": {
+    "ambitious": {"journal": "Cell Genomics", "why": "Publishes biology-first genomics; would need a drug-response signature that transfers to new lines and to human ASD cortex subgroups."},
+    "realistic": {"journal": "Molecular Autism", "why": "Publishes reanalyses of ASD model data; a leave-one-line-out transfer benchmark of mutation/drug signatures fits."},
+    "fallback": {"journal": "bioRxiv preprint plus NAR Genomics and Bioinformatics", "why": "A clean combined matrix and a negative 'no shared mutation signature' benchmark result is publishable as a resource note."}
+  },
+  "pitch": {
+    "headline": "1,008 prefrontal transcriptomes from 17 autism-mutant mouse lines, sex-balanced, each with vehicle/fluoxetine/lithium arms, all open on GEO as 170 MB of clean tables.",
+    "what_makes_the_data_unusual": "One lab, one protocol, 17 lines × 2 genotypes × 3 drugs × 2 sexes at about 5 mice per cell, plus separate validation lines, hippocampus and P40 series (1,565 samples total; verified).",
+    "the_win": "A drug-exposure classifier trained on 17 lines that keeps fluoxetine AUC above 0.81 (current quick median) on the 3 held-out validation lines and the hippocampus.",
+    "even_if_it_fails": "Already shown in a quick check: mutation status does not transfer across lines (AUC 0.53), which quantifies that no shared autism-mutation signature exists linearly.",
+    "who_wants_it": "Autism mouse-model labs (e.g. Eunjoon Kim's group, SFARI-funded labs) choosing which drug to test on which mutant line."
+  },
+  "ml_idea": "Combine the 20 per-line DESeq matrices; run leave-one-line-out classification of genotype and drug exposure, then test transfer to the validation lines, the hippocampus and the P40 series. Avoid the paper's group labels as targets (they are circular).",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.2, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Timed: download plus a full leave-one-line-out logistic regression on 1,185 samples × 2,000 genes took seconds on the laptop CPU.", "cheapest_killing_check": "Rescale the per-line normalization (e.g. within-line wild-type centering) and see whether fluoxetine transfer stays above 0.75 AUC on the 3 validation lines; if not, there is no transferable signal."},
+  "verdict": "park",
+  "verdict_reason": "Data is open, clean and laptop-sized (verified), but the prediction tasks are either trivial (sex, lithium at AUC ~1.0), circular (the paper's expression-derived groups) or at chance (mutation status, 0.53). There is no fitting pretrained backbone, and the effective sample is 17–20 lines."
+}

@@ -1,0 +1,123 @@
+{
+  "paper_id": "nar2026-gkag904",
+  "title": "VDJdb in 2026: boosting T-cell receptor recognition evidence using paratope embeddings and AI-based structure prediction.",
+  "doi": "10.1093/nar/gkag904",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/antigenomics/vdjdb-db/releases/download/2026-06-03-ZENODO/vdjdb-2026-06-03.zip",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the 41 MB 2026-06-03 release (11 files, 425 MB uncompressed) and parsed every table with pandas: vdjdb.slim.txt = 197,729 data rows x 17 columns, vdjdb.txt = 284,546 x 22, vdjdb_full.txt = 192,753 x 35, cluster_members.txt = 55,636, motif_pwms.txt = 40,061 - all exactly matching the build documentation. Counted 2,068 distinct epitopes, 1,541 references, 178,974 distinct CDR3 (complementarity-determining region 3) sequences, 181,411 human / 15,028 mouse / 1,290 macaque rows, 182,794 MHC class I rows, confidence score 0/1/2/3 = 183,663/7,485/2,736/3,845, 196 exact duplicates on the natural key, 12,238 CDR3s assigned to more than one epitope, 93,260 records with both alpha and beta chains. Also downloaded the undocumented chunks_negative/ directory from the git repository: 11 small files plus one 5.3 MB git-LFS file, together 435,409 experimentally derived non-binder rows, of which 411,645 are the single epitope GILGFVFTL from 9 donors; found 159 (CDR3-beta, epitope) pairs that appear as both binder and non-binder. Joined summary/reference_years.tsv: 190,286 of 197,773 rows (96%) carry a publication year, 2011-2026. Confirmed by listing the zip that the paper's headline additions - paratope embeddings and predicted 3D structures - are NOT in the shipped release.",
+    "what_came_from_paper_text_only": "The paper itself has no open-access full text (no PMCID; Europe PMC reports isOpenAccess = N), so only the abstract was read. Everything about the new paratope-embedding clusters, the AI-predicted structures and the noise filter comes from the abstract plus the repository's own normative documentation (docs/denoising.md, docs/outputs.md, ROADMAP.md), not from the article. I did not verify any number the article reports, and I did not fetch the remaining 14 git-LFS negative files (78 MB total, ~9 epitope prefixes inferred from filenames)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open download, no login: GitHub release asset and Zenodo DOI 10.5281/zenodo.22104776, licence AGPL-3.0-or-later. I downloaded and unzipped it."},
+    "a2_label_is_a_column": {"pass": true, "note": "For the released database the label IS a column: antigen.epitope (what the T-cell receptor recognises) and vdjdb.score (0-3 curation confidence). For the binder/non-binder task the negative class is a separate directory of files in the git repository, so the label is a constant flag per file - a concatenation, not an inference across sources. Marked pass with that caveat; it costs B1."},
+    "a3_inputs_present": {"pass": true, "note": "Actual amino-acid sequences are in the table: CDR3 (the receptor loop that contacts the peptide) and antigen.epitope (the peptide). No accession lookups needed. Only if you want full-length chains would you resolve IMGT V/J gene names to germline sequence - a 2,000-row reference table, not thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "vdjdb.meta.txt and vdjdb.slim.meta.txt document every column with name, type and comment; the confidence score is an explicitly defined integer 0-3. Sequences and allele names are categorical, so no physical units apply."},
+    "a5_enough_rows": {"pass": true, "n_rows": 197729, "note": "197,729 labelled receptor-chain records counted in vdjdb.slim.txt, plus 435,409 non-binder rows I downloaded from chunks_negative/. Far above the ~1,500 threshold."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.5 GB after subsetting; 41 MB download, 425 MB uncompressed release", "note": "Loaded the whole slim table in pandas on this machine without trouble. Baseline runs on CPU; ESM-2 (a protein language model) embeddings of ~185,000 short sequences are a one-off CPU job."},
+    "a7_counts_match_paper": {"pass": true, "note": "docs/outputs.md states 284,546 / 197,729 / 192,753 / 55,636 / 40,061 rows for the five tables of the 2026-06-03 release; my wc -l gave exactly those numbers plus one header line each. Unusually tight agreement. The article's own counts could not be checked (no full text)."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are wet-lab: 94,613 tetramer-sort, 34,818 dextramer-sort, antigen-loaded/expressing targets, cultured T cells. Two cautions: 29,688 records come from phage display with magnetic beads, which is in-vitro display rather than a T cell; and the 'negatives' are receptors absent from the sorted fraction, i.e. absence of evidence. The motif/in-motif and structure-model evidence the paper adds IS model-derived and must never be used as a label."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Positives are one clean table; adding the 25-file chunks_negative directory with varying headers costs a point. Checked in files."},
+    "B2": {"score": 2, "why": "Tab-separated, zero quote characters by design, parsed first try with pandas for all five tables."},
+    "B3": {"score": 1, "why": "Counted 94,613 tetramer-sort vs 29,688 phage-display records; comparable only after weighting by the documented confidence score."},
+    "B4": {"score": 2, "why": "No censored or qualitative values: labels are categorical sequences and an integer 0-3 score."},
+    "B5": {"score": 1, "why": "196 exact duplicates on the natural key and 159 binder/non-binder conflicts counted; both trivially removable."},
+    "B6": {"score": 2, "why": "Every column documented in vdjdb.meta.txt plus docs/outputs.md and docs/standards/columns.md; I read both."},
+    "C1": {"score": 2, "why": "'How far does accuracy fall with real rather than shuffled non-binders' is informative whichever way it resolves."},
+    "C2": {"score": 0, "why": "Several open, honestly evaluated models plus three community benchmarks; see c2_audit. Field is served."},
+    "C3": {"score": 1, "why": "Angle is 'better negatives', but they are one study, nine donors, one dominant epitope - weak diversity case."},
+    "C4": {"score": 2, "why": "Ground truth needs multimer sorting plus single-cell sequencing of human donors: slow and expensive."},
+    "C5": {"score": 2, "why": "Published numbers exist: IMMREP23 best AUC0.1 0.600, Nature Methods 2025 mean AUPRC 0.52-0.53 on unseen epitopes."},
+    "D1": {"score": 2, "why": "ESM-2 protein language model has open downloadable weights and fits amino-acid sequences; TCR-BERT also exists."},
+    "D2": {"score": 2, "why": "Sequences are under ~30 residues; embeddings for ~185,000 unique CDR3s cache once on CPU, then a small head."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT licensed; the VDJdb data is AGPL-3.0-or-later, which is permissive for research reuse with attribution."},
+    "E1": {"ok": true, "why": "Held-out epitope, held-out HLA allele, held-out study (1,541 references) and temporal splits all possible."},
+    "E2": {"ok": true, "why": "Counted 202 peptide-MHC groups with 50 or more records, 2,068 epitopes and 1,541 source publications."},
+    "E3": {"ok": true, "why": "Majority class and per-epitope prior are trivial dummies; epitope frequency alone is a strong naive baseline."},
+    "E4": {"ok": true, "why": "Noise floor estimable from the 159 pairs labelled both binder and non-binder and 2,254 clonotypes seen by two or more studies."},
+    "E5": {"ok": true, "why": "Known V-gene biases named in the docs - TRAV12-2 for HLA-A*02:LLWNGPMAV, TRBV20-1 for HLA-A*02:GLCTLVAML - must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffling, chain ablation (beta only vs paired) and V-gene-only models are all one line each."},
+    "E7": {"ok": true, "why": "IEDB, McPAS-TCR and the 10x dextramer set are independent; plus a year column on 96% of rows for a temporal split."},
+    "E8": {"ok": true, "why": "NetTCR-2.2 is open and its IMMREP23 number is published, so it can be reproduced on the same split."},
+    "G1": {"score": 2, "why": "PubMed IDs, IMGT V/J allele names, IMGT/HLA allele names, peptide sequences, 2,676 records with a PDB structure id. Seen in files."},
+    "G2": {"score": 2, "why": "IEDB joins on epitope+MHC; STCRDab/PDB on structure id; IMGT on V/J allele. All specific and keyed on columns present."},
+    "G3": {"score": 1, "why": "Record-to-epitope is clean one-to-many, but 12,238 CDR3s map to several epitopes and HLA names mix 'HLA-A*02' with 'HLA-A*02:01'."},
+    "G4": {"score": 2, "why": "Combined question: does contact evidence from solved TCR-peptide-MHC structures explain which high-throughput records survive honest negative controls?"},
+    "H1": {"score": 1, "why": "435,409 real non-binders exist but sit in an undocumented side directory and 95% are one epitope. Counted in files."},
+    "H2": {"score": 1, "why": "92% human, 51% of rows are HLA-A*02:01, and ten epitopes carry most records; three species only. Counted in files."},
+    "H3": {"score": 2, "why": "The honest claim can be written precisely in one sentence - see honest_claim_h3."},
+    "H4": {"score": 2, "why": "The abstract and docs/denoising.md state the HLA/epitope coverage bias and the false-positive problem explicitly."},
+    "I1": {"score": 2, "why": "Named users: the Shugay lab that maintains VDJdb, the IMMREP benchmark organisers, the Sewell lab, ImmuneWatch."},
+    "I2": {"score": 1, "why": "A negative result would change how benchmarks pick non-binders, but would not redirect a wet-lab experiment."},
+    "I3": {"score": 1, "why": "Precision-recall area under the curve on held-out epitopes is close to, but not identical to, 'which receptor do I test next'."},
+    "I4": {"score": 1, "why": "Nearest-neighbour distance on CDR3 already does much of the work on well-sampled epitopes; ML helps but is not clearly essential."},
+    "J1": {"score": 2, "why": "Frozen protein language model plus head, grouped and temporal splits, calibration, leakage controls - the ML I want."},
+    "J2": {"score": 1, "why": "Needs T-cell receptor intuition, but the repository documentation names the motifs a working model must recover."},
+    "J3": {"score": 2, "why": "A cleaned binder/non-binder benchmark table with donor and year metadata is useful even if the model is mediocre."},
+    "J4": {"score": 1, "why": "Roughly three weeks implied by the effort estimate, but no budget is written down anywhere."},
+    "J5": {"score": 0, "why": "No kill date or condition committed to NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "NetTCR-2.2 (convolutional neural network on CDR3 sequences)", "open_weights": true, "score_and_split": "Best IMMREP23 challenge score on the 'seen epitope' group, AUC0.1 = 0.600; near-random on unseen epitopes", "authors_named_unsolved": "Generalisation to epitopes with no training data; and biased negative test sets in the benchmark itself", "runnable_as_baseline": true},
+      {"name": "ERGO-II (long short-term memory / autoencoder TCR-epitope model)", "open_weights": true, "score_and_split": "Reported in the 2025 Nature Methods assessment as showing extreme one-class bias on unseen epitopes", "authors_named_unsolved": "Transfer to epitopes and datasets outside training", "runnable_as_baseline": true},
+      {"name": "EPIC-TRACE (attention model with contextual protein embeddings)", "open_weights": true, "score_and_split": "Published in Bioinformatics 2023 explicitly for unseen epitopes; evaluated on held-out-epitope splits", "authors_named_unsolved": "Performance on epitopes dissimilar to training remains far below the seen-epitope case", "runnable_as_baseline": true},
+      {"name": "TEIM and TCR-H", "open_weights": true, "score_and_split": "Among the top performers for unseen epitopes in the 2025 Nature Methods benchmark, mean AUPRC 0.52-0.53", "authors_named_unsolved": "Unseen-epitope generalisation; residue-level interaction prediction", "runnable_as_baseline": true},
+      {"name": "TCRen (structure-based statistical potential, from the same VDJdb group)", "open_weights": true, "score_and_split": "Nature Computational Science 2024; evaluated specifically on unseen epitopes using modelled structures", "authors_named_unsolved": "Sequence-only methods fail on unseen epitopes; structure is needed but modelling is costly", "runnable_as_baseline": true},
+      {"name": "Benchmarks rather than models: IMMREP22/23/25 challenges, ePytope-TCR (Cell Genomics 2025), and a 2025 Nature Methods assessment of 50 models over 21 datasets and 762 epitopes", "open_weights": true, "score_and_split": "Honest held-out-epitope evaluation already performed and published for the whole field", "authors_named_unsolved": "The unseen-epitope problem is 'essentially unsolved'; one 2025 study estimates 1-100 million epitopes are needed for a generalisable sequence-only model", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model, e.g. the 35M or 150M parameter checkpoint)", "freeze_and_head_viable": true, "hardware": "Laptop CPU; ~185,000 unique CDR3 sequences and 2,068 epitope peptides, all under ~30 residues, embedded once and cached", "licence": "ESM-2 weights MIT; VDJdb data AGPL-3.0-or-later"},
+  "integration": {"partner_dataset": "IEDB (Immune Epitope Database) receptor and epitope tables, plus STCRDab/PDB solved T-cell-receptor-peptide-MHC complexes", "join_key": "epitope peptide sequence + HLA allele name for IEDB; meta.structure.id (a PDB identifier, present on 2,676 records) for the structures", "bigger_question_one_sentence": "Do physical contact patterns from solved receptor-peptide-MHC structures explain which high-throughput specificity records survive an honest, donor-matched negative control, and which do not?"},
+  "controls": {"positive_control": "The model must recover the V-gene biases the VDJdb documentation names in advance: TRAV12-2 for HLA-A*02:LLWNGPMAV and HLA-A*02:ELAGIGILTV, TRBV20-1 for HLA-A*02:GLCTLVAML, and the public TRBV19 motif for HLA-A*02:GILGFVFTL. A second control: predict CDR3 length from the embedding, which must be near-perfect.", "negative_control": "Shuffle binder/non-binder labels within each epitope and confirm collapse to the per-epitope prior; ablate to beta chain only, then to V-gene only, to see how much of the signal is receptor-side shortcut rather than interaction.", "external_validation": "Temporal split using the year column (190,286 of 197,773 rows carry one; 68,910 records are from 2023 or later and 381 epitopes first appear then), plus IEDB, McPAS-TCR and the IMMREP23 held-out test set as independent sources."},
+  "honest_claim_h3": "Among T-cell receptors that laboratories chose to test against a short list of well-studied human viral and tumour peptides - 51% of records restricted to the single HLA allele A*02:01 and most non-binder data from one study of nine donors against the influenza peptide GILGFVFTL - a frozen protein language model with a small head ranks binders above donor-matched non-binders this well, and that accuracy falls by this much on epitopes and publication years it never saw.",
+  "plain_idea": {
+    "one_liner": "Use T-cell receptor and peptide sequences to predict whether that receptor recognises that peptide, judged against real non-binders.",
+    "train_on": "Each example is one T-cell receptor paired with one peptide and the HLA molecule presenting it: the CDR3 loop sequences of the receptor's alpha and beta chains, their V and J gene names, the peptide sequence, and the allele name. I counted 197,729 binder records (93,260 with both chains) and downloaded 435,409 experimentally derived non-binder rows.",
+    "predict": "A binder/non-binder score for each receptor-peptide pair. The true answer comes from wet-lab experiments the database curates: fluorescent multimer sorting (94,613 tetramer and 34,818 dextramer records), antigen-loaded target cell assays and cultured T-cell assays, each read off the original publication.",
+    "why_worthwhile": "Groups designing T-cell therapies and cancer vaccines need to know which receptor to test next, and every current model is trained against artificially shuffled non-binders; measuring how much accuracy survives real, donor-matched non-binders tells the field how much of the published performance is an artefact."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "The 197,729 positive records are the same VDJdb that NetTCR-2.2, ERGO-II, EPIC-TRACE and TEIM already train on, so the positives are not bigger. The genuinely new part is 435,409 experimentally derived non-binders I downloaded from the repository's chunks_negative directory, which none of those models had - but 411,645 of them are one epitope."},
+    "confidence_score": {"answer": "partly", "why": "The database ships a documented 0-3 confidence score per record (183,663 at 0, 3,845 at 3) and 2,254 receptor clonotypes are reported by two or more independent publications, which supports per-prediction reliability weighting. The 159 pairs labelled both binder and non-binder give a direct noise-floor estimate. The published benchmarks do not report calibrated per-prediction confidence, but I did not check every one of the 50 models."},
+    "models_beatable": {"answer": "no", "why": "NetTCR-2.2, EPIC-TRACE, TEIM, TCR-H and TCRen are all 2023-2025, several already use protein language model embeddings or structures, and all were evaluated on held-out-epitope splits in IMMREP23/25 and the 2025 Nature Methods benchmark of 50 models over 762 epitopes."},
+    "guaranteed_improvement": {"answer": "no", "why": "Two conditions fail: the new non-binders measure a different thing (absence from a sorted fraction, not a measured non-binding event), and using them changes the evaluation split, so our numbers would not be comparable like-for-like with the published baseline. The baseline is runnable and we would see everything it sees, but that is not enough."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "IEDB (Immune Epitope Database) receptor table, McPAS-TCR, TCRdb, the 10x Genomics dextramer reference dataset, and the IMMREP22/23/25 benchmark sets - all named in the benchmarking papers I retrieved; IEDB and McPAS-TCR are standard resources I know hold receptor-epitope pairs.",
+    "approx_items": null,
+    "join_key": "CDR3 amino-acid sequence + V/J gene name + epitope peptide sequence + HLA allele name",
+    "why": "The same binder label is curated by several independent groups, so a model trained on VDJdb can be tested on IEDB or McPAS-TCR records it never saw, which is the only way to tell curation artefacts from biology."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Nature Methods", "why": "Publishes field-wide method assessments like the 2025 fifty-model TCR benchmark; it would take a clear, general demonstration that donor-matched non-binders overturn the published ranking of existing predictors across many epitopes, which nine donors and one dominant epitope cannot support."},
+    "realistic": {"journal": "Briefings in Bioinformatics", "why": "Already publishes exactly this kind of negative-data-bias re-evaluation (a 2026 paper on mitigating negative data bias in TCR-epitope prediction); a careful quantification of how much accuracy falls on real versus shuffled non-binders fits directly."},
+    "fallback": {"journal": "Bioinformatics (Application Note) or NAR Genomics and Bioinformatics", "why": "Even a purely negative or partial result still yields a reusable, documented binder/non-binder benchmark table with donor, assay and year metadata, which is publishable as a resource note."}
+  },
+  "pitch": {
+    "headline": "197,729 curated T-cell receptor specificity records plus 435,409 real experimental non-binders, all opened and counted, in one 41 MB download.",
+    "what_makes_the_data_unusual": "I verified every shipped row count against the build documentation exactly, 96% of rows carry a publication year (2011-2026), and the repository holds genuinely experimental non-binders - which the whole field normally fakes by shuffling.",
+    "the_win": "Show how far held-out-epitope accuracy falls when non-binders come from the same nine donors and the same sort instead of being shuffled - against NetTCR-2.2's published IMMREP23 AUC0.1 of 0.600.",
+    "even_if_it_fails": "You still get a cleaned, donor-labelled and year-labelled binder/non-binder table and a measured noise floor from the 159 pairs the database labels both ways - both reusable by anyone benchmarking in this field.",
+    "who_wants_it": "The Shugay lab who maintain VDJdb, and the IMMREP challenge organisers (Nielsen, Meysman), who would change how future challenge negative sets are built."
+  },
+  "ml_idea": "Freeze ESM-2 (a protein language model) and embed each T-cell receptor's CDR3-alpha and CDR3-beta loops, the presented peptide and the HLA allele's pseudo-sequence; train a small head to score binder versus non-binder. Train once with the field-standard shuffled non-binders and once with the 435,409 donor-matched experimental non-binders from chunks_negative, and report the gap on three splits: held-out epitope, held-out donor and a temporal split at 2023 (68,910 records and 381 first-seen epitopes fall after it). Compare against NetTCR-2.2 run as a baseline. The deliverable is the size of the gap, not a new state of the art.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 2,
+    "cv_run_minutes": 25,
+    "compute_note": "Timed: the 41 MB zip downloaded in seconds and the full 197,729-row table loaded in pandas in under ten seconds on this laptop. Embedding and cross-validation times are estimates - about 185,000 unique sequences of under 30 residues through ESM-2's small checkpoint at a few hundred sequences per second on CPU, then gradient boosting on cached vectors. The ten hours to a feature table is mostly fetching 15 git-LFS negative files and reconciling their slightly different headers and HLA naming.",
+    "cheapest_killing_check": "Fetch all 15 git-LFS files in chunks_negative/ and count distinct epitopes and donors. If fewer than five epitopes have 5,000 or more real non-binders from three or more donors, the honest-negatives angle is gone and the project is just another entry in a fifty-model field. My partial download already shows 411,645 of 435,409 rows are the single epitope GILGFVFTL."
+  },
+  "verdict": "park",
+  "verdict_reason": "Every Part A killer passes and I verified it in the files: open AGPL download, labels in columns, sequences present, 197,729 rows matching the documentation exactly, parses first try, wet-lab label provenance. The data is as model-ready as anything I have seen. The problem is the question. Predicting which peptide a T-cell receptor recognises is the most crowded task in computational immunology: a 2025 Nature Methods assessment benchmarked 50 models over 762 epitopes, three IMMREP community challenges have run, and NetTCR-2.2, ERGO-II, EPIC-TRACE, TEIM, TCR-H and TCRen are all open with honest held-out-epitope evaluation already published. The one asset that could justify entering anyway - real experimental non-binders rather than shuffled ones - turns out to be one study, nine donors and 95% a single epitope, which is too narrow to support a generalisation claim, and it sits in an undocumented directory that neither the release nor the roadmap mentions. The paper's own headline additions, paratope embeddings and predicted structures, are not in the shipped release at all, so the thing that would differentiate this update cannot be used. Park and revisit when VDJdb ships the evidence and structure tables and when non-binders arrive from more than one laboratory."
+}

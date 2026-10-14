@@ -1,0 +1,55 @@
+{
+  "paper_id": "nature2026-10827-7",
+  "title": "A vector-based strategy for olfactory navigation in Drosophila.",
+  "doi": "10.1038/s41586-026-10827-7",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.20751812",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo API record 20751812 (CC-BY-4.0) lists 5 zips: FC2_imaging_26.zip 508 MB, constant_logs.zip 162 MB (HEAD only, over 50 MB cap), gradient_logs.zip 38 MB, 45_logs.zip 26 MB, 90_logs.zip 24 MB. I downloaded the three small zips and parsed them: 21 per-fly .log CSV files in total (6 at 45°, 6 at 90°, 9 gradient). Each file is a raw closed-loop rig time series at about 30 Hz (12k–75k rows, 12–27 min, 0% missing). Columns include ft_posx/ft_posy/ft_heading (FicTrac ball-tracking output), mfc setpoints, instrip/odor_on flags and velocities. The 2023 files have 28 columns; the 2020 gradient files have 23 columns and no 'instrip'. Plume exits per fly, counted from instrip transitions in the 45°/90° flies: 7–142. There is no README and no column or unit documentation.",
+    "what_came_from_paper_text_only": "Main constant-concentration cohort n = 40 flies with 731 inside and 796 outside bouts (Fig. 2 legend); other cohorts of 10–15 flies. I did not open the constant_logs or FC2 imaging zips (over the size cap). The switching state-space model's code is on GitHub (rutalaboratory/Edge-Tracking-Model); I did not run it."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo, open, CC-BY-4.0; three zips downloaded and parsed, two larger ones confirmed by HEAD."},
+    "a2_label_is_a_column": {"pass": false, "note": "Files are raw continuous trajectories. Any target (return angle after a plume exit, next state, re-entry success) has to be constructed by splitting the time series into inside/outside bouts and computing angles, following the paper's Methods. Verified in the files: no bout or outcome column."},
+    "a3_inputs_present": {"pass": true, "note": "Position, heading, velocity and odour flags are present as numbers in the logs (verified)."},
+    "a4_units_stated": {"pass": false, "note": "No README and no units: ft_posx/ft_posy units (mm vs ball radians), heading units and the meaning of 'mode' and 'strip_thresh' are undocumented. Column sets also differ between the 2020 and 2023 rig software (23 vs 28 columns, verified)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 673441, "note": "673,441 time steps across 21 opened flies, but the independent unit is the fly. That is about 61 behaviour flies by the paper, and roughly 1,527 bouts in the main 40-fly cohort (paper only), most of them strongly autocorrelated within a fly."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.25 GB behaviour logs uncompressed; imaging zip 0.5 GB", "note": "Small CSVs, CPU-only."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not fully checkable: the 40-fly constant cohort is in a zip I did not open. The 6/6/9 flies in the opened zips are plausible against the paper's 10–15-fly cohorts, but I could not match them exactly."},
+    "a8_label_provenance": {"pass": true, "note": "Behaviour is directly measured by ball tracking; instrip is the rig's own odour-delivery state. This is not another model's output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Edge-tracking switching state-space model (this paper)", "open_weights": true, "score_and_split": "Fitted per fly on flies with ≥30 returns; it reproduces edge-tracking statistics across plume geometries. No held-out predictive metric was reported in the text I read.", "authors_named_unsolved": "Not extracted.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "none (no pretrained backbone for fly walking trajectories)", "freeze_and_head_viable": false, "hardware": "CPU", "licence": "n/a"},
+  "integration": {"partner_dataset": "none identified", "join_key": "none (per-fly timestamps only)", "bigger_question_one_sentence": "No joinable large resource; the data has no standard identifiers."},
+  "controls": {"positive_control": "Recover the paper's finding that return headings mirror the previous entry angle.", "negative_control": "Shuffle bouts across flies.", "external_validation": "The 45°/90°/gradient cohorts could serve as held-out geometries."},
+  "honest_claim_h3": "Among about 61 head-fixed flies in one lab's virtual plume rig, a model could predict a fly's return heading after leaving the odour from its recent entry and exit history.",
+  "plain_idea": {
+    "one_liner": "Use a fly's recent walking path and odour encounters to predict which direction it heads to get back into the odour.",
+    "train_on": "Per-fly walking trajectories (position, heading, odour on/off at about 30 Hz). Roughly 61 flies and about 1,527 bouts in the main cohort, by the paper's count.",
+    "predict": "The fly's return heading or next behavioural state after it exits the odour. This would have to be computed from the trajectory itself by bout segmentation.",
+    "why_worthwhile": "Fly navigation labs could test whether a flexible sequence model beats the paper's hand-built memory model. With this few animals, that is mostly a modelling exercise."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We would use the same about 61 flies the paper's own model was fitted on; there is no extra data."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements. Variation between flies is the only noise estimate."},
+    "models_beatable": {"answer": "partly", "why": "The 2026 switching state-space model is mechanistic and fitted per fly; a sequence model might predict better but explain less."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new joinable data measures the same thing in the same rig."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Bout-level sequence model (for example a GRU, a simple recurrent network) predicting the return heading after a plume exit from past entry/exit angles, with leave-one-fly-out evaluation against the paper's switching state-space model. Dead at Part A: the label has to be constructed, units are undocumented, and there are only about 61 flies.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 0.25, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": null, "cv_run_minutes": 5, "compute_note": "Estimated from the opened log sizes (24–38 MB zips, ≤75k rows per fly); nothing was timed beyond parsing.", "cheapest_killing_check": "Open constant_logs.zip and count bouts per fly after segmentation; check whether ≥30 flies have ≥30 returns."},
+  "verdict": "reject",
+  "verdict_reason": "A2/A4/A5 fail. The files are raw per-fly rig logs with no outcome column, no unit documentation and changing column sets. The independent unit is about 61 flies (about 1,527 bouts in the main cohort), and there is no backbone or joinable resource."
+}

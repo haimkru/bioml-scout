@@ -1,0 +1,109 @@
+{
+  "paper_id": "nature2026-11013-5",
+  "title": "Development of a random background to understand ligand optimization.",
+  "doi": "10.1038/s41586-026-11013-5",
+  "journal": "Nature",
+  "data_url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41586-026-11013-5/MediaObjects/41586_2026_11013_MOESM3_ESM.xlsx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both supplementary spreadsheets (Supplementary Tables, 286 KB; Source Data, 532 KB). Supplementary Table 1 ('table1_activity') has 275 data rows, 268 unique compound IDs, 18 unique parent compounds, 6 protein targets (sert 88, alpha2 81, mac1 42, cb2 36, MOR 17, ampc 11). Columns verified present: SMILES (0 missing, 270 unique), Parent compound, Modification (C/Cl/N/F/O/Br), Protein, Assay readout (Ki 126, EC50 81, IC50 42, KI 26), Activity, Unit (M 212, uM 63), 95% CI, fold change vs parent, p value, plus six in vitro pharmacokinetic columns (microsomal half-life, permeability, plasma stability, fraction unbound, solubility, hERG) each with 229-257 non-null values. Recomputed the headline statistic: 25 of 221 numeric fold-changes are >=10, i.e. 11.31%, matching the abstract's 11.3%. Supplementary Table 9 has 230 rows of FEP+ (free energy perturbation) predictions against experiment; I computed its mean unsigned error on relative binding free energy as 1.053 kcal/mol over 219 compounds.",
+    "what_came_from_paper_text_only": "The in vivo experiments, cryo-electron-microscopy and crystal structures (PDB 9PLO, 9PLN, 14AB, 7IIW-7IJM etc.) were not downloaded or inspected. The synthesis cost constraint (all molecules US$400 or less) and the claim that improved analogues had worse pharmacokinetics come from the article text, not from my own statistics on the files."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both XLSX files downloaded directly from Springer with no login; article is CC BY 4.0 (open access flag in the page metadata). Verified by opening them."},
+    "a2_label_is_a_column": {"pass": true, "note": "'Activity' and 'Activity fold change versus parent' are literal columns in Supplementary Table 1; no construction needed. Verified in the file."},
+    "a3_inputs_present": {"pass": true, "note": "SMILES (the text string describing a molecule's structure) is present for every row, 0 missing, plus a 'Modification' column naming the added atom. No identifier lookups needed. Verified in the file."},
+    "a4_units_stated": {"pass": true, "note": "Explicit 'Unit' column (M for 212 rows, uM for 63) and units named in every pharmacokinetic header. Two scales mixed, but stated per row, so convertible. Verified in the file."},
+    "a5_enough_rows": {"pass": false, "n_rows": 275, "note": "FAIL. 275 labelled rows total (268 unique compounds: 257 analogues + 18 parents), far under the ~1,500 needed for regression. For the binary 'improves tenfold' task there are only 221 usable fold-changes with 25 positives, under the ~400 classification floor. Worse, the real unit for honest evaluation is the parent series: 18 series across 6 targets, with series sizes of 6-32, so a leave-one-series-out split has single-digit test groups. Counted directly in the file."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.8 MB (two XLSX files)", "note": "Trivially small; loads in under a second on CPU. Verified."},
+    "a7_counts_match_paper": {"pass": true, "note": "Exact match: 257 analogues + 18 parents = 275 rows, and my recomputed 11.31% improving tenfold or more equals the abstract's 11.3%. Verified by recomputation."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are measured binding affinities and potencies (Ki, EC50, IC50) from radioligand and functional assays with 95% confidence intervals and p values; not model output and not derivable from the SMILES features. Verified columns in the file."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "FEP+ (Schrodinger's free energy perturbation, a physics-based affinity calculator) as applied in this very paper",
+        "open_weights": false,
+        "score_and_split": "Mean unsigned error of 1.053 kcal/mol on relative binding free energy across 219 of these compounds, which I computed myself from Supplementary Table 9; per-parent-group errors in Supplementary Table 10 range from 0.87 to 2.65 kcal/mol.",
+        "authors_named_unsolved": "The paper's framing is that the landscape for ligand optimization is 'frustrated' - potency gains routinely cost pharmacokinetic quality - and that predicting which single-atom change helps remains open.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "MoleculeACE (a benchmark and set of baseline models for activity cliffs, i.e. near-identical molecules with very different potency)",
+        "open_weights": true,
+        "score_and_split": "Published benchmark of 24 methods across ChEMBL target sets; a support vector machine on ECFP fingerprints was the best overall, and all graph and SMILES deep-learning methods did worse than a simple neural network on fingerprints. Splits are per-target with cliff-aware test sets.",
+        "authors_named_unsolved": "Authors state that current molecular machine learning fails specifically on activity cliffs, which is the exact phenomenon this paper measures.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ACNet (an activity-cliff prediction benchmark built from matched molecular pairs)",
+        "open_weights": true,
+        "score_and_split": "Curates over 400,000 matched molecular pairs against 190 targets, including over 20,000 cliff pairs, with five subsets for training and evaluation; a pair is labelled a cliff at a 100-fold potency difference.",
+        "authors_named_unsolved": "Generalization to unseen targets and the imbalance between cliff and non-cliff pairs.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ChemBERTa or MolFormer (molecular language models that read SMILES strings)",
+    "freeze_and_head_viable": true,
+    "hardware": "Embedding 268 molecules on a laptop CPU takes well under a minute; the bottleneck is data, not compute.",
+    "licence": "Permissive (MIT / Apache for the common checkpoints); the data itself is CC BY 4.0."
+  },
+  "integration": {
+    "partner_dataset": "ChEMBL and the ACNet matched-molecular-pair collection (over 400,000 pairs across 190 targets)",
+    "join_key": "InChIKey derived from the SMILES, plus UniProt accession for the six protein targets",
+    "bigger_question_one_sentence": "Do models trained on literature matched molecular pairs, which are biased toward changes chemists chose to publish, still predict potency change on an unbiased randomly-perturbed set - this paper's 275 compounds are an ideal external test set for that question, but they are far too few to train on."
+  },
+  "controls": {
+    "positive_control": "Predict molecular weight or heavy-atom count from the SMILES, which must come out near-perfect; and check that the model recovers the known hydrophobicity-affinity trend (added carbon and chlorine atoms raising affinity more often than added nitrogen or oxygen).",
+    "negative_control": "Shuffle the fold-change labels within each parent series and confirm performance collapses to the per-series mean.",
+    "external_validation": "ChEMBL and ACNet matched molecular pairs for the same six targets, joined on InChIKey; also the FEP+ predictions already in Supplementary Table 9 give a physics baseline on the identical compounds."
+  },
+  "honest_claim_h3": "A model built on this alone could only claim to rank single-atom analogues within 18 specific parent series against six specific targets, all assayed in one consortium of labs, from a set of 275 compounds - which is too few to support any claim that generalizes to a new parent scaffold or a new target.",
+  "plain_idea": {
+    "one_liner": "Use a molecule's structure and which single atom was changed to predict whether its potency improves tenfold.",
+    "train_on": "Each example is one analogue molecule: its structure as a SMILES string, its parent molecule's structure, which atom type was added or swapped (carbon, chlorine, nitrogen, fluorine, oxygen or bromine), and which of six protein targets it was tested against. There are 275 such rows, a number I counted in the file.",
+    "predict": "The fold change in potency relative to the parent molecule, or the yes/no question of whether that change is tenfold or more. The truth comes from laboratory binding and functional assays (Ki, EC50 or IC50) reported with 95% confidence intervals.",
+    "why_worthwhile": "Medicinal chemists currently have no unbiased estimate of how often a small change helps, so knowing which perturbations pay off would directly change which analogues get synthesized. Even a failed model would quantify how unpredictable single-atom changes really are."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Our 275 compounds are three orders of magnitude smaller than ACNet's 400,000-plus matched molecular pairs across 190 targets. The data is better in kind - unbiased by chemists' choices, six targets, all measured in one study - but it is tiny."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Every activity row carries a 95% confidence interval and a p value, which is more than most public potency data offers and would support calibrated uncertainty. But with 275 rows there is nothing like enough data to fit and then honestly validate a calibration."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The MoleculeACE benchmark showed that the best activity-cliff method is a support vector machine on fingerprints and that deep learning does worse, so the bar is low. FEP+, the physics baseline in this paper, reaches 1.05 kcal/mol mean unsigned error here but is commercial and cannot be run by us."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on several conditions at once: FEP+ cannot be run as our baseline because it is proprietary software, and ChEMBL potencies are pooled across many labs and assay formats so they do not measure the same quantity the same way as this study's uniform assays."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The considered project was to predict, from the parent molecule's SMILES string and the identity of the single added atom, whether an analogue's potency improves tenfold or more, using a frozen molecular language model (ChemBERTa) plus a small classification head, evaluated by leaving out whole parent series. The data is unusually clean and unusually unbiased, but at 275 rows with 25 positive cases it can only serve as an external test set for models trained on ChEMBL or ACNet, not as a training set of its own.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0.01,
+    "cv_run_minutes": 1,
+    "compute_note": "Measured directly: the two spreadsheets total 0.8 MB and parsed in about a second with pandas. Embedding 268 molecules with a small SMILES language model on CPU is a matter of seconds. Compute is a non-issue; the dataset is simply too small.",
+    "cheapest_killing_check": "Count the labelled analogue rows in Supplementary Table 1. I did this: 275 rows, 268 unique compounds, only 221 with a numeric fold change and 25 positives at the tenfold threshold. That single count kills it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A5 on size, and nothing else. The data is exemplary in every other respect - one clean spreadsheet, SMILES present, units stated per row, labels measured in the lab with confidence intervals, counts matching the paper exactly to the decimal (11.31% versus the abstract's 11.3%), open CC BY download, and even a built-in physics baseline. But 275 labelled rows, 221 numeric fold-changes and 25 positive cases is far below the ~1,500 regression floor and the ~400 classification floor. The effective sample is smaller still: the honest unit of analysis is the parent series, of which there are 18 across 6 targets, so any leave-one-series-out evaluation would rest on single-digit test groups and give uninterpretable error bars. Worth recording for a different purpose: because these 257 analogues were chosen by random single-atom perturbation rather than by chemists' judgement, this is a near-ideal small external test set for activity-cliff models trained on the far larger ChEMBL and ACNet collections, and it could be filed as a validation resource to pair with a future candidate."
+}

@@ -1,0 +1,48 @@
+{
+  "paper_id": "cell2026-08-004",
+  "title": "Virtual Cell Challenge 2026: Benchmarking zero-shot generalization across cellular contexts.",
+  "doi": "10.1016/j.cell.2026.08.004",
+  "journal": "Cell",
+  "data_url": "https://virtualcellchallenge.org/datasets",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Listed the public bucket gs://arc-institute-virtual-cell-atlas/virtual-cell-challenge/ through the Google Cloud Storage JSON API: it holds only a 2025/ folder (adata_Training.h5ad 15.5 GB, adata_Validation.h5ad 6.9 GB, adata_Test.h5ad 12.0 GB, plus FASTQ files of tens of GB each), and a 2026/ prefix returns nothing. Downloaded the 2025 pert_counts_Training.csv (150 target genes, columns target_gene, n_cells, median_umi_per_cell) and pert_counts_Test.csv (100 genes). The virtualcellchallenge.org/datasets page is rendered by JavaScript and returned no content.",
+    "what_came_from_paper_text_only": "No full text (paywalled, no PMCID); I only had the abstract. From Arc Institute news pages: six cell lines, anonymized as contexts A–C (validation) and D–F (final test); for each target context only non-targeting control cells are released (18,400 per context) plus 300 knockdown gene names; the perturbed ground truth is withheld until scoring; the data sits in a new Requester Pays Google Cloud bucket that needs a Marketplace-subscribed project; test set released 22 Oct 2026; over 30 million cells and more than 10,000 perturbations per line generated in total."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "The 2026 data needs challenge registration plus a Google Cloud project subscribed on Marketplace (Requester Pays bucket), and the 2026 folder is not in the public bucket (checked the listing). The perturbed-cell responses, which are the labels, are withheld until scoring. The page text is the source for the access terms."},
+    "a2_label_is_a_column": {"pass": false, "note": "For the 2026 contexts only control cells and target gene names are released; the knockdown response, which is what we'd predict, isn't public (per Arc's announcement, not checked in files)."},
+    "a3_inputs_present": {"pass": true, "note": "Control-cell expression and target gene symbols are the inputs (paper/announcement only)."},
+    "a4_units_stated": {"pass": true, "note": "Raw UMI counts in AnnData h5ad, judging by the 2025 release format; not opened for 2026."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "Unknown. The labelled unit is a perturbation-context pair (300 genes × 3 contexts per round), but none of these labels are public yet."},
+    "a6_fits_laptop": {"pass": false, "working_set": "2025 analogue: 15.5 GB training h5ad (checked size); 2026 size unknown", "note": "Cell-level files are far over 5 GB; pseudobulk tables would fit, but none are published for 2026."},
+    "a7_counts_match_paper": {"pass": false, "note": "Could not check: no 2026 files accessible."},
+    "a8_label_provenance": {"pass": true, "note": "The labels would be measured CRISPRi Perturb-seq responses (gene knockdown followed by single-cell RNA sequencing), not model output; announcement only."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "BioMap xTrimoSCPerturb (2025 challenge winner; scFoundation backbone plus statistical baseline features)", "open_weights": null, "score_and_split": "First place on the 2025 held-out test perturbations in H1 stem cells (one cell line); exact metric values not retrieved.", "authors_named_unsolved": "Arc's wrap-up: models did not consistently beat naive baselines on all metrics; pure end-to-end learning hasn't solved it.", "runnable_as_baseline": null},
+      {"name": "Altos Labs flow-matching model (2025 Generalist Prize)", "open_weights": null, "score_and_split": "Generalist Prize on the 2025 test set; pretrained on about 7 million public single cells; numbers not retrieved.", "authors_named_unsolved": "Generalization to unseen cell contexts, which is the stated motivation for the 2026 round.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell foundation models)", "freeze_and_head_viable": null, "hardware": "CPU for embedding pseudobulk controls; cell-level work needs a GPU", "licence": "Data licence not stated on pages retrieved"},
+  "integration": {"partner_dataset": "Replogle et al. genome-wide Perturb-seq in K562/RPE1 cell lines (public)", "join_key": "Target gene symbol", "bigger_question_one_sentence": "Do knockdown effects learned in a few cell lines transfer to unseen tissue contexts? This is the challenge itself, and its labels aren't public."},
+  "controls": {"positive_control": "Knockdown of the target gene itself should lower its own expression (on-target effect).", "negative_control": "Non-targeting guide cells and a predict-the-control-mean dummy.", "external_validation": "None available until Arc releases the 2026 ground truth."},
+  "honest_claim_h3": "Until the 2026 ground truth is released, no claim is testable offline; at best we could submit to a leaderboard covering three anonymized cell lines and 300 knockdowns each.",
+  "plain_idea": {"one_liner": "Use the resting gene expression of an unseen cell line, plus the name of a silenced gene, to predict how every gene's expression changes.", "train_on": "Public gene knockdown screens in other cell lines, plus control-cell profiles from the new lines; number of labelled examples for the new lines: unknown (withheld).", "predict": "Per-gene expression change after CRISPRi knockdown (gene silencing), measured by single-cell RNA sequencing in Arc's 2026 screen.", "why_worthwhile": "Groups building 'virtual cell' models would learn whether knockdown effects transfer across tissues, but that answer depends on labels Arc is holding back."},
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We'd get the same released data as 1,000+ competing teams, and the labels are hidden."},
+    "confidence_score": {"answer": "no", "why": "Without released perturbed cells there are no replicates to estimate noise for the new contexts."},
+    "models_beatable": {"answer": "partly", "why": "The 2025 winners did not consistently beat naive baselines (Arc wrap-up), but hundreds of well-resourced teams compete in 2026."},
+    "guaranteed_improvement": {"answer": "no", "why": "The 2025 winners' weights weren't confirmed open, and the 2026 evaluation labels aren't accessible."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Zero-shot prediction of CRISPRi knockdown expression responses in unseen cell lines from their control profiles; not feasible offline until the ground truth is released.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": null, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated: 2026 data not accessible; the 2025 cell-level h5ad files are 7–15 GB each (checked sizes).", "cheapest_killing_check": "After the challenge ends, check whether Arc posts the 2026 perturbed-cell ground truth in the public, non-Requester-Pays bucket."},
+  "verdict": "reject",
+  "verdict_reason": "A1/A2 fail. The 2026 knockdown responses (the labels) are withheld for the competition, and the released controls sit behind registration and a Requester Pays Google Cloud Marketplace bucket. The public 2025 data is a different single-cell-line release that the 2025 challenge already modelled heavily. Re-check once the ground truth is published after November 2026."
+}

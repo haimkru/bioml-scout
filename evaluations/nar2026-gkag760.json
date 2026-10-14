@@ -1,0 +1,118 @@
+{
+  "paper_id": "nar2026-gkag760",
+  "title": "Prophage induction stimulates ribosomal RNA operon recombination and facilitates genome mobility.",
+  "doi": "10.1093/nar/gkag760",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/ena/browser/view/PRJEB100842",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Queried the European Nucleotide Archive (ENA, the EU sequence repository) file report for PRJEB100842: it contains exactly 9 sequencing runs, all raw FASTQ (unprocessed read files) from Staphylococcus aureus whole-genome sequencing (6 Illumina paired-end, 3 Oxford Nanopore), sizes 157 MB to 12 GB per run and ~20 GB total; the 'analysis' result set is empty, so there are no processed tables, assemblies or coverage files deposited. Tried the supplementary-file archive three ways: Europe PMC supplementaryFiles endpoint timed out twice (HEAD and GET at 120 s) and the NCBI PMC open-access package lookup returned HTTP 404. I opened no data file of any kind.",
+    "what_came_from_paper_text_only": "Everything about the 13 supplementary tables comes from the article text alone: S1 strains, S2 primers, S3 plasmids, S4/S7 transduction-unit statistics, S5/S6 BLAST hit lists of genomes carrying Sa5-type integrase prophages, S8 the 374 S. aureus genomes with ribosomal RNA (rrn) operon annotation of which 328 (88%) had a prophage flanked by rrn operons, S9 the genome set used for ClonalFrameML recombination analysis, S10/S13 COGclassifier (gene functional-category) output, S11 the 32 of 123 Salmonella serovar genomes with rrn-flanked prophages, S12 the 453 Salmonella genomes with rrn annotation of which 430 (94.9%) had the structure. Row counts, column layouts and units in those tables are unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The only deposited data is ~20 GB of raw FASTQ sequencing reads in ENA PRJEB100842 (9 runs), which the project rules forbid downloading and which exceeds the 50 MB cap; no processed file is deposited. The supplementary tables, the only plausibly modellable content, could not be retrieved (Europe PMC supplementaryFiles timed out twice, PMC open-access package 404), and the publisher page cannot be scraped."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "The candidate label ('is this prophage flanked by two rRNA operons / does it circularize and transduce?') is not a measured column: for the genome surveys it is an outcome of running annotation plus a distance rule over each genome, and for the wet-lab part it is a PCR/transduction readout on a handful of engineered strains."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "Inputs would be whole bacterial genome sequences, which the supplementary tables reference by NCBI accession rather than containing; building features means downloading 374 + 453 genomes and re-annotating them."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The lab readouts the paper does quantify have stated units (transduction units normalized to 1 x 10^9 plaque-forming units, colony-forming units per ml); taken from the methods text, not seen in a file."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "The largest conceivable labelled set is the two genome surveys: 374 S. aureus genomes (328 positive / 46 negative) and 453 Salmonella genomes (430 / 23), each below the ~400-row classification floor and ~92% one class combined; the wet-lab measurements are tens of rows across a few strains. All counts are from the paper, not from files."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "<10 MB of tables, if they could be retrieved; ~2.5 GB if the 827 referenced bacterial genomes were downloaded",
+      "note": "Nothing here needs a GPU or more than 16 GB of RAM; the raw FASTQ (~20 GB) would never be touched."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot be checked at all: no supplementary table was retrievable, so the paper's 374/328 and 453/430 counts are unverified against any download."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Leakage by construction: 'prophage flanked by rRNA operons' is derived directly from the same genome annotation that would supply the features, so a sequence-based model would be rediscovering its own input. The prophage calls themselves come from prediction tools (BLASTn integrase search, prophage predictors), i.e. other models' output."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "PhageBoost (machine-learning prophage region detector using gene-level biological features and gradient boosting)",
+        "open_weights": true,
+        "score_and_split": "Reported by its authors (NAR Genomics and Bioinformatics 2021) as fast generalizable prophage detection; exact numbers not retrieved in this evaluation.",
+        "authors_named_unsolved": "Not retrieved (abstract-level search only).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Phigaro (prophage region finder, used as a standard prophage-removal tool in benchmarks)",
+        "open_weights": true,
+        "score_and_split": "Used as a reference tool in the 'Gauge your phage' benchmarking study (Microbiome 2023); numbers not retrieved here.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepPL (DNABERT-based deep-learning predictor of phage lifecycle, i.e. temperate versus lytic)",
+        "open_weights": null,
+        "score_and_split": "PLOS Computational Biology 2024; metrics not retrieved in this evaluation.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models) would be the natural fit for bacterial genome windows",
+    "freeze_and_head_viable": null,
+    "hardware": "CPU-only embedding of a few hundred genome windows would be feasible, but there is no usable label set to attach a head to",
+    "licence": "Not assessed; project rejected before this mattered"
+  },
+  "integration": {
+    "partner_dataset": "NCBI RefSeq complete bacterial genomes (the referenced S. aureus and Salmonella assemblies), joinable on assembly accession",
+    "join_key": "NCBI assembly/nucleotide accession (e.g. CP051374)",
+    "bigger_question_one_sentence": "Which prophages across all sequenced bacteria sit between two ribosomal RNA operons and could therefore mobilize hundreds of kilobases of 'core' genome - a real question, but answering it is a genome-annotation survey, not a prediction task, because the answer is computable directly from each genome."
+  },
+  "controls": {
+    "positive_control": "The paper's own phi11 prophage in S. aureus 8325-4, known to be rrn-flanked and shown to circularize, would have to be recovered by any pipeline.",
+    "negative_control": "The packaging-deficient phage mutant (phi11 delta-terS) and the rrn1 deletion strain, which abolish transduction, are genuine wet-lab negative controls.",
+    "external_validation": "The Salmonella survey (453 genomes) is an independent second species to the S. aureus survey, so a cross-species check exists in principle."
+  },
+  "honest_claim_h3": "At best one could claim 'among complete S. aureus and Salmonella genomes that already carry rRNA operon annotations, this fraction has a prophage flanked by two rRNA operons' - a descriptive survey statement, not a prediction, because the label is read off the same annotation that would be the model's input.",
+  "plain_idea": {
+    "one_liner": "Use a bacterial genome sequence to predict whether its resident virus is flanked by ribosomal RNA genes and can move large DNA.",
+    "train_on": "Would train on complete bacterial genome sequences (or windows around the integrated-virus site) for the genomes the paper surveyed: roughly 374 Staphylococcus aureus and 453 Salmonella assemblies, counts taken from the paper text and not verified in any file.",
+    "predict": "Would output whether the integrated virus (prophage) lies between two ribosomal RNA operons and therefore can transfer ~200 kb of chromosome; the true answer comes from genome annotation plus a distance rule, with only a handful of cases confirmed by laboratory PCR and transduction assays.",
+    "why_worthwhile": "Phage biologists and bacterial-evolution groups care because this route moves 'core' genome regions, including antibiotic-resistance-adjacent DNA; but the question is answered by annotating genomes, so there is nothing for a model to add."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only task the data suggests is classifying bacterial genomes by whether their prophage is flanked by two ribosomal RNA operons (and hence capable of rrn-linked lateral transduction). It dies twice over: the label is computed from the same annotation that supplies the features (A8), and even the full survey gives only ~827 genomes at ~92% one class (A5). The paper's real contribution is a mechanism demonstrated by PCR, long-read sequencing of phage-packaged DNA and transduction assays on a few engineered strains - excellent biology, no feature/label table.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated: the project failed Part A before any feature table was worth planning. The only measured size is the ENA deposit, ~20 GB of raw FASTQ across 9 runs, read from the ENA file report.",
+    "cheapest_killing_check": "Query the ENA file report for PRJEB100842 and see that all 9 runs are raw FASTQ with no processed analysis files - one call, and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A mechanistic wet-lab phage paper: the deposited data is ~20 GB of raw sequencing reads (verified in ENA, no processed files), the supplementary tables could not be retrieved at all, and the only candidate label is read off the same genome annotation that would be the input (A8 circularity) for at most ~827 heavily imbalanced genomes (A5)."
+}

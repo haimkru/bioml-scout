@@ -1,0 +1,203 @@
+{
+  "paper_id": "nature2026-10849-1",
+  "title": "Rational design of disordered proteins for sequence-function investigation.",
+  "doi": "10.1038/s41586-026-10849-1",
+  "journal": "Nature",
+  "data_url": "https://github.com/sukeniklab/GOOSE_2026 (file: Data/Figure_5/sequencing_data_all.csv)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed Data/Figure_5/sequencing_data_all.csv (3.8 MB, 2,401 rows x 190 columns) with pandas. Confirmed: a 'Sequence' column of full amino-acid strings (20 standard letters, median length 89, range 1-91); three measured label columns log2FoldChange_rep1/2/3 with matching lfcSE (standard error) and padj (adjusted p-value) columns; a 'base_origin' column giving 11 template groups (106-325 rows each) plus 101 'Controls' and 11 'original_WT'; 96 usable pre-computed numeric sequence features from NARDINI, CIDER, sparrow and FINCHES; and the per-sample normalised read counts the fold changes came from. I also downloaded Data/Figure_5/README.md (documents every column group), heatmap_r_mean_clustered.csv (the paper's own per-template feature correlations, 11 x 70) and null_permutation_averaged_results.csv, and IDRome_and_indiv_features.csv (5,563 yeast IDR sequences with the same feature columns). I then RAN a full baseline on my laptop: leave-one-template-out ridge regression on the 96 features gives median within-held-out-template Spearman 0.275 (range 0.00-0.55), random forest 0.273; a leaky random 5-fold split gives 0.461 global vs 0.387 global for leave-one-template-out; the per-template-mean dummy alone gives 0.342 global; shuffled labels collapse to 0.012. I measured the noise ceiling: mean within-template pairwise replicate Spearman = 0.569. I checked the Zenodo records: 20127102 is the GOOSE software (MIT, 1.7 MB zip) and 18774462 is 22 raw FASTQ files (337-730 MB each, CC-BY-4.0) which I deliberately did not download.",
+    "what_came_from_paper_text_only": "The assay description (pooled library transformed into S. cerevisiae, DNA sequencing of variant abundance before and after a desiccation-rehydration-regrowth cycle of ~15-20 hours, three independent experiments each with three biological replicates); that the 11 templates span synthetic and natural sequences with differing known protective capacity; the FRET (Forster resonance energy transfer) experiments on 32+8 sequences, which I did not open because they are too few to model. The GitHub data repository carries no LICENSE file (confirmed via the GitHub application programming interface), so redistribution terms for the CSV are unstated; the raw sequencing on Zenodo is CC-BY-4.0."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Plain GitHub raw URL, no login, no application. I downloaded the 3.8 MB CSV and four companion files directly."},
+    "a2_label_is_a_column": {"pass": true, "note": "log2FoldChange_rep1/2/3 are literal columns I read. Combining the three into one inverse-variance-weighted value using the supplied lfcSE columns is one line of pandas, not construction across sources."},
+    "a3_inputs_present": {"pass": true, "note": "Full amino-acid sequences are in the 'Sequence' column (verified: 20 standard residues, median length 89). No accession lookups needed. 96 biophysical features are also pre-computed."},
+    "a4_units_stated": {"pass": true, "note": "Label is log2 fold change of normalised sequencing read abundance after versus before desiccation (a unitless log2 ratio), with standard error in the same units; README.md documents the naming scheme."},
+    "a5_enough_rows": {"pass": true, "n_rows": 2180, "note": "2,401 rows total; 2,180 after keeping only designed variants of the 11 templates with at least 2 of 3 replicates and length >=50. Above the ~1,500 bar for regression."},
+    "a6_fits_laptop": {"pass": true, "working_set": "3.8 MB CSV (plus a 6.7 MB companion)", "note": "I ran the full leave-one-template-out cross-validation on this laptop in seconds. Embedding 2,401 sequences of <=91 residues with ESM-2 on CPU is roughly half an hour."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says 2,300 variants from 11 templates. The file has exactly 2,300 non-Control rows (11 template groups summing to 2,289, plus 11 original_WT) and 101 extra Controls. Exact match."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a physical measurement: DNA sequencing read abundance of each variant before versus after desiccation. Not a model output. Note the INPUT features include ALBATROSS deep-learning predictions (sparrow_scaled_re, scaling_exponent), but those are features; the measured label is independent of them, so no circularity."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One CSV holds sequences, labels, replicates, errors and features; verified by opening it."},
+    "B2": {"score": 2, "why": "Clean CSV, parsed first try with pandas; 2,401 x 190, no fixes needed."},
+    "B3": {"score": 2, "why": "Authors already normalised: DESeq2 log2 fold changes with standard errors per replicate; combining is trivial."},
+    "B4": {"score": 1, "why": "No censored values, but 112 rows have only one replicate and 77 are early-stop truncations; easy to drop."},
+    "B5": {"score": 1, "why": "2,378 unique sequences in 2,401 rows; 38 rows in duplicate groups, mostly controls listed twice. Easy dedupe."},
+    "B6": {"score": 2, "why": "README.md documents every column group and names the tool that produced each feature set."},
+    "C1": {"score": 2, "why": "Asks whether protection rules transfer across IDR scaffolds; informative either way. Baselines already measured."},
+    "C2": {"score": 2, "why": "Four searches found no model predicting desiccation protection from sequence; IDR predictors target binding/disorder instead."},
+    "C3": {"score": 2, "why": "Novel plus unique-application: nobody has modelled this measured data; authors explicitly invite a predictor."},
+    "C4": {"score": 2, "why": "Current route is on-chip DNA synthesis, yeast transformation, three independent desiccation screens and sequencing."},
+    "C5": {"score": 2, "why": "I computed the dummy (0.342 global) and ridge leave-one-template-out (0.275 within-template); paper publishes per-template feature correlations."},
+    "D1": {"score": 2, "why": "ESM-2, a protein language model with open downloadable weights, fits amino-acid sequences of 60-91 residues."},
+    "D2": {"score": 2, "why": "Only 2,401 short sequences: embed once on laptop CPU (~30 min), then fit a ridge or boosted head."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT-licensed; GOOSE is MIT; raw sequencing is CC-BY-4.0. Data CSV itself has no stated licence."},
+    "E1": {"ok": true, "why": "base_origin column (verified present) gives leave-one-template-out; I ran it and it costs 0.07 Spearman versus random split."},
+    "E2": {"ok": true, "why": "11 template groups of 106-325 rows each, all counted in the file."},
+    "E3": {"ok": true, "why": "Per-template-mean dummy computed: global Spearman 0.342, within-template 0 by construction."},
+    "E4": {"ok": true, "why": "Three replicates plus lfcSE columns; I measured mean within-template pairwise replicate Spearman 0.569."},
+    "E5": {"ok": true, "why": "Length/net-charge from sequence as trivial target, plus known effect that LEA-derived templates outscore synthetic ones (verified in file)."},
+    "E6": {"ok": true, "why": "Already ran label shuffling under leave-one-template-out: Spearman collapses from 0.387 to 0.012."},
+    "E7": {"ok": false, "why": "No second dataset with this label. Only an 11-template growth-curve assay in the same paper and a held-out independent experiment."},
+    "E8": {"ok": true, "why": "Paper's per-template feature Spearman heatmap and null permutation are in the repo and recomputable; max |r| 0.789 matched."},
+    "G1": {"score": 1, "why": "Sequences present (better than accessions) but no per-row standard identifier; only the 11 templates carry UniProt-like accessions."},
+    "G2": {"score": 2, "why": "Human/yeast IDRome (Tesei et al., ~30,000 IDRs with UniProt accessions); the 5,563-sequence yeast IDRome is already in this repo."},
+    "G3": {"score": 1, "why": "Exact-sequence match to a proteome is one-to-one, but the in-repo IDRome file's Name column is empty so mapping must be rebuilt."},
+    "G4": {"score": 2, "why": "Asks whether evolution converged on the same protective grammar design reveals; neither dataset answers that alone."},
+    "H1": {"score": 2, "why": "Both outcomes reported for every variant: 1,383 of 2,289 protective, the rest neutral or deleterious (counted in file)."},
+    "H2": {"score": 1, "why": "One lab, one organism (S. cerevisiae), one stressor, one readout; breadth is only the 11 templates and 3 experiments."},
+    "H3": {"score": 2, "why": "Claim statable precisely in one sentence; the scaffold and species restriction is explicit."},
+    "H4": {"score": 2, "why": "Paper states outright that improving changes were 'generally not consistent across the 11 templates' and that fold changes are modest."},
+    "I1": {"score": 2, "why": "Holehouse lab (WashU), Sukenik lab (Syracuse), Boothby lab (Wyoming) on tardigrade desiccation proteins; dry-biologics formulators."},
+    "I2": {"score": 2, "why": "A transferable predictor becomes a GOOSE SequenceOptimizer objective; a negative says each new scaffold needs its own library."},
+    "I3": {"score": 2, "why": "Within-template ranking plus precision in the top 50 matches how they pick variants for individual validation."},
+    "I4": {"score": 1, "why": "Single features already reach |Spearman| 0.5-0.79 in-sample within a template; ML's added value is the cross-template part."},
+    "J1": {"score": 2, "why": "Grouped splits, noise ceilings, frozen protein-language-model embeddings, calibration, leakage demonstration: real modelling."},
+    "J2": {"score": 2, "why": "IDR biophysics (charge, hydrophobicity, LEA-like composition) is interpretable, and the paper supplies per-template sanity checks."},
+    "J3": {"score": 2, "why": "The cleaned table plus the measured leakage gap (random 0.461 vs grouped 0.387) is shareable before any new model."},
+    "J4": {"score": 1, "why": "Scope is bounded to roughly three to four weeks, but no budget is written down yet."},
+    "J5": {"score": 1, "why": "Kill condition is stated in success_criteria here but not yet committed to NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The paper's own per-template univariate correlation analysis (the incumbent method for this exact label)",
+        "open_weights": true,
+        "score_and_split": "Spearman correlation between each of ~70 sequence features and log2 fold change, computed separately within each of 11 templates and fitted in-sample with no held-out evaluation. I read the published values from heatmap_r_mean_clustered.csv: maximum |Spearman| 0.789, 95th percentile 0.528, median 0.131, against a permutation null whose maximum is 0.091.",
+        "authors_named_unsolved": "Direct quote from the discussion: 'the specific sequence changes that improved protection were generally not consistent across the 11 templates' and 'Predicting which IDRs are more or less designable a priori appears difficult, at least for desiccation tolerance.' They also suggest combining 'emerging deep learning methods' with GOOSE's SequenceOptimizer to turn predictors into design objectives.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "GOOSE (this paper's tool), a rule-based generator of disordered protein sequences",
+        "open_weights": true,
+        "score_and_split": "Not applicable: GOOSE generates sequences hitting requested biophysical targets, it does not predict desiccation protection. No accuracy number exists for this label.",
+        "authors_named_unsolved": "Same discussion: GOOSE cannot currently optimise toward a function because no function predictor exists to use as its objective.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "ALBATROSS (Lotthammer et al., Nature Methods 2024), a deep-learning predictor of IDR ensemble dimensions",
+        "open_weights": true,
+        "score_and_split": "Predicts radius of gyration, end-to-end distance and scaling exponent from sequence, benchmarked against coarse-grained simulations, not against any functional assay. Its outputs are already columns in this table (sparrow_scaled_re, sparrow_scaling_exponent).",
+        "authors_named_unsolved": "Links conformational prediction to function remained open; this paper is a step toward that.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "IDPFunNet and IDP-EDL, protein-language-model predictors of IDR function classes",
+        "open_weights": null,
+        "score_and_split": "Reported on binding-subtype and disordered-flexible-linker classification benchmarks (area under the curve metrics), not on any desiccation or fitness measurement. Different label entirely.",
+        "authors_named_unsolved": "Coverage of functions beyond binding categories.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (esm2_t30_150M_UR50D or esm2_t33_650M_UR50D), a protein language model trained on natural protein sequences",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM. 2,401 sequences of at most 91 residues; embed once, cache, then fit a ridge or gradient-boosted head in seconds.",
+    "licence": "MIT (permissive). Caveat worth testing: these are designed synthetic IDRs, so they sit outside ESM-2's natural-protein training distribution; the 96 supplied biophysical features are the domain-native alternative and the obvious thing to concatenate."
+  },
+  "integration": {
+    "partner_dataset": "The IDRome resources: the 5,563-sequence yeast IDRome CSV already shipped in this repo with identical feature columns (verified), and the larger human/yeast IDRome of Tesei et al. which carries UniProt accessions.",
+    "join_key": "Amino-acid sequence, matched exactly against a reference proteome to recover UniProt accessions; at template level the accessions are already there (A0A438HAK2, A0A4D6M434, A0A1U8F7A1).",
+    "bigger_question_one_sentence": "Does a model trained only on designed variants rank natural IDRs from desiccation-tolerant organisms (tardigrade CAHS proteins, plant LEA proteins) above IDRs from desiccation-sensitive proteomes, that is, has evolution converged on the same protective sequence grammar that rational design uncovers?"
+  },
+  "controls": {
+    "positive_control": "Two. First, swap the label for sequence length or net charge per residue, both derivable from the sequence: a working pipeline must nail these. Second, the model must recover the known template ordering that desiccation-associated templates protect more than synthetic ones, which I verified in the file (Os_LEA_or6 mean label +0.297, syn_LEA_1 -0.169).",
+    "negative_control": "Shuffle the log2 fold change labels and re-run leave-one-template-out: I already did this and Spearman fell from 0.387 to 0.012. Also shuffle within template to confirm the grouping works, and replace features with random noise of the same shape.",
+    "external_validation": "Weak and I should say so. No independent dataset measures this label. Substitutes available inside the paper: hold out experimental replicate 3 entirely (a separate experiment, with systematically larger standard errors, mean 0.46 versus 0.18), and compare predictions against the individual growth-curve desiccation assays on the 11 wild-type templates (pioreactor_output.csv, a different assay but only 11 points)."
+  },
+  "honest_claim_h3": "Among GOOSE-designed variants of 11 specific IDR templates expressed in budding yeast, the model ranks which variants improve survival through one desiccation-rehydration-regrowth cycle, evaluated on templates it never saw; it does not claim to rank arbitrary natural IDRs, other organisms or other stresses.",
+  "plain_idea": {
+    "one_liner": "Use a disordered protein's amino-acid sequence to predict how much it helps yeast survive drying out and being rewetted.",
+    "train_on": "Each example is one designed intrinsically disordered protein region: its amino-acid sequence (60-91 residues) plus 96 pre-computed biophysical descriptors such as net charge, hydrophobicity and charge patterning. I counted 2,180 usable examples spanning 11 parent templates, from a file of 2,401 rows.",
+    "predict": "A single number: the log2 fold change in how common that variant is in the yeast population after a drying, rewetting and regrowth cycle versus before. It comes from counting DNA sequencing reads for each variant, repeated across three independent experiments with standard errors supplied.",
+    "why_worthwhile": "The Holehouse, Sukenik and Boothby labs want a function predictor they can plug into GOOSE's sequence optimiser to design protective proteins without running a new screen each time; the paper says outright that no such predictor exists. Even a failure tells them that protection rules are scaffold-specific, so every new template needs its own library."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "2,300 sequence-resolved desiccation-protection measurements across 11 templates and nine biological replicates. The incumbent analysis is the paper's own per-template feature correlations on this same data, and the only prior work my searches found (LEA motif protection assays, BMC Biology 2021) tested tens of constructs, not thousands."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "Three independent replicates with per-replicate standard errors (lfcSE columns, verified present) support a heteroscedastic model that reports per-sequence uncertainty. I measured the ceiling at within-template replicate Spearman 0.569. The paper reports significance per variant but no predictive confidence, because it has no predictor."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The incumbent is a 2026 univariate Spearman correlation computed in-sample inside each template, with no held-out evaluation and no cross-template test. My leave-one-template-out ridge regression (median within-held-out-template Spearman 0.275) is the first honest number, and there is a wide gap to the 0.569 replicate ceiling."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "No accessible second dataset measures desiccation protection the same way on joinable sequences. The yeast IDRome sequences available for joining carry no desiccation labels, so the 'same quantity, same assay, same split' condition fails outright."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "No large public resource has this label. Searched and found only small, differently-assayed sets: 'LEA motifs promote desiccation tolerance in vivo' (BMC Biology 2021, tens of constructs), 'Protein surface chemistry encodes an adaptive tolerance to desiccation' (Cell Systems 2025, measures resolubility after drying, a different readout), and 'Synergy between Hsp12 and trehalose sustain viability after severe desiccation' (eLife 2018, a handful of proteins). All found by web search, none opened.",
+    "approx_items": null,
+    "join_key": "Amino-acid sequence or UniProt accession, but no join is actually possible because the assays differ.",
+    "why": "There is essentially no external labelled set, so all training data comes from this one screen and external validation has to lean on held-out templates and a held-out experiment rather than a second resource."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Variants of the same template are near-identical sequences differing only in composition or patterning, so a random split puts near-duplicates in both train and test. I measured the cost: random 5-fold Spearman 0.461 versus 0.387 for leave-one-template-out.",
+      "A global correlation is inflated by between-template differences in mean protection: the per-template-mean dummy alone scores 0.342 globally, so a model that only learns 'which template is this' looks good unless you report within-template correlation.",
+      "The library was designed by GOOSE to titrate the very properties that appear as features, so a feature could encode the design batch rather than biology, even though the measured label is independent of the features.",
+      "Experiment-level batch effects: replicate 3 is a separate experiment with systematically larger standard errors (mean 0.46 versus 0.18 and 0.24), so mixing replicates without weighting lets batch structure leak in.",
+      "23 duplicated sequences and 77 early-stop truncation controls, which must be removed or they appear on both sides of a split."
+    ],
+    "split": "Leave-one-template-out on the 'base_origin' column, which I confirmed exists in sequencing_data_all.csv with 11 groups of 106-325 rows. Report the median Spearman within each held-out template, not the pooled global number. Secondary split: hold out experimental replicate 3 entirely.",
+    "checks": [
+      "Shuffle the labels and re-run leave-one-template-out; I already did this and it collapses to 0.012, so the pipeline is clean.",
+      "Report the random-split number next to the grouped-split number every time, to keep the 0.461-versus-0.387 gap visible.",
+      "Train on the ALBATROSS-derived features alone (sparrow_scaled_re, scaling_exponent) to see how much of the signal is the design target rather than the sequence.",
+      "Compute nearest-neighbour sequence identity between each held-out variant and the training set, and plot error against it."
+    ],
+    "verdict": "Manageable. The grouping column is present and clean, the negative control already passes, and I have measured exactly how much a careless split would inflate the result."
+  },
+  "success_criteria": {
+    "metric": "Median Spearman rank correlation within each held-out template under leave-one-template-out, plus precision among the top 50 predicted variants per held-out template, because the labs individually re-test a handful of top performers rather than using the whole ranking.",
+    "baselines": "Trivial: per-template mean, which gives within-template Spearman 0 by construction and 0.342 globally (I computed it). Current best honest number: ridge regression on the paper's own 96 supplied features, median within-held-out-template Spearman 0.275 across 11 templates, random forest 0.273 (both I ran). Published in-sample reference: the paper's single-best-feature per-template |Spearman| reaches 0.789, 95th percentile 0.528 (read from heatmap_r_mean_clustered.csv), but that is fitted inside the template with no hold-out.",
+    "success": "Median within-held-out-template Spearman >= 0.40 across the 11 templates, against the 0.275 ridge baseline I measured, with shuffled labels collapsing to near zero and the random-split number reported alongside.",
+    "noise_ceiling": 0.569,
+    "kill": "If after two weeks a frozen ESM-2 head combined with the biophysical features does not exceed 0.30 median within-held-out-template Spearman, stop modelling and write up the non-transfer result, which is itself the finding."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning with a wet-lab-relevant payoff; it would take clear cross-scaffold transfer (median held-out-template Spearman >= 0.5) plus the model prospectively flagging natural desiccation-protective IDRs that hold up."
+    },
+    "realistic": {
+      "journal": "PLOS Computational Biology",
+      "why": "Publishes honest transfer-and-generalisation analyses of newly measured biological data; the likely result, roughly 0.3-0.4 Spearman on held-out templates against a 0.569 replicate ceiling with scaffold-specific rules, is exactly that kind of paper."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Takes benchmark and resource notes; even a negative result yields a reusable cleaned feature/label table, a measured noise ceiling and a documented leakage gap (random 0.461 versus grouped 0.387) worth publishing on its own."
+    }
+  },
+  "pitch": {
+    "headline": "2,300 designed disordered proteins, each with a measured effect on whether yeast survives drying out, and nobody has built a predictor from it.",
+    "what_makes_the_data_unusual": "One 3.8 MB CSV I opened holds full amino-acid sequences, three replicate log2 fold changes with standard errors, 96 pre-computed biophysical features, and an 11-group template column that gives a clean grouped split.",
+    "the_win": "Beat the leave-one-template-out baseline I measured on this laptop, median within-held-out-template Spearman 0.275, and get to 0.40 or better against a 0.569 replicate-agreement ceiling.",
+    "even_if_it_fails": "You learn that sequence rules for desiccation protection are scaffold-specific and do not transfer, confirming quantitatively what the authors only observed qualitatively. That redirects their design strategy toward per-template libraries.",
+    "who_wants_it": "The Holehouse lab (WashU), Sukenik lab (Syracuse) and Boothby lab (Wyoming); they want a function predictor to use as an objective inside GOOSE's sequence optimiser instead of running a new screen per scaffold."
+  },
+  "ml_idea": "Predict the measured desiccation-protection log2 fold change of a designed intrinsically disordered region from its amino-acid sequence. Baseline: ridge and gradient boosting on the 96 supplied NARDINI/CIDER/sparrow/FINCHES features. Main model: frozen ESM-2 (protein language model) mean-pooled embeddings, optionally concatenated with the biophysical features, under a ridge or boosted head. Evaluate strictly by leave-one-template-out on base_origin, reporting median within-held-out-template Spearman and precision in the top 50, weighting examples by the supplied inverse-variance from the three replicate standard errors. The headline experiment is the transfer question: how much of the within-template signal (single features reach |Spearman| 0.5-0.79 in-sample) survives on a template the model has never seen (currently 0.275). Then apply the final model to the 5,563 yeast IDRome sequences shipped with the paper and ask whether natural IDRs from desiccation-tolerant organisms score higher.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.011,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 0.5,
+    "cv_run_minutes": 3,
+    "compute_note": "Not estimated but timed: I downloaded the 3.8 MB CSV, built the inverse-variance-weighted label and ran two full leave-one-template-out cross-validations plus a shuffled-label control in a single command that returned in well under a minute. The embedding figure is the one real estimate: 2,401 sequences of at most 91 residues through ESM-2's 650M checkpoint on CPU at roughly 0.5 s per sequence.",
+    "cheapest_killing_check": "Already done, and it passed: compute the within-template agreement between independent replicates. It is 0.569 (mean pairwise Spearman across the 11 templates), so there is real signal above noise. The second check, also done, is the leave-one-template-out ridge at 0.275 median within-template, which is the number any new model must beat."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes on files I actually opened, and the counts match the paper exactly (2,300 variants plus 101 controls). One clean 3.8 MB CSV holds the sequences, three replicate measured labels with standard errors, 96 ready features and an 11-group column for an honest split. I ran the whole baseline pipeline on this laptop in under a minute: ridge at 0.275 median within-held-out-template Spearman, shuffled labels at 0.012, replicate ceiling at 0.569, which means there is both real signal and real headroom. No model exists for this task, and the authors name the prediction problem as unsolved and explicitly suggest plugging a predictor into GOOSE's optimiser. The main weaknesses are honest and visible: one lab, one organism, one stressor, modest fold changes, and no second dataset for external validation."
+}

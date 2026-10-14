@@ -1,0 +1,145 @@
+{
+  "paper_id": "cell2026-08-010",
+  "title": "Tabula Sapiens 2.0: A comprehensive transcriptomic atlas of human cell types.",
+  "doi": "10.1016/j.cell.2026.08.010",
+  "journal": "Cell, Sep 2026 (PMID 42685689; no PMCID; Europe PMC isOpenAccess=N, licence field 'cc by'; abstract only). Preprint bioRxiv 10.1101/2024.12.03.626516 v2 (cc-by-nc-nd) was read via WebFetch. The bioRxiv XML API returned 429 and Europe PMC's PPR950008 full text returned 500.",
+  "data_url": "CELLxGENE collection https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5. The 'All Cells' h5ad (45.0 GB) is at https://datasets.cellxgene.cziscience.com/1c88f927-bcbb-4bb1-9881-281842945a2d.h5ad, alongside 34 per-tissue/compartment h5ads (128 MB-19.8 GB). Also figshare 10.6084/m9.figshare.27921984 'Tabula Sapiens v2' (28 tissue h5ads, 200 MB-4.9 GB, CC BY 4.0). TS1 figshare 10.6084/m9.figshare.14267219 has Tabula_Sapiens_metadata.csv (67.4 MB). Raw reads are on AWS s3://czb-tabula-sapiens and need a data transfer agreement per the paper; they were not touched.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "No file over 50 MB was downloaded. I read metadata by HTTP range requests through h5py (about 45 MB fetched in total).\n(1) CELLxGENE curation API: 35 datasets. 'All Cells' has 1,136,218 cells, 60,606 features, 24 donors, 180 cell types and 75 tissue terms (schema 7.1.0). The collection DOI still points to Science 2022, with a DATA_SOURCE link to the TS2 preprint.\n(2) All Cells obs, range-read:\n- manually_annotated: True 869,107, False 267,111.\n- published_2022: True 444,116, False 692,102.\n- method: 10X 1,093,048, smartseq 43,170.\n- 28 tissue_in_publication values. 9 donors have zero 2022 cells (TSP17/19/20/21/25/26/27/28/30). Donors are 11 male and 13 female, aged 22-74.\n- Five donors hold 834,435 cells (73%).\n- Cell types: 145 have >=100 cells, 85 appear in >=5 donors, 25 in >=10 donors.\n- The curated self_reported_ethnicity is 'unknown' for 560,940 cells that ethnicity_original lists as White or Black.\n(3) figshare Ear h5ad, range-read: 3,055 x 61,806. X equals the log_normalized layer; the raw_counts and decontXcounts layers are integers. var ensembl_id is versioned (ENSG00000000003.15). The cell_ontology_class and free_annotation columns disagree: 851 'pericyte' cells are labelled 'hematopoietic cell'.\n(4) QC confound: among TS1-donor manually annotated 10X cells, published_2022=False cells have median n_genes 2,326 vs 3,292 and mean pct_mt 15.9 vs 7.3. Across 111 donor x tissue x cell-type strata, the median n_genes ratio (unseen/seen) is 0.674. Coarsened matching (pct_mt<10, log n_genes bins) leaves 10,072 matched unseen cells in 81 strata (37 cell types, 8 donors, 8 tissues; TSP2 = 44%).\n(5) TS1 metadata CSV: the first 8 KB use barcode-first cell IDs, unlike TS2's donor-first IDs.\n(6) Census release.json/contributions.json: hosted scGPT embeddings exist only for the 2023-12-15 and 2024-07-01 releases.\n(7) Licences from the GitHub/HF APIs: scGPT MIT, popV MIT, TS code BSD-3, Geneformer apache-2.0.",
+    "what_came_from_paper_text_only": "From the preprint v2 text only:\n- popV was used for QC and for draft labels (donors 3-15). Experts annotated most organs from donors 17-25, then popV was run 'on all the remaining unannotated cells'. I infer, but did not confirm in the file docs, that manually_annotated=False means popV labels.\n- Cell counts: 1,136,335 (sum across tissues) and 1,150,192 -> 1,105,354 after the contamination filter.\n- Raw reads need a data transfer agreement.\n- That scGPT's pretraining (May 2023 Census) included TS1 comes from Kedzierska et al., not from the files.\nNot verified: that published_2022=True is exactly the set of cells in Census 2023-05-15; that Smart-seq values are read counts; and why the TS1-donor 'unseen' cells were left out of 2022 (QC failure is inferred from the metrics). The count matrices beyond Ear's first rows were not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). CELLxGENE and figshare h5ads serve range requests anonymously, and figshare is CC BY 4.0. Only raw reads are behind a DTA (paper), and they are not needed. Every h5ad exceeds the 50 MB cap, so the scout can only record metadata."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass (checked). cell_type plus the CL ontology ID, free_annotation, compartment, sex, development_stage and published_2022 are all obs columns. For the proposed project, 'seen in scGPT pretraining' is proxied by published_2022 and still needs a join to confirm it."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass (checked). Integer raw_counts and decontXcounts layers are present, plus a log_normalized X. Genes carry versioned Ensembl IDs, so no lookups are needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked for Ear). The layers are explicitly named raw_counts, decontXcounts and log_normalized. 10x values are UMIs while Smart-seq2/3 values are presumably read counts (not checked), so restrict to method == 10X."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 1136218,
+      "note": "Pass for cell-level tasks (checked): 869,107 manually annotated cells, 180 types. The independent unit is the donor (24; five donors hold 73%), so donor-level labels (age, sex) fail at n=24. For the contamination test, n is about 10,072 QC-matched unseen cells in 81 strata."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "The full atlas is 45.0 GB (All Cells), about 55 GB across the figshare tissue files. The project subset is about 20k matched cells (estimated well under 1 GB sparse). Extracting it needs 8 tissue files of about 12.4 GB total (Lung 3.8 GB, the largest), processed one at a time in backed mode, or a Census slice.",
+      "note": "Conditional pass. Only a subset fits, and the whole atlas cannot be embedded on CPU. Genomics-scale resource per the CLAUDE.md size filter."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass with flag (checked). 24 donors, 9 new, 11M/13F, 28 tissues and 180 cell types all match the paper and the figshare description. Ear has 3,055 cells in both repositories. Cell totals disagree: 1,136,218 (file) vs 1,136,335 and 1,105,354 (paper)."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Weak pass, flagged (checked + paper). 267,111 cells (23.5%) are manually_annotated=False, i.e. popV predictions per the text, and must be dropped. The remaining expert labels were partly seeded from popV drafts and QC'd with popV. The popV paper reports donor-inconsistent B-cell and CD4/CD8 labels in TS, so treat the labels as noisy expert annotation."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 8,
+    "c_worth_asking": 7,
+    "d_backbone_fit": 5,
+    "g_integration": 7,
+    "h_missing_data": 6,
+    "i_does_anyone_care": 6,
+    "j_fit_finishability": 6
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "popV (Ergen et al., Nat Genet 2024, PMC11631762; github YosefLab/popV, MIT; pretrained per-organ Tabula Sapiens models)",
+        "open_weights": true,
+        "score_and_split": "Evaluated as label transfer from a TS reference to external queries (Lung Cell Atlas, thymus). Accuracy numbers were not extracted. TS itself was annotated with popV help.",
+        "authors_named_unsolved": "Out-of-reference cell types, plus inconsistent TS labels (B cells, CD4 vs CD8 subsets, early- vs late-donor naming).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Kedzierska et al., 'Zero-shot evaluation reveals limitations of single-cell foundation models' (Genome Biol 2025, PMC12007350): scGPT and Geneformer zero-shot",
+        "open_weights": true,
+        "score_and_split": "On TS1 (figshare), scGPT is comparable to scVI and beats Harmony on ASW, while Geneformer ranks last on batch mixing. Neither consistently beats simple baselines. Exact numbers were not extracted.",
+        "authors_named_unsolved": "Verbatim: 'both the Immune and Tabula Sapiens datasets were used in pretraining scGPT ... we cannot disentangle if these improvements are potentially because these datasets were seen in pretraining.'",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "scContam (Sarwan Ali, arXiv 2607.20572, Jul 2026): pretraining-contamination audit of Geneformer, scGPT and UCE",
+        "open_weights": false,
+        "score_and_split": "Fingerprint overlap was found for 80.4% of PBMC3k and 77.0% of pancreatic islet cells, and 0% for AIDA v2 and Tahoe-100M. In donor-matched within-cell-type tests, contaminated cells embed more tightly (p = 0.030, 0.014, <0.002). Tabula Sapiens was not audited, and no code URL was found.",
+        "authors_named_unsolved": "Not stated on the abstract page. Its claim is that distributional contamination must be detected separately from instance memorization.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Pan-human Azimuth (bioRxiv 10.64898/2026.07.16.738997)",
+        "open_weights": true,
+        "score_and_split": "Abstract only: a supervised organism-scale annotator that mapped tens of millions of Tabula Sapiens and scBaseCamp cells. No numbers were retrieved. Openness is per the abstract ('we release ... cloud, R, and Python interfaces').",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BioBench, 'Beyond Accuracy' (Research Square rs-11109782, 2026)",
+        "open_weights": true,
+        "score_and_split": "On TS: PCA ARI 0.587 vs TruncatedSVD 0.585, and cell-type accuracy 0.772 for both. scVI re-run stability (BSS) is 0.258-0.526.",
+        "authors_named_unsolved": "Benchmarks should report a per-dataset re-run noise floor alongside accuracy.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT whole-human checkpoint (frozen; the pretraining snapshot reportedly includes TS1) vs Geneformer, against a PCA/HVG embedding with no pretraining exposure",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU for embedding about 20k matched cells (throughput not measured; estimated hours). Embedding the full atlas would need a GPU or days of CPU.",
+    "licence": "scGPT code MIT and Geneformer apache-2.0 (API-checked; weight terms not re-read). Data CC BY 4.0 (figshare). Preprint cc-by-nc-nd."
+  },
+  "integration": {
+    "partner_dataset": "CELLxGENE Census 2023-05-15 LTS (scGPT's pretraining snapshot per Kedzierska) and the TS1 figshare Tabula_Sapiens_metadata.csv (67.4 MB), to confirm which cells were seen. Secondary: Census-hosted scGPT embeddings (2024-07-01) for TS1 cells, and GTEx/HPA via Ensembl.",
+    "join_key": "10x barcode + donor + tissue + run, parsed from cell IDs. TS1 uses 'BARCODE_TSP6_Liver_NA_10X_1_1' and TS2 uses 'TSP25_Ear_Ampulla_10X_1_1_BARCODE'. Collapse rule: an exact barcode match within donor/tissue/run, one-to-one. Strip Ensembl version suffixes for gene joins.",
+    "bigger_question_one_sentence": "Do foundation-model benchmarks on Tabula Sapiens, the most-used single-cell benchmark atlas, overstate generalization because those cells were in pretraining? Answered by comparing seen with unseen cells from the same donors, tissues, protocol and annotators."
+  },
+  "controls": {
+    "positive_control": "(1) Predict donor sex (XIST/RPS4Y1 signal) and compartment from frozen embeddings; this must be near-perfect for both seen and unseen cells. (2) Reproduce BioBench's PCA cell-type accuracy (0.772) and the Kedzierska scGPT-vs-scVI ordering on TS.",
+    "negative_control": "Permute the seen/unseen labels within strata, after which the gap must vanish. The PCA/HVG embedding (no pretraining exposure) gives the difference-in-differences baseline, and a randomly initialized scGPT gives a floor. Shuffle cell-type labels within donor.",
+    "external_validation": "The 9 new donors (379,911 manual cells; 56 cell types with >=200 cells on both sides) serve as donor-level unseen data. A post-cutoff atlas (AIDA v2, as used by scContam; not checked) gives an independent clean set."
+  },
+  "honest_claim_h3": "For 10x cells from 8 TS1 donors in 8 tissues, matched on donor, tissue, expert cell type and gene-count bin: are frozen scGPT embeddings of cells in its pretraining snapshot more separable or tighter by cell type than cells first released in TS2.0, beyond the same gap in PCA? Scope: one consortium's protocol, about 10k unseen cells, and labels partly seeded by popV.",
+  "pitch": {
+    "headline": "One obs column, published_2022, splits 444,116 old from 692,102 new cells — a ready-made pretraining-cutoff proxy for scGPT.",
+    "what_makes_the_data_unusual": "Comparable atlases give you either old or new cells; this one holds both behind the same consortium protocol — 1,093,048 10X cells, 24 donors, 28 tissues, 180 cell types, 9 donors with zero 2022 cells — so seen and unseen cells can be matched on donor, tissue, expert label and gene-count bin, which is the design scContam's cross-atlas comparisons lacked. I verified these counts, the CC BY 4.0 figshare licence, the integer raw_counts/decontXcounts layers and the versioned Ensembl IDs by range-reading the files; that scGPT's pretraining snapshot actually contains Tabula Sapiens 1 rests on Kedzierska et al.'s text, not on anything in the data.",
+    "the_win": "A difference-in-differences number on 10,072 QC-matched unseen cells: the seen-minus-unseen gap in kNN cell-type accuracy for frozen scGPT embeddings, net of the same gap in PCA, quotable against BioBench's published 0.772 PCA cell-type accuracy and 0.587 ARI on Tabula Sapiens. scContam found contaminated cells embed more tightly at p = 0.030, 0.014 and <0.002 on PBMC3k and pancreatic islets but never audited Tabula Sapiens, the atlas these benchmarks actually run on.",
+    "even_if_it_fails": "A measured null is the useful outcome, not a wasted weekend: it answers in print the question Kedzierska et al. wrote they could not disentangle, and defends the accuracy numbers the field quotes from this atlas. The honest limit is that a non-zero gap would not be clean evidence either, because unseen cells carry 33% fewer genes (median 2,326 vs 3,292) and the PCA arm plus within-stratum label permutation are what stand between a contamination effect and a quality artefact.",
+    "who_wants_it": "Kedzierska et al. (Genome Biology 2025), the BioBench authors, and the CELLxGENE Census maintainers who host the scGPT embeddings — the people deciding whether single-cell foundation-model benchmarks need a pretraining-cutoff split rather than a random one. The popV authors (Yosef lab) are a second audience, since they already documented donor-inconsistent Tabula Sapiens labels and would care which side of the cutoff the noise sits on."
+  },
+  "plain_idea": {
+    "one_liner": "Use each single cell's gene expression profile to predict its cell type, comparing cells a model already saw during training with newly released cells.",
+    "train_on": "For each example the model sees one cell's gene expression profile: the molecule counts for each gene measured in that single cell on the 10x Genomics platform, with genes identified by standard Ensembl gene identifiers. About 20,000 cells, paired so that already-seen and newly-released cells come from the same donors, tissues, expert labels and sequencing-depth bin; about 10,072 of them are newly-released.",
+    "predict": "The output is the cell's type, one of 180 labels in the atlas. The true answer is the expert annotation stored as a column in the data file, assigned by hand by the atlas consortium and partly seeded from automated label predictions, so it is good but noisy.",
+    "why_worthwhile": "Anyone who benchmarks general-purpose single-cell models, or who trusts their published accuracy numbers, would learn whether those numbers are inflated because the test cells were already inside the model's training data. Either outcome is informative: a clean result defends the benchmark, and a measured gap tells the field to re-test on cells released after training."
+  },
+  "ml_idea": "Treat published_2022 as a pretraining-cutoff split. Embed QC-matched seen and unseen cells with frozen scGPT/Geneformer and with PCA. Compare kNN/linear-probe accuracy (fine free_annotation and cell_type) and within-type tightness in a difference-in-differences design. Then extend to the 9 unseen donors. The result is informative either way: either no inflation of TS benchmarks, or a quantified one.",
+  "effort": {
+    "hours_to_feature_table": 14,
+    "cheapest_killing_check": "Download the TS1 Tabula_Sapiens_metadata.csv (67.4 MB, over the scout cap, so fetch it manually). Parse barcode/donor/tissue/run, join to the TS2 obs, and confirm published_2022=True matches TS1 membership. Then recount QC-matched unseen cells (10,072 from obs alone). Kill if more than 5% mismatch, under about 5,000 matched cells survive, or Census 2023-05-15 lacks that TS1 version.",
+    "working_set_gb": 12.4,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes come from the figshare file listing (45 GB full atlas, ~55 GB across tissue files, 12.4 GB for the eight tissues needed, Lung 3.8 GB largest, read one at a time in backed mode); the ~20k-cell subset size is an estimate ('well under 1 GB sparse') and the CPU embedding time is an estimate with throughput explicitly not measured, so nothing was timed."
+  },
+  "roi": 8.3,
+  "verdict": "verify_first",
+  "verdict_reason": "The data is open CC BY, the parse is clean, and counts match the paper (24 donors, 28 tissues, 180 types). Every threshold passes narrowly (B8 C7 D5 G7 H6 I6 J6). Cell-type annotation on TS is saturated, so the only angle is a pretraining-contamination natural experiment, which the Kedzierska authors named as unsolved. That angle is weakened by scContam and by the QC confound I found (unseen cells have 33% fewer genes). A genomics-scale atlas is only justified because the working subset is about 20k cells; verify membership first.",
+  "c2_backfill": {
+    "score": 1,
+    "why": "scGPT, Geneformer, popV, BioBench are open and TS-benchmarked, but only closed scContam audits contamination, never on Tabula Sapiens."
+  }
+}

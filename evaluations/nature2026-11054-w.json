@@ -1,0 +1,127 @@
+{
+  "paper_id": "nature2026-11054-w",
+  "title": "mTORC1 drives cell-autonomous astrocyte reactivity in tuberous sclerosis.",
+  "doi": "10.1038/s41586-026-11054-w",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE341692",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found GEO GSE341692 (single-cell RNA-seq, 40 samples, public since 5 Sep 2026) and GSE341690 (bulk RNA-seq, 18 samples) by searching GEO. Read the GEO series design text, which maps tdTomato-sorted fractions to TSC2 genotype. Listed all 40 per-sample 10x files (873 MB of gzipped count matrices in total; 846 MB tar). Downloaded one sample (GSM9915224): 814 cells x 36,601 Ensembl genes, 1.59M non-zero counts, made by cellranger 6.1.2. No tdTomato transcript in the gene list; TSC2 is present. Opened the bulk matrix: 35,719 genes x 18 columns (3 batches x 3 replicates x KO/WT); TSC2 counts are about 2,700 in KO versus about 8,000 in WT. Found that the genotyped patient FCD (focal cortical dysplasia) single-nucleus dataset (Baldassari 2025, Nature Neuroscience) is on EGA under controlled access.",
+    "what_came_from_paper_text_only": "No full text was available (paywalled; no PMCID), so the cell-type annotations, the reactive-astrocyte signature, cell counts and the patient tuber cyclic-immunostaining results come from the abstract and GEO summary only. The total of about 92,000 cells is my estimate from barcode-file sizes, not a count. No cell-level metadata or annotation file is deposited."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO GSE341692 is public. I downloaded one sample's barcodes, features and matrix files individually without logging in."},
+    "a2_label_is_a_column": {"pass": true, "note": "The genotype label (TSC2 -/- vs +/-, or +/- vs +/+) is fixed per sample by FACS (fluorescence-activated cell sorting) on tdTomato and is encoded in each file name (C-/Cplus, Ctrl/tdTom), per the GEO design text. Cell-type labels such as 'reactive astrocyte' are NOT deposited and would have to be built by clustering, so the project uses genotype only."},
+    "a3_inputs_present": {"pass": true, "note": "Full UMI (unique molecular identifier) count matrices with Ensembl gene IDs and symbols are present. I checked this in one sample."},
+    "a4_units_stated": {"pass": true, "note": "Raw integer UMI counts from cellranger 6.1.2 (stated in the MatrixMarket file header). The bulk data is raw gene counts."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "About 92,000 cells, estimated from barcode-file sizes (814 cells counted in one sample). Only about 20 tdTom/Ctrl library pairs are independent units, so the effective sample size is batches, not cells."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.9 GB gzipped mtx; ~2-3 GB in memory as a sparse matrix", "note": "Estimated about 180M non-zero values in total (sparse storage, under 3 GB RAM). The baseline needs no GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "I could not compare against the paper because the full text is unavailable. GEO's 40 samples match its own file list. Cell numbers per sample are not verified against the paper."},
+    "a8_label_provenance": {"pass": true, "note": "The label is an engineered genotype read out by FACS on a reporter, which is a physical measurement and not a model output. Leakage risk: TSC2 mRNA itself is lower in knockout cells (bulk: about 2,700 vs 8,000 counts), so TSC2 must be removed from the features. Each genotype is also its own 10x library, so library effects track the label."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "40 per-sample 10x file triplets; sample metadata parsed from file names (verified file list)."},
+    "B2": {"score": 2, "why": "Standard 10x MatrixMarket files; one sample parsed first try."},
+    "B3": {"score": 1, "why": "Raw counts across batches and two cell lines; needs normalisation and batch handling."},
+    "B4": {"score": 2, "why": "Genotype labels are categorical; no censored values."},
+    "B5": {"score": 1, "why": "Cellranger-filtered cells; doublets and ambient RNA (stray transcripts in droplets) still need removing; not checked."},
+    "B6": {"score": 1, "why": "GEO design text explains genotype mapping; no cell-level annotation or QC (quality control) table deposited."},
+    "C1": {"score": 1, "why": "Cross-line, cross-age transfer decay is always informative; the patient-tissue use case needs controlled-access validation data."},
+    "C2": {"score": 2, "why": "No model found that predicts TSC2 second-hit status from single-cell expression; searches thin, so likely novel."},
+    "C3": {"score": 2, "why": "Unique application: data nobody has modelled, used to learn a transferable 'second-hit cell' signature."},
+    "C4": {"score": 2, "why": "Genotyping individual cells in patient lesions needs targeted single-cell genotyping, which is costly and covers few cells."},
+    "C5": {"score": 1, "why": "No published ML number; dummy baselines are TSC2-expression-only and a marker-gene score."},
+    "D1": {"score": 2, "why": "Geneformer and scGPT, single-cell foundation models, have open weights."},
+    "D2": {"score": 2, "why": "Cell embeddings can be cached once on CPU; logistic-regression head on top."},
+    "D3": {"score": 2, "why": "Geneformer Apache-2.0, scGPT MIT; GEO data public."},
+    "E1": {"ok": true, "why": "Hold out whole batches, whole cell line (BJ vs WIBR3) or time point; all encoded in file names."},
+    "E2": {"ok": true, "why": "BJ has 5 batches; WIBR3 has 3 batches x 2-3 days; about 20 library pairs."},
+    "E3": {"ok": true, "why": "Majority class, TSC2-only classifier and published-marker score are computable."},
+    "E4": {"ok": true, "why": "Replicate batches per line and day let between-batch agreement be measured; bulk has triplicates."},
+    "E5": {"ok": true, "why": "Abstract's known effects: APOE, CLU up, glutamate transporters down, astrocyte bias in knockout cells."},
+    "E6": {"ok": true, "why": "Label shuffle plus built-in C+ control (het vs wild-type sort) to expose sorting artefacts."},
+    "E7": {"ok": true, "why": "Second stem-cell line (BJ) is an independent test; patient genotyped nuclei are controlled-access (EGA)."},
+    "E8": {"ok": false, "why": "No published model number; paper's cell-type proportions not seen (no full text)."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs in every features file (verified)."},
+    "G2": {"score": 1, "why": "Genotyped FCD nuclei (Baldassari 2025) exist but are EGA controlled access; tuber snRNA-seq access unverified."},
+    "G3": {"score": 2, "why": "Join is gene-space on Ensembl IDs, one-to-one."},
+    "G4": {"score": 2, "why": "Combined question: does an organoid-learned TSC2-loss program find mutant cells in patient lesions?"},
+    "H1": {"score": 2, "why": "Both genotypes sorted from every organoid batch, plus a het-vs-wild-type background."},
+    "H2": {"score": 1, "why": "Two stem-cell lines, one lab, organoids only, no seizures or immune cells."},
+    "H3": {"score": 2, "why": "Claim can be stated precisely (see honest_claim_h3)."},
+    "H4": {"score": 1, "why": "Organoid limits explicit in abstract; one-library-per-genotype confound not stated."},
+    "I1": {"score": 2, "why": "Bateup and Porter labs, FCD genotyping groups (Baulac lab), TSC Alliance."},
+    "I2": {"score": 1, "why": "Could prioritise which patient cells to genotype; marginal unless it transfers."},
+    "I3": {"score": 1, "why": "AUROC (area under the ROC curve) on held-out line roughly matches ranking cells for follow-up."},
+    "I4": {"score": 1, "why": "A marker-gene score may match ML; that is the first thing to test."},
+    "J1": {"score": 2, "why": "Grouped splits, foundation-model embeddings, cross-line transfer, leakage controls."},
+    "J2": {"score": 1, "why": "Astrocyte markers give some intuition; neurobiology check needed."},
+    "J3": {"score": 2, "why": "Even the C+ artefact check is a shareable finding on sort-confounded designs."},
+    "J4": {"score": 1, "why": "About two weeks plausible; not formally set."},
+    "J5": {"score": 1, "why": "Kill condition defined below; date not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "Geneformer (V1 small) or scGPT whole-human checkpoint, single-cell foundation models", "freeze_and_head_viable": true, "hardware": "CPU laptop; about 92k cells embedded once", "licence": "Geneformer Apache-2.0; scGPT MIT"},
+  "integration": {"partner_dataset": "Baldassari et al. 2025 (Nature Neuroscience) genotyped FCD type II single-nucleus RNA-seq, EGA EGAD50000001403 (controlled access); alternatively the open tuber snRNA-seq preprint (bioRxiv 2024.10.31.621014, access unverified)", "join_key": "Ensembl gene ID (shared gene space)", "bigger_question_one_sentence": "Does a transcriptional program learned from engineered TSC2-null organoid cells identify naturally occurring mTOR-pathway second-hit cells in patient brain lesions?"},
+  "controls": {"positive_control": "Recover reported knockout effects (APOE and CLU up, SLC1A2/SLC1A3 glutamate transporters down) from model attributions; also check that an astrocyte-heavy shift appears in knockout fractions.", "negative_control": "Shuffle labels within batch. Classify the C+ line's tdTom+ vs tdTom- fractions (heterozygous vs wild-type): high accuracy there means sort or library artefacts. Drop TSC2 from the features.", "external_validation": "Train on the WIBR3 line, test on the BJ line (independent genetic background, 5 batches). The patient genotyped nuclei are controlled-access on EGA."},
+  "honest_claim_h3": "Within cortical organoids from two stem-cell lines, the model predicts whether a FACS-sorted cell is TSC2-null rather than heterozygous from its transcriptome, beyond what library and sorting effects explain; it says nothing yet about patient tissue.",
+  "plain_idea": {
+    "one_liner": "Use single-cell gene expression from brain organoids to predict which cells have lost both copies of the TSC2 gene.",
+    "train_on": "About 92,000 organoid cells (an estimate from file sizes), each with expression counts for 36,601 genes, from 40 sorted libraries across two stem-cell lines, 5 ages and several batches.",
+    "predict": "Whether each cell is TSC2-null or heterozygous. The truth comes from sorting cells on a red fluorescent reporter that marks the engineered second knockout.",
+    "why_worthwhile": "Tuber researchers can't easily tell which patient cells carry the second-hit mutation. A signature that transfers across stem-cell lines would show which cells to genotype. If it only learns sorting artefacts, that warns everyone who uses sorted-genotype single-cell designs."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Baldassari et al. 2025 Nature Neuroscience genotyped mTOR-mutant FCD nuclei (EGA, controlled; read its data statement); PNAS 2025 cell-type-informed genotyping of mosaic focal epilepsies (seen in search, access not checked).",
+    "approx_items": null,
+    "join_key": "Ensembl gene ID",
+    "why": "A few genotyped patient datasets could serve as external tests, but they are small and behind access applications."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Each genotype is a separate 10x library, so ambient RNA, sequencing depth and sort-stress signatures track the label perfectly within a batch.",
+      "TSC2 mRNA is reduced in knockout cells (bulk 2,700 vs 8,000 counts), so the label leaks through the TSC2 gene itself.",
+      "Cells from the same organoid batch share culture effects; a random cell-level split puts sibling cells in train and test.",
+      "Cell-type composition differs by genotype (more astrocytes in knockouts), so a classifier may learn cell type rather than genotype."
+    ],
+    "split": "Hold out whole batches (Batch field in file names, seen), and as the main test train on WIBR3 and test on BJ (line field in file names, seen); report per time point.",
+    "checks": [
+      "Run the same pipeline on C+ tdTom+ vs tdTom- (het vs wild-type): its AUROC sets the artefact floor that the knockout result must clearly beat.",
+      "Shuffle labels within batch and confirm AUROC around 0.5.",
+      "Classify within one cell type (e.g. astrocytes only) to remove the composition shortcut.",
+      "Train on library-level QC features alone (UMI count, mitochondrial fraction) and see how well they do."
+    ],
+    "verdict": "A serious risk, manageable only because the C+ heterozygous-vs-wild-type libraries provide a built-in artefact control."
+  },
+  "success_criteria": {
+    "metric": "AUROC for TSC2-null vs heterozygous on the held-out BJ line, within astrocyte-lineage cells; it matches ranking cells for follow-up genotyping.",
+    "baselines": "Majority class (0.5 AUROC); TSC2-expression-only classifier; marker score from the abstract's genes (APOE, CLU, GFAP, glutamate transporters); the same pipeline's AUROC on the C+ het-vs-wild-type artefact control. No published numbers exist.",
+    "success": "Held-out-line AUROC at least 0.10 above both the marker-score baseline and the C+ artefact-control AUROC. These thresholds are pre-set by me; no data-derived number yet.",
+    "noise_ceiling": null,
+    "kill": "If the C+ het-vs-wild-type AUROC is within 0.05 of the knockout-vs-het AUROC, or the marker score matches the model on BJ, stop after one week."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Cell Genomics", "why": "Publishes biology-first ML on human cell models; it would need the signature to transfer to genotyped patient nuclei, which requires EGA access."},
+    "realistic": {"journal": "PLOS Computational Biology", "why": "Fits a careful cross-line transfer study with explicit artefact controls in a sorted organoid design."},
+    "fallback": {"journal": "bioRxiv preprint plus NAR Genomics and Bioinformatics", "why": "A negative result showing sort-library artefacts dominate genotype classifiers is a publishable methods caution."}
+  },
+  "pitch": {
+    "headline": "40 public single-cell libraries where each cell's TSC2 genotype is known from sorting, across two stem-cell lines and organoid ages from day 50 to 220.",
+    "what_makes_the_data_unusual": "Genotype is engineered and sorted, not inferred. A built-in heterozygous-vs-wild-type background (12 C+ libraries) gives a ready-made artefact control. Data released September 2026 with no ML on it found.",
+    "the_win": "AUROC on held-out BJ-line cells at least 0.10 above both a marker-gene score and the het-vs-wild-type artefact control.",
+    "even_if_it_fails": "It measures how much a sorted-genotype single-cell design lets library artefacts pass for genotype, which is a caution for mosaic-disease organoid studies.",
+    "who_wants_it": "The Bateup lab (UC Berkeley) and FCD genotyping groups such as Baulac's (Paris Brain Institute), deciding which patient cells to target for genotyping."
+  },
+  "ml_idea": "Freeze Geneformer or scGPT and embed each organoid cell. Train a linear head to predict TSC2-null vs heterozygous status, excluding the TSC2 gene. Hold out whole batches and the BJ line, and benchmark against a marker-gene score and the C+ het-vs-wild-type artefact control.",
+  "effort": {"hours_to_feature_table": 10, "working_set_gb": 0.9, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 2, "cv_run_minutes": 10,
+             "compute_note": "Estimated, not timed. RAM comes from about 180M non-zero values (extrapolated from one sample). Embedding time assumes 15-30 cells/s for Geneformer-small on CPU for 92k cells.",
+             "cheapest_killing_check": "Load the C+ and C- libraries and run a logistic regression on log-normalised expression (without TSC2) holding out batch. If het-vs-wild-type is separated nearly as well as knockout-vs-het, the label is mostly library artefact."},
+  "verdict": "verify_first",
+  "verdict_reason": "Public, laptop-sized single-cell data with a measured per-sample genotype label and no ML on it found. But genotype equals library, so the C+ het-vs-wild-type artefact check must come first, and the patient validation data is controlled-access."
+}

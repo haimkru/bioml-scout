@@ -1,0 +1,303 @@
+{
+  "paper_id": "gb2026-04201-z",
+  "title": "Benchmarking protein sequence and structure search methods for remote homology detection.",
+  "doi": "10.1186/s13059-026-04201-z",
+  "journal": "Genome Biology",
+  "data_url": "Zenodo record https://doi.org/10.5281/zenodo.19688505 (type 'Dataset', published 2026-04-22, licence field empty): README.md 556 bytes, overview.png 4,052,098 bytes, protein-search-benchmark.zip 5,021,370 bytes. Mirror: https://github.com/YuanLiu-SJTU/protein-search-benchmark (36 tree entries, pushed 2026-07-03). Protein sequences are NOT in the deposit; I pulled them myself from the CATH download site (http://download.cathdb.info/cath/releases/all-releases/v4_4_0/non-redundant-data-sets/cath-dataset-nonredundant-S20-v4_4_0.fa, 2,813,342 bytes) and from the UniProt REST application programming interface. Author preprint with the supplementary tables: https://www.researchsquare.com/article/rs-8796067/v1",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Europe PMC search on the DOI returned exactly 1 hit (PMID 42458582, no PMCID, isOpenAccess 'N', first published 2026-07-15). Its fullTextXML endpoint returned HTTP 500 and link.springer.com / genomebiology.biomedcentral.com both redirect to a Springer login gateway, so I downloaded the authors' freely posted Research Square preprint instead (rs-8796067 v1, preprint.pdf 5,000,470 bytes, 35 pages, 81,004 characters of extracted text) plus its one supplementary file (supportinginformation.docx, 907,993 bytes) and parsed all five supplementary tables myself with my own Word-table reader. I downloaded the Zenodo record (README.md 556 bytes, protein-search-benchmark.zip 5,021,370 bytes), unzipped it (37 entries, 11,315,233 bytes uncompressed, 27 files) and opened every text file. FOLD CLASSIFICATION: cath-domain-list-S20-v4_4_0.txt is 15,043 lines, 1,116,096 bytes, 12 whitespace-separated columns, NO header row; the deposited script names columns 2-5 as Class / Architecture / Topology / Homologous superfamily. I counted 5 Classes (3 = 7,155 domains, 1 = 3,936, 2 = 3,132, 6 = 592, 4 = 228), 43 Architectures, 1,379 Topologies (folds) and 5,456 Homologous superfamilies; 570 Topologies have exactly one member and 385 have five or more; 3,863 superfamilies are singletons and 488 have five or more. Column 11 is domain length (min 9, median 131, max 1,202) and column 12 is crystal resolution in angstroms (min 0.7, median 2.2, with 1,338 rows carrying the 999.000 'no resolution' sentinel). I then downloaded the CATH v4.4.0 S20 sequence file (2,813,342 bytes) and joined it: 15,043 of 15,043 domain identifiers matched in BOTH directions, zero missing, zero extra. Median sequence length 136, total 2,374,361 residues, 445 sequences contain an 'X' (unknown residue). One real inconsistency: the FASTA sequence length disagrees with the label file's length column for 8,951 of 15,043 domains (5,552 of those by more than 5 residues, largest gap 194) because the label file counts only residues with coordinates. The matching CATH structure tarball is 366,617,144 bytes by HTTP HEAD; I did not download it (over my 50 MB cap). FUNCTIONAL CONSISTENCY: GO.json is a dictionary of exactly 8,735 UniProt accessions mapped to lists of Gene Ontology Molecular Function terms, mean 2.08 terms each (minimum 1, median 2, maximum 19), 3,505 distinct terms. query.lst has 1,000 accessions, target.lst has 7,735, they are disjoint, and their union is exactly the 8,735 keys of GO.json. go_high_conf_subset.lst has 1,587 accessions, all inside those 8,735 (190 queries, 1,397 targets) and is described nowhere in the paper text I read. I fetched sequences from the UniProt REST accessions endpoint in batches of 200: 1,000 of 1,000 queries resolved (all SwissProt-reviewed, median 311.5 residues) in 8.3 seconds, and 7,735 of 7,735 targets resolved. MULTI-DOMAIN: all_domains.csv is 13,807 data rows plus a header with 11 named columns; 5,573 unique UniProt accessions, 13,807 unique TED (The Encyclopedia of Domains) identifiers, pLDDT (AlphaFold per-residue confidence, averaged per domain) from 51.0 to 98.8 with median 94.5, domain length 25-714 median 127. The 'cath' column is '-' in 2,866 rows (20.8%) and where present has MIXED depth: 9,299 four-level labels, 1,412 three-level, 230 five-level. The 'interactions' column is empty in 9,438 rows (68.4%). query.lst (100) plus target.lst (5,473) equals exactly the 5,573 unique accessions. DISORDERED PROTEINS: query.lst 534, target.lst 6,955; UniProt returned 532 of 534 queries (missing Q6UNL8, Q7Y1A0) and 6,954 of 6,955 targets (missing Q5SWW7). DisProt release_2024_12.tsv is 12,786 data rows plus a header with 18 columns including region_sequence and a PubMed identifier per region. PREDICTED-STRUCTURE QUALITY: query lists are 100 / 100 / 100 and target lists are 4,053 (pLDDT 90+) / 4,913 (70-90) / 1,907 (under 70). A GAP I FOUND BY COUNTING: the deposited GO.json covers all 4,053 high-confidence targets but ZERO of the 4,913 moderate and ZERO of the 1,907 low-confidence targets, and only 8 of 534 disordered-protein queries and 137 of 6,955 of their targets - so three of the five scenarios cannot be scored with the deposited annotation file. SCRIPTS: I read compute_sensitivity.py (160 lines, implements sensitivity-up-to-the-first-false-positive at all four CATH levels and an area-under-curve summary), compute_function_BMA.py (133 lines, Wang Gene Ontology semantic similarity with best-match averaging over the top 10 hits, random padding with seed 42) and compute_lddt.py (83 lines, adapted from foldseek-analysis under Apache 2.0). Two concrete reproducibility problems I found by reading the code: go-basic.obo is required but is not in the deposit, and compute_sensitivity.py calls numpy.trapz, which was removed in NumPy 2.0. I also found that the area-under-curve denominators differ between CATH levels because queries with zero true positives are silently skipped (570 singleton topologies, 3,863 singleton superfamilies) - that is in the code, not in the paper. TIMED ON THIS LAPTOP: the quadratic true-positive counting step in compute_sensitivity.py took 1.75 seconds for 200 queries, so about 2.2 minutes for all 15,043, and main() never passes the cache file so it recomputes every run. PUBLISHED NUMBERS I READ IN THE SUPPLEMENT: Table S1 gives area-under-curve at Class / Architecture / Topology / Homologous-superfamily for 13 methods (TMalign Topology 0.2854, GTalign 0.282, Dali 0.2763, FoldExplorer 0.2259, Foldseek 0.2212, PLMSearch 0.2154, GraSR 0.2019, TMvec 0.1568, DHR 0.1424, jackhmmer 0.0524, BLAST 0.0402, MMseqs 0.0341, Diamond 0.0066); Table S2 mean Gene Ontology similarity of top-10 hits (Dali 0.553 best, Diamond 0.268 worst); Table S3 multi-domain versus single-domain lDDT; Table S4 disordered proteins by disorder-content bin INCLUDING a 'Random' dummy row (0.354-0.387) and a 'Best' oracle row (0.823-0.849); Table S5 the three pLDDT strata. INTEGRATION CHECK I RAN: the first four characters of each CATH domain identifier are a Protein Data Bank entry code; there are 13,070 unique codes and the RCSB GraphQL application programming interface resolved 12,917 of them in 7 seconds, giving release years from 1981 to 2023 with 196 entries in 2021, 236 in 2022 and 191 in 2023. GITHUB: I listed the repository tree (not truncated, 36 entries) - identical file set to the Zenodo zip except LICENSE is 20,849 bytes there (the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 text) versus 1,069 bytes of MIT licence inside the zip, and the GitHub README states Creative Commons Attribution-NonCommercial 4.0. Three different licences, and the Zenodo record declares none.",
+    "what_came_from_paper_text_only": "Everything about how the sets were built, because no file records it: AlphaFold Protein Structure Database v6 with 550,122 SwissProt entries, filtered to 307,578 with average pLDDT at least 90, clustered with CD-HIT at 20% sequence identity to 11,721 representatives, filtered to 8,767 with curated Molecular Function annotations and then to 8,735 after dropping obsolete terms; DisProt release 2024.12 starting from 3,113 proteins, narrowed to 1,012 candidates and finally 534 queries against an AlphaFold human SwissProt target set of 23,586; the 'sequence length at most 300 residues' filter on the predicted-structure-quality sets; and the derived single-domain set of 204 queries and 11,041 targets, which is NOT deposited as any list. The 20% identity filtering itself is unverifiable from the deposit because no identity matrix or clustering output is included. All tool versions and command lines, and every result that exists only as a figure (Figures 2-9, Supplementary Figures S1-S2), are paper-text-only for me. TWO UNRESOLVED DISCREPANCIES. (1) The paper's Methods say the multi-domain target set has 4,573 proteins; the deposited target.lst has 5,473, and 100 + 5,473 = 5,573, the paper's own stated total, so the printed number looks like a transposed typo - but I cannot prove which the authors used. (2) The published Genome Biology abstract in Europe PMC says '14 representative methods' while the preprint abstract says 13 and every supplementary table lists 13 rows of methods; I never saw the published version's tables, so all 13 numbers I quote are from the preprint and may have been revised. FAILED DOWNLOAD ATTEMPTS, recorded: Europe PMC fullTextXML for PMID 42458582 returned HTTP 500; https://doi.org/10.1186/s13059-026-04201-z and https://genomebiology.biomedcentral.com/articles/10.1186/s13059-026-04201-z both redirect to a Springer authorisation gateway with no article text returned; https://assets-eu.researchsquare.com/files/rs-8796067/v1/latest.pdf returned HTTP 403. I never ran any of the 13 search tools and reproduced none of the published numbers."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Passes, checked in the files. No login, no access application. I downloaded the whole Zenodo record (5.0 MB zip) and listed the identical GitHub tree. The only things behind a size wall are the CATH structure tarball (366,617,144 bytes by HTTP HEAD) and per-protein AlphaFold structures, neither of which the sequence-only project needs."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Passes for the fold task, with one honest caveat. The label is literally columns 2-5 of cath-domain-list-S20-v4_4_0.txt (Class, Architecture, Topology, Homologous superfamily) for all 15,043 domains; the pairwise 'same fold?' label is an equality test on that one column within the same file, not a join across sources. It FAILS for the other obvious framing - 'predict which search tool will work for this query' - because no per-method, per-query result file exists anywhere in the deposit or the repository."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Marginal pass, and I tested it rather than assuming. The deposit contains only identifiers, no sequences and no structures. For the fold task the fix is one 2,813,342-byte file from the CATH download site that joined 15,043 of 15,043 identifiers in both directions. For the UniProt-based scenarios I fetched sequences myself: 1,000 accessions took 8.3 seconds and 16,076 of 16,079 resolved (3 missing: Q6UNL8, Q7Y1A0, Q5SWW7). So it is one bulk download, not thousands of lookups - but it is still an extra source the paper does not ship."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Passes. The metrics are unitless fractions whose formulas are both printed in the paper and implemented in the deposited scripts I read (sensitivity up to the first false positive, Gene Ontology best-match-average similarity and lDDT all on 0-1; pLDDT on 0-100; domain length in residues; resolution in angstroms). Deduction noted under B6: the CATH label file has no header line, so column meaning comes from the CATH format specification and the deposited script, not the file."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 15043,
+      "note": "Passes comfortably, counted by me. 15,043 labelled domains with four-level labels; 1,379 distinct folds of which 385 have five or more members. As a pairwise retrieval problem that is 226,276,806 ordered pairs, of which 4,879,234 (2.16%) are same-fold positives and 465,746 are same-superfamily positives."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "About 10 MB: the 1,116,096-byte CATH label file plus the 2,813,342-byte sequence file, inside a 5.0 MB deposit. Cached embeddings from a small protein language model add roughly 29 MB (15,043 by 480 floats). The only large intermediate is the all-versus-all similarity matrix, 15,043 squared single-precision floats = about 0.9 GB, and that can be chunked to top-k.",
+      "note": "Passes, no graphics card needed. I timed the heaviest deposited step - the quadratic true-positive count in compute_sensitivity.py - at 1.75 seconds per 200 queries, so about 2.2 minutes for the full set on this machine."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Passes, and this was the most useful thing I did. Eleven counts matched the paper exactly: 15,043 CATH domains; 8,735 functional proteins; 1,000 queries; 7,735 targets; 5,573 multi-domain proteins; 100 multi-domain queries; 534 disordered queries; 6,955 of their targets; and 4,053 / 4,913 / 1,907 predicted-structure targets. One number disagrees: the paper says the multi-domain target set is 4,573 and the file has 5,473, where 100 + 5,473 equals the paper's own total of 5,573 - so the printed figure is almost certainly a transposition, and I can tell which is right. Separately the published abstract says 14 methods while the preprint and all its tables show 13."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Passes for the fold task. CATH Class / Architecture / Topology / Homologous superfamily are human-curated assignments built on experimentally determined structures, not any model's output, and they are not computable from the input sequence - that is the whole difficulty. Two nearby framings would FAIL A8 and I am naming them so nobody drifts into them: predicting the pLDDT column of all_domains.csv means distilling AlphaFold's own confidence estimate, and the 'cath' column of all_domains.csv is a TED pipeline assignment on predicted structures rather than a curated one. The Gene Ontology labels in GO.json are curated annotations, but the paper's own limitations section warns that TMvec, PLMSearch and DHR were trained on resources overlapping SwissProt, so method comparisons there are not leakage-free."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "Two sources, perfect key: 15,043-row label file joins 15,043/15,043 to a separately downloaded CATH sequence file."
+    },
+    "B2": {
+      "score": 2,
+      "why": "Label file, FASTA and all_domains.csv all parsed first try with the standard library; no fixes needed."
+    },
+    "B3": {
+      "score": 2,
+      "why": "One curated hierarchy from one database; exception noted, all_domains.csv 'cath' column has mixed 3/4/5-level depth."
+    },
+    "B4": {
+      "score": 2,
+      "why": "No censoring in the label; only a 999.000 resolution sentinel in 1,338 rows of an unused column."
+    },
+    "B5": {
+      "score": 2,
+      "why": "Counted duplicates in all 13 identifier lists: zero. Query and target sets disjoint in every scenario."
+    },
+    "B6": {
+      "score": 1,
+      "why": "Five READMEs explain each scenario, but CATH label file has no header, go_high_conf_subset.lst undocumented, go-basic.obo missing."
+    },
+    "C1": {
+      "score": 2,
+      "why": "Accuracy-decay-on-unseen-folds question informs either way; I verified a release-date split is buildable (427 domains from 2022-23)."
+    },
+    "C2": {
+      "score": 0,
+      "why": "Foldseek, PLMSearch, TMvec, DHR, FoldExplorer, GraSR, ProtTucker all open; this paper is the honest evaluation."
+    },
+    "C3": {
+      "score": 1,
+      "why": "Only live angle is the release-date split the authors named; weakened because structure release date does not control sequence exposure."
+    },
+    "C4": {
+      "score": 1,
+      "why": "All-versus-all Dali/TMalign over 15,043 domains is costly, but Foldseek and BLAST are already fast and cheap."
+    },
+    "C5": {
+      "score": 2,
+      "why": "Read 13 methods' numbers in Tables S1-S5 plus published Random and Best rows; scoring scripts deposited."
+    },
+    "D1": {
+      "score": 2,
+      "why": "ESM-2, a protein language model, has open weights from 8M to 650M parameters and runs on a laptop processor."
+    },
+    "D2": {
+      "score": 2,
+      "why": "Embed 2,374,361 residues once, cache ~29 MB of vectors, train a linear or contrastive head on processor only."
+    },
+    "D3": {
+      "score": 1,
+      "why": "ESM-2 is MIT, but the benchmark files carry three conflicting licences: none on Zenodo, MIT in the zip, CC BY-NC-SA on GitHub."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Grouped split by CATH topology or superfamily; plus a Protein Data Bank release-date split I verified resolves in 7 seconds."
+    },
+    "E2": {
+      "ok": true,
+      "why": "Counted 1,379 topologies (385 with five or more members) and 5,456 superfamilies (488 with five or more)."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Diamond's published 0.0066 topology score and Table S4's printed 'Random' row (0.354-0.387) are both ready-made dummies."
+    },
+    "E4": {
+      "ok": false,
+      "why": "No replicates and no duplicate disagreement: CATH gives one curated label per domain, so the noise floor is not estimable in these files."
+    },
+    "E5": {
+      "ok": true,
+      "why": "A linear probe for the 5 CATH Classes must be near-perfect (the paper's own embedding map shows class separation); plus reproduce BLAST's 0.0402."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Label shuffle, within-topology shuffle and random-vector ablation all cheap: I timed the deposited scorer at 2.2 minutes per run."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Three independent held-out query sets in the same deposit (function, disordered proteins, three confidence strata) plus a release-date split."
+    },
+    "E8": {
+      "ok": true,
+      "why": "Tables S1-S5 give 13 methods' numbers and the exact metric script is deposited; BLAST and MMseqs2 install easily."
+    },
+    "G1": {
+      "score": 2,
+      "why": "Standard identifiers throughout: UniProt accessions (16,079), CATH domain ids embedding Protein Data Bank codes, TED ids, GO terms, taxon ids."
+    },
+    "G2": {
+      "score": 2,
+      "why": "RCSB Protein Data Bank on the 4-character prefix: I resolved 12,917 of 13,070 codes to release dates in 7 seconds. AlphaFold DB joins on UniProt."
+    },
+    "G3": {
+      "score": 2,
+      "why": "One-to-one in the direction used; the only one-to-many is 15,043 domains from 13,070 entries, collapsed by copying the entry's release date."
+    },
+    "G4": {
+      "score": 2,
+      "why": "Combination answers whether embedding search still beats alignment search on structures deposited after model training froze."
+    },
+    "H1": {
+      "score": 2,
+      "why": "Negatives dominate and are explicit: only 4,879,234 of 226,276,806 ordered pairs are same-fold, a figure I computed."
+    },
+    "H2": {
+      "score": 1,
+      "why": "1,379 folds and many species, but every domain comes from a crystallised protein; function and disorder sets are reviewed-SwissProt and human-only."
+    },
+    "H3": {
+      "score": 2,
+      "why": "Honest claim written out in one sentence below; the crystallisability restriction is the whole of it."
+    },
+    "H4": {
+      "score": 2,
+      "why": "Preprint has an explicit limitations section naming SwissProt reuse bias, TMvec/PLMSearch/DHR training overlap and GO incompleteness."
+    },
+    "I1": {
+      "score": 2,
+      "why": "Named: the Steinegger lab behind Foldseek, the PLMSearch/DHR/FoldExplorer authors, and groups annotating metagenome proteins."
+    },
+    "I2": {
+      "score": 1,
+      "why": "Would change which tool they reach for, but Tables S1-S5 already answer that; a date-split result mostly adds a caveat."
+    },
+    "I3": {
+      "score": 2,
+      "why": "Sensitivity up to the first false positive IS the user's decision: how far down the hit list can I trust it."
+    },
+    "I4": {
+      "score": 2,
+      "why": "BLAST scores 0.0402 against structure alignment's 0.2854 at fold level, so no simple rule covers it."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Frozen-backbone embeddings, metric learning, grouped and temporal splits, retrieval metrics - real modelling, little cleaning."
+    },
+    "J2": {
+      "score": 1,
+      "why": "CATH classes are interpretable, but judging Gene Ontology similarity plausibility needs a structural biologist and I have none lined up."
+    },
+    "J3": {
+      "score": 2,
+      "why": "A sequence-resolved, release-date-annotated version of this benchmark is shareable alone; I already built most of it today."
+    },
+    "J4": {
+      "score": 1,
+      "why": "I can state roughly three weeks, but no time budget is written down in NOTES.md yet."
+    },
+    "J5": {
+      "score": 0,
+      "why": "No kill date and condition recorded anywhere; nothing in NOTES.md."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Foldseek (structure search by translating backbone geometry into a letter alphabet)",
+        "open_weights": true,
+        "score_and_split": "In the preprint's Table S1, which I parsed myself, Foldseek scores 0.2212 area-under-curve at CATH Topology (fold) level and 0.4625 at Homologous superfamily on all-versus-all search over the 15,043-domain CATH-S20 set; 0.551 mean Gene Ontology similarity of top-10 hits (Table S2) and 0.475 at low predicted-structure confidence (Table S5), the best of the four structure-alignment tools there.",
+        "authors_named_unsolved": "The benchmark authors state that all methods, Foldseek included, are close to the random floor on intrinsically disordered proteins (0.413-0.453 against a printed random level of 0.354-0.387 and an oracle best of 0.823-0.849).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PLMSearch (protein-language-model embedding similarity for sequence-only homology search; Nature Communications 2024)",
+        "open_weights": true,
+        "score_and_split": "Table S1: 0.2154 at Topology and 0.4033 at Homologous superfamily on CATH-S20 all-versus-all, the best of the sequence-only representation methods and far above BLAST (0.0402). Table S2: 0.513 mean Gene Ontology similarity on the 1,000-query functional set filtered to under 20% sequence identity. Its Pfam-clan module was switched off for this evaluation.",
+        "authors_named_unsolved": "The benchmark's limitations section names PLMSearch specifically as a method whose Pfam-based homology information may overlap the SwissProt-derived evaluation sets, so its advantage cannot be shown to be leakage-free.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TM-vec / DeepBLAST (predicts structural similarity from sequence embeddings; Nature Biotechnology 2023)",
+        "open_weights": true,
+        "score_and_split": "Table S1: 0.1568 at Topology, 0.3001 at Homologous superfamily - weaker than Foldseek at fold level. But Table S5 shows 0.527 / 0.524 / 0.492 Gene Ontology similarity across high, moderate and low predicted-structure confidence, barely degrading, where the structure-alignment tools fall from 0.47 to 0.30.",
+        "authors_named_unsolved": "Named in the limitations section as trained on SWISS-MODEL structures that may overlap the SwissProt evaluation sets.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "DHR, Dense Homolog Retriever (dual-encoder dense retrieval over language-model embeddings)",
+        "open_weights": true,
+        "score_and_split": "Table S1: 0.1424 at Topology, the weakest of the representation methods at fold level. Table S5: the best method at every confidence level (0.554 / 0.540 / 0.525) and the best on disordered proteins in the highest disorder bin (0.438). So it wins on function and loses on fold.",
+        "authors_named_unsolved": "Named in the limitations section as trained on UniRef90, which overlaps the evaluation sets; the authors say prior exposure cannot be excluded.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "FoldExplorer (graph attention over structure plus language-model sequence features) - by the first author of this very benchmark",
+        "open_weights": true,
+        "score_and_split": "Table S1: 0.2259 at Topology, the best representation-based method and above Foldseek; 0.4517 at Homologous superfamily; 0.552 / 0.513 / 0.504 across the three confidence strata. Code is at github.com/YuanLiu-SJTU/FoldExplorer, and a residue-level variant under Apache 2.0 exists in the same account.",
+        "authors_named_unsolved": "Not stated as unsolved. Worth flagging instead that the benchmark's first author is FoldExplorer's author, so the method that comes out best among representation approaches is the authors' own - a conflict I verified from the GitHub account, not from any disclosure.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "ProtTucker / EAT (frozen protein-language-model embeddings plus a contrastive feed-forward head trained on the CATH hierarchy; NAR Genomics and Bioinformatics 2022)",
+        "open_weights": true,
+        "score_and_split": "I found this through search and read the abstract only: it maps frozen ProtT5 embeddings through a small feed-forward network trained contrastively on CATH levels, and reports that raw ESM-1b and ProtT5 embeddings already beat profile-based homology inference at the Class and Architecture levels. I did not retrieve its exact numbers or split, so I am not quoting any.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Classical baselines evaluated in the same tables: BLAST, jackhmmer, DIAMOND, MMseqs2, Dali, TM-align, GTalign, GraSR",
+        "open_weights": true,
+        "score_and_split": "Topology-level area under curve from Table S1: TMalign 0.2854, GTalign 0.282, Dali 0.2763, GraSR 0.2019, jackhmmer 0.0524, BLAST 0.0402, MMseqs 0.0341, Diamond 0.0066. The sequence-alignment tools are 4-40 times worse than structure alignment at fold level, which sets both the floor and the ceiling for any new method.",
+        "authors_named_unsolved": "The conclusion the authors draw is that no single method wins: structure alignment owns fold and geometry, embedding methods own function at low identity and tolerate bad predicted structures, and nothing works on disordered proteins.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model; the 150M-parameter checkpoint esm2_t30_150M_UR50D, with the 35M checkpoint as a cheaper first pass)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop processor only, 16 GB memory. One-time embedding of 15,043 CATH domain sequences (2,374,361 residues) is the only slow step; cached vectors are about 29 MB. The 15,043-by-15,043 similarity matrix is 0.9 GB in single precision and can be chunked. 1,224 of the 16,076 UniProt sequences exceed the 1,022-residue context window and would need chunking or truncation.",
+    "licence": "ESM-2 weights are MIT, which is permissive. The benchmark files are the problem: the Zenodo record declares no licence at all, the zip contains an MIT licence file, and the GitHub README claims Creative Commons Attribution-NonCommercial 4.0 while the LICENSE file there is actually Attribution-NonCommercial-ShareAlike 4.0. Treat the data as non-commercial share-alike and say so."
+  },
+  "integration": {
+    "partner_dataset": "RCSB Protein Data Bank entry metadata for release dates (primary), with AlphaFold Protein Structure Database and InterPro/Pfam as secondary partners on UniProt accession",
+    "join_key": "The first four characters of each CATH domain identifier are the Protein Data Bank entry code (for example 3b89A01 maps to entry 3b89). I verified this resolves: 13,070 unique codes, 12,917 returned a release date from the RCSB GraphQL interface in 7 seconds. One entry maps to several domains (15,043 domains from 13,070 entries), so the collapse rule is to copy the entry's release date onto each of its domains. For the UniProt-keyed scenarios the key is the accession itself, which I verified resolves for 16,076 of 16,079.",
+    "bigger_question_one_sentence": "Does the measured advantage of pretrained-embedding search over classical alignment search survive on protein domains whose structures entered the Protein Data Bank after the models' training data was frozen - the control the benchmark's own authors name as missing?"
+  },
+  "controls": {
+    "positive_control": "Two, chosen before looking at any result. (1) A linear probe on the frozen embeddings must recover the 5 CATH Classes near-perfectly, since the paper's own embedding map (Figure 9) shows domains separating by class; if it cannot, the plumbing is wrong. (2) Reproduce BLAST's published Topology score of 0.0402 and Diamond's 0.0066 by running those two tools myself through the deposited compute_sensitivity.py - both install in minutes and the metric script is in hand.",
+    "negative_control": "Shuffle the CATH labels and re-run: sensitivity up to the first false positive must collapse toward the printed random level. Then shuffle labels only within a topology, to confirm the grouped split is actually grouping. Then replace the embeddings with random vectors of the same shape and confirm it matches the dummy. Each full re-run costs about 2.2 minutes of scoring, which I timed.",
+    "external_validation": "Three independent held-out sets ship in the same deposit and were never used to fit anything: the 1,000-query functional-consistency set with curated Gene Ontology labels (different label type, different proteins), the 534-query DisProt disordered-protein set with a published random floor and oracle ceiling, and the three predicted-structure-confidence strata. On top of that, a Protein Data Bank release-date split is available and verified - 427 CATH-S20 domains come from entries released in 2022-2023. Honest caveat: a structure release date does NOT prove the sequence was unseen, since a sequence can sit in UniProt for years before anyone solves its structure, so for a sequence-only model the right date is the UniProt entry-creation date."
+  },
+  "honest_claim_h3": "Among protein domains soluble and well-behaved enough that somebody solved their structure and CATH curated it, a frozen protein-language-model embedding plus a small trained head ranks same-fold domains this accurately on folds it never saw during head training - and says nothing about proteins no one has ever crystallised.",
+  "pitch": {
+    "headline": "15,043 expert-labelled protein domains; sequences join 15,043 of 15,043, and deposited scripts score a full run in 2.2 minutes.",
+    "what_makes_the_data_unusual": "Eleven of twelve counts in the paper matched the files exactly (the lone mismatch, 4,573 against 5,473 multi-domain targets, reads as a transposition), and the deposit ships the scoring code plus a printed random floor (0.354-0.387) and oracle ceiling (0.823-0.849) for the disordered-protein scenario - benchmarks rarely hand over both ends of the scale. Two caveats: the 13 comparison numbers come from the preprint's supplementary tables I parsed, not from any result file, and the licence is declared three different ways (none on Zenodo, MIT in the zip, Creative Commons Attribution-NonCommercial-ShareAlike on GitHub), so treat it as non-commercial share-alike.",
+    "the_win": "A decay curve with real numbers: how much of PLMSearch's published 0.2154 and FoldExplorer's 0.2259 Topology-level margin over BLAST's 0.0402 survives on folds a contrastive head never saw and on the 427 CATH-S20 domains from Protein Data Bank entries released in 2022-2023. Not a win over TM-align's 0.2854 - that ceiling stands - but the first number for the release-date control the benchmark's own authors name as missing.",
+    "even_if_it_fails": "You get the decay curve either way, which is the actual deliverable, and the half-day killing check is itself informative: if plain frozen ESM-2 mean-pooling scores near 0.2154 through the deposited scorer, that measures how much of the published margin is just the backbone. Be honest about the limit, though - a structure's deposition date does not prove its sequence was unseen by a sequence model, so a flat curve is weaker evidence than a steep one.",
+    "who_wants_it": "The benchmark's own authors, who state nobody has tested whether embedding methods still win on structures postdating their training data, and the ProtTucker/EAT line of work that already fits contrastive heads on frozen embeddings over the CATH hierarchy. Downstream, anyone annotating newly sequenced proteins from soil or gut microbial samples deciding which search tool to run - though note all seven competing methods are already open with code, which is why this is parked rather than started."
+  },
+  "plain_idea": {
+    "one_liner": "Use a protein's amino-acid sequence to find other proteins with the same three-dimensional fold, including distant relatives.",
+    "train_on": "Each example is one protein domain: its amino-acid sequence (median 136 residues) paired with its position in the four-level CATH structural classification. I verified 15,043 such domains, with the sequences joining the labels 15,043 out of 15,043.",
+    "predict": "For a query domain, a ranked list of other domains, scored by how likely they share the query's fold. The true answer is CATH's expert classification, which human curators assign from experimentally determined three-dimensional structures, so it never comes from a sequence model.",
+    "why_worthwhile": "Anyone annotating newly sequenced proteins, for instance from soil or gut microbial samples, relies on this search step, and the benchmark's own authors say nobody has checked whether the newer embedding-based tools still win once you test only on structures released after those tools were trained. Even a failure maps how fast accuracy decays as relatives get more distant."
+  },
+  "ml_idea": "Freeze ESM-2 (a protein language model), embed all 15,043 CATH-S20 domain sequences once on a laptop processor, and train a small projection head with a contrastive loss so that domains in the same CATH Homologous superfamily land close together. Evaluate by all-versus-all retrieval using the authors' own deposited compute_sensitivity.py, under two splits they did not run: held-out whole folds (train the head on domains from one set of the 1,379 topologies, test retrieval on queries from topologies the head never saw) and a Protein Data Bank release-date split (index on pre-2021 entries, query with the 427 domains from 2022-2023). Compare directly against the 13 published numbers in Table S1, with BLAST and MMseqs2 run by me as reproduced floors and TM-align's 0.2854 as the published ceiling. The headline output is a decay curve, not a win: how much of the embedding method's margin over sequence alignment is left on folds and structures that postdate the backbone.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.02,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 1.5,
+    "cv_run_minutes": 30,
+    "compute_note": "Working-set and row numbers are measured, not estimated: 1,116,096-byte label file plus 2,813,342-byte sequence file, 15,043 rows, 2,374,361 residues. I timed the deposited scorer's quadratic true-positive step at 1.75 seconds per 200 queries, so 2.2 minutes for the full set, and I timed UniProt sequence retrieval at 8.3 seconds per 1,000 accessions and RCSB date lookup at 7 seconds for 13,070 entries. The 1.5-hour embedding figure and the 4 GB peak are ESTIMATES only - I did not install PyTorch or run ESM-2 - based on roughly 0.1-0.3 seconds per sequence for the 150M-parameter checkpoint on a laptop processor, plus a 0.9 GB similarity matrix.",
+    "cheapest_killing_check": "Half a day: embed the 15,043 CATH domain sequences with plain ESM-2 mean pooling, run all-versus-all cosine retrieval, and score it with the deposited compute_sensitivity.py. If the Topology number lands near PLMSearch's published 0.2154 and below TM-align's 0.2854, then the open methods have already taken the available ground and a contrastive head will buy a few points at best - kill it. Do this before touching the release-date split."
+  },
+  "verdict": "park",
+  "verdict_reason": "Every Part A killer passes and I verified it in the files, which is rare: 15,043 labelled rows joining 15,043 of 15,043 to a 2.8 MB sequence file, eleven of twelve paper counts matching exactly, the one mismatch (multi-domain targets 4,573 against 5,473) resolvable as a typo, the evaluation scripts deposited and timed at 2.2 minutes a run, and 13 published comparison numbers plus a printed random floor and oracle ceiling read straight out of the supplement. Model-readiness is 10 of 12 and integration is a clean 8 of 8 on a release-date join I confirmed resolves in 7 seconds. What stops it is C2 = 0. Foldseek, PLMSearch, TM-vec, DHR, FoldExplorer, GraSR and ProtTucker are all open with code, ProtTucker already did frozen-language-model-embeddings-plus-contrastive-head on the CATH hierarchy, and this paper IS the honest evaluation of the field - the exact combination the checklist calls fatal. The one opening the authors hand over, a release-date split, is real but weak: a structure's deposition date does not prove its sequence was unseen by a sequence model, and time splits are already standard practice elsewhere. So park it, not reject it. This deposit is the best cheap remote-homology sanity-check resource I have seen in this queue and is worth keeping as a positive control or external-validation set for a different protein project; and the sequence-resolved, release-date-annotated table I built today is shareable on its own. Revisit only if someone wants the disordered-protein regime, where every method sits at 0.38-0.47 against a random floor of 0.35 and a ceiling of 0.83 - but note that scenario's Gene Ontology labels are NOT deposited (8 of 534 queries covered), so those labels would have to be rebuilt."
+}

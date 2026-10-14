@@ -1,0 +1,49 @@
+{
+  "paper_id": "cell2026-06-034",
+  "title": "Spatial proximity sequencing maps developmental dynamics in the germinal center.",
+  "doi": "10.1016/j.cell.2026.06.034",
+  "journal": "Cell",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE304749",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found GEO series GSE304749 (public, 6 samples) by searching GEO for 'Sprox-seq'; the paper itself has no open full text. Read the GEO filelist: 3 Visium sections (A1, B1, D1), each with an RNA matrix.mtx (46-60 MB gz), spot positions and images, plus 3 PLA (proximity ligation assay, which counts pairs of proteins sitting next to each other) count matrices (1.6-2.0 MB gz). Opened the A1 PLA matrix: 1,678 protein-pair rows x 3,218 spots, 57.5% zeros, 46 antibody tags including isotype controls (mIgG, HIgG). Opened the A1 features file (38,606 Ensembl genes) and positions (4,992 spots, 3,218 in tissue, which matches the PLA columns).",
+    "what_came_from_paper_text_only": "32 proteins, 528 pairwise interactions, the light-zone/dark-zone findings and the B cell trajectory come from the abstract and GEO summary. GEO design: A1 and B1 are two regions from one donor and D1 is from a second donor, so 2 donors in total. The B1 and D1 matrices were not opened; their spot counts are unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public GEO GSE304749, no login. Checked the FTP listing and downloaded the A1 files."},
+    "a2_label_is_a_column": {"pass": true, "note": "If the target is the PLA (proximity ligation assay) pair counts per spot, it is a ready matrix (checked in the A1 file). No cell-level or outcome label exists. Germinal-center zones and B cell states would have to be built by clustering."},
+    "a3_inputs_present": {"pass": true, "note": "RNA counts per spot (38,606 Ensembl genes) and spot coordinates are present. Checked for A1."},
+    "a4_units_stated": {"pass": true, "note": "Raw integer UMI (unique molecular identifier) counts in both modalities; units are implicit but standard."},
+    "a5_enough_rows": {"pass": false, "n_rows": 3218, "note": "3,218 spots in A1 (verified); roughly 9,000 across 3 sections (estimated). But the independent unit is the donor: there are 2 donors and 3 tissue sections. Like the scCT-DB case, the big spot count hides n=2 for any claim that a model generalizes."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.5 GB (3 RNA mtx of 46-60 MB gz plus 3 PLA matrices of ~2 MB)", "note": "Easily fits in 16 GB."},
+    "a7_counts_match_paper": {"pass": true, "note": "The PLA matrix has 46 tags (32 proteins, some split into A/B probes, plus isotype controls) and 1,678 pairs. That is consistent with 528 pairs among 32 proteins once probe orientation and controls are counted, but I could not reconcile the numbers exactly without the methods section."},
+    "a8_label_provenance": {"pass": true, "note": "PLA counts are a direct sequencing measurement and do not come from another model. Interaction 'scores' and cell states in the paper are computed downstream."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DGAT (dual-graph attention network, Nature Communications 2026)", "open_weights": null, "score_and_split": "Imputes spatial protein levels from spatial RNA; trained on multi-sample spatial RNA+protein datasets. I did not retrieve its scores.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "SR2P (stacking ensemble, bioRxiv 2026)", "open_weights": null, "score_and_split": "Predicts spatial protein abundance from gene expression by stacking 11 base learners; scores not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "cTP-net (Nature Communications 2020) and SPIDER, zero-shot ensemble (Cell Systems 2024)", "open_weights": null, "score_and_split": "Single-cell surface-protein imputation from RNA, trained on CITE-seq (a method measuring RNA and surface proteins in the same cell). Scores not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell RNA foundation models), applied to spot RNA profiles", "freeze_and_head_viable": true, "hardware": "CPU feasible for ~9,000 spots", "licence": "scGPT MIT; Geneformer Apache-2.0"},
+  "integration": {"partner_dataset": "Public 10x Visium CytAssist tonsil gene+protein datasets and tonsil CITE-seq atlases", "join_key": "Ensembl gene ID / protein marker name", "bigger_question_one_sentence": "Can protein-pair proximity in tissue be predicted from RNA alone, so that any Visium tonsil dataset gains an interaction layer?"},
+  "controls": {"positive_control": "Predicting CD19/CD20 PLA counts from MS4A1/CD19 RNA should succeed, and the B-zone versus T-zone split should be recovered.", "negative_control": "Isotype-control pairs (mIgG, HIgG) should be unpredictable from RNA, and shuffling spots should reduce performance to the mean.", "external_validation": "None with matched PLA data. Only the second donor (D1) is available as a held-out section."},
+  "honest_claim_h3": "Within tonsil sections from 2 donors, spot-level RNA predicts PLA (proximity ligation assay) protein-pair counts to some degree, with no evidence that this holds for other donors or tissues.",
+  "plain_idea": {"one_liner": "Use the gene activity in each small patch of tonsil tissue to predict which pairs of surface proteins sit next to each other there.", "train_on": "RNA counts for 38,606 genes in each 55-micron tissue spot: 3,218 spots verified in one section, about 9,000 across 3 sections from 2 donors.", "predict": "Counts of 1,678 protein-pair proximity signals per spot, measured directly by antibody-DNA proximity ligation followed by sequencing.", "why_worthwhile": "If it worked, ordinary spatial RNA datasets could be given a protein-interaction layer. With 2 donors, though, the result could not be shown to generalize."},
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "The target (protein-pair proximity, not single-protein abundance) is unusual, but there are only 3 sections and 2 donors. That is far smaller than the multi-dataset training sets used by DGAT and SR2P for protein imputation."},
+    "confidence_score": {"answer": "no", "why": "With 2 donors, uncertainty across donors cannot be estimated; within-section noise could be estimated only from neighbouring spots."},
+    "models_beatable": {"answer": "partly", "why": "DGAT and SR2P (2025-2026) target single-protein abundance, not pairs, so no direct baseline exists. But they are recent graph and ensemble models, and I did not check their splits."},
+    "guaranteed_improvement": {"answer": "no", "why": "No other dataset measures the same PLA pairs the same way, so the conditions of same quantity, same assay and same split cannot hold."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Cross-modal regression from spot RNA (optionally scGPT embeddings plus spatial-neighbour features) to PLA pair counts, tested by holding out donor D1. Rejected because it rests on 2 donors.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.5, "needs_gpu": false, "peak_ram_gb": 3, "embedding_hours": 0.5, "cv_run_minutes": 5, "compute_note": "Estimated from file sizes (mtx 46-60 MB gz each) and ~9,000 spots; nothing timed.", "cheapest_killing_check": "Number of donors: GEO design states 2 (A1 and B1 from the same donor, D1 from another). This kills any generalization claim."},
+  "verdict": "reject",
+  "verdict_reason": "The data are clean and public (GEO GSE304749, verified), but there are only 3 tissue sections from 2 donors. About 9,000 non-independent spots stand in for n=2, the A5 failure in disguise. The closest task, predicting protein from spatial RNA, already has DGAT and SR2P. No outcome label exists beyond the raw count matrices."
+}

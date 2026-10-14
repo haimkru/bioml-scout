@@ -1,0 +1,146 @@
+{
+  "paper_id": "nar2026-gkag818",
+  "title": "ETfinder: harnessing conserved C-terminal tails of single-stranded DNA-binding proteins for mining and engineering RecET systems in non-model microbial chassis.",
+  "doi": "10.1093/nar/gkag818",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21399393",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded ETfinder.zip (58,417,825 bytes, CC-BY-4.0) from Zenodo and extracted it. Parsed both data files: scored_ctx_ctx0.json (141 MB, 25,565 RecT recombinase proteins; 25,529 carry a gene-neighbourhood block, matching the paper's headline count exactly) and scored_RefSSBcontext.json (85 MB, 20,473 bacterial genomes with their SSB, single-stranded DNA-binding protein, sequences). Counted 67,529 RecT-SSB sequence pairs in-file (35,986 flagged status='host'); built a 24,183-row feature/label table (RecT amino-acid sequence 200-692 aa, host SSB last-7-residue tail, taxonomic lineage, NCBI TaxID) with zero missing values and 1 duplicate sequence. Measured peak memory 0.69 GB. Computed the dummy baselines myself: majority tail class 41.1%, leave-one-taxonomic-order-out using the class-majority tail 69.7%; 575 distinct tail classes, 32 with >=50 members; label ambiguity 132/5,459 (2.4%) among RecTs with several host records.",
+    "what_came_from_paper_text_only": "All of the wet-lab numbers: the 8.9x10^2 colony-forming units per microgram of DNA for the Paracoccaceae SJ630 system, 100% editing accuracy, the five RecT homologs tested in Rhodobacter sphaeroides and five in Halomonas, and the 18,841 alpha-proteobacterial genomes screened (the shipped reference file holds 20,473 genomes across all phyla, a different set). Supplementary Datasets S1 and S2, which hold the case-study inputs and presumably the measured efficiencies, were not retrievable: Europe PMC's supplementary-file endpoint timed out."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 21399393, one 58.4 MB zip, CC-BY-4.0, no login. Downloaded and extracted successfully; code is MIT on GitHub."},
+    "a2_label_is_a_column": {"pass": true, "note": "Honest split: the label anyone actually wants (recombineering efficiency) does NOT exist in the files at all. The label that does exist - the host SSB C-terminal 7-residue tail - sits as a sequence string in the same nested record as the RecT, so it is a one-line slice, not a cross-source join. Pass is for that second label only."},
+    "a3_inputs_present": {"pass": true, "note": "Full amino-acid sequences present for every RecT, its two flanking genes on each side, and the host SSB. No accession lookups needed; I read the sequences straight out of the JSON."},
+    "a4_units_stated": {"pass": true, "note": "No measured quantity exists, so units do not apply: the label is a categorical 7-letter amino-acid motif. Numeric side-fields (percent identity, bit score, e-value, GC content) are standard and self-evident."},
+    "a5_enough_rows": {"pass": true, "n_rows": 24183, "note": "24,183 RecT proteins with a host SSB tail, after filtering to 200-692 aa as the authors' own code does. 32 tail classes have >=50 members. Clustering at 50% sequence identity would shrink this by an unknown amount (CD-HIT not run)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "250 MB of JSON; 9 MB CSV after extraction", "note": "Measured peak resident memory 0.69 GB to load the 141 MB file. No GPU needed for a frozen-embedding baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper's 25,529 RecT-SSB pairs equals exactly the number of entries carrying a gene-neighbourhood block (25,529 of 25,565). The 18,841 alpha-proteobacterial genomes are not reconstructable from the shipped 20,473-genome reference file, and joining the two files on assembly accession recovers only 9.5% of RecTs - but the pairing is not needed because SSB sequences are embedded in the RecT file."},
+    "a8_label_provenance": {"pass": true, "note": "The SSB tail comes from RefSeq genome annotation (real sequencing), not a model, and is not computed from the RecT sequence. Two caveats recorded: which SSB counts as 'the host SSB' is the authors' pipeline's Pfam-based call, and RecT and SSB come from the same genome, so taxonomy alone reaches 69.7% - that, not 0%, is the floor any model must clear."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two deeply nested JSON files, no table; I wrote a 40-line extractor that worked. Verified in the files."},
+    "B2": {"score": 1, "why": "JSON parsed cleanly but one empty list crashed my first pass; no CSV/TSV shipped."},
+    "B3": {"score": 2, "why": "Label is one sequence motif from one uniform source (RefSeq annotation); no cross-assay comparability problem."},
+    "B4": {"score": 2, "why": "Zero missing or censored values in my 24,183-row extracted table."},
+    "B5": {"score": 1, "why": "Only 1 exact duplicate sequence, but heavy near-redundancy by genus; CD-HIT clustering needed."},
+    "B6": {"score": 1, "why": "README describes the database loosely; JSON fields status, score, eff_id, norm_bits undocumented, code comments in Chinese."},
+    "C1": {"score": 2, "why": "Asks how far co-evolution signal reads across the tree; a null result kills a published tool's premise, so informative either way."},
+    "C2": {"score": 2, "why": "Searched: no model predicts SSAP-SSB tail compatibility. Adjacent phage-host protein-language models are open but target a different label."},
+    "C3": {"score": 2, "why": "Unique-application plus diversity: 24,183 non-model-bacteria recombinases, a target nobody has modelled."},
+    "C4": {"score": 2, "why": "Current method is cloning plus electroporation plus colony counting per candidate; the paper assayed 10 of 25,529."},
+    "C5": {"score": 2, "why": "I computed the dummies myself: 41.1% majority class, 69.7% leave-one-order-out taxonomy baseline."},
+    "D1": {"score": 2, "why": "ESM-2 (open-weight protein language model) fits exactly: 24,183 proteins, median 303 amino acids."},
+    "D2": {"score": 2, "why": "Embed once on CPU with the 35M or 150M checkpoint, then fit a linear or small head; no fine-tuning needed."},
+    "D3": {"score": 2, "why": "ESM-2 weights MIT, ETfinder code MIT, Zenodo data CC-BY-4.0. All permissive."},
+    "E1": {"ok": true, "why": "Hold out whole taxonomic orders or families, plus CD-HIT sequence-identity clusters. Lineages verified in the files."},
+    "E2": {"ok": true, "why": "139 families, 49 classes, 23 phylum-level clades, 32 tail classes with >=50 members. Counted."},
+    "E3": {"ok": true, "why": "Computed: 41.1% majority-class, 69.7% leave-one-order-out taxonomic-majority accuracy."},
+    "E4": {"ok": true, "why": "5,459 RecTs have several host records; 132 disagree on the tail, giving a 2.4% intrinsic label-noise floor."},
+    "E5": {"ok": true, "why": "Phage lambda Redbeta (NP_040617.1) is in the file and its cognate E. coli SSB tail FDDDIPF is textbook; plus predict sequence length from embeddings."},
+    "E6": {"ok": true, "why": "Shuffle tails globally and within taxonomic order; ablate to taxonomy-only features. All cheap on a 9 MB table."},
+    "E7": {"ok": true, "why": "Measured SSAP portability in Filsinger 2021 Nature Chemical Biology and a 227-SSAP library across six bacteria (PNAS 2025) are independent functional tests."},
+    "E8": {"ok": false, "why": "ETfinder publishes no predictive metric; nothing to reproduce beyond re-ranking its five validated candidates."},
+    "G1": {"score": 2, "why": "RefSeq protein accessions, NCBI assembly accessions, NCBI TaxID and Pfam IDs all present in the JSON. Seen in files."},
+    "G2": {"score": 2, "why": "Pfam/InterPro joins on the context_elements field already present; AlphaFold DB via RefSeq-to-UniProt mapping."},
+    "G3": {"score": 1, "why": "One protein maps to up to 215 assemblies (identical-protein groups); needs an explicit collapse rule before joining."},
+    "G4": {"score": 2, "why": "Joined to measured SSAP efficiency libraries it asks whether natural co-evolution predicts editing in untested hosts - neither set answers that alone."},
+    "H1": {"score": 1, "why": "No measured failures; 31,044 pipeline-labelled non-host SSBs exist, but pair negatives must be generated by shuffling."},
+    "H2": {"score": 2, "why": "24,183 proteins across 139 families and 10+ phyla, all from RefSeq rather than one lab. Counted in files."},
+    "H3": {"score": 2, "why": "Honest claim writes cleanly in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 1, "why": "Paper is explicit that only ten candidates were assayed; the JSON's undocumented filters and status calls are not."},
+    "I1": {"score": 2, "why": "Named: GuoQiang Chen's Halomonas group at Tsinghua, the ETfinder authors at ECUST, Wannier/Church's SSAP-portability line of work."},
+    "I2": {"score": 1, "why": "Would change which candidates get cloned, but exact tail-string matching already gave the authors five hits from five tries."},
+    "I3": {"score": 1, "why": "Decision is which top-k candidates to clone; top-k recall aligns, 575-class accuracy does not."},
+    "I4": {"score": 1, "why": "A simple taxonomic rule already reaches 69.7%, so whether ML adds anything is genuinely open - which is the project."},
+    "J1": {"score": 2, "why": "Frozen-backbone embeddings, grouped taxonomic splits, paired-interaction head, negative controls, external transfer test."},
+    "J2": {"score": 1, "why": "Known SSB tails and lambda Redbeta give sanity checks, but no bench microbiologist lined up to review results."},
+    "J3": {"score": 2, "why": "The 24,183-row RecT-plus-tail CSV is already built and shareable even if no model works."},
+    "J4": {"score": 1, "why": "My estimate is about three weeks; not yet a committed budget."},
+    "J5": {"score": 1, "why": "Kill condition stated here (under ~100 usable measured SSAP-host efficiencies) but not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ETfinder itself (the tool in this paper) - a rule, not a learned model",
+        "open_weights": true,
+        "score_and_split": "No predictive metric published. It string-matches a user's SSB C-terminal 7-mer against the database, then ranks by phylogeny and gene context. Validation was 5 of 5 tested RecT homologs active in Rhodobacter sphaeroides and 5 in Halomonas.",
+        "authors_named_unsolved": "They note active candidates can share as little as 18.2% sequence identity (ChRecET vs VjRecET), so global similarity does not predict activity; and that RecTs from distant taxa still work, so the search space beyond exact matching is undefined.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PHPRBP - deep network for bacteriophage host prediction from receptor-binding proteins using ESM-2 and ProtT5 embeddings",
+        "open_weights": null,
+        "score_and_split": "Reported to outperform handcrafted-feature baselines on phage host taxon prediction; I read only the abstract, so no split details verified.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Protein-embedding phage-host interaction predictors (PLOS One 2023; 'Protein language models enable accurate viral host range prediction', 2025)",
+        "open_weights": null,
+        "score_and_split": "ProtT5 and ESM-1b embeddings improved weighted F1 and recall over handcrafted features across confidence thresholds; abstract level only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Filsinger et al. 2021 (Nature Chemical Biology) - experimental, not a predictive model",
+        "open_weights": false,
+        "score_and_split": "Measured SSAP portability across Escherichia coli, Lactococcus lactis, Mycobacterium smegmatis, Lactobacillus rhamnosus and Caulobacter crescentus, and showed portability tracks SSB C-terminal compatibility. No model fitted.",
+        "authors_named_unsolved": "Established the mechanism this paper exploits; predicting which SSAP works in an untested host was left open.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (esm2_t12_35M or esm2_t30_150M), a protein language model",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM; 24,183 sequences of median 303 amino acids, embeddings cached once",
+    "licence": "MIT (ESM-2 weights); data CC-BY-4.0; ETfinder code MIT"
+  },
+  "integration": {
+    "partner_dataset": "Measured single-stranded DNA-annealing protein (SSAP) efficiency libraries: Filsinger et al. 2021 Nature Chemical Biology (5 host species) and the 227-SSAP library across six bacteria (PNAS 2025); secondarily Pfam/InterPro on the flanking-gene annotations already in the file",
+    "join_key": "Protein sequence or RefSeq accession for the SSAPs; NCBI TaxID plus the host SSB C-terminal 7-mer for the host side; Pfam ID for the gene-context join",
+    "bigger_question_one_sentence": "Does co-evolutionary compatibility learned from 24,183 natural recombinase-host pairs predict measured genome-editing efficiency in host species nobody has tested, better than matching the SSB tail string exactly?"
+  },
+  "controls": {
+    "positive_control": "Phage lambda Redbeta (NP_040617.1, present in the file) must be assigned the Escherichia coli SSB tail FDDDIPF, a textbook pairing; plus a trivially learnable target, predicting RecT sequence length from its embedding.",
+    "negative_control": "Shuffle the tail labels globally and within taxonomic order (performance must fall to 41.1% and ~69.7% respectively); replace embeddings with same-shape noise; ablate to taxonomy-only features.",
+    "external_validation": "Measured SSAP portability from Filsinger 2021 and the 227-SSAP six-host library (PNAS 2025), plus the 10 RecT homologs this paper assayed in Rhodobacter sphaeroides and Halomonas."
+  },
+  "honest_claim_h3": "From a recombinase's amino-acid sequence alone, the model predicts which single-stranded DNA-binding-protein C-terminal tail its natural host carries, among the 575 tail types seen in RefSeq-annotated bacteria - a proxy for host compatibility, not a measurement of editing efficiency, and it must be shown to beat the 69.7% that taxonomy alone already achieves on held-out taxonomic orders.",
+  "plain_idea": {
+    "one_liner": "Use a bacterial recombinase's protein sequence to predict the host protein tail it evolved to grab, and so which microbe it will edit.",
+    "train_on": "One row per recombinase: its amino-acid sequence (median 303 residues, range 200-692), optionally its two neighbouring genes on each side, and its host's taxonomy. 24,183 rows, counted in the downloaded files.",
+    "predict": "The last seven amino acids of the host's single-stranded DNA-binding protein (SSB) - the handle the recombinase must grip. The true answer is read from the host genome's RefSeq gene annotation, so it is a sequence fact, not an assay result; 575 distinct tails occur, the commonest in 41.1% of rows.",
+    "why_worthwhile": "Groups engineering non-model bacteria (for example GuoQiang Chen's Halomonas group at Tsinghua) currently clone and colony-count candidates one at a time; a working score would rank candidates for a chassis whose tail has no exact match in the database. If it fails to beat a simple taxonomic rule, that itself says sequence carries no compatibility signal beyond phylogeny and the field should spend on assays, not computation."
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "The label itself - a bacterium's SSB C-terminal tail - is readable from UniProt and NCBI RefSeq for every sequenced bacterial genome (known resources; I verified 20,473 genomes' SSBs inside this paper's own reference file). The functional label people actually want, measured recombineering efficiency, exists only in a few papers: Filsinger 2021 Nature Chemical Biology (5 hosts) and the 227-SSAP, six-host library in PNAS 2025 (both found by search, supplements not opened).",
+    "approx_items": 20473,
+    "join_key": "NCBI TaxID or NCBI assembly accession (both present in this data) for the tail; protein sequence or RefSeq accession for the measured-efficiency sets",
+    "why": "Tails can be extracted for any bacterium on demand, so the training set can be grown far beyond this paper and the model can be scored on chassis it never saw; the small measured-efficiency sets then test whether the proxy predicts real editing."
+  },
+  "pitch": {
+    "headline": "24,183 bacterial recombinases paired with the host protein tail they evolved to grip, in one open file, with the dummy baseline already measured at 69.7%.",
+    "what_makes_the_data_unusual": "Both halves of a protein-protein specificity pair are in the same record as full sequences - no accession lookups - across 139 taxonomic families of mostly non-model bacteria, CC-BY-4.0, 58 MB. Verified by opening the files.",
+    "the_win": "Beat 69.7% leave-one-taxonomic-order-out accuracy (and 41.1% majority class) at predicting the host SSB tail, then show the same score ranks the measured recombineering efficiencies of Filsinger 2021's five-host portability panel.",
+    "even_if_it_fails": "A null result is publishable and useful: it would show the sequence of a recombinase carries no host-compatibility signal beyond its phylogeny, which undercuts the premise of ETfinder's ranking and tells engineers to screen rather than compute.",
+    "who_wants_it": "GuoQiang Chen's Halomonas chassis group at Tsinghua and the SSAP-portability community around Wannier and Church, who currently decide by hand which handful of recombinases to clone and colony-count."
+  },
+  "ml_idea": "Build a compatibility scorer for recombinase-host pairs. Positives: the 24,183 natural (RecT sequence, host SSB 7-residue tail) pairs extracted from scored_ctx_ctx0.json. Negatives: tails resampled from the observed tail distribution, so the model cannot win by learning tail frequency. Features: frozen ESM-2 embedding of the RecT (mean-pooled, and separately the C-terminal 60 residues, since that region makes the contact), concatenated with a one-hot or embedded representation of the 7-mer tail. Head: logistic regression, then a small multilayer perceptron. Evaluate with whole taxonomic orders held out and with CD-HIT 50%-identity clusters held out, against two precomputed dummies (41.1% majority tail, 69.7% taxonomic-majority). Then test transfer: score the SSAPs whose editing efficiency was measured in Filsinger 2021 and the 227-SSAP six-host library, and ask whether the score correlates with measured efficiency. The headline figure is accuracy versus taxonomic distance from training.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.25,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.5,
+    "embedding_hours": 3,
+    "cv_run_minutes": 15,
+    "compute_note": "Peak memory of 0.69 GB for loading the 141 MB JSON was measured with Python's resource module; I built the 24,183-row table and computed both dummy baselines in this session, so the 3 hours to a feature table is near-measured. Embedding time (24,183 sequences, median 303 amino acids, esm2_t30_150M at roughly 2-3 sequences/s on CPU) and the 15-minute cross-validation run are estimates, not timed.",
+    "cheapest_killing_check": "Open the supplementary tables of Filsinger 2021 (Nature Chemical Biology) and the 227-SSAP library (PNAS 2025) and count how many SSAPs have a measured editing efficiency in at least two hosts whose SSB tail is known. Under roughly 100 such SSAP-host measurements there is no functional validation, the project collapses to a co-evolution curiosity, and it should be parked. Second check, inside this data: after CD-HIT clustering at 50% identity, confirm that the 32 tail classes with >=50 members each span at least five clusters - otherwise tail classes are just sequence clusters and the task is degenerate."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "The data is real, open and better than the paper suggests: I extracted a clean 24,183-row table of recombinase sequences paired with their host's SSB C-terminal tail, with no missing values, a 2.4% label-noise floor, 139 taxonomic families to hold out, and a perfect ESM-2 fit on a laptop (peak 0.69 GB). Part A passes - but only for a proxy label. The outcome anyone actually wants, recombineering efficiency, is measured for about ten RecT homologs in this paper and appears nowhere in the 25,529-entry database, so A2 would fail outright for that target. And taxonomy alone already predicts the tail at 69.7% on held-out orders (vs 41.1% majority), so the model has a high floor to clear and a simple rule as a serious competitor. Verify two things before committing: that at least ~100 measured SSAP-host efficiencies can be scraped from Filsinger 2021 and the 2025 PNAS 227-SSAP library to give the proxy a functional test, and that tail classes are not confined to single sequence-identity clusters. If both hold, this is a cheap, well-controlled project whose negative result is as informative as its positive one."
+}

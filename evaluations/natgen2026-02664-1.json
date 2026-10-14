@@ -1,0 +1,48 @@
+{
+  "paper_id": "natgen2026-02664-1",
+  "title": "SUMOylation enhances DNMT1 function to repress mega-intergenic RNAs and viral mimicry.",
+  "doi": "10.1038/s41588-026-02664-1",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE233730",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed 12 linked GEO (Gene Expression Omnibus) series via NCBI esummary; all public. Read the GSE233730 superseries filelist: per-sample bigWig signal tracks (40–320 MB each), Bismark CpG coverage files (24–57 MB each), 16 CpG methylation bedGraphs (~260–305 MB each), 11 GB RAW tar. Downloaded the CRISPR (gene-knockout) screen file GSE233728_CombinedGuidecounts.txt.gz: 218,049 guides, 20,571 genes, raw read counts for 9 conditions (Day0, Day8/Day24 × DMSO/20/40/100 nM GSK3685032), one column per condition, 30.5% zeros at Day24 100 nM. Downloaded GSE233722 RNA-seq counts (60,649 Ensembl genes × 12 samples) and intergenic counts (23,361 regions × 12 samples, 25.5% all-zero), whose region IDs are just 'intergenic:N' with no coordinates.",
+    "what_came_from_paper_text_only": "Only the abstract was available (paywalled, not in PMC; no full text, no supplement). The mintRNA (mega-intergenic RNA) definitions, region coordinates, screen hit calls and differential-expression results are not in any file I opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All GEO series public with no login (checked the GEO pages and FTP listings)."},
+    "a2_label_is_a_column": {"pass": false, "note": "No outcome column exists in any file. Screen hit scores, de-repressed intergenic regions and DNMT1 redistribution regions would all have to be computed by me from raw counts or tracks using differential analysis (MAGeCK, DESeq2, peak differencing). Checked in the files."},
+    "a3_inputs_present": {"pass": false, "note": "The intergenic count table identifies regions only as 'intergenic:1…23361' with no coordinates or sequence, so the regions can't be linked to sequence or methylation without the authors' annotation, which is not deposited (checked in the file)."},
+    "a4_units_stated": {"pass": true, "note": "Raw read counts and standard bigWig/bedGraph signal; units implicit but standard."},
+    "a5_enough_rows": {"pass": true, "n_rows": 20571, "note": "20,571 genes in the screen and 23,361 intergenic regions (counted in files), but true hits are likely few and each condition is a single replicate (screen)."},
+    "a6_fits_laptop": {"pass": false, "working_set": "~5–15 GB for the genome-wide tracks; <10 MB for count tables", "note": "Any sequence-to-methylation/occupancy task needs multi-GB bedGraphs/bigWigs; the small tables are usable but lack labels and coordinates."},
+    "a7_counts_match_paper": {"pass": true, "note": "Can't compare: no full text. Sample counts per GEO series are internally consistent."},
+    "a8_label_provenance": {"pass": true, "note": "Any label would trace to physical measurements (read counts), but only after my own statistical construction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "AlphaGenome or Nucleotide Transformer (DNA) would be the candidates for a sequence-to-de-repression task", "freeze_and_head_viable": null, "hardware": "CPU for embeddings of a few thousand regions; GPU-preferred for AlphaGenome", "licence": "AlphaGenome non-commercial; Nucleotide Transformer CC BY-NC-SA"},
+  "integration": {"partner_dataset": "DepMap CRISPR gene effect (gene symbol / Ensembl ID in guide names)", "join_key": "Ensembl gene ID", "bigger_question_one_sentence": "Do genes modifying DNMT1-inhibitor sensitivity in one leukaemia line share features with pan-cancer essential genes? Weak, because the screen is one cell line."},
+  "controls": {"positive_control": "UHRF1 and RNF4 should score as screen hits; endogenous retroviruses should de-repress after DNMT1 inhibition.", "negative_control": "Label shuffling; non-targeting guides.", "external_validation": "None in this paper; other DNMT-inhibitor TE (transposable element) de-repression datasets exist (e.g. bioRxiv 2024.01.15.575744) but use different cells and drugs."},
+  "honest_claim_h3": "At best: predicts which intergenic regions are de-repressed by DNMT1 inhibition in two cancer cell lines (MV4-11 leukaemia, MCF7 breast), given labels I would have to call myself.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and baseline methylation of intergenic regions to predict which switch on when the DNA-methylation enzyme DNMT1 is drug-inhibited.",
+    "train_on": "Intergenic regions (23,361 in the deposited count table) described by sequence and starting methylation, but the table has no coordinates, so features can't be attached.",
+    "predict": "Whether the region's RNA rises after DNMT1 inhibitor treatment, which would have to be computed from raw RNA-seq counts by differential expression; not provided as a column.",
+    "why_worthwhile": "Cancer epigenetics groups using hypomethylating drugs could anticipate which hidden viral-like RNAs a tumour will express, informing viral-mimicry immunotherapy combinations."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict de-repression of intergenic/viral-like elements upon DNMT1 inhibition from sequence plus baseline methylation; blocked because labels must be constructed and intergenic regions lack coordinates.",
+  "effort": {"hours_to_feature_table": 30, "working_set_gb": 8, "needs_gpu": false, "peak_ram_gb": 12, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from GEO file sizes; nothing timed. Rebuilding region coordinates would require re-aligning RNA-seq, which is excluded (raw data).", "cheapest_killing_check": "Look for the authors' intergenic region BED/GTF annotation; without it the 23,361-row table cannot be mapped to the genome."},
+  "verdict": "reject",
+  "verdict_reason": "Mechanistic epigenomics paper with open GEO data, but there's no label column: screen scores and de-repressed regions must be built from raw counts. The intergenic count table also has no coordinates, and the genome-wide tracks are multi-GB from two cell lines."
+}

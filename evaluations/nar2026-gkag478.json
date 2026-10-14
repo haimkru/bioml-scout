@@ -1,0 +1,149 @@
+{
+  "paper_id": "nar2026-gkag478",
+  "title": "DeepCYP: an integrated deep learning web server for the holistic 'pathway-site product' prediction of CYP450 metabolism.",
+  "doi": "10.1093/nar/gkag478",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://deepcyp.scbdd.com",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "I downloaded and unpacked the whole Europe PMC supplement (1.27 MB zip): it is 14 figure images plus one 13-page PDF, which I parsed in full. Supplementary Table S1 holds only per-isoform counts (e.g. CYP3A4: 1081 training substrates, 1910 non-substrates, 550 site-of-metabolism substrates) — no compound list, no SMILES (text strings encoding chemical structures), no labels. I fetched the web server root, its JavaScript bundle (102 KB) and its documentation pages (README, sidebar, quickStart, description): the only routes are /screening, /evaluation, /contact and the manual; there is no download or dataset route, no licence and no code link. The /api/download endpoint returns 404 (not found).",
+    "what_came_from_paper_text_only": "All dataset descriptions: '>3800 compounds' for the pathway (which cytochrome P450 isoform metabolises a molecule) task, '>900 annotated molecules' for the site-of-metabolism task, a 15-tier SMIRKS reaction-rule library, a dataset '30% larger' than the EBoMD benchmark, and the claim of >10% improvement in Top-1/Top-2 ranking over FAME3, SMARTCyp and BioTransformer 3.0. None of this is backed by a file I could open."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified in the files. The Data Availability statement is only 'DeepCYP is publicly accessible without registration at https://deepcyp.scbdd.com'. The supplement I unpacked contains zero data files. The web app has no download route, and web searches found no GitHub, Zenodo, Figshare or Dryad deposit for DeepCYP. The only obtainable output is the server's own predictions for molecules you paste in."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL by consequence of A1. There is no table at all, so neither label exists as a column anywhere I can reach: not the per-isoform substrate/non-substrate flag, nor the atom-level and bond-level site-of-metabolism annotations. They are reported only as aggregate counts in a PDF."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL. The molecular structures (SMILES strings) used for training are not released in any form; the supplementary PDF names no compound."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Not a real issue here: the labels are binary (is/is not a substrate; is/is not a metabolism site), so no units are needed. Scored pass only so it does not mask the genuine failures above."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "FAIL as unverifiable. The paper claims >3800 compounds and >900 annotated molecules, and Supplementary Table S1 gives per-isoform counts consistent with that, but I could not count a single row because no rows were published."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "<10 MB if it existed",
+      "note": "A few thousand small molecules with binary labels would be a trivially small table on a 16 GB laptop. Moot, since the table does not exist."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "FAIL as uncheckable, and there is an internal inconsistency: the abstract's nine isoforms include CYP2C8, but the web-server documentation lists 'CYP2B8' in the same slot. With no download, no count can be reconciled."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the only data I can actually obtain. Anything downloadable from the server is DeepCYP's own graph-neural-network output, so training on it would be distilling the model, not learning biology. The underlying experimental annotations (curated from literature, DrugBank and CypReact) are real measurements but were not released."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepCYP (this paper; multi-task graph neural network on 2D molecular graphs)",
+        "open_weights": false,
+        "score_and_split": "5-fold cross-validation reported in the supplement: pathway task mean AUC (area under the receiver-operating curve) 88.84 and mean AUPRC (area under the precision-recall curve) 50.51 across nine isoforms; site-of-metabolism task per-molecule AUC ~94.8. Splits appear random over molecules, not scaffold-based.",
+        "authors_named_unsolved": "The paper frames remaining gaps as coverage of minor isoforms and reliance on 2D structure only; it introduces an ensemble-variance confidence score to flag unreliable predictions.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "GLMCyp (2025, J. Chem. Inf. Model.) — graph plus Uni-Mol 3D features plus ESM-2 protein language model embeddings of the CYP enzymes",
+        "open_weights": true,
+        "score_and_split": "ROC-AUC 0.926 for bonds of metabolism trained on the public EBoMD dataset, plus external-dataset validation. Code and data at github.com/lvimmind/GLMCyp-Predictor (found by search, not downloaded).",
+        "authors_named_unsolved": "Generalisation to molecules unlike the training set; reported as the motivation for their external validation.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CyProduct (2021) and its EBoMD dataset of 679 substrates across nine human CYP isoforms",
+        "open_weights": true,
+        "score_and_split": "Distributed with datasets at bitbucket.org/wishartlab/cyproduct; EBoMD2 holds 68 reactants plus 30 non-CYP reactants for validation (from search results, not downloaded).",
+        "authors_named_unsolved": "Byproduct (metabolite structure) prediction accuracy beyond the main metabolite.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "D-CyPre (2024, PeerJ CS) — machine-learning site-of-metabolism tool",
+        "open_weights": true,
+        "score_and_split": "Code at github.com/67520/D-CyPre; scores not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "FAME3, SMARTCyp 3.0, BioTransformer 3.0, MetaCYP (2026)",
+        "open_weights": true,
+        "score_and_split": "Long-standing open tools used as DeepCYP's own benchmarks; SMARTCyp and BioTransformer are freely distributed. MetaCYP (Frontiers in Chemistry 2026) is a very recent multimodal deep-learning entrant covering metabolic sites and reaction types.",
+        "authors_named_unsolved": "Not retrieved per tool.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ChemBERTa or MolFormer (molecule language models), or a Chemprop-style directed message-passing graph network",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop would suffice for a few thousand molecules",
+    "licence": "Permissive for ChemBERTa/MolFormer — irrelevant here, since there is no data to fit a head on."
+  },
+  "integration": {
+    "partner_dataset": "Would have been DrugBank and ChEMBL on InChIKey (a hashed chemical structure identifier), plus UniProt accessions for the nine CYP enzymes",
+    "join_key": "InChIKey / SMILES for compounds; UniProt accession for CYP isoforms",
+    "bigger_question_one_sentence": "Cannot be pursued: no compound identifiers were released, so there is nothing to join on."
+  },
+  "controls": {
+    "positive_control": "Would have been the textbook result that CYP3A4 metabolises far more drugs than any other isoform, which any working pathway model must recover; untestable without the data.",
+    "negative_control": "Label shuffling, untestable without the data.",
+    "external_validation": "The public EBoMD dataset (Wishart lab bitbucket) and the Zaretzki 680-substrate set exist as independent sources — but they belong to other papers, not this one."
+  },
+  "honest_claim_h3": "No claim is possible from this paper's own data, because the paper publishes a web interface and summary statistics only; any model I built would be trained on DeepCYP's predictions and could claim at best 'I reproduce DeepCYP's outputs'.",
+  "plain_idea": {
+    "one_liner": "Use a drug's chemical structure to predict which liver enzymes metabolise it and at which atoms.",
+    "train_on": "The project considered was the paper's curated set: roughly 3,800 compounds labelled for whether each of nine cytochrome P450 enzymes metabolises them, plus roughly 900 compounds with atom-level and bond-level metabolism-site annotations. Neither set is published, so the counts are the paper's, not mine.",
+    "predict": "Two outputs: a yes/no per enzyme for whether it metabolises the molecule, and a per-atom probability that the atom is the reaction site. Ground truth comes from laboratory biotransformation experiments reported in the literature and curated into DrugBank and CypReact.",
+    "why_worthwhile": "Medicinal chemists use site-of-metabolism predictions to decide which position on a lead compound to block so the drug survives first-pass liver metabolism; a better model saves costly liver-microsome assays."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The paper claims a set 30% larger than the public EBoMD benchmark (679 substrates), but releases none of it. What is actually accessible to me is less than what GLMCyp and CyProduct already publish openly."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "DeepCYP already ships a per-prediction confidence from the variance across its five cross-validation models, with per-isoform thresholds listed in Supplementary Table 3, so that edge is taken — and I have no data to calibrate anything against."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "GLMCyp (2025) is open, uses ESM-2 protein embeddings plus Uni-Mol 3D features, reports ROC-AUC 0.926 with external validation, and MetaCYP arrived in 2026. Beating these with no training data is not a project."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: our model cannot see everything the baseline sees, because this paper's training data does not exist in downloadable form."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rejected idea: fine-tune a molecular graph network or a frozen ChemBERTa backbone to predict, from SMILES alone, which of nine cytochrome P450 isoforms metabolise a compound and which atoms are the reaction sites. The data for it is not released. If this task still appeals, start instead from the openly distributed EBoMD dataset (bitbucket.org/wishartlab/cyproduct, 679 substrates across the same nine isoforms) with the GLMCyp GitHub repository as a runnable baseline — but note that is a crowded field with at least four open, honestly evaluated models.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated: there is no dataset to size. A few thousand small molecules would have been well under 100 MB and fine on a CPU laptop.",
+    "cheapest_killing_check": "Read the Data Availability statement, then unzip the supplement and list the files. Both took under five minutes and both say the same thing: a web server, no data."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A1 fails, verified in the files. The Data Availability statement offers only a web server; the entire supplement is 14 figures plus a 13-page PDF whose Supplementary Table S1 gives per-isoform counts and nothing else — no compounds, no SMILES, no labels. There is no GitHub, Zenodo or Figshare deposit, no download route in the web application, and the /api/download endpoint returns 404. A2, A3, A5 and A7 fail as a consequence, and A8 fails for the only data one could scrape, since the server emits DeepCYP's own predictions, which would make any model a distillation of it. The field is also crowded with open alternatives (GLMCyp with code and data on GitHub, CyProduct with the public EBoMD dataset, D-CyPre, SMARTCyp, BioTransformer 3.0, MetaCYP 2026), so there is no compensating angle."
+}

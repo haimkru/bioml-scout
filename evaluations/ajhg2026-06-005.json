@@ -1,0 +1,53 @@
+{
+  "paper_id": "ajhg2026-06-005",
+  "title": "Data-driven RNA phenotyping captures genetically regulated dimensions of the transcriptome.",
+  "doi": "10.1016/j.ajhg.2026.06.005",
+  "journal": "American Journal of Human Genetics (AJHG)",
+  "data_url": "https://doi.org/10.5281/zenodo.19924423",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed Zenodo record 19924423 via API (CC-BY-4.0; 15 files; rna_phenotypes.zip 30.4 GB, laddr_models.zip 3.2 GB, qtls.zip 577 MB). Read README.md. Downloaded qtls.gtex-ddp.tsv.gz (28.8 MB): 1,549,097 rows, 6 columns (tissue, gene_id, rank, phenotype_id, variant_id, pval_beta); 49 tissues, 40,941 genes, 254,318 phenotypes like ENSG...__PC6. No effect size, no fine-mapping probability column.",
+    "what_came_from_paper_text_only": "That LaDDR phenotypes are per-gene PCA (principal component analysis) components of binned RNA-seq coverage; the 95% more xQTLs claim; TWAS (transcriptome-wide association study) counts across 114 traits. Did not open per-tissue cis_qtl files inside qtls.zip, nor the 30 GB phenotype tables. GTEx individual genotypes are dbGaP controlled access (known, not tested)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Summary results on Zenodo, open, CC-BY-4.0; checked file listing and downloaded one table. Individual-level GTEx genotypes needed for any new QTL mapping are dbGaP controlled access."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked file: only lead variant + p-value per latent phenotype. A causal-variant or effect label would have to be constructed by fine-mapping, which needs controlled-access genotypes or LD (linkage disequilibrium) modelling."},
+    "a3_inputs_present": {"pass": true, "note": "Variant IDs encode hg38 coordinates and alleles (chr1_665098_G_A_b38), so sequence can be pulled from the reference genome; checked in file."},
+    "a4_units_stated": {"pass": true, "note": "p-values are unitless; README documents phenotype normalization (quantile + inverse-normal)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1549097, "note": "1,549,097 independent xQTL rows in the aggregated DDP (data-driven phenotype) table, counted in file."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~30-600 MB for QTL tables; 30 GB for phenotype matrices", "note": "QTL tables fit; full phenotype matrices do not but are not needed for a QTL-level task."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not cross-checked against the paper's per-tissue counts; 49 tissues matches the paper."},
+    "a8_label_provenance": {"pass": false, "note": "The phenotype is a PCA axis computed by the LaDDR model per gene, so 'PC6' means something different for every gene; the 'label' is a statistical association to that model output, with lead variants confounded by LD rather than measured causal effects."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "AlphaGenome (DNA sequence model, DeepMind)", "open_weights": true, "score_and_split": "On fine-mapped GTEx QTLs: AUC (area under the ROC curve) 0.80 for splicing QTLs, 0.86 for polyadenylation QTLs; recovers 41% of GTEx eQTLs at 90% sign accuracy (per search snippet of preprint).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Borzoi / Enformer (DNA sequence-to-coverage models)", "open_weights": true, "score_and_split": "Borzoi recovers 19% of GTEx eQTLs at 90% sign accuracy (as reported in AlphaGenome preprint snippet).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome", "freeze_and_head_viable": null, "hardware": "CPU too slow for genome-scale scoring; API or GPU", "licence": "non-commercial"},
+  "integration": {"partner_dataset": "GTEx v8 fine-mapped eQTL/sQTL sets", "join_key": "hg38 variant ID + Ensembl gene", "bigger_question_one_sentence": "Do sequence models predict the extra QTLs found only by annotation-free latent phenotypes? — but labels are LD-confounded leads, so the answer would be uninterpretable."},
+  "controls": {"positive_control": "Known eQTL lead variants overlapping KDP (knowledge-driven phenotype) xQTLs.", "negative_control": "Matched non-QTL variants at same distance to TSS.", "external_validation": "Geuvadis LaDDR xQTLs in the same record."},
+  "honest_claim_h3": "A model could at best claim to rank which variants are lead associations for arbitrary per-gene latent coverage components in GTEx, not which variants causally alter RNA.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around a genetic variant to predict whether it is linked to hidden patterns of RNA coverage in human tissues.",
+    "train_on": "DNA sequence windows around 1,549,097 variant-gene-tissue lead associations (verified count) plus matched non-associated variants.",
+    "predict": "Whether a variant is the lead association for a data-driven RNA phenotype; the truth comes from statistical association testing on GTEx RNA-seq and genotypes, not a direct measurement.",
+    "why_worthwhile": "Would tell regulatory geneticists whether sequence models capture the regulation missed by annotated modalities, but lead-variant labels are confounded by correlated nearby variants."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "LaDDR adds about 95% more xQTLs per tissue than the six annotated modalities, but these are on the same GTEx v8 individuals AlphaGenome and Borzoi were already benchmarked on."},
+    "confidence_score": {"answer": "no", "why": "Aggregated table has only a p-value per lead variant; no replicate or fine-mapping probabilities to calibrate against."},
+    "models_beatable": {"answer": "no", "why": "AlphaGenome (2025-2026, large pretrained transformer) is evaluated on fine-mapped GTEx QTLs with AUC 0.80-0.86."},
+    "guaranteed_improvement": {"answer": "no", "why": "The new labels measure a different, model-defined quantity (latent PCs), not the same quantity the baseline was evaluated on."}
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: sequence model (AlphaGenome embeddings + head) to classify LaDDR-specific xQTL lead variants vs matched controls, transferring to Geuvadis. Rejected because labels are LD-confounded associations to model-defined latent axes.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.6, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated; scoring ~1.5M variants with a DNA foundation model is GPU/API scale.", "cheapest_killing_check": "Check whether any per-tissue file has fine-mapping posterior probabilities (none in the aggregated table)."},
+  "verdict": "reject",
+  "verdict_reason": "A2 and A8 fail: the only labels are lead-variant p-values for per-gene PCA components produced by the LaDDR model itself, so the label is a model output with no consistent meaning across genes, and LD confounds which variant is causal. Fine-mapping to build a real label needs dbGaP genotypes, and AlphaGenome already covers GTEx QTL prediction."
+}

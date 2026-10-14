@@ -1,0 +1,129 @@
+{
+  "paper_id": "natgen2026-02666-z",
+  "title": "Gene mutant dosage is associated with prognosis and metastatic tropism in 60000 clinical cancer samples.",
+  "doi": "10.1038/s41588-026-02666-z",
+  "journal": "Nature Genetics",
+  "data_url": "https://zenodo.org/records/20038793",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded Zenodo 20038793 data.zip (34.5 MB), which holds the cBioPortal MSK-MET (msk_met_2021) study: 25,775 samples, 25,775 unique patients, 0 duplicate sample IDs, 42 sample columns including 21 DMETS_DX_* metastatic-site Yes/No columns (liver 8,793 Yes, lung 7,929, bone 7,197, brain 2,921, breast 308); patient file with OS_MONTHS/OS_STATUS (10,169 deceased); 230,419 mutations with read counts (0 missing alt counts); CNA matrix over 25,775 samples; three gene panels (IMPACT468 17,602, IMPACT410 6,372, IMPACT341 1,801). From the 3.9 GB results.zip I listed the archive's file index with a ranged download and pulled out only msk_met_INCOMMON.rds (32 MB). Read in R, it holds 224,340 mutations across 21,937 samples, with per-mutation copy number (map_k 1–8), multiplicity (map_m 1–8), purity and posterior-check p-values. Also read the analysis scripts and the Supplementary_Tables.xlsx sheet names (all summary statistics, not per-patient data).",
+    "what_came_from_paper_text_only": "The 60,000-sample total and the GENIE-DFCI cohort (Synapse, login needed, not opened); the 46 survival biomarkers / 20 tropism markers; how the DMETS labels were abstracted from clinical records (source study Nguyen et al. Cell 2022, not retrieved). The two large .rds files in results.zip (survival 1.0 GB, adjusted-VAF survival 2.8 GB) were not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "MSK-MET bundle downloaded openly from Zenodo (CC-BY-4.0 record) and the per-mutation INCOMMON calls extracted from results.zip. The second cohort (GENIE-DFCI) needs a Synapse login, so it is out of reach for external validation."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in files: the targets are already columns. There are 21 DMETS_DX_<site> Yes/No columns for metastatic site, plus OS_MONTHS/OS_STATUS for overall survival. Nothing has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Mutation table with gene, coordinates (GRCh37), protein change and read counts; CNA gene-by-sample matrix; FGA (fraction of genome altered), TMB (tumour mutational burden), purity; INCOMMON copy number and multiplicity per mutation. All present, no lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Header comment rows describe each column; OS in months, purity in percent (scripts divide by 100), FGA as a fraction, TMB as nonsynonymous mutations per megabase. Labels are binary, so units barely matter."},
+    "a5_enough_rows": {"pass": true, "n_rows": 25775, "note": "25,775 patients, one sample each (verified); 21,937 have INCOMMON calls. Rare sites are thin (breast 308, head/neck 390 positives) but common sites have thousands."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.25 GB (78 MB mutations, 28 MB CNA, 32 MB INCOMMON rds, 8 MB clinical)", "note": "Tabular data, gradient boosting on CPU. The two 1–2.8 GB survival rds files are not needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Source study describes ~25,000 patients; files have 25,775. The paper says >20,000 patients were stratified; INCOMMON object covers 21,937 samples with purity filter (25,368 with purity). Consistent once filters are accounted for."},
+    "a8_label_provenance": {"pass": true, "note": "Metastatic-site and survival labels come from MSK clinical records, not from a model, and are not computed from the genomic features. Caveat: the GMD features are themselves Bayesian model outputs from the same read counts, so they are inputs, never labels. MET_COUNT, MET_SITE_COUNT and METASTATIC_SITE (biopsy site) are derived from the labels and must be excluded."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Five files (sample, patient, mutations, CNA, panel matrix) joined on SAMPLE_ID/PATIENT_ID; joins verified in files."},
+    "B2": {"score": 2, "why": "cBioPortal TSVs parsed first try with pandas skiprows=4; INCOMMON rds read cleanly in R."},
+    "B3": {"score": 1, "why": "Single institution, but three panel versions (341/410/468 genes) mean genes not on a panel must be masked, not set to zero."},
+    "B4": {"score": 1, "why": "Survival is right-censored (15,606 alive); a 'No' for a metastatic site may mean not yet observed."},
+    "B5": {"score": 2, "why": "0 duplicate sample IDs; exactly one sample per patient (25,775 of 25,775), checked in files."},
+    "B6": {"score": 1, "why": "Header rows describe columns, but 'Distant Metastasis at Diagnosis' wording vs ever-metastasised is ambiguous."},
+    "C1": {"score": 2, "why": "Whether dosage features add held-out predictive value beyond binary mutation status is informative either way."},
+    "C2": {"score": 1, "why": "Several tropism/survival ML models on MSK data exist (2021 Nat Commun, BMC, 2026 CNS abstract); none open-weights verified."},
+    "C3": {"score": 2, "why": "Likely novel: GMD (gene mutant dosage) features never tested inside a multivariate ML predictor on held-out tumour types."},
+    "C4": {"score": 1, "why": "Metastasis is found by imaging follow-up; panel sequencing already exists, so prediction is cheap add-on."},
+    "C5": {"score": 2, "why": "Obvious dummies: tumour-type prevalence per site; binary-mutation model; FGA-only model (FGA verified present)."},
+    "D1": {"score": 1, "why": "ESM-2 could embed mutated proteins, but no backbone fits per-patient panel profiles well."},
+    "D2": {"score": 1, "why": "Embedding ~100k+ unique variants with ESM-2 on CPU is slow; backbone likely decorative."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT-licensed; the INCOMMON package is open source."},
+    "E1": {"ok": true, "why": "Hold out whole cancer types (27 CANCER_TYPE values) or panel versions; columns seen in files."},
+    "E2": {"ok": true, "why": "27 cancer types, 90 OncoTree codes, three panel versions; large groups for CRC, lung, breast."},
+    "E3": {"ok": true, "why": "Per-cancer-type site prevalence and Kaplan-Meier per type computable directly from columns."},
+    "E4": {"ok": false, "why": "One sample per patient, no replicate sequencing; noise ceiling not estimable."},
+    "E5": {"ok": true, "why": "Known: FGA (genome instability) tracks metastatic burden in prostate/lung (source study); site prevalence by primary."},
+    "E6": {"ok": true, "why": "Label shuffle and dropping GMD feature block are straightforward on the table."},
+    "E7": {"ok": false, "why": "GENIE-DFCI needs Synapse login; MSK-CHORD is public but from the same institution and may overlap patients."},
+    "E8": {"ok": true, "why": "Paper's tropism/propensity regressions are in results rds and supplementary sheets; scripts included."},
+    "G1": {"score": 2, "why": "Hugo gene symbols, GRCh37 coordinates, HGVSp protein changes present in the mutation table."},
+    "G2": {"score": 2, "why": "AlphaMissense or OncoKB variant annotations join on coordinates/protein change; MSK-CHORD on cBioPortal."},
+    "G3": {"score": 1, "why": "Many mutations per patient need a per-gene aggregation rule before joining."},
+    "G4": {"score": 1, "why": "Variant impact × dosage for tropism is a modest extension, not a new question."},
+    "H1": {"score": 2, "why": "Patients with and without each metastatic site; 10,169 deceased, 15,606 alive (verified)."},
+    "H2": {"score": 1, "why": "One institution (MSK), one assay family; 27 cancer types."},
+    "H3": {"score": 2, "why": "Claim stated precisely below, restricted to MSK panel-sequenced patients."},
+    "H4": {"score": 1, "why": "Single-centre nature is obvious; censoring of 'No' labels is not discussed in files."},
+    "I1": {"score": 2, "why": "Caravagna lab (INCOMMON authors) and MSK metastasis genomics groups."},
+    "I2": {"score": 1, "why": "Would decide whether dosage is worth reporting in panel pipelines; marginal for clinical decisions."},
+    "I3": {"score": 1, "why": "AUROC per site roughly matches a surveillance-imaging decision, but no threshold defined."},
+    "I4": {"score": 1, "why": "Tumour type alone probably explains most site prevalence; ML may add little."},
+    "J1": {"score": 1, "why": "Tabular modelling, grouped splits, survival models; little transfer learning."},
+    "J2": {"score": 1, "why": "Cancer genomics intuition needed for panel masking and tropism plausibility."},
+    "J3": {"score": 2, "why": "Clean patient-level feature table plus ablation result is shareable at each stage."},
+    "J4": {"score": 1, "why": "Roughly two weeks is plausible but not committed."},
+    "J5": {"score": 1, "why": "Kill condition stated below; date not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "INCOMMON (this paper): Bayesian copy number/multiplicity inference plus per-gene Cox and logistic models", "open_weights": true, "score_and_split": "Not a predictor; reports 46 survival biomarkers and 20 tropism markers by association testing, with GENIE-DFCI used as a replication cohort.", "authors_named_unsolved": "Not retrieved from the discussion.", "runnable_as_baseline": true},
+      {"name": "Machine learning of genomic features in organotropic metastases (Nature Communications 2021)", "open_weights": null, "score_and_split": "Not retrieved; title only from search.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Metastatic Network model ('Are we there yet?', BMC Medical Genomics 2021)", "open_weights": null, "score_and_split": "Not retrieved; search snippet says it combines clinical data and DNA changes to predict organ-specific metastasis risk.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DSAI-13 CNS (brain) metastasis ML model on MSK-MET (2026 conference abstract)", "open_weights": null, "score_and_split": "AUC 0.74 on an independent cohort, trained on 25,775 MSK-MET patients (search snippet).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "Deep learning survival model from somatic mutations, lung cancer (PMC10625246)", "open_weights": null, "score_and_split": "C-index 0.74 vs 0.63 Cox (snippet); used MSK-MET as a cohort.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model) for per-variant embeddings, optional; gradient boosting is the real model", "freeze_and_head_viable": false, "hardware": "Laptop CPU", "licence": "ESM-2 MIT; MSK-MET data licence unclear: the cBioPortal study text says CC BY-NC-ND 4.0, the bundled LICENSE file says ODbL, and the Zenodo record says CC-BY-4.0"},
+  "integration": {"partner_dataset": "AlphaMissense precomputed missense pathogenicity scores", "join_key": "GRCh37 chromosome, position, ref/alt allele (liftover to hg38 needed)", "bigger_question_one_sentence": "Does the number of mutant copies matter more for metastatic spread when the mutation is strongly damaging than when it is mild?"},
+  "controls": {"positive_control": "Recover tumour-type-specific site prevalence (e.g. liver for colorectal, bone for prostate) and the known link between FGA (fraction of genome altered) and metastatic burden in prostate and lung adenocarcinoma.", "negative_control": "Shuffle DMETS labels within cancer type and confirm AUROC drops to the prevalence baseline; drop the GMD feature block and measure the difference.", "external_validation": "None openly downloadable: GENIE-DFCI needs a Synapse login. Held-out cancer types and held-out panel versions are the fallback."},
+  "honest_claim_h3": "Among MSK patients sequenced with MSK-IMPACT panels, adding inferred mutant-copy-number features to binary mutation status does or does not improve held-out prediction of which organs a patient's cancer had spread to, as recorded in MSK clinical records.",
+  "plain_idea": {
+    "one_liner": "Use a tumour's mutations, copy-number changes and number of mutant gene copies to predict which organs the cancer spreads to.",
+    "train_on": "Per patient: which of ~468 genes are mutated, the inferred number of mutated copies, copy-number gains/losses, genome instability, tumour type. 25,775 patients (21,937 with copy-number calls).",
+    "predict": "Yes/No for metastasis to each of 21 organ sites, plus overall survival, taken from MSK clinical records in the cBioPortal MSK-MET study.",
+    "why_worthwhile": "Tests whether the paper's new 'mutant dosage' feature carries predictive information a standard mutated/not-mutated model misses; a negative result tells clinical-panel pipelines not to bother computing it."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Same 25,775 MSK-MET patients as the 2026 brain-metastasis model; the new part is per-mutation copy number and multiplicity for 224,340 mutations, which no listed model used."},
+    "confidence_score": {"answer": "partly", "why": "INCOMMON gives posterior checks per mutation, but there are no replicate samples to calibrate patient-level predictions."},
+    "models_beatable": {"answer": "partly", "why": "The 2021 tropism models predate this cohort's release; the 2026 brain model reports AUC 0.74 externally, with unknown split, and no listed model has open weights verified."},
+    "guaranteed_improvement": {"answer": "no", "why": "The dosage features are computed from the same read counts, purity and copy-number data a strong model already sees, so they are not new measurements; improvement is not guaranteed."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "MSK-CHORD (cBioPortal, same institution, likely patient overlap; known resource); AACR GENIE BPC and GENIE-DFCI (Synapse login; named in the paper); Hartwig Medical Foundation metastatic biopsies (access request; named in the paper).", "approx_items": null, "join_key": "Gene symbol and OncoTree cancer-type code (patients do not join across cohorts)", "why": "Another cohort with recorded metastatic sites would test whether a model trained at MSK transfers, but none is openly downloadable and independent."},
+  "leakage_plan": {
+    "risks": [
+      "METASTATIC_SITE (where the biopsy was taken) directly reveals one positive site for the 10,143 metastasis samples.",
+      "MET_COUNT, MET_SITE_COUNT and IS_DIST_MET_MAPPED are computed from the site labels themselves.",
+      "Panel version (IMPACT341/410/468) correlates with sequencing era and follow-up length, so missing genes can act as a proxy for time.",
+      "Gene-level GMD class thresholds (script 3.class_thresholds.R) may have been chosen on this cohort; use raw map_k/map_m instead of the paper's classes."
+    ],
+    "split": "Main: 5-fold split stratified by CANCER_TYPE, restricted to SAMPLE_TYPE == Primary, excluding label-derived columns. Transfer: hold out whole CANCER_TYPE groups and hold out the IMPACT468 panel. All columns seen in the files.",
+    "checks": [
+      "Shuffle site labels within cancer type: AUROC must fall to the prevalence baseline.",
+      "Train on GENE_PANEL plus OS_MONTHS alone to measure how much the follow-up/era proxy predicts.",
+      "Compare primary-only against all-sample performance; a big gap signals biopsy-site leakage."
+    ],
+    "verdict": "Manageable: the leaky columns are obvious and few, but restricting to primaries and masking off-panel genes must be done deliberately."
+  },
+  "success_criteria": {
+    "metric": "Mean AUROC over the 8 sites with ≥2,000 positives, within cancer type, on primary samples. This matches the question 'does dosage help rank who will spread to organ X'.",
+    "baselines": "Per-cancer-type prevalence (AUROC 0.5 within type); gradient boosting on binary mutations + CNA + FGA + TMB without dosage features. No published number on this exact split.",
+    "success": "Dosage features raise within-type mean AUROC by ≥0.02 over the binary-mutation model on held-out folds, with the gain consistent in ≥3 cancer types.",
+    "noise_ceiling": null,
+    "kill": "If the binary-mutation model is under 0.03 AUROC above the per-type prevalence baseline, or dosage adds under 0.005, after one week, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Medicine", "why": "Publishes clinical-genomics predictors; would need a clear, multi-cancer-type gain from dosage features that also replicates in GENIE."},
+    "realistic": {"journal": "JCO Clinical Cancer Informatics", "why": "Publishes ML evaluations of clinical sequencing data; an honest ablation of dosage vs binary features on MSK-MET fits."},
+    "fallback": {"journal": "NAR Cancer", "why": "Accepts cancer-genomics analyses including negative findings that dosage adds little beyond binary calls."}
+  },
+  "pitch": {
+    "headline": "25,775 patients with recorded metastasis to 21 organs, plus open per-mutation copy-number calls for 224,340 mutations, in a 34 MB download.",
+    "what_makes_the_data_unusual": "Per-mutation copy number and multiplicity (values 1–8) from a tumour-only panel are rarely released; here they sit alongside organ-level metastasis labels (liver 8,793, brain 2,921 positives) for the same patients.",
+    "the_win": "Dosage features lift within-cancer-type AUROC by ≥0.02 over a binary-mutation model in ≥3 cancer types.",
+    "even_if_it_fails": "A clean ablation showing that dosage adds no predictive value beyond binary calls, FGA and tumour type, which tempers the paper's biomarker claims.",
+    "who_wants_it": "The Caravagna lab (INCOMMON authors) and MSK metastasis-genomics groups, deciding whether dosage belongs in clinical panel reports."
+  },
+  "ml_idea": "Build a patient-level table from MSK-MET primary tumours: binary mutation per gene (masked by panel), CNA, FGA, TMB, purity, tumour type, plus INCOMMON map_k/map_m per gene. Train gradient boosting per metastatic site and a survival model. Ablate the dosage block, and test transfer to held-out cancer types and panel versions.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.25, "needs_gpu": false, "peak_ram_gb": 3, "embedding_hours": null, "cv_run_minutes": 20, "compute_note": "Estimated, not timed: 25k rows × ~1,500 features × 8 sites × 5 folds with histogram gradient boosting on CPU. The INCOMMON rds loads in seconds in R.", "cheapest_killing_check": "On primary samples only, fit per-site models with tumour type + FGA versus tumour type + FGA + binary mutations; if genomics adds <0.03 within-type AUROC, dosage cannot matter."},
+  "verdict": "verify_first",
+  "verdict_reason": "Labels and features are open, clean and verified (25,775 patients, 21 site columns, per-mutation dosage calls), and the dosage-ablation question is informative either way. But no backbone fits, external validation needs a Synapse login, and tumour type may explain most of the signal. Run the cheap genomics-over-tumour-type check first."
+}

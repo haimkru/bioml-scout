@@ -1,0 +1,55 @@
+{
+  "paper_id": "nature2026-10886-w",
+  "title": "Rb-driven transcription limits its tumour-suppressive effects in breast cancer.",
+  "doi": "10.1038/s41586-026-10886-w",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE303576",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO (Gene Expression Omnibus) SuperSeries GSE303576 metadata: 23 SubSeries, 279 samples, combined RAW.tar is 10.46 GB (HEAD only). Listed every SubSeries: 14 bulk RNA-seq raw-count CSVs (6-36 samples each) and 9 CUT&RUN/DynaTag chromatin-binding series (4-12 samples each, bigwig + narrowPeak files; GSE303330 RAW.tar alone is 2.0 GB, bigwigs ~110-260 MB each). Downloaded and parsed GSE307843 raw counts: 60,656 Ensembl gene rows x 12 samples (MCF7 parent vs RB1-knockout, abemaciclib vs DMSO, 3 replicates each), integer counts only, no fold-change or label column.",
+    "what_came_from_paper_text_only": "PRIDE PXD066496 proteomics, POP clinical-trial microarray data at Institut Curie, patient-derived xenograft details, and Supplementary Tables 1-6 contents (Europe PMC supplementary endpoint timed out, so these tables were not retrievable). C2 literature search was not run because Part A failed."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open GEO downloads; count CSV fetched and parsed. Checked in files."},
+    "a2_label_is_a_column": {"pass": false, "note": "No label column exists. The only plausible target (Rb-dependent change in gene expression under CDK4/6 inhibition) must be constructed by differential-expression analysis of raw counts, with an interaction contrast across knockout and drug arms; chromatin features must also be built from bigwig/peak files. Checked in files."},
+    "a3_inputs_present": {"pass": true, "note": "Bigwig and narrowPeak (called binding peak) files are present per sample, but require genome-coordinate processing to become per-gene features. Seen in GEO file listing."},
+    "a4_units_stated": {"pass": true, "note": "Raw integer read counts per Ensembl gene; units are unambiguous. Checked in files."},
+    "a5_enough_rows": {"pass": false, "n_rows": 12, "note": "Each experiment has 6-36 samples (12 in the file opened); the biological unit is a handful of cell lines under a few conditions. Treating ~20,000 genes as rows gives one contrast from one cell line, not independent examples."},
+    "a6_fits_laptop": {"pass": true, "working_set": "Count CSVs <1 MB each; chromatin bigwigs 2-10 GB total", "note": "Counts fit trivially; chromatin features would need streaming of large bigwigs. Sizes seen via HEAD and file list."},
+    "a7_counts_match_paper": {"pass": true, "note": "12-sample MCF7 RB1-knockout design matches the paper's described triplicate design; not cross-checked against every figure."},
+    "a8_label_provenance": {"pass": true, "note": "Expression changes come from measured RNA-seq, not a model's prediction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "None evaluated; AlphaGenome or Enformer-style DNA models would be the natural fit for promoter/enhancer sequence features", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "Ensembl gene ID (present in count files)", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "Classic E2F cell-cycle genes (e.g. E2F1, CCNE2) should be repressed by CDK4/6 inhibition in an Rb-dependent way.", "negative_control": "", "external_validation": "POP clinical trial microarrays (per paper; not opened)."},
+  "honest_claim_h3": "At best: predicts which genes MCF7/ZR-75-1 breast cancer cell lines up- or down-regulate in an Rb-dependent way after CDK4/6 inhibition, from Rb/ER binding in those same cells.",
+  "plain_idea": {
+    "one_liner": "Use where the Rb protein and oestrogen receptor bind DNA to predict which genes switch on when breast cancer cells get CDK4/6 blockers.",
+    "train_on": "Per gene: chromatin-binding signals (Rb, ER, KDM5A, histone marks) near its promoter and enhancers, built from bigwig files; roughly 20,000 genes but from 2-3 cell lines.",
+    "predict": "The change in that gene's expression after abemaciclib, minus the change in RB1-knockout cells, computed by differential-expression analysis from raw RNA-seq counts (12 samples in the file checked).",
+    "why_worthwhile": "Would flag Rb-activated pro-growth genes as combination-therapy targets, but the paper's own peak-overlap analysis already answers this for these cell lines."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": {"score": 1, "sources": "Known resources: LINCS L1000 includes CDK4/6 inhibitor (palbociclib) expression signatures in some cell lines; not searched here.", "approx_items": null, "join_key": "Gene symbol / Ensembl gene + cell line", "why": "Other drug-response expression sets could add contrasts, but not Rb-knockout-paired ones."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Gene-level regression of Rb-dependent expression change under CDK4/6 inhibition from Rb/ER/KDM5A CUT&RUN signal; rejected because the label must be built by differential expression from 6-36-sample experiments and the features from multi-GB bigwigs.",
+  "effort": {
+    "hours_to_feature_table": 24,
+    "working_set_gb": 5,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated from file sizes seen in GEO listings; nothing timed.",
+    "cheapest_killing_check": "Count independent conditions with paired parent/RB1-knockout x drug/DMSO RNA-seq: about 5 cell-line contexts, which already kills it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Mechanistic cell-line study: GEO holds raw counts (e.g. 60,656 genes x 12 samples) and CUT&RUN bigwigs with no label column. Any target has to be built by differential expression across a few cell lines (A2), and the independent sample count is tiny (A5)."
+}

@@ -1,0 +1,83 @@
+{
+  "paper_id": "nar2026-gkag802",
+  "title": "ZNF512B associates with mitotic spindles; regulates metaphase exit; and is crucial for stem cell differentiation.",
+  "doi": "10.1093/nar/gkag802",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE303898",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 2 of the 8 processed files in GEO (Gene Expression Omnibus) series GSE303898: GSE303898_DESeq2_CM_KO4_WT.csv.gz and GSE303898_DESeq2_naive_WT_KO4.csv.gz. Each is semicolon-separated with 25,209 rows and 7 columns (gene name; base mean; log2 (FC) = log2 fold change; stad err; wald-stats; p-value; adj p-value). Listed the whole GEO supplementary directory (8 files, 621-664 KB gzipped, all DESeq2 contrast tables, no per-sample count matrix). Read GEO series metadata: 27 samples, mouse (Mus musculus), naive/primed/cardiomyocyte/neural-progenitor states in wild type and two Zfp512b knockout clones. Fetched the PRIDE (proteomics repository) record for PXD078292: licence CC0, submission type PARTIAL, timsTOF HT instrument, MaxQuant processing.",
+    "what_came_from_paper_text_only": "That significant differentially expressed genes were called at adjusted p-value < 0.05 and listed in Supplementary Tables S1/S2, and that >3000 genes change in naive knockout cells. The paper's supplementary files were not retrievable (Europe PMC supplementaryFiles returned HTTP 500). The PRIDE per-file listing timed out twice, so I could not confirm whether any processed protein-intensity table accompanies the raw mass-spectrometry files; a PARTIAL submission usually means raw files plus search output only."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All 8 GEO processed tables download without login; PRIDE dataset is public and CC0. Verified by downloading two GEO files."},
+    "a2_label_is_a_column": {"pass": true, "note": "log2 fold change and adjusted p-value are literal columns in the downloaded CSVs, so a differential-expression label needs no construction."},
+    "a3_inputs_present": {"pass": false, "note": "The files contain only a gene symbol per row - no sequence, no promoter, no feature of any kind. Every input would have to be imported wholesale from Ensembl or another resource; the dataset supplies labels only."},
+    "a4_units_stated": {"pass": true, "note": "Columns are self-describing (base mean, log2 fold change, standard error, Wald statistic, p-value, adjusted p-value); DESeq2 v1.46.0 named in methods."},
+    "a5_enough_rows": {"pass": false, "n_rows": 25209, "note": "25,209 gene rows per contrast, but only 8 contrasts from 27 samples of one cell line and one knocked-out gene with two clones - the independent unit is the experiment, not the gene, so there is effectively one labelled perturbation."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~5 MB uncompressed across all 8 DESeq2 tables", "note": "Trivially laptop-sized; raw sequencing stays in SRA (BioProject PRJNA1298190) and would not be touched."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper's '>3000 deregulated genes in naive knockout' is consistent with the file; exact supplementary table counts unverifiable because the supplement returned HTTP 500."},
+    "a8_label_provenance": {"pass": true, "note": "log2 fold change derives from featureCounts read counts and DESeq2 on real RNA-seq, not from another model's prediction; it is not computable from any feature in the file."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepLoc (deep neural network predicting protein subcellular localization from sequence alone)",
+        "open_weights": true,
+        "score_and_split": "Reported high accuracy on curated UniProt localization classes; I retrieved the paper record only and did not verify a number or split for a spindle-specific class.",
+        "authors_named_unsolved": "Fine-grained compartments such as the mitotic spindle are not among the classes these tools resolve; the retrieved review of localization predictors notes no spindle-specific predictor.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PromoterAI (deep network scoring promoter variants for expression change)",
+        "open_weights": null,
+        "score_and_split": "Published 2025 in Science on human promoter variants; retrieved as evidence that sequence-to-expression-change modelling is an active, well-served area, not as a baseline for this knockout.",
+        "authors_named_unsolved": "Transfer of sequence-to-expression models to new cell types and perturbations remains weak - named in the retrieved Nature Reviews Genetics 2025 review of sequence-to-expression models.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model) or Nucleotide Transformer (DNA language model)", "freeze_and_head_viable": null, "hardware": "CPU laptop would suffice for the data volume, but there is no task with enough labels to fit a head", "licence": "ESM-2 MIT; GEO data public domain; PRIDE dataset CC0"},
+  "integration": {"partner_dataset": "Human Protein Atlas subcellular localization and mouse Ensembl/BioMart promoter annotation", "join_key": "gene symbol to Ensembl gene ID (mouse)", "bigger_question_one_sentence": "No combined question survives: joining a single-gene knockout's fold changes to a localization atlas would add partners but still leave one perturbation and one cell line, which cannot support a generalizable prediction."},
+  "controls": {"positive_control": "Zfp512b itself should be the most strongly reduced gene in the knockout contrasts - a sanity check on the files, not a model control.", "negative_control": "Label shuffling is runnable on the gene table, but with one perturbation there is nothing meaningful to shuffle against.", "external_validation": "None: no second independent Zfp512b knockout expression dataset was found, and the two clones come from the same lab and selection."},
+  "honest_claim_h3": "Any model built here could only claim 'predicts which mouse genes shift when Zfp512b is deleted, in two clones of one embryonic stem cell line from one lab' - a statement about one experiment, not a transferable rule.",
+  "plain_idea": {
+    "one_liner": "Use promoter DNA sequence to predict which genes change when the Zfp512b gene is deleted in mouse stem cells.",
+    "train_on": "Gene-level results from 8 comparisons of wild type versus two Zfp512b knockout clones across four stem cell states; 25,209 gene rows per comparison, verified in the downloaded files, but inputs would have to be fetched from Ensembl because the files hold only gene symbols.",
+    "predict": "The log2 fold change, or an up/down/unchanged call, measured by RNA sequencing of 27 samples and processed with featureCounts and DESeq2 in one lab.",
+    "why_worthwhile": "Chromatin researchers would like to know which promoter features make a gene responsive to loss of a repressor; even a failed model would quantify how little of a single knockout's response is written in promoter sequence."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Sequence-to-expression models such as Enformer and PromoterAI train on thousands of human and mouse samples; this contributes 27 samples from one cell line and one gene."},
+    "confidence_score": {"answer": "no", "why": "Only two knockout clones and 2-3 replicates per state; that supports a crude noise estimate but not per-gene calibrated confidence."},
+    "models_beatable": {"answer": "no", "why": "The relevant models (PromoterAI 2025, Enformer 2021 onward) are recent, large and honestly evaluated, and this data offers no slice they cover badly."},
+    "guaranteed_improvement": {"answer": "no", "why": "The existing models cannot be run as a baseline on this label (they predict expression, not knockout response), the inputs are absent from the files, and no matching split exists."}
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "Searched for a second Zfp512b/ZNF512B knockout expression dataset and for any spindle-association predictor; found neither. The paper's own bioRxiv preprint is the same data.",
+    "approx_items": null,
+    "join_key": "gene symbol / Ensembl gene ID (mouse)",
+    "why": "The label - response to loss of this one protein - exists only in this study, so there is no external training data and no independent validation set."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered predicting Zfp512b-knockout responsiveness (log2 fold change, or up/down/unchanged) for 25,209 mouse genes from promoter sequence embeddings plus baseline expression, with the two knockout clones used as a replication check. Rejected: the files supply labels but no inputs, and all 201,672 label rows trace to a single perturbation in a single cell line.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.005,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated from the files I actually downloaded: 8 gzipped CSVs totalling ~5 MB, 25,209 rows each, parsed in seconds with pandas; the 6 hours is for symbol-to-Ensembl mapping and promoter extraction, which I did not do.",
+    "cheapest_killing_check": "Count the independent perturbations: one gene, one cell line, two clones, 27 samples. That count kills it before any file is opened."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A3 and A5. The 8 downloaded DESeq2 tables hold 25,209 gene rows each with a clean log2 fold change column, but they contain no model inputs at all - only gene symbols - and every row describes the same single experiment: deletion of one gene in one mouse embryonic stem cell line, two clones, 27 RNA-seq samples. The gene count masquerades as sample size, as with the scCT-DB candidate. The mass-spectrometry dataset (PXD078292) is a PARTIAL submission of pull-down raw files whose per-file listing was unreachable, and would in any case describe a handful of pull-downs. This is a well-executed single-gene cell biology paper with no ML-sized question inside it."
+}

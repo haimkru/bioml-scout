@@ -1,0 +1,197 @@
+{
+  "paper_id": "nar2026-gkag767",
+  "title": "Seedless 3' pairing enables miR-17 family miRNAs to seize let-7 target sites.",
+  "doi": "10.1093/nar/gkag767",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE303559",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded both gene-count tables from the GEO (Gene Expression Omnibus) series GSE303559 without any login: the main matrix is 60,160 Ensembl gene rows x 48 samples, zero duplicate gene IDs, zero missing cells, 8.4-11.4 million counts per sample; 13,962 genes pass a counts-per-million > 1 filter in at least half the samples. Column names decode to 16 conditions x 3 replicates (let-7 has 6), exactly matching the paper's '8 single + 6 co- + 2 control transfections'. I recomputed the paper's own recipe (counts normalised to 1 million, log2, averaged over replicates) and recovered its headline result myself: let-7a transfection represses the textbook let-7 targets HMGA2 (-2.03 log2), LIN28B (-1.46), IGF2BP1 (-1.14), DICER1 (-0.95); co-transfected miR-106a reverses this (HMGA2 +1.52, LIN28B +1.28), miR-106b does not (HMGA2 -1.08), the seed mutant still reverses it (+1.60) and the 3'-end mutant mostly loses it (+0.45). Genome-wide Spearman correlation between let-7 repression and miR-106a shielding = -0.524 over 13,962 genes (-0.169 for miR-106b). I measured the noise ceiling myself by split-half over independent replicates and controls: Spearman 0.429 for let-7 repression (Spearman-Brown corrected 0.60), 0.433 for the shielding effect; a mock-versus-negative-control null contrast gives split-half 0.01, i.e. no reproducible structure. I also downloaded TargetScan v8 context++ scores (17.7 MB zip, 137 MB text), confirmed its 'Gene ID' column is a versioned Ensembl gene ID that joins to this matrix, and measured the baselines: TargetScan weighted context++ for let-7a vs measured let-7 repression Spearman 0.136; vs the shielding effect -0.098 overall and -0.231 among the 1,004 expressed genes carrying a predicted let-7a site.",
+    "what_came_from_paper_text_only": "The alignment and counting pipeline (STAR v2.7.10b, HTSeq v2.0.9, GRCh38, Ensembl release 111 with transcript support level 1-3, miRBase v22), the 50 nM transfection concentration, the HEK293T and DU145 cell identities, and the content of Supplementary Table S1 (the actual synthesised guide sequences for the seed mutant 'Smut' and the three 3'-end antisense mutants 'ASmut1-3'). The 71 MB small-RNA-sequencing read table was left unopened (over the 50 MB cap; name, size and format recorded only). The ETH Zurich curated archive DOI 10.3929/ethz-c-000802621 returned an HTTP 500 error on my single attempt, so that source-data archive is recorded as not retrievable; nothing in the proposed project needs it. The Europe PMC supplementary-file listing timed out and was not retried."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both count matrices pulled straight off the GEO FTP site with no login (1.5 MB and 442 KB gzipped). Verified by downloading. The ETH archive DOI errored, but it holds only source data for gels/blots."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is not literally a column: it is a log2 fold change computed from the count matrix. But it is derived inside one file by the paper's own documented recipe, not inferred across sources, and I reproduced the paper's headline numbers in about a minute of compute."},
+    "a3_inputs_present": {"pass": true, "note": "The GEO files give only Ensembl gene IDs, so 3' untranslated region sequences must be added from GENCODE/Ensembl release 111 (named in the methods) or Ensembl BioMart. That is one bulk FASTA plus one annotation file joined on Ensembl gene ID, not thousands of per-item lookups. The miRNA guide sequences are 8 short strings from Supplementary Table S1."},
+    "a4_units_stated": {"pass": true, "note": "Files hold raw integer read counts per gene per sample; the methods state the normalisation (counts per million, then log2, averaged over 3 replicates), so the label unit is a log2 fold change. Verified the counts are integers summing to 8-11 million per sample."},
+    "a5_enough_rows": {"pass": true, "n_rows": 13962, "note": "13,962 expressed genes (verified count) x 16 conditions gives roughly 223,000 gene-condition labels; even one contrast alone is 13,962 rows. The honest caveat is only 8 distinct guide sequences, so the miRNA side has few independent groups."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.3 GB (48-sample count matrix ~23 MB in memory, TargetScan text 137 MB, 3'UTR FASTA ~50 MB)", "note": "Verified by loading the full matrix with pandas on this laptop; no step came close to 16 GB. The 71 MB small-RNA table and the 4.5 GB raw eCLIP tar are not needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says three replicates each of 8 single, 6 co- and 2 control transfections = 48 samples; the downloaded matrix has exactly 48 columns with matching condition labels, and the GEO record lists 96 + 6 samples across the mRNA and small-RNA arms. No disagreement found."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a physical measurement: Illumina NextSeq 500 read counts per gene, no model anywhere in the chain. Nothing about the label is computed from the 3'UTR sequence features we would use as input. TargetScan scores, if used, enter as a feature and must be ablated, never as a label."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "One 48-sample count matrix is the core; 3'UTR sequences and TargetScan join cleanly on Ensembl gene ID, verified."},
+    "B2": {"score": 2, "why": "Both gzipped tab files parsed first try in pandas: no missing cells, no duplicate gene IDs, integer counts."},
+    "B3": {"score": 2, "why": "All 48 samples one lab, one platform, one STAR/HTSeq pipeline; replicates interleaved, so directly comparable."},
+    "B4": {"score": 2, "why": "No censored or qualitative entries; only a standard low-expression filter is needed, which I applied."},
+    "B5": {"score": 2, "why": "Verified zero duplicated gene IDs in the 60,160-row matrix."},
+    "B6": {"score": 1, "why": "Columns are condition_replicate and self-explanatory, but mutant guide sequences live only in Supplementary Table S1."},
+    "C1": {"score": 2, "why": "'How much of the shielding effect is sequence-predictable, ceiling 0.60?' is informative either way; ceiling measured by me."},
+    "C2": {"score": 1, "why": "TargetScan v8 and miRBind2 are open and honestly evaluated for repression, but none models miRNA-versus-miRNA competition."},
+    "C3": {"score": 2, "why": "Unique application: these 48 samples have never been used for machine learning, and competition is unmodelled."},
+    "C4": {"score": 2, "why": "Measuring competition needs matched co-transfection RNA sequencing plus mutant guides; expensive wet-lab work."},
+    "C5": {"score": 2, "why": "I computed TargetScan's Spearman 0.136 here; miRBind2 publishes gene-level Pearson 0.30; site-presence lookup is the dummy."},
+    "D1": {"score": 2, "why": "RNA-FM and HyenaDNA have open downloadable weights and suit 3'UTR sequence windows of ~120 nucleotides."},
+    "D2": {"score": 2, "why": "Roughly 70,000 short windows embedded once on CPU and cached; a ridge or gradient-boosting head trains in minutes."},
+    "D3": {"score": 1, "why": "RNA-FM is permissive per its GitHub repository but I did not open the licence file this session; some DNA-model checkpoints are non-commercial."},
+    "E1": {"ok": true, "why": "Chromosome-held-out and 3'UTR-similarity-clustered gene splits, plus held-out guide conditions, are all available."},
+    "E2": {"ok": true, "why": "16 condition groups, 8 distinct guides, and 24 chromosomes as gene-level holdout groups."},
+    "E3": {"ok": true, "why": "Computed: global mean, let-7-site-presence lookup (+0.034 vs -0.051), and TargetScan score as dummies."},
+    "E4": {"ok": true, "why": "Measured split-half reliability 0.429 (corrected 0.60) for repression and 0.433 for shielding, from the files."},
+    "E5": {"ok": true, "why": "Verified: let-7 represses HMGA2 -2.03, LIN28B -1.46, IGF2BP1 -1.14; any working pipeline must recover these."},
+    "E6": {"ok": true, "why": "Label shuffling is trivial here, and a built-in null exists: mock-versus-negative contrast has split-half reliability 0.01."},
+    "E7": {"ok": true, "why": "Manakov2022 chimeric eCLIP (GSE198250), miR-CLIP (GSE62681) and miRBind2's 74 HeLa transfection experiments are independent."},
+    "E8": {"ok": true, "why": "TargetScan context++ and miRBind2's gene-level Pearson 0.30 are both reproducible on their own published sets."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs present in both files; verified they join to TargetScan v8's versioned Ensembl Gene ID column."},
+    "G2": {"score": 2, "why": "miRBench / Manakov2022 chimeric eCLIP keys on gene plus miRBase miRNA name; TargetScan v8 join verified by me."},
+    "G3": {"score": 1, "why": "One gene maps to many sites and many miRNAs; collapse rule needed (I used sum of weighted context++ per gene)."},
+    "G4": {"score": 2, "why": "Combining binding chimeras with these functional contrasts asks when binding represses versus merely blocks - neither answers alone."},
+    "H1": {"score": 2, "why": "Negatives systematic: mock, control oligo, seed mutant, three 3'-end mutants, non-shielding miR-106b, all genome-wide."},
+    "H2": {"score": 0, "why": "One cell line (HEK293T), one lab, 8 synthetic guides, transfection up to 50 nM - far above physiological levels."},
+    "H3": {"score": 2, "why": "The claim can be stated in one precise sentence, scoped to transfected HEK293T cells (see honest_claim_h3)."},
+    "H4": {"score": 2, "why": "Paper is explicit about the cell line, transfection design and the limits, and adds a second cell line for validation."},
+    "I1": {"score": 2, "why": "Named: the Hall lab at ETH Zurich, the MacRae lab, and the BioGeMT group that built miRBind2."},
+    "I2": {"score": 2, "why": "A ranked list of shielding-susceptible sites redirects which reporter assays get built and which mimic designs get dropped."},
+    "I3": {"score": 2, "why": "Users test the top-ranked handful in reporter assays, so precision among the top 100 is literally the decision."},
+    "I4": {"score": 1, "why": "TargetScan reaches only 0.136 against a 0.60 ceiling, but a few hand-made site features might close much of that gap."},
+    "J1": {"score": 2, "why": "Grouped splits, a measured noise ceiling, frozen-backbone transfer and two published baselines to beat."},
+    "J2": {"score": 2, "why": "Known let-7 targets (HMGA2, LIN28B) anchor plausibility; I already used them to sanity-check the pipeline."},
+    "J3": {"score": 2, "why": "The benchmarked baselines plus the measured 0.60 reliability ceiling are publishable even if the model fails."},
+    "J4": {"score": 2, "why": "Four weeks stated: one week for the feature table, two for modelling, one for writing."},
+    "J5": {"score": 1, "why": "Kill condition stated in this evaluation (see success_criteria.kill) but not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "TargetScan v8 (context++ model, Agarwal/Bartel; a hand-built regression over site-type and context features)",
+        "open_weights": true,
+        "score_and_split": "Published as the standard for gene-level repression. On this paper's data I measured its weighted context++ score for let-7a against measured let-7 repression: Spearman 0.136 over 13,962 genes, and -0.231 against the shielding effect among the 1,004 genes with a predicted let-7a site.",
+        "authors_named_unsolved": "Non-canonical and 3'-compensatory sites are acknowledged as poorly handled; the context++ model carries only a coarse '3' supplementary pairing' term and no notion of two miRNAs competing for one site.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "miRBind2 (2026; convolutional network over a pairwise nucleotide-interaction matrix, with a gene-level 3'UTR repression head)",
+        "open_weights": true,
+        "score_and_split": "Gene-level repression on 50,549 miRNA-gene pairs: Pearson 0.30 versus TargetScan 0.24; ROC-AUC 0.60 versus 0.56. Site-level on the Manakov2022 left-out test set: ROC-AUC 0.82, average precision 0.85. Trained on 265,180 gene-level examples from 74 small-RNA transfection experiments in HeLa cells.",
+        "authors_named_unsolved": "They state that roughly 50% of target sites found by high-throughput sequencing lack a canonical seed, and call for hybrid data-plus-biophysics approaches - which is precisely the seedless 3'-pairing case this paper measures.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "microT-CNN, Mimosa (transformer with base-pairing patterns), TargetNet, miCGR (recent deep target-site predictors)",
+        "open_weights": true,
+        "score_and_split": "All report site-level binding or functional-target classification (ROC-AUC roughly 0.8-0.9 on their own held-out sets); I retrieved their abstracts only and did not verify their numbers. None reports a competition or de-repression task.",
+        "authors_named_unsolved": "Collectively, non-canonical sites and cell-type transfer.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model trained on RNAcentral) on 3'UTR windows of ~120 nucleotides, with HyenaDNA as the alternative and miRBind2's pairwise nucleotide-interaction matrix as the task-specific comparator",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU only: about 70,000 short windows embedded once and cached (~3 h estimated), then a ridge or gradient-boosting head in minutes",
+    "licence": "RNA-FM is distributed permissively on GitHub (not verified in this session); some Nucleotide Transformer checkpoints are non-commercial, so check before using those"
+  },
+  "integration": {
+    "partner_dataset": "Manakov2022 PCR-enriched chimeric eCLIP (GSE198250, the dataset miRBind2 was trained on) plus TargetScan v8 context++ scores, with the miR-CLIP series GSE62681 as a second binding source",
+    "join_key": "Ensembl gene ID (verified to join between this count matrix and TargetScan v8) plus miRBase miRNA name and 3'UTR coordinate",
+    "bigger_question_one_sentence": "When a microRNA binds a site, what decides whether it silences the message or merely squats there and blocks a rival microRNA - a question the binding data and the functional data cannot answer apart."
+  },
+  "controls": {
+    "positive_control": "let-7a transfection must repress the textbook let-7 targets; I verified HMGA2 -2.03, LIN28B -1.46, IGF2BP1 -1.14, DICER1 -0.95 log2, and miR-106a co-transfection must reverse them (HMGA2 +1.52) while miR-106b must not (-1.08). Second control: predict 3'UTR length from the sequence features, which must come out near-perfect.",
+    "negative_control": "Shuffle the per-gene labels and confirm collapse to the site-presence lookup; and use the built-in null contrast of mock versus negative-control oligo, for which I measured a split-half reliability of 0.01, meaning a model must score at chance on it.",
+    "external_validation": "The Manakov2022 chimeric eCLIP binding data (GSE198250) and the 74 HeLa small-RNA transfection experiments assembled in miRBench, neither produced by this lab; also the paper's own DU145 prostate cancer validation."
+  },
+  "honest_claim_h3": "Among genes expressed in transfected HEK293T cells, the model ranks which let-7 target genes are de-repressed when a 3'-pairing competitor microRNA is supplied at saturating levels alongside let-7a, using only 3'UTR and guide sequence; it says nothing about endogenous microRNA concentrations, other cell types, or protein-level output.",
+  "plain_idea": {
+    "one_liner": "Use a gene's 3' tail sequence to predict which of its let-7 target sites a rival microRNA blocks instead of silencing.",
+    "train_on": "For each of 13,962 expressed human genes (count I verified in the file): the 3' untranslated region sequence (the regulatory tail of the messenger RNA, fetched from Ensembl) plus the 22-nucleotide sequence of whichever small RNA was transfected, across 16 transfection conditions measured in triplicate (48 RNA-sequencing samples, verified).",
+    "predict": "The change in that gene's messenger RNA level in log2 units - how much let-7a knocks it down, and how much of that knockdown is undone when a competitor microRNA is co-transfected. The truth comes from Illumina read counts per gene in the matrix I downloaded.",
+    "why_worthwhile": "Groups designing microRNA mimics or inhibitors as drugs assume one microRNA per site; if blocking-without-silencing is predictable from sequence, that whole class of off-target effect becomes designable. Even a failure pins down how much of this effect sequence can explain, against a reliability ceiling of 0.60 that I measured."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Far smaller than miRBind2's training set (265,180 gene-level examples from 74 HeLa transfections versus our 16 conditions), but it covers an area they have nothing for: matched single and co-transfections of two microRNAs with seed and 3'-end mutant guides, all measured genome-wide in triplicate."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "Three replicates per condition give a per-gene noise estimate; I measured split-half reliability (0.429 for repression, 0.433 for shielding) and a null contrast whose reliability is 0.01, so predictions can be calibrated per gene. Neither TargetScan v8 nor miRBind2 reports per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "TargetScan v8's hand-built context++ features reach only Spearman 0.136 here against a ceiling of 0.60, so it is clearly beatable. miRBind2 is from 2026 with open weights and an honest left-out test set, though its gene-level Pearson of 0.30 leaves plenty of headroom."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The obvious new data, Manakov2022 chimeric eCLIP joined on Ensembl gene ID, measures physical binding by crosslink-ligation, not repression by sequencing, and miRBind2 was evaluated on its own left-out chimeras rather than on these contrasts. Same-quantity and same-split conditions both fail."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Gene-level log2 fold change after small-RNA transfection is measured for many microRNAs in public data: the miRBind2 paper (which I retrieved) states it assembled 265,180 gene-level training examples from 74 small-RNA transfection experiments in HeLa cells via miRBench v5; GEO holds dozens more microRNA transfection series; TargetScan v8's context++ model was itself fitted to such compendia. Known resources plus one retrieved paper, not a fresh search of GEO.",
+    "approx_items": 265180,
+    "join_key": "Ensembl gene ID plus miRBase microRNA name",
+    "why": "A model can be pre-trained on the large public repression compendium and then tested on this paper's competition contrasts, which is both far more training data and a ready-made external validation set."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The shielding contrast (miR-106a+let-7 minus let-7) and the repression contrast (let-7 minus control) share the same let-7 samples with opposite sign, so replicate noise alone induces a negative correlation between them; I estimated that artifact at about -0.10 against the observed -0.524, so the signal dominates but any analysis using measured repression as a feature must use disjoint replicate halves.",
+      "TargetScan context++ is itself a model output; using it as a feature caps the model at its biases and hides whether the network learned anything new.",
+      "Paralogous and duplicated genes share near-identical 3'UTR segments, so a random gene split puts near-duplicates on both sides.",
+      "Highly expressed genes have both lower measurement noise and systematically different fold changes, so expression level can act as a back-door predictor.",
+      "The 8 guides are mutants of each other (seed mutant and three 3'-end mutants of miR-106a), so holding out one guide leaves near-identical guides in training."
+    ],
+    "split": "Hold out whole chromosomes for the gene axis, and additionally cluster 3'UTRs at high sequence identity (CD-HIT-EST or MMseqs2) and hold out whole clusters; for the guide axis, hold out the whole miR-106a mutant family together rather than individual mutants. The chromosome column is not in the count file and must be added from the same Ensembl release used for the 3'UTRs - I did not see it in the files.",
+    "checks": [
+      "Shuffle gene labels and confirm performance collapses to the let-7-site-presence lookup (+0.034 versus -0.051 mean log2, measured).",
+      "Run the model on the mock-versus-negative-control null contrast, whose split-half reliability I measured at 0.01: any score above chance there means leakage.",
+      "Train on expression level alone, and on TargetScan score alone, and report how much of the full model's performance each reproduces.",
+      "Recompute the repression-versus-shielding relationship using disjoint let-7 replicate halves to confirm it survives removal of the shared-noise artifact.",
+      "Report nearest-neighbour 3'UTR sequence identity between each test gene and the training set."
+    ],
+    "verdict": "Manageable: the shared-replicate artifact and the paralogue issue are both concrete and both have a standard fix, and this dataset uniquely ships its own empirical null contrast to test against."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured shielding (log2 of miR-106a+let-7 over let-7) across held-out chromosomes, plus precision among the top 100 ranked genes - because the user's actual decision is which handful of sites to build reporter assays for.",
+    "baselines": "Measured by me on these files: TargetScan v8 weighted context++ for let-7a gives Spearman -0.098 overall and -0.231 among let-7-site genes; the site-presence lookup separates mean shielding by only 0.085 log2 units (+0.034 with a site versus -0.051 without); the global mean gives zero. Published comparator: miRBind2's gene-level repression Pearson 0.30 versus TargetScan 0.24.",
+    "success": "Spearman >= 0.40 on held-out chromosomes for the shielding effect, against TargetScan's 0.231 among site-bearing genes and a reliability ceiling of 0.60; and the model must also reach >= 0.40 on the plain let-7 repression contrast, where TargetScan gives 0.136.",
+    "noise_ceiling": 0.6,
+    "kill": "If after one week a model using 3'UTR sequence beats a three-feature baseline (let-7 site count, site type, 3'-end k-mer complementarity) by less than 0.05 Spearman on held-out chromosomes, stop - the effect is a lookup table, not a model."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nucleic Acids Research",
+      "why": "NAR publishes computational microRNA-targeting methods and would take a sequence model that predicts which bound sites silence versus merely block a rival, validated against chimeric eCLIP binding data and clearly beating TargetScan and miRBind2."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "Bioinformatics publishes focused benchmark-and-method papers; the likely result - existing target predictors reach only ~0.14-0.23 Spearman on a competition dataset whose reliability ceiling is 0.60, with a modest frozen-backbone model doing better - fits its scope exactly."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Takes negative and partial results with a resource: even 'no sequence model beats a three-feature site baseline on microRNA competition' plus the curated feature/label table and measured noise ceiling is a publishable note there."
+    }
+  },
+  "pitch": {
+    "headline": "48 RNA-sequencing samples where two microRNAs fight over the same sites, with mutant guides that switch the fight off - never used for machine learning.",
+    "what_makes_the_data_unusual": "Matched single and co-transfections plus a seed mutant and three 3'-end mutants, all in triplicate. I verified the design genome-wide: miR-106a reverses let-7 repression of HMGA2 by +1.52 log2, miR-106b does not (-1.08), the 3'-end mutant mostly loses it (+0.45).",
+    "the_win": "Spearman 0.40 or better for the shielding effect on held-out chromosomes, against TargetScan v8's 0.231 among let-7-site genes and a measured reliability ceiling of 0.60.",
+    "even_if_it_fails": "You still publish the first honest benchmark of TargetScan and miRBind2 on microRNA competition, plus a measured noise ceiling of 0.60 - which tells the field how much of this effect is sequence-predictable at all.",
+    "who_wants_it": "The Hall lab at ETH Zurich, which generated the data, and the BioGeMT group behind miRBind2, whose own paper names seedless sites as the open problem; it changes which sites they put into reporter assays."
+  },
+  "ml_idea": "From a gene's 3' untranslated region sequence plus the transfected guide sequence, predict two measured quantities: how strongly let-7a represses the gene, and how much of that repression is undone by a co-transfected competitor. Features from frozen RNA-FM embeddings of ~120-nucleotide windows around candidate sites, plus explicit seed-match and 3'-end complementarity features; baselines are TargetScan v8 context++ (measured here at Spearman 0.136 for repression) and miRBind2 (published gene-level Pearson 0.30). Evaluation on held-out chromosomes and 3'UTR identity clusters, against a split-half reliability ceiling of 0.60 that I measured from the replicates. The interesting output is a ranked list of let-7 sites that a 3'-pairing competitor can occupy without silencing - the first predictive handle on microRNA-versus-microRNA competition.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.3,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 3,
+    "cv_run_minutes": 10,
+    "compute_note": "I timed the real steps: downloading and parsing both count matrices, computing all contrasts and the split-half reliabilities took under a minute each on this laptop, and the 137 MB TargetScan join ran in chunks without strain. The 6 hours is almost entirely the 3'UTR extraction from Ensembl/GENCODE; the 3 embedding hours is an estimate (~70,000 windows at roughly 5-10 per second on CPU), not timed.",
+    "cheapest_killing_check": "Count how many of the 13,962 expressed genes get a 3'UTR sequence from Ensembl release 111 and carry at least one candidate let-7 site, then check whether a three-feature baseline (site count, site type, 3'-end k-mer complementarity) already reaches the 0.60 split-half ceiling. If it does, there is nothing for a model to learn."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Everything in Part A was verified by opening the files, not read off the paper: 48 samples matching the paper exactly, 13,962 expressed genes, zero duplicates, zero missing cells, and I reproduced the paper's headline result myself (let-7 represses HMGA2 by -2.03 log2; miR-106a reverses it by +1.52, miR-106b does not). The dataset ships its own positive control, its own empirical null (mock-versus-control split-half reliability 0.01), and a measurable noise ceiling (0.60 Spearman after Spearman-Brown correction), while the best open baseline, TargetScan v8, reaches only 0.136 on these data - a genuine gap. The task itself, predicting when one microRNA blocks a site rather than silencing it, is unmodelled: miRBind2's own 2026 authors name seedless sites as the open problem. Real costs: 3'UTR sequences must be fetched and joined (about 6 hours), the shielding and repression contrasts share let-7 replicates so a shared-noise artifact of roughly -0.10 must be subtracted, and coverage is one cell line with 8 synthetic guides at saturating dose, which caps what the model can claim."
+}

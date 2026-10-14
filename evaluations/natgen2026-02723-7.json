@@ -1,0 +1,128 @@
+{
+  "paper_id": "natgen2026-02723-7",
+  "title": "Spatial analysis of head and neck cancer identifies two ecosystems with distinct modes of epithelial-to-mesenchymal transition.",
+  "doi": "10.1038/s41588-026-02723-7",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE268014",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "GEO GSE268014 file list (289 lines, 26.8 GB tar): 26 Visium spatial transcriptomics slides (fresh frozen), 11 single-cell RNA-seq libraries and 2 Visium HD sections, with HPV status (10 'Yes' / 29 'No' across all 39 samples) in the sample metadata. I downloaded all 26 spot-position files: 85,104 in-tissue spots in total (533 to 4,908 per slide). For slide P5903 (HPV-positive) I downloaded the full 10x files: 36,634 features (36,601 human genes plus 33 HPV16/18/31/33/35 viral genes), 4,992 barcodes, 8.0M non-zero raw counts. HPV16 E6 is detected in 186 of its 4,096 spots and E7 in 109. A HEAD request shows the full-resolution H&E TIFF is 717 MB (gzipped) and openly downloadable. GSE279017 (6 MB) is bulk RNA-seq of the 93VU cell line treated with TGFB, OSM, SPP1 or IL1B: 20 samples, 59k gene rows.",
+    "what_came_from_paper_text_only": "Abstract only (paywalled, no PMC full text). The p-EMT edge/core assignment per tumour, the cell-type deconvolution and the spot annotations are not in GEO as far as I could see; the Nature data/code availability statement could not be retrieved without scraping the publisher site. Whether P5456/P5457 are multiple sections from one tumour is inferred from the sample names, not confirmed."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO GSE268014 is public with no login; I downloaded the matrix, barcodes, features and positions for one slide and positions for all 26. The H&E TIFFs (~0.6–0.75 GB each) download openly (checked with HEAD)."},
+    "a2_label_is_a_column": {"pass": true, "note": "For the H&E-to-expression task, the label is the measured per-spot gene count matrix, including HPV viral genes. That is already a column, checked in the files. The paper's own labels (p-EMT edge vs core, deconvolution) are not deposited and would have to be rebuilt from expression, so those targets fail A2."},
+    "a3_inputs_present": {"pass": true, "note": "Full-resolution H&E images plus per-spot pixel coordinates and scale factors (spot diameter 152 full-resolution pixels) are deposited. No identifier lookups are needed."},
+    "a4_units_stated": {"pass": true, "note": "Raw integer UMI (unique molecular identifier) counts from Cell Ranger 4 in standard 10x MatrixMarket format. The units are implicit in the format but unambiguous."},
+    "a5_enough_rows": {"pass": true, "n_rows": 85104, "note": "85,104 in-tissue spots across 26 slides, counted from the files. The independent unit is the patient (about 25–26), which limits any slide-level label such as HPV status or p-EMT type to n≈26."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~18 GB of H&E TIFFs plus ~3.8 GB of count matrices to download; processed one slide at a time, then <1 GB of cached patch embeddings and a gene subset", "note": "Passes only if images are streamed one slide at a time and embedded once. Peak RAM is about one decoded 20x image (a few GB). No GPU is needed, but CPU embedding takes hours."},
+    "a7_counts_match_paper": {"pass": true, "note": "The abstract's n = 26 spatial transcriptomics tumours matches the 26 Visium position files on GEO. Spot counts are not in the abstract, so I could not cross-check them."},
+    "a8_label_provenance": {"pass": true, "note": "Spot gene counts are a direct sequencing measurement, independent of the H&E pixels. The paper's p-EMT scores would be computed from the expression itself, so they are not used as a label here."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Per slide: matrix, barcodes, features, positions and TIFF; they join cleanly on barcode, but there are 26 slides × 5 files."},
+    "B2": {"score": 1, "why": "Standard 10x files parsed first try (checked); H&E patch cropping needs scale factors and TIFF handling."},
+    "B3": {"score": 1, "why": "Raw UMI counts from one platform; need per-spot normalisation and log transform, which is routine."},
+    "B4": {"score": 2, "why": "Integer counts, no censored values; seen in the P5903 matrix."},
+    "B5": {"score": 2, "why": "One record per spot; one slide labelled 'replicate 1' (P5456), so no widespread duplicates."},
+    "B6": {"score": 1, "why": "The 10x format is documented by the vendor; the spot annotations from the paper are not deposited."},
+    "C1": {"score": 1, "why": "'Does an open histology model transfer to a fresh HNSCC cohort, HPV+ vs HPV−?' is informative either way, but small."},
+    "C2": {"score": 0, "why": "HEST-Benchmark (open, patient-level splits) and HEiST (2026, HNSCC-specific) already predict spot expression from H&E."},
+    "C3": {"score": 1, "why": "Weak: a fresh held-out HNSCC cohort with per-spot HPV viral transcripts; HPV-from-H&E itself is well studied."},
+    "C4": {"score": 2, "why": "Visium spatial transcriptomics costs thousands of dollars per slide; H&E is routine."},
+    "C5": {"score": 2, "why": "Mean-expression dummy plus published HEST-Benchmark Pearson numbers for comparable tasks."},
+    "D1": {"score": 1, "why": "Pathology foundation models exist; UNI and CONCH are gated on Hugging Face, H-optimus-0 is open (Apache)."},
+    "D2": {"score": 1, "why": "Freeze and fit a head works, but embedding ~85k patches with a ViT-L/g on CPU takes hours."},
+    "D3": {"score": 1, "why": "UNI and CONCH are non-commercial; H-optimus-0 is Apache 2.0; GEO data is public."},
+    "E1": {"ok": true, "why": "Leave-one-patient-out split, using the GSM sample IDs and patient IDs in the file names (seen)."},
+    "E2": {"ok": true, "why": "26 slides from about 25 patients, each with 533–4,908 spots (counted)."},
+    "E3": {"ok": true, "why": "Training-set mean expression per gene, or a per-slide mean, as the dummy baseline."},
+    "E4": {"ok": false, "why": "Only one labelled replicate slide and 2 Visium HD sections; no systematic replicate noise estimate."},
+    "E5": {"ok": true, "why": "Keratin genes in tumour nests and immune genes in lymphoid areas are visible on H&E; HPV E6/E7 only in HPV+ slides."},
+    "E6": {"ok": true, "why": "Shuffle spots within or across slides, and use random-feature embeddings."},
+    "E7": {"ok": true, "why": "HEST-1k cancer cohorts and Arora et al. 2023 oral squamous cell carcinoma Visium are external cohorts (named from search)."},
+    "E8": {"ok": false, "why": "The paper reports no model number; HEST numbers are on other cohorts, not this one."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs and gene symbols in features.tsv (seen); HPV status in sample metadata."},
+    "G2": {"score": 2, "why": "HEST-1k (1,229 slide pairs) and TCGA-HNSC H&E slides with HPV status and bulk RNA."},
+    "G3": {"score": 1, "why": "Join is on gene symbol only; no item-level overlap; gene panels must be intersected."},
+    "G4": {"score": 1, "why": "'Does a pan-cancer histology-to-expression model hold up in HPV-driven tumours?' adds only modestly over HEST."},
+    "H1": {"score": 2, "why": "Both HPV+ and HPV− tumours (10 Yes / 29 No samples) and continuous expression across all spots."},
+    "H2": {"score": 1, "why": "One institution, one platform, about 25 patients."},
+    "H3": {"score": 2, "why": "Claim stated precisely below."},
+    "H4": {"score": 1, "why": "The abstract states n = 26 and HPV mix; site, ancestry and treatment are unknown to me (paywalled)."},
+    "I1": {"score": 1, "why": "Computational pathology groups (Mahmood lab HEST, HEiST authors); a vague HNSCC community."},
+    "I2": {"score": 1, "why": "A failure to transfer would warn HEiST-style virtual-ST users; a marginal change otherwise."},
+    "I3": {"score": 1, "why": "Per-gene Pearson is the field's metric but is not tied to a clinical decision."},
+    "I4": {"score": 2, "why": "Mapping morphology to expression is genuinely complex; lookup baselines are weak."},
+    "J1": {"score": 2, "why": "Frozen-backbone embeddings, grouped CV, a transfer test: real modelling."},
+    "J2": {"score": 1, "why": "Marker-gene sanity checks are possible; pathology judgement would need a collaborator."},
+    "J3": {"score": 1, "why": "Cached embeddings plus a per-gene transfer table is shareable even if the result is negative."},
+    "J4": {"score": 0, "why": "No time budget set yet."},
+    "J5": {"score": 0, "why": "No kill date written yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "HEST-Benchmark (Mahmood lab, NeurIPS 2024): pathology foundation-model embeddings plus regression heads predicting the 50 most variable genes per spot", "open_weights": true, "score_and_split": "Pearson correlation per task on patient-level splits across 10 cancer/organ tasks; exact per-task numbers not retrieved here.", "authors_named_unsolved": "Not retrieved beyond the abstract.", "runnable_as_baseline": true},
+      {"name": "HEiST (H&E-Inferred Spatial Transcriptomics), Biswas et al., bioRxiv 2026: a deep learning model predicting spot expression in HNSCC from H&E", "open_weights": null, "score_and_split": "Abstract claims 'rigorous validation across two independent external ST cohorts'; numbers not retrieved.", "authors_named_unsolved": "Not stated in the abstract; code availability unknown.", "runnable_as_baseline": null},
+      {"name": "CLAM-based weakly supervised HPV-status classifier for oropharyngeal carcinoma (Cancers 2025)", "open_weights": null, "score_and_split": "123 slides from TCGA plus a Naples cohort; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "Deep learning HPV-association predictor from H&E (npj Digital Medicine 2023)", "open_weights": null, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "H-optimus-0 (open pathology ViT, Apache 2.0) or UNI/CONCH (gated, non-commercial) as frozen patch encoders", "freeze_and_head_viable": true, "hardware": "CPU, hours of one-time embedding for ~85k patches; a GPU is not required but would help", "licence": "H-optimus-0 Apache 2.0; UNI/CONCH CC-BY-NC with access request; GEO data public"},
+  "integration": {"partner_dataset": "HEST-1k (1,229 paired H&E/spatial transcriptomics slides) and TCGA-HNSC (H&E slides with HPV status and bulk RNA)", "join_key": "Gene symbol / Ensembl gene ID; HPV status as a slide covariate", "bigger_question_one_sentence": "Do histology-to-expression models trained on pan-cancer spatial data lose accuracy specifically in HPV-driven head and neck tumours, whose morphology (hypercellular, lymphocyte-rich) differs?"},
+  "controls": {"positive_control": "Keratin/epithelial genes (e.g. KRT5, KRT14) and immune genes (e.g. PTPRC, CD3E) should be predicted with high correlation from H&E; HPV16 E6/E7 should be near zero in HPV-negative slides.", "negative_control": "Shuffle spot-to-patch assignments within each slide, and use random embeddings of the same shape; both should collapse to the mean baseline.", "external_validation": "HEST-1k cancer cohorts and the Arora et al. 2023 oral squamous cell carcinoma Visium dataset (Nature Communications)."},
+  "honest_claim_h3": "Among 26 fresh-frozen HNSCC Visium slides from one centre, a frozen pathology encoder plus a linear head predicts spot-level expression of a chosen gene panel with correlation X on held-out patients, and that accuracy differs (or not) between HPV-positive and HPV-negative tumours.",
+  "plain_idea": {
+    "one_liner": "Use microscope images of stained tumour tissue to predict which genes are switched on in each small spot of head and neck cancers.",
+    "train_on": "For each of 85,104 tissue spots (55 µm across) from 26 tumours, a crop of the routine stained (H&E) slide image centred on that spot.",
+    "predict": "The spot's measured RNA counts for a panel of genes, including HPV viral genes, as read by 10x Visium spatial sequencing of the same tissue section.",
+    "why_worthwhile": "If image-based models hold up on a new cohort, especially HPV-positive tumours, pathologists could infer expensive spatial gene maps from cheap routine slides; if they fail, users of such 'virtual' maps learn where not to trust them."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "26 slides / 85,104 spots is far smaller than HEST-1k's 1,229 slides and 1.5M spots, but it is HNSCC-specific, includes HPV viral transcripts per spot, and was released in 2026, so it is likely absent from HEST-1k (2024)."},
+    "confidence_score": {"answer": "no", "why": "Only one labelled replicate slide and two Visium HD sections, which is not enough to calibrate per-prediction uncertainty."},
+    "models_beatable": {"answer": "no", "why": "HEST-Benchmark (2024) uses large pathology foundation models with patient-level splits, and HEiST (2026) targets HNSCC specifically; neither is weak."},
+    "guaranteed_improvement": {"answer": "no", "why": "Adding this cohort to HEST-1k training is not guaranteed to help: different lab, fresh-frozen vs FFPE (formalin-fixed) tissue, and no shared evaluation split."}
+  },
+  "label_elsewhere": {"score": 2, "sources": "HEST-1k (known resource; 1.5M spot–patch pairs across 26 organs, per its abstract); other public Visium HNSCC/oral cancer sets such as Arora et al. 2023 (found in search).", "approx_items": 1500000, "join_key": "Gene symbol / Ensembl gene ID (no item-level overlap)", "why": "Spot-level expression from other cohorts gives pretraining data and a ready external test of whether models generalise to HNSCC."},
+  "leakage_plan": {
+    "risks": [
+      "Neighbouring spots on the same slide have overlapping image patches and correlated expression, so a random spot split leaks heavily.",
+      "P5456 'replicate 1' and P5457_1 may be sections of the same or related tumours; splitting them apart leaks patient identity.",
+      "Slide-level staining colour and batch (capture dates 2021–2022 in the TIFF names) correlate with HPV status and expression level.",
+      "If the backbone (e.g. UNI) was pretrained on TCGA-HNSC slides, that is not test leakage here, but external TCGA validation would be compromised."
+    ],
+    "split": "Leave whole patients out (patient ID such as P5903 is in every file name, seen); group P5456/P5457 together; stratify folds by the 'hpv-related' metadata field (seen).",
+    "checks": [
+      "Shuffle patch-to-spot assignment within each slide and confirm correlation collapses to the mean baseline.",
+      "Predict expression from slide ID or mean slide colour alone to measure the batch-only signal.",
+      "Compare random-spot CV with leave-patient-out CV; a large gap shows spatial leakage."
+    ],
+    "verdict": "Manageable: leave-patient-out with about 25 groups is straightforward, but slide-level batch effects must be checked."
+  },
+  "success_criteria": {
+    "metric": "Mean Pearson correlation across the 50 most variable genes on held-out patients, reported separately for HPV+ and HPV− slides; this is what decides whether virtual spatial maps can be trusted per subtype.",
+    "baselines": "Training-set mean per gene (Pearson undefined/zero); per-slide mean; a HEST-Benchmark-style linear head on frozen embeddings as the standard reference. No published number on this cohort.",
+    "success": "A clear, reproducible HPV+ vs HPV− accuracy gap (e.g. ≥0.1 Pearson difference with non-overlapping patient-bootstrap intervals), or a frozen-encoder Pearson comparable to HEST-Benchmark numbers on held-out patients; neither threshold is calibrated to a verified number.",
+    "noise_ceiling": null,
+    "kill": "Patch embeddings beat the per-slide mean baseline by less than 0.05 mean Pearson after the first leave-patient-out run."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes benchmark and transfer studies of spatial methods, if a robust, explained HPV-specific failure mode of histology-to-expression models is shown."},
+    "realistic": {"journal": "Bioinformatics (application note / short benchmark)", "why": "Fits an external-cohort re-evaluation of open histology-to-expression models on a new HNSCC dataset."},
+    "fallback": {"journal": "bioRxiv preprint plus a MICCAI/NeurIPS computational pathology workshop", "why": "A negative transfer result on 26 slides is still a useful workshop contribution."}
+  },
+  "pitch": {
+    "headline": "85,104 tissue spots from 26 head and neck tumours, each with full-resolution H&E and per-spot HPV viral transcript counts, public on GEO since 2026.",
+    "what_makes_the_data_unusual": "The feature set includes 33 HPV viral genes alongside 36,601 human genes; HPV16 E6 was detected in 186 of 4,096 spots on one HPV-positive slide. Ten of 39 samples are HPV-positive.",
+    "the_win": "A leave-patient-out estimate of how much open histology models lose on HPV-positive versus HPV-negative tumours, with a per-gene table of which genes transfer.",
+    "even_if_it_fails": "A documented warning that H&E-inferred spatial maps, such as HEiST's 1,500-tumour analysis, may not hold up in a fresh single-centre HNSCC cohort.",
+    "who_wants_it": "Computational pathology groups building virtual spatial transcriptomics (Mahmood lab HEST, the HEiST authors), deciding whether HNSCC needs subtype-specific training data."
+  },
+  "ml_idea": "Embed H&E patches at each Visium spot with a frozen pathology encoder, fit ridge/MLP heads to log-normalised expression of the top variable genes plus HPV E6/E7, evaluate leave-patient-out, and compare HPV+ vs HPV− accuracy and transfer from HEST-1k-trained heads.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 22, "needs_gpu": false, "peak_ram_gb": 6, "embedding_hours": 5, "cv_run_minutes": 15, "compute_note": "Estimated, not timed: about 85k patches at ~5 patches/s for a ViT-L on Apple Silicon CPU; ~18 GB of TIFFs streamed one slide at a time; ridge heads on 1,024-dimension embeddings are quick.", "cheapest_killing_check": "Confirm GSE268014 is not already in HEST-1k or the HEiST validation cohorts (search HEST metadata for GSE268014), and download one TIFF to confirm it aligns with the spot coordinates via the scale factors."},
+  "verdict": "park",
+  "verdict_reason": "Data is open and model-ready (85,104 measured spots, H&E included), but the main task, predicting spot expression from H&E, is crowded by HEST-Benchmark and the HNSCC-specific HEiST. Only 26 patients, an ~18 GB image download, and gated or slow pathology backbones (D = 3/6) keep the return on effort low."
+}

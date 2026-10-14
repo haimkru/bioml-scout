@@ -1,0 +1,104 @@
+{
+  "paper_id": "gb2026-04194-9",
+  "title": "Dynamic global acetylation remodeling during the yeast heat shock response.",
+  "doi": "10.1186/s13059-026-04194-9",
+  "journal": "Genome Biology",
+  "data_url": "https://static-content.springer.com/esm/art%3A10.1186%2Fs13059-026-04194-9/MediaObjects/13059_2026_4194_MOESM4_ESM.xlsx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded Additional file 4 (Table S3, 692 KB xlsx). It has a column-description sheet and a 'Limma Output' sheet (limma is a linear-model statistics package): 1,473 acetyl-lysine sites by 42 columns, covering 444 unique yeast ORF (open reading frame) IDs. For each of 9 heat-shock time points it gives the log2 change normalised to protein abundance, a t-statistic, a p-value and a Benjamini-Hochberg adjusted p-value, plus an ANOVA (analysis of variance) F test. There are 0 missing values outside the 'PTM Also Matches' column, which is filled for 459 ambiguous peptides. 6 site labels are duplicated, and 387 sites have a minimum adjusted p below 0.05. I also listed the PRIDE project PXD063569: 114 files, all raw/MGF/mzid, with no processed MaxQuant tables. The Zenodo record 18462378 (CC-BY-4.0) holds only scripts and images.",
+    "what_came_from_paper_text_only": "The 598-protein count, biological triplicate TMT-10plex (tandem mass tag, 10 samples per run) design, the 25 to 37 °C four-hour time course, the heat-sensitivity phenotypes and the Sti1 mimetic mutant results. Replicate-level values are not in Table S3 (only averages), so I took the triplicate design from the paper."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Table S3 downloaded without a login from Springer's static supplement server (checked)."},
+    "a2_label_is_a_column": {"pass": true, "note": "The per-time-point log2 changes and adjusted p-values are columns. A dynamic/static class needs only a threshold on an existing column (adj p<0.05 gives 387 sites, matching the paper)."},
+    "a3_inputs_present": {"pass": true, "note": "Each site is given as a yeast ORF plus a lysine position, not a sequence. A single S. cerevisiae proteome FASTA download (SGD or UniProt) gives the sequence windows, so no thousands of lookups are needed."},
+    "a4_units_stated": {"pass": true, "note": "The header sheet states that Coef is the average log2 change versus unstressed cells, normalised to protein-level log2 change (checked in file)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1473, "note": "1,473 labelled sites (387 dynamic) is above the ~400 floor for classification but below 1,500 for regression. That is thin: it passes only as a classification task."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<1 MB table plus ~6 MB yeast proteome FASTA", "note": "Computing ESM-2 embeddings for 444 proteins on CPU is minutes."},
+    "a7_counts_match_paper": {"pass": true, "note": "The 1,473 sites and 387 significant sites match the paper. The file has 444 unique ORFs against the paper's 598 proteins, likely because the paper also counts ambiguous 'also matches' proteins (459 rows). Not fatal."},
+    "a8_label_provenance": {"pass": true, "note": "The label comes from measured TMT mass-spec abundance via limma statistics. It is not another model's prediction and is not computed from sequence."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One sheet, 1,473 rows, one row per site (checked in file)."},
+    "B2": {"score": 1, "why": "The xlsx parses cleanly, but sequence windows must be pulled from a proteome FASTA and the 'k389Ac' position strings parsed."},
+    "B3": {"score": 2, "why": "One lab, one assay, already normalised to protein level by the authors (stated in the header sheet)."},
+    "B4": {"score": 2, "why": "No censored values. All sites were required to be quantified in every channel and replicate, and the file has 0 missing values."},
+    "B5": {"score": 1, "why": "6 duplicated site labels, plus 459 rows whose peptides map ambiguously to several proteins and need a policy."},
+    "B6": {"score": 2, "why": "A header-description sheet documents every column family (checked)."},
+    "C1": {"score": 1, "why": "'Does sequence context predict which acetyl sites respond to heat?' is informative if it fails, but it is weak with one dataset."},
+    "C2": {"score": 1, "why": "Many open acetylation-site predictors exist (PLMGraph-Ace, DeepMVP, DeepAcet), but none found predicts stress dynamics of known sites."},
+    "C3": {"score": 1, "why": "Unique-application angle: repurpose site predictors for dynamics. Plausible, but untested whether the signal exists."},
+    "C4": {"score": 2, "why": "A TMT time course with acetyl enrichment is expensive mass spectrometry."},
+    "C5": {"score": 1, "why": "Obvious dummies exist (per-protein majority class, protein-expression change), but there is no published number for this task."},
+    "D1": {"score": 2, "why": "ESM-2, an open-weight protein language model, matches the sequence windows."},
+    "D2": {"score": 2, "why": "Embeddings for 444 proteins cache on CPU in minutes, with a logistic head on top."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT-licensed. The Zenodo record is CC-BY-4.0. The supplement licence is assumed to be the Genome Biology CC-BY."},
+    "E1": {"ok": true, "why": "Split by protein (444 ORFs) or by protein family to stop sites on the same protein leaking."},
+    "E2": {"ok": true, "why": "444 proteins give enough groups for grouped cross-validation."},
+    "E3": {"ok": true, "why": "Majority class (74% static) and a per-protein baseline are computable from the file."},
+    "E4": {"ok": false, "why": "Replicate-level values are not in Table S3, only averages and p-values. They would have to be re-derived from PRIDE raw files."},
+    "E5": {"ok": true, "why": "The paper reports dynamic sites enriched on chaperones and ribosomal proteins, which a model should rediscover."},
+    "E6": {"ok": true, "why": "Label shuffling and sequence-versus-protein-feature ablation are straightforward."},
+    "E7": {"ok": false, "why": "No independent yeast heat-shock acetylome with dynamics was found. Weinert 2014 (PXD000507) covers a different perturbation."},
+    "E8": {"ok": false, "why": "The paper has no ML model and no predictive number to reproduce."},
+    "G1": {"score": 2, "why": "Systematic yeast ORF names (e.g. YAL005C) plus lysine positions join to SGD/UniProt (checked in file)."},
+    "G2": {"score": 1, "why": "Plausible partners: published yeast heat-shock transcriptome responses (Gasch 2000) and the CPLM acetylation database. Not verified."},
+    "G3": {"score": 1, "why": "Mostly one site per row, but 459 ambiguous peptides map to several proteins."},
+    "G4": {"score": 1, "why": "Asks whether site dynamics add information beyond gene-expression induction. That is marginal, since the paper already shows the overlap."},
+    "H1": {"score": 2, "why": "Static sites (1,086) and dynamic sites (387) are both in the file."},
+    "H2": {"score": 0, "why": "One lab, one strain (BY4741), one stress, one time course."},
+    "H3": {"score": 2, "why": "The claim can be stated precisely in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 1, "why": "The paper explains the all-channels-quantified filter. Bias toward abundant proteins is implicit, not discussed."},
+    "I1": {"score": 1, "why": "Yeast stress and PTM (post-translational modification) researchers such as the Lewis lab and the Downey lab, a vague community."},
+    "I2": {"score": 1, "why": "It could prioritise lysines for mimetic-mutant tests like the Sti1 experiment. Marginal."},
+    "I3": {"score": 1, "why": "A ranking metric (PR-AUC, precision-recall area under the curve) roughly fits the task of choosing sites to mutate."},
+    "I4": {"score": 0, "why": "Probably a per-protein or gene-expression lookup explains much of it; ML benefit is doubtful."},
+    "J1": {"score": 1, "why": "Embeddings, grouped splits and ablations, but on a small single dataset."},
+    "J2": {"score": 1, "why": "Biology is interpretable (chaperones, ribosome), but PTM-dynamics intuition is needed."},
+    "J3": {"score": 1, "why": "A negative 'sequence does not predict dynamics' note is shareable, but small."},
+    "J4": {"score": 1, "why": "Fits a weekend, though no budget has been written down."},
+    "J5": {"score": 0, "why": "No kill date has been written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PLMGraph-Ace (frozen ESM-2 plus a graph network, species-specific acetylation-site predictor, 2026)", "open_weights": null, "score_and_split": "Reported gains of a few percentage points in F1 over PAIL, CapsNet, DeepDA-Ace and MDDeep-Ace across nine species. Split details not retrieved.", "authors_named_unsolved": "Not retrieved; it predicts whether a lysine is acetylated, not whether it changes.", "runnable_as_baseline": null},
+      {"name": "DeepMVP (Nature Methods 2025, PTM site and variant-effect predictor trained on PTMAtlas, 397,524 sites)", "open_weights": null, "score_and_split": "Reported to outperform existing tools across six PTM types. Exact split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DeepAcet (GitHub Lab-Xu, deep-learning acetylation-site predictor)", "open_weights": true, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model; 35M or 150M checkpoint)", "freeze_and_head_viable": true, "hardware": "Laptop CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "Yeast heat-shock gene expression responses (e.g. Gasch et al. 2000) and the CPLM PTM database", "join_key": "Yeast systematic ORF name / UniProt accession", "bigger_question_one_sentence": "Do acetyl-site dynamics during heat shock carry information beyond the gene's transcriptional response?"},
+  "controls": {"positive_control": "Recover the reported enrichment of dynamic sites on chaperones and ribosomal proteins. As a trivial check, predict the lysine position or protein length from the embeddings.", "negative_control": "Shuffle the dynamic/static labels within protein-grouped CV; performance should fall to the 74% majority class.", "external_validation": "None found with the same quantity. Weinert 2014 yeast acetylome (PXD000507, growth-arrest dynamics) is the closest proxy, under a different perturbation."},
+  "honest_claim_h3": "Among 1,473 lysine acetyl sites quantified in every channel in one yeast strain's 4-hour 37 °C heat shock in one lab, the model predicts which sites change after protein-level normalisation.",
+  "plain_idea": {
+    "one_liner": "Use the protein sequence around an acetylated lysine to predict whether that acetyl mark changes when yeast is heat-shocked.",
+    "train_on": "The amino-acid window around each of 1,473 acetylated lysines (verified count), plus protein-level features, from 444 yeast genes.",
+    "predict": "Whether the site's acetylation significantly changes during heat shock (387 do), measured by mass-spectrometry time course in triplicate and tested by limma, normalised to the protein's own abundance.",
+    "why_worthwhile": "Researchers testing acetylation function could pick which lysines to mutate. Even a failure tells us whether stress-responsiveness is written in local sequence or set by the protein as a whole."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Site predictors like DeepMVP train on hundreds of thousands of sites. Ours is 1,473 sites, though it uniquely carries dynamics labels."},
+    "confidence_score": {"answer": "no", "why": "Only averaged values and p-values are released, with no replicate-level values to estimate per-site noise."},
+    "models_beatable": {"answer": "partly", "why": "Existing models solve a different task (is a lysine acetylated at all), so they are not competitors for dynamics. They could serve as feature extractors, not baselines to beat."},
+    "guaranteed_improvement": {"answer": "no", "why": "No second dataset measures heat-shock acetyl dynamics the same way, so no added data guarantees improvement."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Weinert et al. 2014 yeast acetylation dynamics (PXD000507, found by search). CPLM/PLMD acetylation-site databases hold site existence but not dynamics (known resources).", "approx_items": null, "join_key": "Yeast ORF / UniProt accession plus lysine position", "why": "Other yeast acetylome perturbation sets could test whether 'responsive sites' generalise across stresses, but none measures heat shock."},
+  "publication_target": {
+    "ambitious": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes compact ML analyses of omics data. It would need protein-grouped PR-AUC clearly above the per-protein and expression baselines."},
+    "realistic": {"journal": "Bioinformatics (Application/Discovery note) or PLOS Computational Biology short report", "why": "Fits a modest result: 'sequence embeddings partly predict stress-responsive acetyl sites', with ablations."},
+    "fallback": {"journal": "bioRxiv preprint plus a MLCB or ICML comp-bio workshop", "why": "A negative result, that dynamics are not predictable from local sequence, is a short workshop note."}
+  },
+  "pitch": {
+    "headline": "1,473 yeast acetyl sites, each with a 9-time-point heat-shock trajectory normalised to protein abundance, in one clean sheet with 0 missing values.",
+    "what_makes_the_data_unusual": "Acetylation-site datasets usually record only whether a site exists. This one gives measured change over 9 time points in triplicate (per the paper), with 387 dynamic and 1,086 static sites as real negatives.",
+    "the_win": "A protein-grouped PR-AUC well above the 0.26 positive-rate baseline and above a per-protein/expression-only baseline would show that sequence encodes stress-responsiveness.",
+    "even_if_it_fails": "We'd learn that acetyl dynamics are set at protein level (expression, function class), not by local sequence. That is a one-page note.",
+    "who_wants_it": "Yeast stress-response and acetylation labs (the Lewis lab, the Downey lab), choosing which lysines to mutate in mimetic experiments like the paper's Sti1 test."
+  },
+  "ml_idea": "Embed the window around each acetyl-lysine with frozen ESM-2. Fit a logistic or GBM head to classify dynamic (adj p<0.05) vs static sites under protein-grouped CV. Ablate sequence against protein-level features (expression induction, GO class).",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 3, "embedding_hours": 0.2, "cv_run_minutes": 2, "compute_note": "Estimated, not timed: 444 proteins through ESM-2 150M on CPU at ~1 protein/s, with a logistic head on 1,473 rows.", "cheapest_killing_check": "Fit a per-protein / protein-features-only baseline. If it matches any sequence model's protein-grouped PR-AUC, stop."},
+  "verdict": "park",
+  "verdict_reason": "Clean, verified, but tiny (1,473 sites, one lab, one stress, no external validation). The dynamics signal is likely protein-level, so ML adds little. Revisit if a second stress acetylome appears."
+}

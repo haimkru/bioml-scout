@@ -1,0 +1,186 @@
+{
+  "paper_id": "cell2026-05-024",
+  "title": "A viral ORFeome library for systems-level genetic dissection of host-pathogen interactions.",
+  "doi": "10.1016/j.cell.2026.05.024",
+  "journal": "Cell",
+  "data_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13429030/ (Supplementary Tables S1-S8, via Europe PMC supplementaryFiles, 19.3 MB zip)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the 19.3 MB supplement zip and opened all 9 Excel files. Table S1: 12,598 rows x 20 columns, every row carries a full amino-acid sequence (0 non-standard residues, 0 duplicate sequences), a UniProt accession (8,726 unique), family/genus/species (37/148/514), and a Sequence Homology Cluster ID (3,835 clusters). Table S2: 9,787 ORFs with growth log2 fold change in 3 cell lines plus a meta-analysis FDR. Table S3: 9,820 ORFs with MHC class I expression scores, two replicates each, for basal, interferon-beta- and interferon-gamma-induced conditions. Verified the ORF ID key joins S1-S2-S3 at 100% coverage (9,693 ORFs in both screens, 8,792 with growth labels and sequences). Measured the noise floor from replicates (Pearson r = 0.42/0.33/0.34 overall, 0.62/0.53/0.57 restricted to hits; sd of replicate difference 0.157-0.167 score units). Measured that homology cluster means explain 31-50% of phenotype variance. Ran a 20-amino-acid-composition logistic regression under homology-clustered 5-fold cross-validation: PR-AUC (precision-recall area under curve) 0.1044 vs class-prior 0.0664, ROC-AUC 0.615; label shuffling collapsed it to 0.0743/0.540. Confirmed no fragment-length confound (Spearman rho <= 0.08). Confirmed the text's 11,821 vORF count exactly matches Table S1.",
+    "what_came_from_paper_text_only": "The MHC class I expression score formula (bin-weighted mean of barcode read fractions across four sorting bins, range 1-4) and the use of MAGeCK for the growth screens come from the STAR Methods, not from a column header. That known MHC class I antagonists such as HIV Nef and KSHV K3 scored in the screen is read from the Results text and Figure 3D, not recomputed. The companion eORFeome external-validation set (Cell 2026, PMC13378530) is known from its abstract only: its Europe PMC supplementary-files endpoint timed out, so I did not verify its tables or its overlap with this library."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Opened the supplement zip and all 9 xlsx files with no login. Note the statement 'Other data will be made available upon request' covers only raw barcode counts; the processed screen results needed for modelling are fully in Tables S1-S3, and the proteomics is open in PRIDE (PXD077768/PXD077896/PXD077910)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Six measured phenotype labels are literal columns: 'A375|log2fc', 'HCEC|log2fc', 'RPE1|log2fc' and the basal / interferon-beta / interferon-gamma 'MHC | Z-score|Stouffer' columns, plus a meta-analysis FDR. Nothing has to be constructed; verified by reading the columns."},
+    "a3_inputs_present": {"pass": true, "note": "Table S1 column 'Fragment sequence' holds the actual amino-acid string for all 12,598 rows (also 'Entry sequence' for the full protein); 0 rows contain non-standard residues. No accession lookups needed. Verified in the file."},
+    "a4_units_stated": {"pass": true, "note": "Column names state the statistic (log2 fold change, Z-score by Stouffer's method, p-value, FDR) and the MHC expression score is defined in the Methods as a bin-weighted mean on a 1-4 scale. All readouts are unitless but precisely defined; observed score range 1.23-3.51 matches the stated 1-4 scale."},
+    "a5_enough_rows": {"pass": true, "n_rows": 8792, "note": "8,792 ORFs have both a sequence and a growth label; 9,693 have both screens; 9,549 have a basal MHC score. For the classification framing, 549 of 8,272 ORFs (6.6%) are hits in at least one MHC screen (Z < -2), above the ~400-positive bar. Counted in the files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~9.5 MB of Excel; 35 MB merged pandas frame (measured)", "note": "Trivial size. One full cross-validation run of the composition baseline took 0.1 s on this laptop CPU. The only real cost is a one-time ESM-2 embedding pass, which runs on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Exact match: the text states 11,821 viral ORFs and Table S1 contains exactly 11,821 ORF IDs beginning with 'V' plus 777 IEDB control ORFs = 12,598 ('~12,000'). 513 viral species claimed; 514 distinct Species values = 513 viruses plus the 'IEDB ORF' category."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are physical measurements, not model output: growth labels are log2 fold changes in barcode sequencing read abundance over time, MHC labels come from the distribution of barcodes across four fluorescence-activated cell sorting bins. No predicted column anywhere. Labels are independent of the sequence features; I checked the obvious confound and found no fragment-length effect (Spearman rho <= 0.08)."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "Three xlsx, ORF ID unique in each, 100% join coverage; effectively one table after one merge line. Verified in files."},
+    "B2": {"score": 1, "why": "Excel with a one-row title banner; needs skiprows=1, then pandas/openpyxl parses cleanly. Minor fix, verified."},
+    "B3": {"score": 2, "why": "Authors already normalized: MAGeCK log2FC, bin-weighted expression score, Stouffer Z-scores, FDR. One lab, one platform."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; all numeric. Missingness is plain NaN, 0.8-11% per column, droppable. Verified."},
+    "B5": {"score": 2, "why": "Verified 0 duplicate ORF IDs, 0 duplicate Fragment IDs, 0 duplicate fragment sequences across 12,598 rows."},
+    "B6": {"score": 2, "why": "Every column names its statistic; Methods define the expression-score formula. Only quirk: MAGeCK's 'goodsgrna' column name means barcodes here."},
+    "C1": {"score": 2, "why": "Asks whether a cellular-protein-trained language model knows viral function; informative either way. Baseline already measured, so no null result is empty."},
+    "C2": {"score": 2, "why": "Searched: viral-vs-human classifiers, escape models, entry-protein classifiers, viral pLM fine-tuning exist; none predicts screen phenotype from viral sequence."},
+    "C3": {"score": 2, "why": "Novel task, plus diversity angle: viral proteins are ~119:1 underrepresented in protein language model pretraining, per the retrieved arXiv study."},
+    "C4": {"score": 2, "why": "Each label required synthesising a 12,000-ORF barcoded library and running pooled sorting/growth screens in human cells. Very expensive."},
+    "C5": {"score": 2, "why": "I computed the dummies: class prior PR-AUC 0.0664, composition baseline 0.1044 grouped, homology-cluster mean explains 31-50% of variance."},
+    "D1": {"score": 2, "why": "ESM-2, a protein language model, has open downloadable weights on HuggingFace and matches amino-acid sequence input exactly."},
+    "D2": {"score": 2, "why": "Freeze-and-head: embed 8,792 sequences (mean 391 residues) once on CPU, then fit heads; measured CV time 0.1 s for the linear baseline."},
+    "D3": {"score": 2, "why": "ESM-2 weights are MIT-licensed, permissive. Data is a PMC open-access author manuscript supplement."},
+    "E1": {"ok": true, "why": "'Sequence Homology Cluster ID' is already a column: 2,949 clusters in the labelled set. I ran grouped 5-fold on it."},
+    "E2": {"ok": true, "why": "2,949 homology clusters (391 with >=5 members), plus 37 virus families, 505 species, 9 genome classes. Counted in files."},
+    "E3": {"ok": true, "why": "Computed: class-prior PR-AUC 0.0664; composition+length baseline 0.1044; per-homology-cluster mean is a second dummy."},
+    "E4": {"ok": true, "why": "Two replicates per MHC screen. Measured replicate Pearson r 0.42/0.33/0.34 and replicate-difference sd 0.157-0.167 score units."},
+    "E5": {"ok": true, "why": "Known MHC class I antagonists are in the library (10 'nef', 14 'K3', E3-19K, 2 BNLF2 rows found by annotation search) and were recovered by the authors."},
+    "E6": {"ok": true, "why": "Already ran it: shuffling labels under grouped CV dropped PR-AUC 0.1044 to 0.0743 and ROC-AUC 0.615 to 0.540, near the prior."},
+    "E7": {"ok": true, "why": "Companion eORFeome paper (Cell 2026, PMC13378530, open access) screened 3,835 effector ORFs including an MHC class I pathway; its supplement did not download here."},
+    "E8": {"ok": false, "why": "The paper reports no predictive model or performance number, so there is no published metric to reproduce on this data."},
+    "G1": {"score": 2, "why": "UniProt accessions (8,726 unique), virus family/genus/species names, and a 'Nomburg et al Cluster ID' column are all present in Table S1."},
+    "G2": {"score": 2, "why": "BFVD predicted viral protein structures (NAR 2025) and Nomburg et al. 2024's 67,715 virome structures, joinable on UniProt accession and the cluster ID column."},
+    "G3": {"score": 2, "why": "UniProt-to-structure is one-to-one; fragments-to-entry is clean many-to-one (mean 1.43, max 24) with Fragment start/end columns to slice the region."},
+    "G4": {"score": 2, "why": "Combined question: do the 62% of structurally novel viral folds carry distinctive immune-evasion phenotypes, and does structure beat sequence? Neither dataset answers alone."},
+    "H1": {"score": 2, "why": "All ~9,700 screened ORFs have scores, not only hits; 93.4% are non-hits. Both outcomes systematically reported. Verified in files."},
+    "H2": {"score": 1, "why": "Broad across viruses (37 families, 505 species) but narrow on host: one lab, MHC screens only in A375 melanoma, one HLA allele (HLA-A2)."},
+    "H3": {"score": 2, "why": "Honest claim is statable in one sentence, with the synthesis/expression/barcode-detection selection effect named explicitly."},
+    "H4": {"score": 2, "why": "Gaps are explicit: paper discusses fragment tiling and single-cell-line limits, and the 'ORF Type' column flags the 5,558 fragmented ORFs."},
+    "I1": {"score": 2, "why": "Named: the Elledge lab who built the library and left 2,684 library ORFs unscreened, and the Taipale eORFeome group."},
+    "I2": {"score": 2, "why": "A ranked list would decide which unscreened ORFs, and which of the unannotated virome proteins, enter the next pooled screen."},
+    "I3": {"score": 2, "why": "The decision is 'which ORFs to test individually', i.e. a ranked top-k list, and precision@k / PR-AUC is exactly that metric."},
+    "I4": {"score": 1, "why": "Honest: homology lookup is strong (clusters explain 31-50% of variance) and composition alone reaches ROC-AUC 0.615. ML must beat homology to matter."},
+    "J1": {"score": 2, "why": "Multi-task heads, grouped splits, frozen-backbone transfer learning, noise-floor-aware evaluation, external validation. Real modelling throughout."},
+    "J2": {"score": 2, "why": "Known immune-evasion proteins (Nef, K3, E3-19K, BNLF2a) are present as sanity anchors and the virology literature is rich."},
+    "J3": {"score": 2, "why": "The merged 9,693-ORF sequence-plus-six-phenotype benchmark table and the measured noise floor are reusable even if models disappoint."},
+    "J4": {"score": 2, "why": "Budget stated: 4 weeks, of which about 1 day to the feature table (merge already written) and 4 hours of embedding."},
+    "J5": {"score": 1, "why": "Condition drafted but not yet in NOTES.md: stop at week 3 if ESM-2 beats neither 0.1044 PR-AUC nor homology transfer."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Fine-tuned viral protein language models (PeerJ 2025, PMC12450373): ESM2-3B, ProtT5-XL and ProGen2-Large fine-tuned on viral sequences",
+        "open_weights": true,
+        "score_and_split": "Trained on 345,261 viral sequences in 5,981 orthologous groups, 90:10 stratified split. Evaluated only on embedding quality (cosine similarity, HDBSCAN silhouette, alignment consistency) — no functional phenotype prediction, so no comparable number.",
+        "authors_named_unsolved": "They report that masked-language-model fine-tuning did not improve most downstream tasks (they attribute it to overfitting) and that ProGen2-Large gained little and failed to form coherent clusters.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Multi-scale ESM2 viral entry protein classifier (BMC Bioinformatics 2026)",
+        "open_weights": true,
+        "score_and_split": "ESM2 650M/3B/15B embeddings plus five classifiers; best was ESM2 15B with a radial-basis-function support vector machine at 88.6% accuracy, Matthews correlation 0.772, ROC-AUC 0.956 on a held-out test set. Task is entry-protein versus not, an annotation-derived label, not a measured phenotype.",
+        "authors_named_unsolved": "Performance rose monotonically with model scale, implying viral protein representation is still limited at small scale.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Protein Language Models Expose Viral Mimicry and Immune Escape (Viruses 2025 / bioRxiv 2024)",
+        "open_weights": null,
+        "score_and_split": "Discriminates viral from human proteins at ROC-AUC 0.997; 3.9% misclassification, enriched in viruses causing chronic infection. Label is organism of origin, not function.",
+        "authors_named_unsolved": "Whether misclassification genuinely marks immune-evasion function was left as interpretation, not tested against functional measurements.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Nomburg et al. 2024 (Nature) structure-based viral protein function transfer",
+        "open_weights": true,
+        "score_and_split": "67,715 predicted structures from 4,463 viral species; 62% structurally distinct from the AlphaFold database. Assigned putative functions to up to 25% of unannotated viral proteins by structural homology; no held-out quantitative evaluation of those assignments.",
+        "authors_named_unsolved": "Functions of the structurally novel majority of viral proteins remain unassigned; homology transfer fails precisely where folds are new.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Hie et al. 2021 (Science) viral escape language models",
+        "open_weights": true,
+        "score_and_split": "Predicts escape mutations in influenza hemagglutinin, HIV-1 envelope and SARS-CoV-2 spike from sequence alone; evaluated against deep mutational scanning escape data on those three proteins.",
+        "authors_named_unsolved": "Restricted to within-protein mutational escape in three well-studied antigens; says nothing about which viral proteins antagonise host pathways.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2, a protein language model (esm2_t33_650M_UR50D, with esm2_t30_150M as the cheap option)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM. One-time embedding of 8,792 sequences (mean 391, max 571 residues) ~4 h at 650M; under 1 h at 150M. Heads train in seconds.",
+    "licence": "MIT (permissive)"
+  },
+  "integration": {
+    "partner_dataset": "BFVD (predicted viral protein structures, Nucleic Acids Research 2025) and Nomburg et al. 2024's 67,715 predicted virome structures and sequence/structure clusters",
+    "join_key": "UniProt accession ('Uniprot Entry' column, 8,726 unique) for BFVD; the 'Nomburg et al Cluster ID' and 'Nomburg et al Best Match' columns are already in Table S1, so the Nomburg join needs no mapping built",
+    "bigger_question_one_sentence": "Do the structurally novel viral folds that have no counterpart in the AlphaFold database carry distinctive immune-evasion phenotypes, and does predicted 3D structure predict those phenotypes better than sequence alone?"
+  },
+  "controls": {
+    "positive_control": "Two, chosen in advance. (1) Known MHC class I antagonists present in the library and recovered by the authors' screen — HIV-1 Nef (10 annotated rows), KSHV K3 (14 rows), adenovirus E3-19K, Epstein-Barr virus BNLF2a (2 rows) — must rank among the model's top predictions. (2) Plumbing check: swap the label for fragment length, which the model must predict near-perfectly from sequence.",
+    "negative_control": "Already executed. Shuffling labels under homology-clustered 5-fold cross-validation dropped PR-AUC from 0.1044 to 0.0743 (class prior 0.0664) and ROC-AUC from 0.615 to 0.540, so the pipeline is not leaking. Also planned: shuffle within homology cluster, and ablate composition versus embedding feature blocks.",
+    "external_validation": "The companion eORFeome screen (Cell 2026, PMC13378530, open access): 3,835 pathogen effector ORFs from an independent lab and library, screened across five pathways including MHC class I. Join on UniProt accession or by sequence. Caveat: its supplementary files did not download in this session, so the overlap size is unverified. Secondary option: hold out whole virus families or whole Baltimore genome classes."
+  },
+  "honest_claim_h3": "Among viral open reading frames that could be synthesised, expressed and barcode-detected in this library, a frozen protein-language-model embedding of the amino-acid sequence ranks which ones reduce surface HLA-A2 on A375 melanoma cells, measured at PR-AUC X under cross-validation that holds out entire sequence-homology clusters — so the claim is about generalising to viral proteins unlike anything in training, in one cell line and one HLA allele, not about any virus in a real infection.",
+  "plain_idea": {
+    "one_liner": "Use a viral protein's amino-acid sequence to predict whether it shuts down the cell's antigen-display or growth machinery.",
+    "train_on": "The amino-acid sequence of each viral protein fragment (mean 391 residues, maximum 571), optionally with its virus family. I counted 8,792 fragments with growth labels and sequences, and 9,693 with both screen types, drawn from 513 virus species.",
+    "predict": "Six measured readouts per protein: the growth effect in three human cell lines (log2 fold change in barcode sequencing abundance over time), and the surface level of MHC class I (the HLA-A2 molecule that displays antigens to killer T cells) with no interferon, with interferon-beta, and with interferon-gamma — each measured by sorting cells into four fluorescence bins and counting barcodes.",
+    "why_worthwhile": "Virologists and vaccine or immuno-oncology groups could use a ranked list to decide which of the hundreds of thousands of unannotated virome proteins to test in the lab next. Even if the model fails, we learn, with a number, whether protein language models trained almost entirely on cellular proteins carry any usable information about viral protein function."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "The retrieved viral protein language model work trained on 345,261 sequences but with only annotation-derived labels (orthologous group membership, entry-protein class); none had measured functional phenotypes. This gives 9,693 viral proteins with six directly measured phenotypes, which I counted in the files."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "Each MHC screen has two independent replicates, and I measured the noise: replicate Pearson r = 0.42 overall but 0.62 among hits, with replicate-difference standard deviation 0.157-0.167 score units. That lets every prediction be reported against a measured measurement-noise floor, which none of the named models provides."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "No named model predicts this label at all, so the real competitor is homology transfer. I measured its structure: homology cluster means explain 31-50% of phenotype variance, which by construction gives nothing on held-out clusters — exactly the regime Nomburg et al. named as unsolved for the 62% of structurally novel viral proteins."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The condition that fails is 'the existing model can be run as our baseline': the named models predict different labels (viral-versus-human, entry-protein class, escape mutations), so there is no existing model on this task whose inputs we strictly superset on the same split."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "The companion eORFeome paper (Cell 2026, PMC13378530) measures MHC class I pathway modulation for 3,835 pathogen effector ORFs — known from its abstract, which I retrieved; I could not download its tables. Qualitative immune-evasion annotations also exist in UniProt keywords and ViralZone (known resources, not searched item-by-item). No large public resource holds this quantitative phenotype.",
+    "approx_items": 3835,
+    "join_key": "UniProt accession (the 'Uniprot Entry' column, 8,726 unique values), or direct sequence matching",
+    "why": "An independently produced MHC class I screen from a different lab and library gives a genuine external test of whether the model learned viral biology rather than this library's assay quirks."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Cell Systems",
+      "why": "Publishes biology-first machine learning on functional genomics screens; would need frozen ESM-2 to clearly beat homology transfer on held-out sequence clusters and to hold that gain on the independent eORFeome MHC class I screen, yielding a usable prioritisation list for the unannotated virome."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "Publishes benchmarks and methods with honest held-out-group evaluation; the likely result — the first viral-protein functional-phenotype benchmark, a quantified replicate noise floor, and a modest but real improvement over the 0.1044 PR-AUC composition baseline — fits exactly."
+    },
+    "fallback": {
+      "journal": "bioRxiv preprint plus the Machine Learning in Computational Biology (MLCB) workshop",
+      "why": "Even the negative result — that protein language models add nothing over homology for viral function, quantifying the known cellular-protein pretraining bias — is a publishable, citable benchmark note there; NAR Genomics and Bioinformatics is an equivalent journal option."
+    }
+  },
+  "pitch": {
+    "headline": "9,693 viral proteins from 513 virus species, each with six measured functional phenotypes and its full amino-acid sequence in the same table.",
+    "what_makes_the_data_unusual": "I opened the files: 12,598 sequences, zero non-standard residues, zero duplicates, a ready-made sequence-homology cluster column (2,949 clusters) for leak-free splits, and two replicates per MHC screen for a noise floor.",
+    "the_win": "Beat the composition baseline I already measured — PR-AUC 0.1044, ROC-AUC 0.615 under homology-clustered 5-fold, against a 0.0664 class prior — with frozen ESM-2 embeddings, and hold the gain on the independent eORFeome MHC class I screen.",
+    "even_if_it_fails": "We would have measured that protein language models carry no usable signal about viral protein function beyond homology — a concrete number for the roughly 119:1 cellular-to-viral pretraining bias that the retrieved arXiv study only described qualitatively.",
+    "who_wants_it": "The Elledge lab, who built this library and left 2,684 of its ORFs unscreened (I counted), and the Taipale eORFeome group: a ranked list decides which ORFs enter the next screen."
+  },
+  "ml_idea": "Multi-task regression and ranking from viral protein sequence to six measured screen phenotypes (growth log2 fold change in A375, HCEC and RPE-1; basal, interferon-beta- and interferon-gamma-induced surface HLA-A2 score). Frozen ESM-2 embeddings (mean-pooled, 650M) feed a shared trunk with six heads; primary metric is precision@k and PR-AUC for the hit-versus-not framing (549 of 8,272 ORFs are hits in at least one MHC screen). All evaluation uses GroupKFold on the Sequence Homology Cluster ID column, with whole-virus-family holdout as a harder variant, against three baselines I have already computed: class prior (PR-AUC 0.0664), amino-acid composition plus length (0.1044), and the homology-cluster mean. Because the six phenotypes are nearly uncorrelated (Spearman 0.03-0.27, measured), multi-task sharing is a real experiment rather than a free win. Predictions are reported against the measured replicate noise floor, and the strongest extension joins BFVD/Nomburg predicted structures on UniProt accession to ask whether structure beats sequence for the structurally novel majority of viral proteins.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 4,
+    "cv_run_minutes": 2,
+    "compute_note": "Measured, not guessed: the merged frame is 35 MB in RAM and one full 5-fold grouped cross-validation of the composition baseline took 0.1 s on this laptop. The 2-minute figure allows for 1280-dimensional ESM-2 features and gradient boosting across six tasks. The 4-hour embedding estimate is an extrapolation (8,792 sequences at roughly 0.6-0.8 sequences/s for ESM-2 650M on CPU), not timed; ESM-2 150M would take under an hour.",
+    "cheapest_killing_check": "Already done, and it passed: does a 20-amino-acid-composition model beat the class prior under homology-clustered cross-validation? Yes, PR-AUC 0.1044 versus 0.0664, with shuffled labels collapsing to 0.0743. The remaining cheap check is how many UniProt accessions this library shares with the eORFeome MHC class I screen — if under ~200, external validation is dead and only family holdout remains."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes with the files open, and the counts match the paper exactly (11,821 vORFs in text and in Table S1). The rare combination here: the label is already a column six times over, the input is a literal amino-acid sequence in the same workbook, and the leak-free split key (sequence homology cluster) is also already a column. I went further than usual and ran the project's first experiment: amino-acid composition alone beats the class prior under homology-clustered cross-validation (PR-AUC 0.1044 versus 0.0664) while shuffled labels collapse to 0.0743, so there is real non-leaked sequence signal with large headroom for ESM-2, and the negative control behaves. The honest weaknesses are a genuinely noisy assay (replicate Pearson r = 0.42, rising to 0.62 among hits, so hits are real but the bulk is noise), a narrow host side (one lab, one melanoma cell line, one HLA allele), and the fact that homology transfer is a strong competitor that the model must beat to matter. Verify the eORFeome accession overlap first for external validation."
+}

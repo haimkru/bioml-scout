@@ -1,0 +1,55 @@
+{
+  "paper_id": "nature2026-11034-0",
+  "title": "Cohesin reshapes replication fork contacts to aid fork slowing and reversal.",
+  "doi": "10.1038/s41586-026-11034-0",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311782",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found two public GEO series (gene expression/genomics archive) by text search, since PubMed elink returned none: GSE311782 (24 samples, Repli-C, a contact-mapping method for newly copied DNA) and GSE311634 (20 samples, Micro-C, a high-resolution genome contact map). Listed both folders: the processed data are .hic/.mcool contact matrices of 0.3–3.9 GB each, with RAW tars of 37 GB and 23 GB. Downloaded and parsed the only small tables: GSE311782_fountains_all_conditions.tsv.gz has 14,982 rows of 'fountain' (origin-centred contact pattern) calls with coordinates across 9 conditions (e.g. UNT 2,082, HU 2,344, UNT_Auxin 3,012), all Type=Origin, plus one repeated header row embedded mid-file. GSE311634_loops_25_WT.tsv.gz has 4,541 loop calls and _SMC1kd has 346, each with score, p-value and q-value columns.",
+    "what_came_from_paper_text_only": "Only the abstract was available (paywalled; no PMCID, no full text or supplement in Europe PMC). The biological claims (cohesin accumulates at stalled forks, limits sister-fork coupling, PRIMPOL involvement) and the fork-speed/reversal measurements (DNA fiber assays, electron microscopy) were not seen in any deposited table."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both GEO series are public over FTP with no login; checked the directory listings and downloaded three small TSVs."},
+    "a2_label_is_a_column": {"pass": false, "note": "No per-item measured outcome table exists. The only tables are positive-only lists of loops and fountains called by peak-calling software. Any label (for example, whether a contact gains or loses under HU, a drug that stalls replication, or after cohesin removal) would have to be built by calling features yourself from multi-GB .hic matrices and matching them across conditions."},
+    "a3_inputs_present": {"pass": false, "note": "Inputs would be genomic coordinates (hg38, implied), with sequence or chromatin features fetched from outside sources. Fork-level measurements such as speed and reversal are not deposited at all."},
+    "a4_units_stated": {"pass": true, "note": "Coordinates are in base pairs, with resolution stated in a 'res' column (10,000 or 25,000). Loop scores are unitless calling-tool statistics."},
+    "a5_enough_rows": {"pass": true, "n_rows": 14982, "note": "14,982 fountain calls in total, but these are only positives, spread across 9 conditions and about 2,397 distinct IDs. Negatives would have to be constructed."},
+    "a6_fits_laptop": {"pass": false, "working_set": "About 10–25 GB of .hic files to re-derive contacts across conditions", "note": "Building any real label means reading several 2–3 GB .hic matrices. That is feasible by streaming one chromosome at a time, but slow, and it lands at genomics scale."},
+    "a7_counts_match_paper": {"pass": true, "note": "No counts were available to compare, because only the abstract could be read. The file sample counts (24 and 20) match the GEO metadata."},
+    "a8_label_provenance": {"pass": false, "note": "The fountain and loop calls are outputs of feature-calling algorithms run on the contact maps. They are not direct measurements, and a model predicting them would learn the caller's behaviour."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "AlphaGenome (DNA model with contact-map outputs) would be the natural fit if a label existed", "freeze_and_head_viable": null, "hardware": "", "licence": "Non-commercial"},
+  "integration": {"partner_dataset": "4DN (4D Nucleome) Micro-C/Hi-C collections, and ENCODE replication timing", "join_key": "hg38 genomic coordinates", "bigger_question_one_sentence": "Whether DNA sequence and chromatin state predict which replication origins rewire their contacts under replication stress; not pursued because no label table exists."},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "A model could only claim to reproduce the output of a contact-feature caller at origins in one human cell line, across 9 conditions with no negatives; that is not a measured biological outcome.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around replication origins to predict which origins change their 3D contacts when DNA copying is stalled.",
+    "train_on": "Genomic windows around origins, each with a sequence and a condition (untreated or drug-stalled, cohesin present or removed); about 14,982 called positive features, and no negatives deposited.",
+    "predict": "Whether an origin-centred contact pattern is called in a given condition. The answer comes from peak-calling software run on Repli-C contact maps, not from a direct measurement.",
+    "why_worthwhile": "Researchers studying replication stress could see which genome regions depend on cohesin to protect stalled forks, which bears on cancers with cohesin mutations."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict, from sequence (for example with AlphaGenome embeddings), which origins form condition-specific Repli-C fountains. Rejected: the label is a positive-only list of algorithm calls, and negatives or differential labels would have to be rebuilt from 2–3 GB .hic matrices.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 15,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed. Working set assumes about 6 condition-merged .hic files of 2–3 GB each, streamed one chromosome at a time.",
+    "cheapest_killing_check": "Check whether any deposited table records a measured per-locus or per-fork outcome. Already done: none exists; only feature calls and contact matrices are deposited."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A mechanistic cell-biology paper whose deposited data are multi-GB contact matrices plus positive-only lists of algorithm-called loops and fountains (14,982 rows). No measured label column exists (A2), labels come from calling software (A8), and building a real label needs 10–25 GB of .hic processing (A6)."
+}

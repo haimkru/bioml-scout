@@ -1,0 +1,45 @@
+{
+  "paper_id": "nature2026-10836-6",
+  "title": "Single-nucleus transcriptome-wide association study of human brain disorders.",
+  "doi": "10.1038/s41586-026-10836-6",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.17435917",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 17435917 metadata via API: CC-BY-4.0, open, snTIMs.zip 10.3 GB plus CovarianceMatrices.zip 3.5 GB. Read the zip's central directory with a ranged GET: 94 SQLite .db weight files (ancestry x cell type), 24.7 GB uncompressed, 13 MB to 1.07 GB each. Pulled and opened one, PsychAD_snTWAS_EUR_Subclass_Adaptive.db: tables weights (9,225 SNP-gene weights, rsid, alleles, position, distTSS), extra (1,201 genes with cross-validated R2), sample_info (n.samples = 411), construction. 555 distinct genes carry weights. Synapse syn63181047 resolved to a project entity named PsychAD_snTWAS; its file listing was not visible without a login.",
+    "what_came_from_paper_text_only": "Over 6 million nuclei from 1,494 donors in three ancestries, up to 27 cell populations, more than 4,000 new gene-trait associations, and Million Veteran Program replication: all from the abstract and search snippets. That the individual-level PsychAD data sits behind the AD Knowledge Portal comes from the data availability statement and the portal's known access rules; I made no access attempt. Europe PMC supplementaryFiles timed out (135 s, cached failure), so the supplementary tables were not retrievable."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": false, "note": "The measured data (genotypes plus single-nucleus expression for 1,494 donors) is on the AD Knowledge Portal on Synapse, which needs a login and a signed data use agreement, so it is controlled access. Only derived model weights are open on Zenodo, as a 10.3 GB zip."},
+    "a2_label_is_a_column": {"pass": false, "note": "The open files hold no measured outcome per donor or per variant. Any label, for example 'is this SNP a cell-type-specific expression regulator', would have to be built from the elastic-net weights."},
+    "a3_inputs_present": {"pass": true, "note": "Checked in one .db file: the weights table has rsid, ref/effect allele, hg38-style position and distance to the gene start (TSS), so DNA-sequence inputs could be pulled from the reference genome by coordinate."},
+    "a4_units_stated": {"pass": true, "note": "Weights are unitless elastic-net coefficients (expression change per effect allele on a normalized scale). Performance columns are R2 and p-values. Units are implied by the PrediXcan format, not written in the file."},
+    "a5_enough_rows": {"pass": true, "n_rows": 9225, "note": "9,225 SNP-gene weights in the smallest file I opened (EUR Adaptive immune cells, 411 donors). The larger files (up to 1.07 GB) clearly hold far more, but I did not count them."},
+    "a6_fits_laptop": {"pass": true, "working_set": "13 MB to 1.07 GB per cell-type .db; 24.7 GB for all 94", "note": "Individual files can be extracted with ranged GETs, so a subset fits easily. The full zip is over the 50 MB cap and was not downloaded."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checkable against the paper: the supplementary tables could not be retrieved. Inside the one file, 1,201 genes are listed in extra but only 555 have weights, which fits normal PrediXcan behaviour (genes failing filters keep no weights)."},
+    "a8_label_provenance": {"pass": false, "note": "Everything open is the output of a model: penalized-regression (elastic net) SNP weights and cross-validated R2. Training on them would distil the authors' imputation models rather than learn from measured expression."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PsychAD snTIMs (this paper), elastic-net imputation models per cell type and ancestry", "open_weights": true, "score_and_split": "Per-gene nested cross-validated R2 stored in each .db file; in the EUR Adaptive file most genes have R2 near 0. No single headline number retrieved.", "authors_named_unsolved": "Not retrieved; the discussion section was not read.", "runnable_as_baseline": true},
+      {"name": "AlphaGenome, a DNA sequence model that predicts variant effects on expression", "open_weights": true, "score_and_split": "Per its preprint (search result): eQTL effect-size Spearman 0.49 and sign auROC (area under the ROC curve) 0.80 across GTEx tissues, versus 0.39 and 0.75 for Borzoi.", "authors_named_unsolved": "Commentary in the search results says brain use depends on adding cell-type-specific brain data.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome (DNA sequence model), with heads trained on SNP coordinates", "freeze_and_head_viable": null, "hardware": "Precomputed variant scores or API; full local inference needs a GPU", "licence": "Zenodo weights CC-BY-4.0; AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "GTEx bulk eQTLs or the scMetaBrain single-nucleus eQTL meta-analysis", "join_key": "rsid / hg38 position + Ensembl gene ID", "bigger_question_one_sentence": "Do sequence models predict which brain eQTLs are specific to one cell type? That can't be answered properly here, because the open data contains only fitted weights, not measured effects."},
+  "controls": {"positive_control": "None usable: no measured label is open.", "negative_control": "Shuffling labels would be possible but is moot.", "external_validation": "scMetaBrain or PsychENCODE single-cell eQTLs would be possible, but they too are summary statistics."},
+  "honest_claim_h3": "A model trained on these files could only claim to reproduce which SNPs the PsychAD elastic-net models picked for each brain cell type, among the genes they could predict at all, which is not a claim about biology.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around common variants to predict whether they control a gene's activity in one specific brain cell type.",
+    "train_on": "SNP (single-letter DNA variant) positions and alleles near each gene, from published per-cell-type weight files. 9,225 SNP-gene pairs in the smallest file opened; the total is unknown.",
+    "predict": "The SNP's weight in the authors' expression-imputation model for that cell type. That weight is a fitted regression coefficient, not a direct measurement; the real expression data is controlled access.",
+    "why_worthwhile": "Brain geneticists would like to know cell-type-specific regulatory variants without single-nucleus sequencing of thousands of donors, but these files can't support an honest test of that."
+  },
+  "pitch": null,
+  "ml_idea": "Predict cell-type-specific SNP weights from sequence-model embeddings. Rejected: the labels are another model's coefficients (A8) and the measured data is controlled (A1).",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": null, "needs_gpu": null, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because a Part A killer failed.", "cheapest_killing_check": "Try to download the PsychAD expression and genotype data from the AD Knowledge Portal without a data use agreement. The data availability statement says it is behind Synapse, and I confirmed that the open Zenodo files are only fitted weights."},
+  "verdict": "reject",
+  "verdict_reason": "The measured single-nucleus and genotype data is controlled access on Synapse / AD Knowledge Portal (A1). The only open files are elastic-net weight databases, i.e. another model's output (A8), with no measured outcome column (A2)."
+}

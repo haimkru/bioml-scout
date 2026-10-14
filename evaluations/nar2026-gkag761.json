@@ -1,0 +1,116 @@
+{
+  "paper_id": "nar2026-gkag761",
+  "title": "Sparsomycin inhibits translation through a conserved mechanism across all domains of life.",
+  "doi": "10.1093/nar/gkag761",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/ena/browser/view/PRJEB111032",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Queried the European Nucleotide Archive (ENA, the public sequence repository) listing for project PRJEB111032: it holds exactly 12 raw paired-end FASTQ.gz files (6 runs = 3 untreated + 3 sparsomycin-treated 'iTP-Seq library' samples), 114,598,832 reads total, 8.59 GB compressed, and the 'analysis' (processed-file) query returns an empty table. Confirmed PDB entry 12DP exists via the RCSB (Protein Data Bank) REST API. Confirmed the open-access full text contains zero mentions of 'Supplementary <anything>' and Europe PMC reports hasSuppl = N; the supplementaryFiles endpoint timed out on its one attempt.",
+    "what_came_from_paper_text_only": "Library design (short open reading frames with 15 random NNN codons, ~10^12 sequences, translated in vitro with PURExpress lacking release factor 2), drug concentration (100 microM sparsomycin), the finding that ribosome density nearly vanishes after codon 5 under drug, and the reported amino-acid context effects (aromatic Phe/Tyr at nascent-chain positions -3/-2 enhance stalling). None of these numbers were checked in files because no processed file exists."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "ENA project PRJEB111032 is open, no login or application; however the only files are raw sequencing reads (12 FASTQ.gz, 8.59 GB), which this project's own rules forbid downloading, and each file is far over the 50 MB cap."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The prediction target (sparsomycin-dependent ribosome stalling per nascent-peptide context) exists in no file. It must be built from 114.6 million raw read pairs by running the assay-specific itpseq pipeline: trim, infer inverse-toeprint length, translate, aggregate per amino-acid context, then compute treated-versus-untreated enrichment. The paper's Figure 2C/2D enrichment heatmaps were never deposited as tables."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Not scored further (stopped at A2). The peptide-coding sequences are inside the reads themselves, so inputs would be present once reads were processed; nothing needs external identifier lookup."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Not scored further. Paper states read distributions in reads per million and enrichment as treated/untreated ratios, but no units exist in any deposited file because no table was deposited."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": null,
+      "note": "Not scored further. 114,598,832 reads were verified in the ENA listing; how many distinct peptide contexts survive filtering and replicate-consistency is unknown, since that count only appears after processing."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "Borderline FAIL: 8.59 GB compressed FASTQ (verified in ENA), roughly 25-30 GB uncompressed, versus the ~5 GB working-set limit. Streaming would work in principle but the whole pipeline must be run before a single labelled row exists."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Not checkable. Six libraries in ENA match the three-plus-three replicate design described in the paper; no row counts exist to compare against because no processed table was deposited."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Not scored further. The label would trace to a real physical measurement (sequencing of RNase R-protected mRNA fragments), not another model's output, so A8 itself is clean - the problem is purely that the label must be constructed."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Riboformer (deep learning model of context-dependent ribosome translation dynamics, Nature Communications 2024)",
+        "open_weights": null,
+        "score_and_split": "Only the search-result summary was retrieved, not the paper; no score or split verified here.",
+        "authors_named_unsolved": "Not verified - paper not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "ROSE (convolutional network predicting ribosome stalling from coding sequence)",
+        "open_weights": null,
+        "score_and_split": "Only search-result summary retrieved; score and split not verified.",
+        "authors_named_unsolved": "Not verified - paper not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model) on the short nascent peptide, or a small convolutional network on codons",
+    "freeze_and_head_viable": null,
+    "hardware": "CPU-only would be fine for 15-residue peptides, but the question is moot while no labelled table exists",
+    "licence": "ESM-2 is MIT-licensed"
+  },
+  "integration": {
+    "partner_dataset": "Earlier inverse-toeprinting datasets from the same lab (chloramphenicol/erythromycin, Seip et al. 2018; tetracenomycin X, Leroy et al. 2023), joinable on the identical (NNN)15 random-library peptide context",
+    "join_key": "nascent peptide sequence at positions -3 to +1 relative to the ribosome's catalytic centre",
+    "bigger_question_one_sentence": "Do different ribosome-targeting antibiotics share a common nascent-peptide grammar for when they stall the ribosome, or is each drug's context specificity its own code?"
+  },
+  "controls": {
+    "positive_control": "The paper's own reported effect - aromatic residues (Phe, Tyr) at nascent-chain positions -3/-2 enhance sparsomycin stalling - must be recovered by any model.",
+    "negative_control": "Shuffle the treated/untreated label across contexts; enrichment signal must collapse to the replicate-noise level.",
+    "external_validation": "Hold out one of the three biological replicates, and test transfer to the published chloramphenicol/tetracenomycin iTP-seq libraries."
+  },
+  "honest_claim_h3": "A model could claim only: among short random 15-codon open reading frames translated in a reconstituted E. coli in vitro system at 100 microM sparsomycin, the nascent peptide sequence predicts how much drug-dependent ribosome stalling is seen - with no claim about natural genes, living cells, or other drug concentrations.",
+  "plain_idea": {
+    "one_liner": "Use the growing peptide's sequence to predict how strongly an antibiotic stalls the ribosome at that position.",
+    "train_on": "Each example would be a short nascent peptide context (the last few amino acids made before the ribosome paused) from a library of random sequences; the number of usable examples is unknown because no processed table was deposited.",
+    "predict": "How much more (or less) often ribosomes pause at that context when sparsomycin is present, measured as the ratio of sequencing counts between drug-treated and untreated reactions in an inverse-toeprinting experiment.",
+    "why_worthwhile": "Medicinal chemists redesigning sparsomycin would learn which peptide neighbours strengthen the drug's grip, and a shared grammar across antibiotics would be real biology even if prediction is mediocre."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "Not filled in detail because the verdict is reject; sparsomycin-specific stalling enrichment is measured only in this paper, though related antibiotic stalling landscapes exist in earlier Innis-lab inverse-toeprinting papers.",
+    "approx_items": null,
+    "join_key": "nascent peptide context sequence",
+    "why": "The label is drug- and assay-specific, so no public resource holds it for other items."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict sparsomycin-dependent ribosome stalling strength from the nascent peptide sequence, using the paper's inverse-toeprinting sequencing of a random 15-codon open reading frame library (3 treated, 3 untreated replicates), with transfer to other antibiotics' stalling landscapes as the headline question. Blocked because only raw reads were deposited.",
+  "effort": {
+    "hours_to_feature_table": 30,
+    "working_set_gb": 8.6,
+    "needs_gpu": false,
+    "peak_ram_gb": 6.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes are the verified ENA byte counts (8.59 GB compressed FASTQ, 114.6M reads); the 30-hour and 6 GB figures are estimates for downloading and running the itpseq pipeline end to end on a CPU laptop, nothing was timed.",
+    "cheapest_killing_check": "Query the ENA file report for processed/analysis objects on PRJEB111032 - it returns an empty table, so only raw FASTQ exists. One call, and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A2 fails: the only data deposited is 12 raw FASTQ files (8.59 GB, 114.6M reads) plus two crystal structures, so the stalling label must be built from scratch with an assay-specific pipeline before any modelling can start; A6 also fails on working-set size, and this project's rules forbid downloading raw sequencing data."
+}

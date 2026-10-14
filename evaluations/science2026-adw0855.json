@@ -1,0 +1,105 @@
+{
+  "paper_id": "science2026-adw0855",
+  "title": "Spatially resolved single-cell atlas reveals the macroevolutionary trajectory of animal hearts.",
+  "doi": "10.1126/science.adw0855",
+  "journal": "Science",
+  "data_url": "https://db.genomics.cn/stomics/heart/download",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Download page lists 13 spatial and 18 single-cell .h5ad files (CNGB FTP STDS0000406, open, no login). HEAD on the merged sc_fordatabase.h5ad gave 6.39 GB. Downloaded and opened 3 files: octopus sc (8,531 cells x 19,308 genes, 6 cell types, 2 batches 'bmk'/'huada'), fly sc (10,291 x 17,985, 11 types incl. 'mt' and 'germline cell'), Ciona spatial (11,620 bins x 18,603 genes, 5 types, x/y coordinates). X holds raw integer counts; obs has 'celltype' and 'subtype' columns plus Seurat cluster columns. Gene IDs are species-specific (Afa000010, KY21 models, FlyBase symbols); no orthology table or protein sequences in the files. GitHub repo ouclian/EvoHeart has analysis scripts only (OrthoFinder, SAMap, SATURN runs), no data tables.",
+    "what_came_from_paper_text_only": "27 species total (abstract); the download offers single-cell files for 16 species (octopus split in two) and spatial for 13, so ~11 species are presumably genome/bulk only. Total cell count unverified (merged file is 6.39 GB, not downloaded). Annotation method (marker genes on clusters) inferred from obs columns and scripts; no full text was available."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open FTP links on CNGB STOmicsDB; three files fetched without login."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in files: 'celltype' and 'subtype' are columns in obs of every file opened."},
+    "a3_inputs_present": {"pass": true, "note": "Raw count matrices present. But cross-species work needs orthology or protein sequences, which are not in the files and must be rebuilt from each species' genome annotation (some custom, e.g. Afa IDs)."},
+    "a4_units_stated": {"pass": true, "note": "X is raw integer UMI (unique molecular identifier) counts, seen in files; units are implicit but standard for scRNA-seq."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "8,531 to 11,620 cells per file opened; total across species not counted. Independent units are only ~16 species, 1-2 samples each."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.9 GB for all per-species sc files; merged file 6.39 GB not needed", "note": "Per-species files are 20-260 MB each; a sparse load of all fits in 16 GB RAM."},
+    "a7_counts_match_paper": {"pass": true, "note": "Species count 27 vs 16 single-cell species on download is explainable (not all species have sc data) but not confirmed against the full text."},
+    "a8_label_provenance": {"pass": true, "note": "Borderline: cell types are author annotations of clusters computed from the same expression matrix, not an independent measurement. Within-species prediction is circular; only cross-species transfer is a meaningful test."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "One .h5ad per species; consistent obs schema across the three files opened, but genes don't align across species."},
+    "B2": {"score": 2, "why": "All three files opened with h5py at first try; standard AnnData layout."},
+    "B3": {"score": 1, "why": "Type names vary per species ('Immnue cell' typo, 'Ventricular Cardiomyocyte', 'mt'); need harmonising, seen in files."},
+    "B4": {"score": 2, "why": "Categorical labels, no censoring."},
+    "B5": {"score": 2, "why": "Doublet columns show only 'Singlet'; cells already filtered (seen in files)."},
+    "B6": {"score": 1, "why": "Instruction PDF exists (not opened); many unexplained columns like 'test' and 'type'."},
+    "C1": {"score": 1, "why": "Transfer-vs-phylogenetic-distance curve is informative either way, but labels are annotation-derived and authors already ran this."},
+    "C2": {"score": 0, "why": "SAMap and SATURN open, already run on this data by the authors; a 2025 NAR benchmark covers cross-phylum transfer."},
+    "C3": {"score": 1, "why": "Weak diversity angle: mollusc, arthropod, tunicate hearts are rare in single-cell atlases."},
+    "C4": {"score": 1, "why": "Manual cluster annotation in a new species is slow but not costly lab work."},
+    "C5": {"score": 1, "why": "SAMap/SATURN runnable as baselines; no published transfer accuracy seen (no full text)."},
+    "D1": {"score": 2, "why": "ESM-2 protein embeddings (SATURN-style) or TranscriptFormer/UCE, open weights."},
+    "D2": {"score": 1, "why": "ESM-2 gene embeddings cache on CPU, but proteomes for ~16 species must first be assembled."},
+    "D3": {"score": 2, "why": "ESM-2 MIT licence; CNGB data terms open (not read in detail)."},
+    "E1": {"ok": true, "why": "Leave-one-species-out split is natural."},
+    "E2": {"ok": true, "why": "16 single-cell species on the download page."},
+    "E3": {"ok": true, "why": "Majority-class and marker-gene-ortholog baselines computable."},
+    "E4": {"ok": false, "why": "No independent re-annotation; batch pairs exist (bmk/huada) but no label replicate."},
+    "E5": {"ok": true, "why": "Cardiomyocytes should transfer via conserved sarcomere genes (myosin, troponin), a textbook signal."},
+    "E6": {"ok": true, "why": "Label shuffle and gene-embedding shuffle are runnable."},
+    "E7": {"ok": true, "why": "Human Heart Cell Atlas and Tabula Muris hearts give independent annotated data for vertebrates."},
+    "E8": {"ok": false, "why": "No full text seen, so no published number to reproduce."},
+    "G1": {"score": 1, "why": "Species-specific gene IDs; only fly/human/mouse map directly to standard IDs."},
+    "G2": {"score": 1, "why": "Heart Cell Atlas (human), CELLxGENE heart data; join via orthologs only."},
+    "G3": {"score": 1, "why": "Ortholog mapping is many-to-many for distant species."},
+    "G4": {"score": 1, "why": "Combined question (do human heart cell types transfer to molluscs?) is modestly bigger."},
+    "H1": {"score": 1, "why": "Classification across all cell types present; no 'negative' concept, but non-cardiac contaminants included."},
+    "H2": {"score": 2, "why": "Chordates, arthropods, molluscs in one consistent protocol."},
+    "H3": {"score": 1, "why": "Claim is about reproducing one lab's annotations, not ground-truth identity."},
+    "H4": {"score": 1, "why": "Annotation subjectivity not documented in the files."},
+    "I1": {"score": 1, "why": "Evo-devo and comparative single-cell community; vague."},
+    "I2": {"score": 1, "why": "Could speed annotation of new species' hearts, marginally."},
+    "I3": {"score": 1, "why": "Per-type accuracy roughly matches annotation use."},
+    "I4": {"score": 1, "why": "Marker-ortholog lookup may do nearly as well for major types."},
+    "J1": {"score": 2, "why": "Transfer learning, protein embeddings, grouped evaluation."},
+    "J2": {"score": 1, "why": "Cell-type markers are checkable but invertebrate biology is unfamiliar."},
+    "J3": {"score": 1, "why": "Transfer-by-distance curve is shareable even if weak."},
+    "J4": {"score": 1, "why": "No stated budget."},
+    "J5": {"score": 0, "why": "No kill date written."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "SATURN (protein-embedding cross-species integration, Nature Methods 2024)", "open_weights": true, "score_and_split": "85.8% median label-transfer accuracy zebrafish to frog, held-out species; authors of this paper ran it on these hearts (run_saturn.v1.0.sh).", "authors_named_unsolved": "Not retrieved in full; performance declines with phylogenetic distance per the NAR benchmark.", "runnable_as_baseline": true},
+      {"name": "SAMap (homology-graph cross-species mapping)", "open_weights": true, "score_and_split": "Outperformed by SATURN by 119% on zebrafish-to-frog per SATURN paper; used by these authors (run_samap.v1.0.py).", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Cross-species integration benchmark (NAR 2025, gkae1316)", "open_weights": null, "score_and_split": "SAMap and SATURN best for cross-phylum; performance drops ~11-12% with one-to-one orthologs only.", "authors_named_unsolved": "Accuracy declines as phylogenetic distance grows.", "runnable_as_baseline": null},
+      {"name": "TranscriptFormer (cross-species generative single-cell model, 12 species, 112M cells)", "open_weights": true, "score_and_split": "Not checked on heart data.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 protein language model gene embeddings (SATURN-style); alternatively TranscriptFormer", "freeze_and_head_viable": true, "hardware": "CPU laptop for ESM-2 small checkpoints over ~16 proteomes (~300k proteins, slow); TranscriptFormer inference likely GPU", "licence": "ESM-2 MIT; TranscriptFormer licence not checked"},
+  "integration": {"partner_dataset": "Human Heart Cell Atlas / CELLxGENE heart datasets", "join_key": "Orthologous genes (OrthoFinder, must be rebuilt)", "bigger_question_one_sentence": "How far across the animal tree do vertebrate heart cell-type definitions transfer before they stop matching anything?"},
+  "controls": {"positive_control": "Cardiomyocytes recovered via conserved sarcomere genes; human-to-mouse transfer near-perfect.", "negative_control": "Shuffle labels; shuffle gene-to-embedding assignment.", "external_validation": "Human Heart Cell Atlas annotations for the human/mouse end."},
+  "honest_claim_h3": "Predicts which of one lab's cluster-based heart cell-type labels a cell in an unseen species would receive, from one or two hearts per species.",
+  "plain_idea": {
+    "one_liner": "Use gene activity in single heart cells from many animals to predict the cell's type in a species the model never saw.",
+    "train_on": "Per-cell gene count profiles from ~16 animal species' hearts, about 8,500-11,600 cells per species in the files checked; total unknown.",
+    "predict": "The cell type (cardiomyocyte, fibroblast, endothelial, immune, neural...), whose true answer is the authors' manual annotation of expression clusters.",
+    "why_worthwhile": "Shows how far heart cell identities can be carried across distant animals, helping labs annotating new species; already partly done by the authors with SAMap/SATURN."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Unusual heart coverage of molluscs, fly, tunicate and lamprey, but SATURN/TranscriptFormer were trained on far more cells; ~16 species here."},
+    "confidence_score": {"answer": "no", "why": "One annotation per cell and 1-2 samples per species; no replicate labels to calibrate against."},
+    "models_beatable": {"answer": "no", "why": "SATURN (2024) and SAMap are open, evaluated on held-out species, and were already applied to this exact data by the authors."},
+    "guaranteed_improvement": {"answer": "no", "why": "No joinable new data measures the same labels the same way; external atlases use different annotation schemes."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "Human Heart Cell Atlas, CELLxGENE heart datasets, Tabula Muris (known resources); none for invertebrate hearts.", "approx_items": null, "join_key": "Orthologous genes; cell-type ontology terms", "why": "Vertebrate heart annotations allow external checking at one end of the tree only."},
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes cross-species single-cell methods; would need a clear distance-decay result beating SATURN for invertebrates."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Benchmark note on cross-phylum transfer of heart cell types using this atlas."},
+    "fallback": {"journal": "bioRxiv preprint plus workshop", "why": "A negative transfer curve is still a shareable benchmark."}
+  },
+  "pitch": {
+    "headline": "Open, consistently processed heart single-cell data from ~16 species spanning molluscs, fly, tunicate and vertebrates, downloadable as per-species files.",
+    "what_makes_the_data_unusual": "Octopus, snail, scallop, fly and Ciona hearts in one protocol; files of 20-260 MB each with raw counts and cell-type columns (verified on 3 files).",
+    "the_win": "A transfer-accuracy versus divergence-time curve for heart cell types across ~600 million years, compared with SATURN on held-out species.",
+    "even_if_it_fails": "We learn where along the tree vertebrate heart cell-type labels stop transferring, which mostly restates the authors' own SAMap/SATURN analysis.",
+    "who_wants_it": "Comparative single-cell and evo-devo labs annotating non-model animal hearts; would change how much they trust automatic label transfer."
+  },
+  "ml_idea": "Leave-one-species-out cell-type transfer using ESM-2 gene embeddings (SATURN-style) versus ortholog-marker baselines, plotting accuracy against divergence time.",
+  "effort": {"hours_to_feature_table": 24, "working_set_gb": 1.9, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": 20, "cv_run_minutes": 60, "compute_note": "Estimated only: ~300k proteins across 16 proteomes with ESM-2 small on CPU; per-species files load sparse. Proteomes must be sourced per species.", "cheapest_killing_check": "Confirm protein FASTA files exist publicly for the custom-annotated species (e.g. Achatina 'Afa' gene IDs, Amphioctopus); if not, cross-species embedding is impossible."},
+  "verdict": "park",
+  "verdict_reason": "Data is open and clean per species, but labels are cluster annotations and the authors already ran SAMap/SATURN on it; crowded field with no clear edge, and gene IDs need proteomes rebuilt."
+}

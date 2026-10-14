@@ -1,0 +1,103 @@
+{
+  "paper_id": "science2026-aed0603",
+  "title": "Invasive species' environmental impacts are more severe in the Global South.",
+  "doi": "10.1126/science.aed0603",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/21509968 (GIDIAS v1.1, the underlying database); paper's own code+data bundle at https://datadryad.org/dataset/doi:10.5061/dryad.70rxwdcct",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Dryad listing via API: Code_Data_Bacher-etal2026.zip (15.9 MB) plus README, CC0. Both downloads refused to scripts (401 from the API, 403 from the file stream), so I read the README only through the landing page. Downloaded and parsed the GIDIAS (Global Impacts Dataset of Invasive Alien Species) v1.1 CSV from Zenodo (28.9 MB, CC-BY-4.0, dated 2026-07-23) and its metadata sheet. Counts: 22,865 rows × 94 columns, 0 duplicate IDs, 0 duplicate rows. 11,881 rows have magnitude.Nature (0–3): 2,163 / 3,920 / 4,541 / 1,257. Of those, 10,555 have a text excerpt and 11,860 a year (1882–2022; 2,020 from 2018 or later). They cover 1,434 species, 266 locations, 96 assessors and 4,206 references. 644 repeated reference×species×affected-species groups exist, and 126 of them disagree on magnitude. Share of excerpts mentioning extinct/decline/reduce words rises from 5% (level 0) to 39% (level 3).",
+    "what_came_from_paper_text_only": "The Science paper's country-level severity metric, its governance regressions and its country-aggregate tables (GIDIAS_20250417_agg_regions.csv and nine regression datasets) are known only from the Dryad README and abstract; not opened. Paper full text not available (no PMCID). Which GIDIAS snapshot (20250417) the paper used versus v1.1 is from the README."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GIDIAS v1.1 CSV downloaded directly from Zenodo without login. The paper's own Dryad zip is public CC0 but refused scripted download (401/403). Our project does not need it."},
+    "a2_label_is_a_column": {"pass": true, "note": "magnitude.Nature is a column: the EICAT (IUCN Environmental Impact Classification for Alien Taxa) impact level, 0–3, filled for 11,881 rows. It needs no construction. Checked in the file."},
+    "a3_inputs_present": {"pass": true, "note": "Text.excerpt (median 194 characters) is present for 10,555 labelled rows. Taxonomy, realm, impact mechanism, country, habitat flags and year are all in-table. Checked in the file."},
+    "a4_units_stated": {"pass": true, "note": "Ordinal scale defined in the metadata sheet: 0 no impact, 1 individual performance down, 2 population down, 3 local/global extinction."},
+    "a5_enough_rows": {"pass": true, "n_rows": 11881, "note": "11,881 labelled impact records (10,555 with text). This is a 4-class ordinal classification. Counted in the file."},
+    "a6_fits_laptop": {"pass": true, "working_set": "29 MB CSV", "note": "Whole table fits in memory easily; sentence embeddings of about 10.5k short excerpts run on CPU in minutes."},
+    "a7_counts_match_paper": {"pass": true, "note": "The GIDIAS paper says more than 22,000 records and 3,353 species. The v1.1 file has 22,865 rows and 3,386 GBIF-verified names (GBIF: Global Biodiversity Information Facility), a small v1.0→v1.1 update with a change log on Zenodo."},
+    "a8_label_provenance": {"pass": true, "note": "The level was assigned by 96 human expert assessors reading the source literature, not by a model. The excerpt-to-level task mimics that human annotation (a legitimate automation target), so references must be held out to avoid shared-excerpt leakage."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One 94-column CSV with a unique rowID; label, text and context in the same table (opened)."},
+    "B2": {"score": 2, "why": "pandas read the machine-readable CSV first try with utf-8 (verified)."},
+    "B3": {"score": 1, "why": "Single EICAT scale, but 96 assessors applied it; per-assessor bias likely and unmeasured."},
+    "B4": {"score": 1, "why": "10,984 rows lack magnitude and must be dropped; no censored values within the labelled rows."},
+    "B5": {"score": 1, "why": "644 repeated reference×species groups, 126 disagree; easy to group, not to resolve."},
+    "B6": {"score": 2, "why": "Metadata sheet documents all 94 columns with format and unique-value counts (opened)."},
+    "C1": {"score": 1, "why": "Held-out-assessor and temporal transfer is informative either way; a plain accuracy number is less so."},
+    "C2": {"score": 1, "why": "Two recent EICAT text classifiers exist, trained on GISD full texts, with no open GIDIAS-scale benchmark."},
+    "C3": {"score": 1, "why": "Better/unique-application: 10k excerpt-level labels versus prior full-paper sets; angle moderate."},
+    "C4": {"score": 2, "why": "EICAT assessment is manual expert reading of literature; the IPBES assessment needed 96 assessors."},
+    "C5": {"score": 1, "why": "Majority-class and keyword baselines are trivial; Brinner & Zarrieß macro-F1 0.523 is on a different dataset."},
+    "D1": {"score": 2, "why": "PubMedBERT / SciBERT / sentence-transformers text encoders are open and downloadable."},
+    "D2": {"score": 2, "why": "Short excerpts; embed about 10.5k once on CPU, then fit a logistic or ordinal head."},
+    "D3": {"score": 2, "why": "GIDIAS CC-BY-4.0 (Zenodo record); common biomedical text encoders under MIT/Apache licences."},
+    "E1": {"ok": true, "why": "Group splits by reference (4,206), assessor (96) or species (1,434) are available in columns."},
+    "E2": {"ok": true, "why": "96 assessors and 283 species with ≥10 labelled rows give many holdout groups."},
+    "E3": {"ok": true, "why": "Majority class (level 2, 38%) and per-mechanism mean computable from file."},
+    "E4": {"ok": true, "why": "126 of 644 repeated groups disagree (about 20%), which gives a rough agreement ceiling."},
+    "E5": {"ok": true, "why": "Extinction-word frequency climbs 5%→39% across levels 0→3 (verified); the model must exceed it."},
+    "E6": {"ok": true, "why": "Label shuffle and text-versus-metadata ablation are straightforward on one table."},
+    "E7": {"ok": true, "why": "Year column (2,020 labelled rows from 2018 onward) allows a temporal split; IUCN GISD EICAT assessments are external."},
+    "E8": {"ok": false, "why": "Prior classifiers used different datasets; the paper's country regressions are not ML numbers."},
+    "G1": {"score": 1, "why": "GBIF-verified taxon names and country names/ISO3 codes, not numeric IDs; DOI present for only 3,723 labelled rows."},
+    "G2": {"score": 2, "why": "World Bank governance indicators (WGI, Worldwide Governance Indicators) by country; GBIF occurrences; SInAS alien distributions by taxon name."},
+    "G3": {"score": 1, "why": "Many records per country/species; collapse is by aggregation, with a manageable many-to-one join."},
+    "G4": {"score": 1, "why": "Text plus governance tests whether severity differences survive excerpt content, adding moderately to the paper's question."},
+    "H1": {"score": 2, "why": "Level 0 (no impact) has 2,163 rows and positive/neutral directions are recorded (verified)."},
+    "H2": {"score": 1, "why": "266 locations, but USA alone is 4,870 of 22,865 rows; literature skewed to Global North."},
+    "H3": {"score": 2, "why": "Claim is precise: reproduces expert EICAT coding of published excerpts, not field-truth impact."},
+    "H4": {"score": 2, "why": "The Science paper's central point is the Global North reporting bias, so the gap is explicit."},
+    "I1": {"score": 2, "why": "IUCN SSC Invasive Species Specialist Group, IPBES assessors, and UKCEH (Coole & August) building EICAT AI tools."},
+    "I2": {"score": 1, "why": "A good triage model would speed up assessments, but assessors stay in the loop."},
+    "I3": {"score": 1, "why": "Ordinal macro-F1 or weighted kappa roughly fits 'flag severe impacts for expert review'."},
+    "I4": {"score": 1, "why": "Keyword rule carries real signal; ML likely helps somewhat beyond it, not dramatically."},
+    "J1": {"score": 2, "why": "Frozen-encoder head, grouped and temporal splits, assessor-transfer evaluation: real modelling."},
+    "J2": {"score": 1, "why": "Ecology/invasion biology outside core domain; excerpts are readable for sanity checks."},
+    "J3": {"score": 2, "why": "Keyword baseline, then embeddings, then assessor-holdout analysis are each shareable."},
+    "J4": {"score": 1, "why": "Plausibly two weeks but not formally stated."},
+    "J5": {"score": 0, "why": "No kill date written in NOTES.md yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Brinner & Zarrieß 2025, 'Efficient Scientific Full Text Classification: The Case of EICAT Impact Assessments' (arXiv 2502.06551): PubMedBERT/ModernBERT with evidence-sentence selection, plus Llama-3.1 8B", "open_weights": null, "score_and_split": "Search summary reports PubMedBERT macro-F1 rising from 0.425 to 0.523 with an evidence selector, on full-text papers aligned to IUCN EICAT assessments. Split not retrieved.", "authors_named_unsolved": "Abstract says using human evidence annotations, LLM-generated annotations or explainability scores to improve efficiency is still open.", "runnable_as_baseline": null},
+      {"name": "Coole & August (UKCEH) 2026, 'Accelerating EICAT Assessments Using AI' (Zenodo 22008438): prompted LLMs (GPT-OSS, Nova, Claude, Llama) via AWS Bedrock", "open_weights": false, "score_and_split": "Reports Cohen's kappa, Krippendorff's alpha and F1 against 22 annotators on GISD (Global Invasive Species Database) papers; exact numbers not retrieved.", "authors_named_unsolved": "Abstract screening efficiency and cost-benefit still to be evaluated; portal not yet released.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "PubMedBERT or all-MiniLM/SPECTER2 sentence encoders (frozen) + ordinal logistic head", "freeze_and_head_viable": true, "hardware": "Laptop CPU", "licence": "Data CC-BY-4.0; encoders MIT/Apache (check per model)"},
+  "integration": {"partner_dataset": "World Bank Worldwide Governance Indicators and GDP by country (the paper's own covariates); SInAS alien species distributions", "join_key": "Country.Location → ISO3 country code; GBIF-verified taxon name", "bigger_question_one_sentence": "Does the Global South severity gap persist after controlling for what the excerpt actually reports, or is part of it a difference in which impacts get written up and how assessors code them?"},
+  "controls": {"positive_control": "Extinction/decline keyword frequency rises 5%→39% from level 0 to 3 (verified); the model must beat this keyword baseline. Second control: predict Realm or IAS.Taxon from the excerpt, which should be easy.", "negative_control": "Shuffle magnitude labels within the reference-grouped CV and confirm collapse to the 38% majority class; ablate text versus metadata-only features.", "external_validation": "Temporal split (train before 2018, test 2018–2022: 2,020 rows), held-out assessors, and IUCN GISD species-level EICAT assessments."},
+  "honest_claim_h3": "The model predicts the EICAT level that an IPBES expert assessor assigned to a published impact excerpt, not the true field severity, and only for impacts that were studied and written up, which skews toward the Global North.",
+  "plain_idea": {
+    "one_liner": "Use a short published description of an invasive species' effect to predict how severe experts rated that impact, from none to extinction.",
+    "train_on": "Each example is a roughly 200-character excerpt from a paper describing one invasive species' effect on native biodiversity, plus species group, habitat and country. 10,555 labelled excerpts (verified).",
+    "predict": "The impact level 0–3 on the IUCN EICAT scale (no effect, individuals harmed, populations reduced, local extinction), as assigned by human expert assessors reading the source literature.",
+    "why_worthwhile": "IUCN and IPBES impact assessments are slow manual literature reads; a triage model could flag severe impacts first. Testing it on held-out assessors also measures how consistently experts apply the scale."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "GIDIAS gives 10,555 excerpt-level labels across 1,434 species, versus prior work's full-paper sets aligned to GISD assessments (size not retrieved). Ours is likely larger but shorter-text."},
+    "confidence_score": {"answer": "partly", "why": "126 disagreeing duplicate groups and 96 assessors allow estimating label noise, but too few replicates for per-item calibration. Prior models' calibration was not checked."},
+    "models_beatable": {"answer": "partly", "why": "Brinner & Zarrieß 2025 reached macro-F1 0.523 with PubMedBERT on a different dataset (split not retrieved); Coole & August 2026 use closed LLMs. Neither was evaluated on GIDIAS."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model is runnable on the same data and split; the prior datasets are full papers and use different label units."}
+  },
+  "label_elsewhere": {"score": 1, "sources": "IUCN GISD (Global Invasive Species Database) EICAT species assessments (known resource); Brinner & Zarrieß 2025 EICAT full-text dataset (found by search).", "approx_items": null, "join_key": "GBIF-verified species name; DOI for some references", "why": "Species-level EICAT assessments give an independent check of whether excerpt-level predictions aggregate to the official species category."},
+  "publication_target": {
+    "ambitious": {"journal": "Methods in Ecology and Evolution", "why": "Publishes tools that automate ecological evidence synthesis; it would need assessor-held-out kappa near the inter-assessor ceiling."},
+    "realistic": {"journal": "NeoBiota", "why": "An open-access invasion-biology journal that publishes EICAT methodology and tooling; a benchmark plus assessor-consistency analysis fits."},
+    "fallback": {"journal": "Ecological Informatics (or arXiv preprint + an NLP-for-science workshop)", "why": "Accepts partial or negative text-mining results, such as 'the keyword baseline is as good as embeddings'."}
+  },
+  "pitch": {
+    "headline": "10,555 expert-coded invasive-impact excerpts in one 29 MB CC-BY table, with the severity label, year and assessor in columns.",
+    "what_makes_the_data_unusual": "96 named assessors, 1,434 species, 266 locations, 2,163 explicit 'no impact' records, and 126 measurable assessor disagreements, all verified in the Zenodo CSV.",
+    "the_win": "Weighted kappa on held-out assessors close to the duplicate-agreement ceiling (about 80% agreement), clearly above the keyword baseline.",
+    "even_if_it_fails": "We learn how consistent EICAT coding is across assessors and eras, which bears directly on the Science paper's country-severity comparisons.",
+    "who_wants_it": "IUCN SSC Invasive Species Specialist Group and the UKCEH EICAT-AI team (Coole & August), when deciding whether automated triage is trustworthy."
+  },
+  "ml_idea": "Embed GIDIAS text excerpts with a frozen biomedical sentence encoder, add taxonomy/realm/mechanism metadata, and fit an ordinal head for EICAT level 0–3. Evaluate with reference-grouped CV, a held-out-assessor split and a temporal split (before 2018 versus 2018 onward), against majority-class and keyword baselines. As a secondary analysis, test whether residual severity differs by Global South status.",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.03, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": 0.2, "cv_run_minutes": 3, "compute_note": "Estimated, not timed: about 10.5k excerpts of about 200 characters at roughly 20/s for a BERT-base encoder on CPU gives about 10 minutes; logistic heads on 768-dimensional embeddings train in seconds per fold.", "cheapest_killing_check": "Run a TF-IDF + logistic baseline with reference-grouped and assessor-held-out CV. If held-out-assessor macro-F1 is near the 38% majority-class level, excerpts don't carry the label and the project dies."},
+  "verdict": "verify_first",
+  "verdict_reason": "Clean, open, 11,881-row labelled table with text and assessor columns passes Part A on the files. Two recent EICAT text classifiers exist, though, and it's unverified whether short excerpts carry enough signal across assessors; run the grouped TF-IDF check first."
+}

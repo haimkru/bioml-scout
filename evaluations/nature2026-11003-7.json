@@ -1,0 +1,90 @@
+{
+  "paper_id": "nature2026-11003-7",
+  "title": "Proximity-guided graph learning reveals tumour-associated proximity antigens.",
+  "doi": "10.1038/s41586-026-11003-7",
+  "journal": "Nature (2026-09-09, PMID 42717092; paywalled, no PMCID). Preprint: bioRxiv 10.64898/2026.02.13.705629 (InduPro, CC BY-NC-ND)",
+  "data_url": "https://doi.org/10.5281/zenodo.21678744",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded Zenodo dataset 21678744 (29 MB zip, CC BY-NC-ND 4.0) and code record 21679069 (19 MB, Apache-2.0). tapas_manuscript_proximity_data.csv: 807,726 rows, 10 columns (target and proximal protein symbol + UniProt accession, map_id, chemistry Ir/RFT, cell_line, log2_fc, nlog10_pvalue, t_value). It holds 248 maps, 12 target RTKs (receptor tyrosine kinases), 28 cell lines, 124 Ir and 124 RFT maps, 126 target-cell pairs, 0 duplicate map-protein rows and 2,984 missing t_values. Maps hold 1,012-5,268 proteins each. 23,090 rows count as hits (log2FC>1 and -log10 p>=1.3). cell_line_protein_intensities.csv: 245,082 rows (28 cell lines x about 12k proteins, normalized intensity plus copies per cell); 97.6% of proximity rows join to it. The target itself ranks at the top of its own map (median percentile 1.0, a hit in 247/248 maps). CDCP1 appears in 33 EGFR maps, median percentile 0.97. The two labelling chemistries agree on log2FC with Spearman 0.39; hit Jaccard is 0.29, and P(RFT hit | Ir hit) is 0.74 against a base rate of 0.034. A dummy that predicts a protein's mean log2FC for the same target and chemistry in the other cell lines, scored leave-one-cell-line-out, gives median Spearman 0.54 and median AP 0.60 (base rate 0.026). The code README describes the authors' own Node2Vec/VGAE/GAT models, scored against STRING/IntAct/BioGRID/CORUM. The PPI ground-truth parquet has 1.9M rows (CORUM rows not shipped).",
+    "what_came_from_paper_text_only": "The MetaMap method, the TAPA concept and the EGFR-CDCP1 functional validation come from the abstract and bioRxiv metadata. I could not read the full text (Nature is paywalled; the bioRxiv full text returned HTTP 429). So the reference condition behind log2_fc (what the fold change is relative to), the published GNN scores and the authors' stated limitations are unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open Zenodo records, no login; both zips downloaded and parsed (checked in files)."},
+    "a2_label_is_a_column": {"pass": true, "note": "log2_fc and nlog10_pvalue are columns, one per map x protein. The hit flag is a fixed threshold on those columns, not a cross-source construction (checked in files)."},
+    "a3_inputs_present": {"pass": true, "note": "Proteins come as UniProt accessions (10,627 unique), not sequences. One bulk human-proteome FASTA from UniProt resolves them, not thousands of lookups. Abundance features are present (checked in files)."},
+    "a4_units_stated": {"pass": true, "note": "Column names state log2 fold change, -log10 p-value and copies per cell. The fold change's reference condition is not documented in the files (paper not readable)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 807726, "note": "807,726 labelled rows and 23,090 hits, but the honest held-out units are 28 cell lines and 12 target RTKs (checked in files)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 90 MB of CSV", "note": "Both tables load in pandas in seconds. The authors' code runs on a Mac CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "248 maps, 12 RTKs and 28 cell lines in the file match the abstract exactly (checked in files)."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are measured enrichments from proximity-labelling mass spectrometry, not model outputs. Abundance features come from a separate DIA (data-independent acquisition) proteomics run, so there is no leakage by construction."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two tables joined on cell line + UniProt accession; 97.6% join coverage verified in files."},
+    "B2": {"score": 2, "why": "Both CSVs parsed first try with pandas; tidy long format."},
+    "B3": {"score": 1, "why": "Per-map log2FC from two chemistries that agree only at Spearman 0.39; authors MAD-normalize t-values downstream."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; only 2,984 missing t_values (checked in files)."},
+    "B5": {"score": 2, "why": "0 duplicate map x protein rows (checked in files)."},
+    "B6": {"score": 1, "why": "Code README documents columns; fold-change reference condition not stated in files."},
+    "C1": {"score": 2, "why": "How much of a receptor's neighbourhood is cell-specific beyond protein identity is informative whichever way it resolves."},
+    "C2": {"score": 1, "why": "Authors' open GNNs (Node2Vec/VGAE/GAT) exist on this data but predict database PPIs, not held-out-cell proximity."},
+    "C3": {"score": 2, "why": "Unique application: predict proximity hits in unseen cell lines and targets, and test proximity-versus-expression directly."},
+    "C4": {"score": 2, "why": "Each map is a proximity-labelling mass-spec experiment; 248 maps is an industrial effort."},
+    "C5": {"score": 2, "why": "Obvious dummy computed: leave-one-cell-line-out per-protein mean gives median AP 0.60 (verified)."},
+    "D1": {"score": 2, "why": "ESM-2 protein language model, open weights, for target and proximal protein sequences via UniProt."},
+    "D2": {"score": 2, "why": "About 10.6k proteins; embeddings cached once on CPU, then a gradient-boosting or MLP head."},
+    "D3": {"score": 1, "why": "ESM-2 is MIT, but the data is CC BY-NC-ND: non-commercial, and derived data can't be redistributed."},
+    "E1": {"ok": true, "why": "Leave-one-cell-line-out (28 groups) and leave-one-target-out (12 groups) splits available in files."},
+    "E2": {"ok": true, "why": "28 cell lines; 12 targets, though FGFR2/PDGFRB have only 2 maps each."},
+    "E3": {"ok": true, "why": "Per-protein mean and abundance-only dummies computed; AP 0.60 versus 0.026 base rate."},
+    "E4": {"ok": true, "why": "Ir versus RFT chemistry on same target-cell: Spearman 0.39, hit Jaccard 0.29 — a measured noise floor."},
+    "E5": {"ok": true, "why": "Target self-enrichment tops 247/248 maps; EGFR-CDCP1 median percentile 0.97 across 33 maps (verified)."},
+    "E6": {"ok": true, "why": "Label shuffle and within-cell-line shuffle are trivially runnable; abundance and embedding block ablations too."},
+    "E7": {"ok": true, "why": "Held-out labelling chemistry (Ir versus RFT) is a held-out assay; no independent-lab dataset verified."},
+    "E8": {"ok": false, "why": "Code runs, but published GNN scores weren't readable (paywalled), so no number to reproduce."},
+    "G1": {"score": 2, "why": "UniProt accessions for every protein; standard cell line names."},
+    "G2": {"score": 2, "why": "DepMap/CCLE proteomics and expression for the same 28 cancer cell lines; Human Protein Atlas by UniProt."},
+    "G3": {"score": 2, "why": "One row per map x protein; cell-line name to DepMap ID is 28 manual mappings."},
+    "G4": {"score": 1, "why": "Could extend neighbourhood predictions to unmapped DepMap lines, but cell-specific signal over the dummy is unproven."},
+    "H1": {"score": 2, "why": "All quantified proteins reported per map, hits and non-hits (about 3,257 rows per map, verified)."},
+    "H2": {"score": 1, "why": "One company lab and platform; 28 cancer cell lines and 12 RTKs only."},
+    "H3": {"score": 2, "why": "Claim stated precisely below."},
+    "H4": {"score": 1, "why": "Panel limits clear from abstract; fold-change reference and per-map depth limits not documented in files."},
+    "I1": {"score": 2, "why": "InduPro (authors) and multispecific antibody developers choosing co-targets."},
+    "I2": {"score": 1, "why": "Could prioritise which target-cell maps to run next; not yet a go/no-go decision."},
+    "I3": {"score": 1, "why": "AP on hits per held-out cell line roughly matches 'which proteins sit near this receptor here'."},
+    "I4": {"score": 1, "why": "Per-protein mean already reaches AP 0.60; ML must find cell-specific residual signal."},
+    "J1": {"score": 2, "why": "Grouped splits, frozen protein embeddings, ablations, transfer across cell lines and targets."},
+    "J2": {"score": 1, "why": "Surface biology is checkable via UniProt localisation; known RTK dimers as sanity checks."},
+    "J3": {"score": 2, "why": "Dummy-versus-model gap per cell line is already a shareable finding."},
+    "J4": {"score": 1, "why": "Roughly two weekends; not yet written down."},
+    "J5": {"score": 0, "why": "No kill date in NOTES.md yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "MetaMap (authors' Spearman-correlation framework) plus Node2Vec / VGAE / GAT graph models in the released code", "open_weights": true, "score_and_split": "Scored on PPI (protein-protein interaction) recovery against STRING/IntAct/BioGRID/CORUM, with a random train/test edge split and consensus over at least 5 maps. Actual numbers not seen (paywalled).", "authors_named_unsolved": "Not retrieved (full text unreadable); README notes CPU results differ from the paper's GPU runs.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model, e.g. esm2_t30_150M) embeddings of target and proximal protein sequences", "freeze_and_head_viable": true, "hardware": "Laptop CPU; about 10.6k sequences embedded once", "licence": "ESM-2 MIT; data CC BY-NC-ND 4.0 (non-commercial, no redistribution of derivatives)"},
+  "integration": {"partner_dataset": "DepMap/CCLE proteomics and RNA expression for the same cancer cell lines; Human Protein Atlas subcellular localisation", "join_key": "UniProt accession; cell line name mapped to DepMap ID (28 lines)", "bigger_question_one_sentence": "Can the neighbourhood of a receptor tyrosine kinase in a cell line nobody has mapped be predicted from that line's proteome, so as to nominate co-targets across about 1,000 DepMap lines?"},
+  "controls": {"positive_control": "Target self-enrichment (top of 247/248 maps) and EGFR-CDCP1 (median percentile 0.97 in 33 EGFR maps); known ERBB2-ERBB3 heterodimer.", "negative_control": "Shuffle hit labels within each map; a model on abundance alone and on embeddings alone; random-feature control.", "external_validation": "Train on one labelling chemistry (Ir) and test on the other (RFT); no independent-lab proximity atlas verified."},
+  "honest_claim_h3": "Within 12 receptor tyrosine kinases profiled by one company's photocatalytic proximity labelling in 28 cancer cell lines, the model predicts which quantified proteins are enriched near a receptor in a held-out cell line, beyond what that protein's average enrichment in other lines already says.",
+  "plain_idea": {
+    "one_liner": "Use protein sequence and a cell line's protein abundances to predict which proteins sit next to a cancer receptor in that cell line.",
+    "train_on": "Each example is a (receptor, neighbouring protein, cell line, labelling chemistry) combination with protein-sequence embeddings and measured abundance; there are 807,726 such rows across 248 experiments.",
+    "predict": "Whether the protein is enriched near the receptor (log2 fold change >1, p<0.05), as measured by light-activated proximity labelling followed by mass spectrometry.",
+    "why_worthwhile": "Antibody developers could pick co-targets for two-target drugs without running a new labelling experiment per cell line. If the model can't beat the per-protein average, we learn that neighbourhoods are largely conserved across cell lines."
+  },
+  "pitch": {
+    "headline": "248 open proximity-labelling maps, 807,726 rows covering 12 cancer receptors in 28 cell lines, with matched proteomes; parsed and verified.",
+    "what_makes_the_data_unusual": "Same receptor mapped in up to 21 cell lines with two labelling chemistries, plus abundance for 97.6% of rows. I know of no other public cell-surface proximity atlas at this scale.",
+    "the_win": "Beat the leave-one-cell-line-out per-protein-mean dummy (median AP 0.60, base rate 0.026) on held-out cell lines, measured against the 0.29 chemistry-agreement noise floor.",
+    "even_if_it_fails": "A measured answer to how cell-specific receptor neighbourhoods are, given chemistry noise. That tests the paper's 'proximity, not expression' premise directly.",
+    "who_wants_it": "InduPro (Oslund lab, authors) and multispecific antibody teams choosing TAA-TAPA co-target pairs; it tells them which new cell lines are worth mapping."
+  },
+  "ml_idea": "Grouped CV (cross-validation; leave-one-cell-line-out, then leave-one-target-out) predicting the hit flag from frozen ESM-2 embeddings of target and proximal protein, plus log copies per cell, plus UniProt localisation. Compare against the per-protein-mean dummy (AP 0.60) and an abundance-only model, and test chemistry transfer Ir to RFT.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.1, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 1.5, "cv_run_minutes": 60, "compute_note": "Estimated: about 10.6k proteins at about 2/s for ESM-2 150M on CPU; LightGBM on 800k rows with PCA-reduced embeddings, 28 folds. I only timed the pandas dummy baseline (under a minute).", "cheapest_killing_check": "Fit abundance + protein-identity features leave-one-cell-line-out and check whether AP beats the 0.60 per-protein-mean dummy by more than chemistry noise. If not, there is no cell-specific signal to model."},
+  "verdict": "verify_first",
+  "verdict_reason": "Data is open, clean and matches the paper (verified). But a trivial per-protein-mean dummy already reaches AP 0.60, chemistry replicates agree weakly (Jaccard 0.29), and the fold-change reference and the CC BY-NC-ND terms need checking before investing."
+}

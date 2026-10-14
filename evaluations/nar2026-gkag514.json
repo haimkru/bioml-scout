@@ -1,0 +1,151 @@
+{
+  "paper_id": "nar2026-gkag514",
+  "title": "Nonconsensus flanking sequence of hundreds of base pairs around in vivo binding sites: statistical beacons for transcription factor scanning.",
+  "doi": "10.1093/nar/gkag514",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://zenodo.org/records/17900173",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded all 5 Zenodo files (CC-BY-4.0, record 17900173). chosen_bed_files__thresholded.csv: 54 rows x 11 columns, 10 transcription factors (CTCF, FOXK2, IRF1, MEF2A, MYC, NANOG, NFRKB, RUNX1, SPI1, TP53) across 8 cell lines (K562 14, HepG2 10, GM12878 9, MCF-7 7, H1 5, A549 4, WTC11 3, GM23338 2), but only 34 distinct ENCODE experiment accessions (ENCSR). sequence_analysis.zip is 35,840,000 bytes, md5 matches the deposit, yet it has no zip end-of-central-directory and `unzip` fails outright; by scanning raw local file headers I recovered 248 entries covering only 5 of the 54 experiments and extracted 14 CSVs. Those CSVs hold per-experiment summary statistics only (columns cluster_start, cluster_end, pval, mean_t, direction, feature, qval_thr, as_neutral; 3,416 rows for one experiment; the TF-affinity CSV has no header row at all). atac_analysis_results.zip is 51 PDF figures. The source-code zip (19 scripts) shows the per-peak intermediate tables (*.full_peaks.csv.gz, *.kmers_info.csv.gz, *.nucl_freqs.csv.gz) are produced but NOT deposited. Separately I downloaded two ENCODE peak files named in the table and parsed them: ENCFF043WTJ (MYC, K562) 7,275 peaks x 10 columns, median width 444 bp; ENCFF536RGD (CTCF, GM12878) 38,952 peaks, median width 350 bp.",
+    "what_came_from_paper_text_only": "The analysis protocol (10,000 peaks sampled per experiment, +/-5,000 bp extension, 50 bp windows overlapping by 25 bp, 'edges' = first/last 500 bp used as the null background, HOCOMOCO v12 affinity scoring of >400 TFs, deepDNAshape descriptors, ATAC-seq overlap labelling) and the claim that GC content rises in a 1,000-1,500 bp patch around binding sites. I did not reproduce any of these statistics. I also did not retrieve the NAR supplementary tables (Europe PMC supplementaryFiles endpoint timed out)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All 5 Zenodo files downloaded without login (CC-BY-4.0); two ENCODE narrowPeak files downloaded and parsed. No access application anywhere. Caveat: the main results archive, though downloadable, is corrupt (see A7)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Marginal pass. ENCODE narrowPeak gives peak coordinates plus signalValue (fold enrichment) and qValue as real columns, so 'peak strength' is a column. But the interesting label, bound versus unbound, does not exist: the files contain only peaks, so a negative set must be built from the genome, and that choice (GC-matched or not) decides the answer in advance."},
+    "a3_inputs_present": {"pass": true, "note": "DNA sequence is not in any file; it must be pulled from the hg38 reference (GCA_000001405.15) using the coordinates. That is one genome download plus interval extraction, not thousands of per-item lookups, so it passes, but it is real work."},
+    "a4_units_stated": {"pass": true, "note": "narrowPeak columns follow the documented ENCODE/UCSC spec (signalValue = fold enrichment, pValue/qValue = -log10). Zenodo result CSVs are weaker: the TF-affinity table ships with no header row and the units of 'mean_t' are not stated anywhere I could find."},
+    "a5_enough_rows": {"pass": true, "n_rows": 46227, "note": "Counted directly in the two peak files I opened: 7,275 + 38,952 = 46,227 peaks from 2 of 54 files. Extrapolating over 34 distinct experiments gives several hundred thousand labelled intervals. Easily above the 1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~4 GB (hg38 FASTA ~3.1 GB uncompressed plus a subset of extracted +/-5 kb windows)", "note": "Passes only with subsetting: the full design (54 files x 10,000 peaks x 10 kb) is 5.4 billion bases of sequence. With pyfaidx streaming and 5,000 peaks per experiment the k-mer-feature baseline fits in ~8 GB RAM on CPU. A long-context DNA language model over 10 kb windows would not."},
+    "a7_counts_match_paper": {"pass": true, "note": "The experiment table matches the methods text exactly (53 'conservative IDR thresholded peaks' files plus the single 'IDR thresholded peaks' file ENCFF692RPA for CTCF in H1). Two mismatches found but resolvable: (i) the 54 peak files come from only 34 distinct ENCODE experiment accessions, so 20 TF x cell-line pairs contribute two files from the same experiment and the paper's 'seen in 5/5 experiments' counts files, not independent experiments; (ii) the Zenodo description says sequence_analysis.zip holds 'complete results' but the uploaded file is truncated at exactly 35,000 KiB and only 5 of 54 experiments survive."},
+    "a8_label_provenance": {"pass": true, "note": "Passes but with the loudest caveat in this evaluation. ENCODE IDR peaks are MACS2 calls on real ChIP-seq reads, a physical measurement, not another model's output. However ChIP-seq signal has a documented GC-content bias (Teng & Irizarry, Genome Research 2017, found in search), and GC content is the headline feature here, so label and feature share a known technical confounder. Separately, the HOCOMOCO 'affinity' columns in the deposit are position-weight-matrix scores computed from the sequence itself; using those as a label would be a hard A8 failure."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "54 peak files plus hg38 plus ATAC files; join is on genomic coordinates, which works but needs interval logic."},
+    "B2": {"score": 1, "why": "narrowPeak parsed first try in pandas; the main Zenodo archive is corrupt and needed a custom header-scanning recovery script."},
+    "B3": {"score": 1, "why": "Uniform ENCODE IDR pipeline makes peaks comparable, but signalValue fold-enrichment is not comparable across experiments."},
+    "B4": {"score": 1, "why": "Saw pValue = -1.0 placeholder in both peak files I opened; easy to drop, but it is a missing column in practice."},
+    "B5": {"score": 1, "why": "Verified 20 of 54 files are second files from the same ENCODE accession; also peaks overlap across cell lines. Dedupable."},
+    "B6": {"score": 1, "why": "narrowPeak is a documented standard; the deposit's TF-affinity CSV has no header and 'mean_t' units are undocumented."},
+    "C1": {"score": 1, "why": "Cross-cell-line transfer framing is informative either way, but the core result swings entirely on how negatives are built."},
+    "C2": {"score": 0, "why": "Saturated: AlphaGenome, Enformer, Borzoi, ChromBPNet and Zheng 2021 all model ENCODE TF ChIP-seq with open weights or code."},
+    "C3": {"score": 0, "why": "Zheng 2021 already did 'context beyond the motif' with motif-matched negatives on ENCODE GM12878, open source."},
+    "C4": {"score": 1, "why": "ChIP-seq is a real lab assay, but in-silico TF binding prediction for these cell lines is already cheap and available."},
+    "C5": {"score": 2, "why": "Several concrete baselines: a motif-only PWM score, mean GC alone, and published auROCs from Zheng 2021 with open code."},
+    "D1": {"score": 2, "why": "Open DNA backbones fit exactly: DNABERT-2, Nucleotide Transformer, HyenaDNA, plus AlphaGenome weights on HuggingFace."},
+    "D2": {"score": 1, "why": "10 kb windows exceed DNABERT-2's context; caching embeddings for ~100k long windows on CPU is days, so realistically a GPU."},
+    "D3": {"score": 2, "why": "DNABERT-2 and HyenaDNA are Apache-2.0; AlphaGenome is non-commercial, and ENCODE plus this deposit are open (CC-BY-4.0)."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes; the chr column is present in the narrowPeak files I opened. Also hold out cell lines or TFs."},
+    "E2": {"ok": true, "why": "10 transcription factors, 8 cell lines, 23 autosomes, verified in the deposited experiment table."},
+    "E3": {"ok": true, "why": "Trivial dummies available: mean GC content alone, motif PWM score alone, majority class."},
+    "E4": {"ok": true, "why": "20 TF x cell-line pairs have two peak files each (verified), so peak-set concordance gives a rough reproducibility ceiling."},
+    "E5": {"ok": true, "why": "Positive control is textbook: the model must recover the CTCF motif at peak centres and GC content must be trivially learnable."},
+    "E6": {"ok": true, "why": "Label shuffling, dinucleotide-preserving sequence shuffling, and masking the central motif are all straightforward here."},
+    "E7": {"ok": true, "why": "A Cut&Tag dataset (GSM3560258) and unused ENCODE cell lines give an independent assay and independent samples."},
+    "E8": {"ok": true, "why": "Zheng 2021 (Nature Machine Intelligence) reports per-TF auROC with open code on ENCODE GM12878; reproducible with effort."},
+    "G1": {"score": 2, "why": "hg38 genomic coordinates plus ENCODE accessions, both standard identifiers, verified in the files."},
+    "G2": {"score": 2, "why": "Named partners joinable on coordinates: ENCODE ATAC/DNase for the same 8 cell lines, AlphaGenome Atlas, Roadmap."},
+    "G3": {"score": 1, "why": "Coordinate overlap joins are one-to-many and need an explicit collapse rule; manageable but not clean."},
+    "G4": {"score": 1, "why": "'Does kilobase composition explain binding beyond accessibility?' is a fair question, but the paper already ran its own ATAC version."},
+    "H1": {"score": 0, "why": "Only peaks are deposited: unbound regions appear nowhere, so every negative must be manufactured."},
+    "H2": {"score": 1, "why": "10 TFs and 8 human cell lines, all from one consortium's uniform pipeline; no primary tissue, no other species."},
+    "H3": {"score": 2, "why": "The honest claim can be stated in one sentence (see honest_claim_h3), including the negative-set dependency."},
+    "H4": {"score": 1, "why": "The paper is explicit about TF/cell-line scope and the edge-as-background assumption; the truncated archive is undocumented."},
+    "I1": {"score": 1, "why": "Regulatory-genomics modellers and benchmark builders would read it; no single named lab whose decision turns on it."},
+    "I2": {"score": 1, "why": "Showing GC-matched negatives erase real signal would change benchmark design, but only at the margin."},
+    "I3": {"score": 1, "why": "Area under the precision-recall curve on held-out chromosomes roughly matches 'is this region bound', but the decision is vague."},
+    "I4": {"score": 1, "why": "A single feature, mean GC in +/-2.5 kb, may do most of the work; the paper's own figures suggest exactly that."},
+    "J1": {"score": 2, "why": "Real modelling: grouped splits, transfer across cell lines, frozen-backbone heads, negative-control design."},
+    "J2": {"score": 2, "why": "Sanity checks are obvious to anyone with genomics intuition: CTCF motif recovery, promoter/CpG-island enrichment."},
+    "J3": {"score": 2, "why": "Even if the model fails, the corrupt-archive recovery and the 54-files-but-34-experiments finding are shareable."},
+    "J4": {"score": 1, "why": "Scopeable to about 4 weeks, but no time budget is written down anywhere yet."},
+    "J5": {"score": 0, "why": "No kill date or condition has been recorded in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "This paper's own method (cluster-based permutation test on 50 bp window GC/dinucleotide z-scores)",
+        "open_weights": true,
+        "score_and_split": "Not a predictive model at all: it reports p-values and z-scores for 'excessive patches' versus an edge-derived null, with no train/test split and no accuracy number. Code is in the Zenodo deposit (19 scripts, verified).",
+        "authors_named_unsolved": "Whether the observed GC/dinucleotide patches are causal for binding or a consequence of chromatin state; they say 'further research is needed to confirm' the cooperating-TF affinity signals.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Zheng et al. 2021, 'Deep neural networks identify sequence context features predictive of transcription factor binding' (Nature Machine Intelligence 3:172-180)",
+        "open_weights": true,
+        "score_and_split": "Convolutional network predicting whether a motif instance is bound, for 38 transcription factors in the GM12878 lymphoblastoid cell line, using motif-containing sequences as both positives and negatives plus inactive regions as controls. Open-source code and interpretability scores released. I retrieved the abstract and summary only, not the per-TF numbers.",
+        "authors_named_unsolved": "They report that binding is largely predicted by open chromatin and only to a lesser extent by TF-specific sequence features, i.e. disentangling sequence from accessibility remains open.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AlphaGenome (DeepMind, 2025; bioRxiv 2025.06.25.661532)",
+        "open_weights": true,
+        "score_and_split": "Trained on ENCODE read coverage including ChIP-seq, DNase-seq and RNA-seq across hundreds of cell types, up to 1 Mb context, evaluated on held-out genomic test intervals. Reported cell-type-matched DNase Pearson r = 0.57, comparable to ChromBPNet and Borzoi (taken from the search summary; I did not verify a TF-ChIP-specific number). Weights published at huggingface.co/google/alphagenome-all-folds.",
+        "authors_named_unsolved": "Long-range distal regulatory effects remain the hard case in their own benchmarking against CRISPR-interference screens.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Enformer, Borzoi and ChromBPNet",
+        "open_weights": true,
+        "score_and_split": "Named as the comparison models in the AlphaGenome benchmark I retrieved; all predict ENCODE functional-genomics tracks including TF ChIP-seq on held-out genomic intervals. I did not retrieve their individual TF-level scores.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Benchmarking study of TF binding site prediction models (PMC12286778, 2025)",
+        "open_weights": null,
+        "score_and_split": "A comparative analysis on synthetic and biological data; notes that support-vector-machine models learn both the core site and surrounding context and that GC-matched negative sets are standard practice. Retrieved as a search result; I read the summary only.",
+        "authors_named_unsolved": "Negative-set construction remains a confound in the whole benchmark literature.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "HyenaDNA or DNABERT-2 for the flanking-sequence head; AlphaGenome for a long-context comparison",
+    "freeze_and_head_viable": false,
+    "hardware": "k-mer composition plus gradient boosting runs on a 16 GB CPU laptop; any 10 kb-context DNA language model over ~100,000 windows needs a GPU",
+    "licence": "DNABERT-2 and HyenaDNA Apache-2.0; AlphaGenome weights non-commercial; ENCODE data unrestricted; this deposit CC-BY-4.0"
+  },
+  "integration": {
+    "partner_dataset": "ENCODE ATAC-seq and DNase-seq peaks for the same 8 cell lines (K562, HepG2, GM12878, MCF-7, H1, A549, WTC11, GM23338)",
+    "join_key": "hg38 genomic coordinates (interval overlap), genome build GCA_000001405.15",
+    "bigger_question_one_sentence": "Does kilobase-scale sequence composition predict in vivo binding after chromatin accessibility in the matching cell line is already accounted for, or is it just a proxy for open chromatin?"
+  },
+  "controls": {
+    "positive_control": "The model must recover the CTCF motif at peak centres, and must near-perfectly predict GC content from the raw sequence when GC is substituted as the label.",
+    "negative_control": "Shuffle the bound/unbound labels and confirm collapse to the dummy; dinucleotide-preserving sequence shuffles; mask the central 200 bp and see how much performance survives.",
+    "external_validation": "The Cut&Tag experiment GSM3560258 used by the paper as a different assay, plus ENCODE cell lines and TFs not in these 54 files."
+  },
+  "honest_claim_h3": "A model here could claim only that, among genomic regions chosen as negatives by a particular rule, kilobase-scale base composition separates ENCODE IDR-called peaks for 10 transcription factors in 8 immortalised human cell lines from those negatives, with the size of the effect depending on whether the negatives were GC-matched and on an unquantified amount of ChIP-seq GC bias.",
+  "plain_idea": {
+    "one_liner": "Use several kilobases of DNA sequence around a site, with the core motif hidden, to predict whether a transcription factor binds there.",
+    "train_on": "For each site, the DNA sequence 5,000 bases upstream and downstream of a peak centre, with the central motif masked out. Verified counts: 7,275 peaks in one file and 38,952 in another, from 54 peak files covering 34 distinct ENCODE experiments.",
+    "predict": "Whether the site is bound in that cell line. The true answer comes from ENCODE ChIP-seq (chromatin immunoprecipitation followed by sequencing), a lab assay that pulls down DNA attached to a given protein, processed into peak calls by the MACS2 algorithm with IDR (irreproducible discovery rate) filtering.",
+    "why_worthwhile": "If broad composition alone predicts binding, then the standard practice of matching negative examples on GC content is deleting real biology from every benchmark in the field; if it does not, the paper's GC patches are a side-effect of open chromatin or of a known ChIP-seq bias."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "54 peak files from 34 ENCODE experiments covering 10 transcription factors is a small slice of ENCODE; AlphaGenome was trained on ENCODE ChIP-seq across hundreds of cell types, and Zheng 2021 already covered 38 transcription factors in GM12878."},
+    "confidence_score": {"answer": "partly", "why": "20 TF x cell-line pairs have two deposited peak files each (verified), which supports a reproducibility estimate, but both files come from the same ENCODE experiment accession so they understate true between-experiment noise."},
+    "models_beatable": {"answer": "no", "why": "AlphaGenome (2025) and Borzoi/ChromBPNet are transformer- and convolution-based models evaluated on held-out genomic intervals, not random splits; Zheng 2021 is older but already uses the hard motif-matched negative design and ships code."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition 'our model sees everything theirs sees plus new data' fails outright: these exact ENCODE ChIP-seq tracks are part of AlphaGenome's training data, so we would be feeding the incumbent's own training set back to it."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Mask the central motif and ask how much of in vivo transcription factor binding is predictable from the surrounding few kilobases of base composition alone, then test whether that signal survives conditioning on matched ATAC-seq accessibility and whether it transfers from one cell line to another. Rejected here because the deposit contains no feature/label table, the negatives that decide the answer do not exist in the data, and ENCODE TF ChIP-seq is the most heavily modelled dataset in regulatory genomics.",
+  "effort": {
+    "hours_to_feature_table": 24,
+    "working_set_gb": 4.0,
+    "needs_gpu": true,
+    "peak_ram_gb": 8.0,
+    "embedding_hours": null,
+    "cv_run_minutes": 20,
+    "compute_note": "Estimated, not timed, except that I did time the two peak-file downloads and parses (seconds each). The 4 GB working set is hg38 uncompressed (~3.1 GB) plus a subsampled set of extracted +/-5 kb windows; peak RAM assumes pyfaidx streaming rather than loading the genome. The 20-minute cross-validation figure is for gradient boosting on k-mer composition features; embedding hours are left null because CPU inference over ~100,000 ten-kilobase windows with any DNA language model is days, not hours, which is why needs_gpu is true.",
+    "cheapest_killing_check": "Fit a logistic regression on one feature, mean GC content in the +/-2,500 bp around the peak centre, against random genomic regions that are NOT GC-matched. If area under the ROC curve is already around 0.85, the 'broad context' signal is just GC content and no deep model adds anything. One hour of work."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A passes, but the project dies on Parts B and C. The Zenodo deposit holds no feature/label table at all: just per-experiment summary statistics (cluster_start, cluster_end, p-value, direction, feature), figures and code, and its main results archive is truncated at exactly 35,000 KiB so standard unzip fails and only 5 of 54 experiments are recoverable by raw header scanning. The real modelling substrate would therefore be ENCODE ChIP-seq peaks plus hg38, which is the single most heavily modelled dataset in regulatory genomics: AlphaGenome (weights public, trained on these very tracks), Enformer, Borzoi, ChromBPNet, and Zheng et al. 2021, which already asked this exact question ('what in the sequence context, beyond the motif, predicts binding?') for 38 transcription factors with open code and motif-matched negatives. On top of that, the data contains no negatives, so the headline result would be decided by how one invents them, and GC content, the paper's central feature, is a documented ChIP-seq technical bias, meaning feature and label share a confounder. Model-readiness scores about 6 of 12 and question value about 4 of 10, both below threshold. The one genuinely useful by-product, worth reporting to the authors, is that the deposited sequence_analysis.zip is corrupt and that the 54 peak files come from only 34 distinct ENCODE experiments, so the paper's 'seen in 5/5 experiments' consistency counts files rather than independent experiments."
+}

@@ -1,0 +1,138 @@
+{
+  "paper_id": "cell2026-08-015",
+  "title": "Sexual dimorphism in the complete Drosophila male central nervous system connectome.",
+  "doi": "10.1016/j.cell.2026.08.015",
+  "journal": "Cell 189(18):5504-5526.e15, Sep 2026 (PMID 42691995; no PMCID; Europe PMC isOpenAccess=N, licence field 'cc by'). Preprint bioRxiv 10.1101/2025.10.09.680999 (Europe PMC PPR1098763). The full-text XML returned HTTP 500, the PDF HTTP 403, and bioRxiv HTTP 429, so I used only the abstract.",
+  "data_url": "https://male-cns.janelia.org/download/ (public GCS bucket gs://flyem-male-cns, v1.0 released 2026-06-08, CC-BY 4.0). Flat files are at https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/. NBLAST matches are under v1.0/nblasts/. neuPrint (neuprint.janelia.org, dataset male-cns:v1.0) needs a login token, but the flat files do not.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed:\n(1) body-annotations-male-cns-v1.0-minconf-0.5.feather (14.5 MB): 211,577 rows x 36 cols. 166,700 rows have a superclass, all with unique bodyIds. 11,751 unique types (median 3 neurons/type, 3,619 types with >=5 neurons, 319 singletons). flywireType is set on 143,154 neurons (8,199 values, 2,751 of them compound 'A,B'). dimorphism is set on 2,368 neurons: male-specific 266 types, potentially male-specific 47, sexually dimorphic 102, potentially dimorphic 65. fruDsx is set on 5,012 neurons / 909 types. Also present: vfbId 166,686, hemibrainType 32,919, mancBodyid 18,715.\n(2) body-neurotransmitters-male-cns-v1.0.feather (43.3 MB): 1,835,518 segments. ground_truth NT is set for 85,484 neurons / 3,318 types. predicted_nt is a model output.\n(3) v0.9 annotations (12.9 MB): 166,694 neurons, 11,732 types. 1,377 of 166,684 shared neurons changed type by v1.0.\n(4) matches_mcns_v1.0_flywire783.feather (7.2 MB): 144,512 male neurons, top-5 FlyWire matches; every top-1 root_id is found in the FlyWire annotations. Baseline I computed: top-1 NBLAST match type == flywireType for 61.7% of 138,742 neurons (top-5 85.9%). The top-1 NBLAST score alone separates male-specific from matched neurons at AUROC 0.946 (1,364 vs 141,493).\n(5) FlyWire Supplemental_file1_neuron_annotations.tsv (31.7 MB, GitHub): 139,248 neurons, 8,846 cell_types. Explicit 'isomorphic' on 138,072 neurons. Female-specific 50 + potentially 21 = 71 types (matches the abstract). fru_dsx is set on 3,308 neurons. 7,325 of 8,199 male flywireType values exist as female cell_type.\n(6) By HTTP range reads, no full download: connectome-weights traced-only (508 MB) has columns body_pre, body_post, weight (int64), type_pre, type_post, about 25.6M rows (391 batches). The full weights file (1.05 GB) has about 151.9M rows. Both counts are estimated from batch sizes.\n(7) Zenodo 10676866 API: FlyWire 783, open, cc-by-4.0, proofread_connections_783.feather 852 MB (not downloaded).",
+    "what_came_from_paper_text_only": "From the abstract only: 166,700 neurons, 11,710 types, and 8,069 isomorphic / 138 dimorphic / 289 male-specific / 71 female-specific types. I could not read how types, flywireType matches, dimorphism and fruDsx were assigned (methods paywalled; preprint fetch blocked). I infer that they come from NBLAST plus connectivity matching and LM-clone matching; this is not confirmed in text. Not opened: skeleton SWCs, body-stats (778 MB), syn-partners (6.8 GB), syn-points (13 GB), the full NBLAST matrices (18-21 GB) and hemibrain/BANC downloads. Column definitions (fruDsx, dimorphism, status) are not documented on the download or release-notes pages."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass (checked). GCS flat files, NBLAST matches and the v0.9 annotations download anonymously with HTTP 200. The FlyWire partner is open on Zenodo (API checked) and GitHub. Only the neuPrint API needs a login."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Pass (checked). type, flywireType (the female type each male neuron was matched to), dimorphism, fruDsx and NT ground_truth are all columns, so no label has to be built. Caveats: 2,751 flywireType values are compound ('A,B'). Male isomorphic neurons are NaN in dimorphism and are only implied by having a flywireType."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass (checked for the schema). The edge list holds bodyId pairs with integer synapse weights and partner types, so no external ID resolution is needed. Morphology inputs (SWC skeletons, NBLAST) exist but were not opened, apart from the top-5 match file."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked). weight is a synapse count at a synapse confidence threshold of 0.5 (minconf-0.5). Coordinates are in 8 nm voxels per the bucket README. Labels are categorical."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 166700,
+      "note": "Pass (checked). 166,700 neurons, but the effective unit is the type (11,751, median 3 members, mostly L/R pairs). The dimorphism positive class is 2,368 neurons / 480 male types, and fruDsx is 909 types. Only one animal per sex."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "Annotations 14.5 MB + traced-only male weights 508 MB (about 25.6M edges, estimated) + FlyWire proofread_connections_783 852 MB = about 1.4 GB on disk, likely 2-3 GB in RAM as sparse matrices (estimate). Avoid the full weights (1.05 GB, about 152M edges) and NBLAST matrices (18-21 GB).",
+      "note": "CPU-only is fine for sparse type-level partner profiles plus a linear model or gradient boosting. Using skeletons or a GNN on morphology would raise cost."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Mostly pass (checked). Neurons: 166,700 matches exactly in v1.0. Types: 11,751 (v1.0) and 11,732 (v0.9) vs 11,710 in the abstract. Female-specific types: 71 matches. Male-specific (266, or 313 with 'potentially') and dimorphic (102, or 167) do not map cleanly onto the abstract's 289/138 (likely brain-only counting; unverified). The release is live: 1,377 type changes from v0.9 to v1.0, so pin the version."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Weak pass, flagged. Types, flywireType matches and dimorphism are expert annotations, not model outputs, but they were made with NBLAST/connectivity tools (inferred). The top-1 NBLAST score alone detects male-specific neurons at AUROC 0.946, so morphology features would be near-circular. Use connectivity-only features and frame results as agreement with expert typing; predicted_nt is a model output and must be excluded."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 7,
+    "c_worth_asking": 8,
+    "d_backbone_fit": 2,
+    "g_integration": 7,
+    "h_missing_data": 5,
+    "i_does_anyone_care": 5,
+    "j_fit_finishability": 6
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "NTAC (Jourdan et al., 'Connectivity Is All You Need: Inferring Neuronal Types with NTAC', PMC12259112; github.com/BenJourdan/ntac, MIT)",
+        "open_weights": true,
+        "score_and_split": "Within-dataset only. Seeded (2% labels): about 95% in the optic lobe and >90% in the central brain. Unseeded: about 70% in visual systems and 52% on the full brain (FlyWire, male optic lobe, MANC).",
+        "authors_named_unsolved": "Improving unseeded accuracy, not having to preset the cluster count, and errors at partial-connectome boundaries. Cross-connectome and cross-sex transfer was not tested.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ACDC connectome alignment / ConSim (Murthy lab, 'Uncovering Sex Differences in the Drosophila VNC Through Connectome Alignment', PMID 42367857, PMC13307954; github.com/murthylab/banc_connectivity_analysis, no licence file)",
+        "open_weights": true,
+        "score_and_split": "Male MANC/MCNS VNC to female BANC VNC (about 13k intrinsic neurons). Experts preferred the connectivity match over NBLAST in about 75% of reviewed cases, and found it as good or better in 88%. It flagged 205 male-specific, 190 female-specific and 144 dimorphic VNC types.",
+        "authors_named_unsolved": "ACDC only scales to about 20-25k neurons because it needs dense matrices, so the brain needs an untested 'piecewise strategy'. Dimorphisms need molecular/functional confirmation.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Authors' released NBLAST top-5 matches (matches_mcns_v1.0_flywire783.feather)",
+        "open_weights": true,
+        "score_and_split": "Computed here on all 138,742 male neurons with a single flywireType: top-1 61.7%, top-5 85.9% (cb_intrinsic 72.5%, ol_intrinsic 55.8%). Male-specific detection from a low top-1 score: AUROC 0.946.",
+        "authors_named_unsolved": "Not stated (README only).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Shi et al. 2026 bioRxiv 10.64898/2026.06.30.735468, 'Connectome-scale self-supervised representation learning...' (hierarchical GNN, contrastive on FlyWire skeletons)",
+        "open_weights": null,
+        "score_and_split": "Abstract only (bioRxiv API). FlyWire only, no numbers retrieved, no cross-dataset test mentioned.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None verified. No open pretrained connectome backbone fits (ESM-2, scGPT etc. do not apply). Shi et al. 2026's GNN has unverified weights. The fallback is unsupervised NTAC/spectral embeddings, which are not freeze-and-head.",
+    "freeze_and_head_viable": false,
+    "hardware": "Laptop CPU for sparse partner-type profiles plus logistic regression / gradient boosting, or NTAC (GPU optional). A morphology GNN would want a GPU.",
+    "licence": "Male CNS data CC-BY 4.0 (download page) and FlyWire 783 Zenodo cc-by-4.0 (API checked). The flywire_annotations GitHub repo has no licence file. NTAC is MIT, and the BANC repo has no licence."
+  },
+  "integration": {
+    "partner_dataset": "FlyWire FAFB v783 (female brain): Zenodo 10676866 proofread_connections_783 (852 MB) plus flywire_annotations Supplemental_file1 (139,248 neurons with explicit dimorphism and fru_dsx). Secondary partners: hemibrain v1.2 (second male, hemibrainType) and MANC (mancBodyid) as same-sex controls. Neither was opened.",
+    "join_key": "flywireType to FlyWire cell_type: 7,325 of 8,199 values present. Also bodyId to root_id via NBLAST top-1 (144,512 neurons) and vfbId. Collapse rule: drop or split compound flywireType 'A,B' (2,751 neurons), aggregate to type level, and restrict male neurons to the brain (FlyWire has no VNC).",
+    "bigger_question_one_sentence": "Does a connectivity-only type classifier trained on one female brain transfer to a male brain, and is the loss concentrated in annotated dimorphic types or spread evenly, which would point to individual and pipeline variability rather than sex? A same-sex male-vs-male (hemibrain, L/R) control tells the two apart."
+  },
+  "controls": {
+    "positive_control": "(1) Within-animal L-to-R transfer in the male (mirrored matches file exists) must be near ceiling. (2) Sensory and visual-projection types (NBLAST already 74-85%) must transfer near-perfectly. (3) Reproduce the NBLAST top-1 baseline of 61.7% / top-5 of 85.9% from the released match file (done here).",
+    "negative_control": "Shuffle type labels within superclass and confirm collapse to the per-superclass majority. Use degree-preserving randomized graphs as features. Male-specific neurons (1,364 in the brain match set) must not get confident female types.",
+    "external_validation": "Hemibrain v1.2 (an independent male, partial brain) as a same-sex cross-individual test, and BANC (an independent female) as a second female. Neither was downloaded or verified. There is no year column; the version diff v0.9 to v1.0 is the only temporal axis."
+  },
+  "honest_claim_h3": "A connectivity-only model trained on one female brain's expert types assigns X% of one male brain's neurons to the female type that the same consortium matched them to, and its errors cluster (or don't) in types those annotators called dimorphic. Scope: n=1 animal per sex, two EM pipelines, and labels made with NBLAST/connectivity tools.",
+  "pitch": {
+    "headline": "Both sexes' whole fly central nervous systems, open CC-BY: 166,700 labelled male neurons joinable to 139,248 female ones by shared type names.",
+    "what_makes_the_data_unusual": "Opening the files confirmed what comparable connectomes lack: a shared type vocabulary that actually joins (7,325 of 8,199 male flywireType values exist as a FlyWire female cell_type), dimorphism as a ready column (2,368 neurons; 266 male-specific, 102 sexually dimorphic types), and a neuron count of 166,700 that matches the paper exactly, all in 14.5 MB feather files under CC-BY 4.0. How those type and dimorphism labels were assigned could not be read — the methods are paywalled and the preprint fetch failed — so that provenance rests on inference, not text.",
+    "the_win": "A connectivity-only classifier trained on the female brain that beats the authors' released NBLAST matches on male neurons — 61.7% top-1 and 85.9% top-5, which I recomputed here on 138,742 neurons — and reports the first cross-connectome, cross-sex transfer number, where NTAC's published 52% unseeded full-brain figure is within-dataset only.",
+    "even_if_it_fails": "You still get where the errors land: clustered in the annotators' dimorphic types, or spread evenly, which would point at individual and pipeline variability instead of sex. That map is genuinely informative but not decisive — with one animal per sex, sex stays confounded with individual and EM pipeline, and the same-sex controls (male left-vs-right, hemibrain) are needed before any of it can be attributed to sex.",
+    "who_wants_it": "The NTAC authors (Jourdan et al.), who named cross-connectome and cross-sex transfer as untested, and the Murthy lab, whose ACDC alignment scales only to about 20-25k neurons and so needs an untested piecewise strategy for the brain. It would tell the Janelia male-CNS and FlyWire annotators which dimorphism calls are recoverable from wiring alone — the male-specific flag is already 0.946 AUROC from the NBLAST score — and therefore which ones need molecular or functional confirmation."
+  },
+  "plain_idea": {
+    "one_liner": "Use each neuron's wiring partners, learned from a female fruit fly brain, to predict the cell type of neurons in a male fruit fly brain.",
+    "train_on": "For each neuron in one female fruit fly brain wiring map, a profile of which cell types it receives synapses from and sends synapses to, weighted by synapse counts. The evaluation lists 139,248 annotated neurons in the female annotation file but did not open that file to check the number. The test set is one male's wiring map: 166,700 neurons across the brain and nerve cord (verified), but fewer once restricted to the brain (exact number unknown). In practice the unit is the cell type: about 11,751 male types with a median of 3 neurons each. There is only one animal per sex.",
+    "predict": "For each male neuron, its best-guess matching female cell type (a ranked top few), plus a flag for neurons with no female counterpart (male-specific). The true answer is an expert annotation from the team that built both maps from electron-microscope reconstructions. They matched male neurons to female types by comparing neuron shape and wiring with software tools. So the model measures agreement with those expert labels, not an independent lab measurement.",
+    "why_worthwhile": "Fly brain-wiring researchers would learn whether cell types can be assigned from wiring alone across individuals and sexes, and whether errors cluster in the types experts called sex-different (pointing to real sex differences) or spread evenly (pointing to individual or reconstruction differences). With one animal per sex, sex can't be separated from individual differences, which is why the project is parked."
+  },
+  "ml_idea": "Build type-level input/output partner profiles for FlyWire and the male brain in the shared flywireType vocabulary, iteratively anchored on isomorphic sensory types. Train a classifier on female neurons and predict male types. Report top-k accuracy split by superclass and dimorphism, against the NBLAST baseline (61.7% top-1) and NTAC. Add open-set detection of male-specific neurons, and compare it with the 0.946 NBLAST AUROC, which is nearly circular.",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "cheapest_killing_check": "Download the traced-only male weights (508 MB) and build one quick cosine nearest-type connectivity baseline for male brain neurons with a single flywireType. Kill if (a) it already exceeds about 90% on isomorphic types (no headroom, like NTAC seeded), or (b) the dimorphic and male-specific brain neurons left after the brain-only restriction are too few (under about 1,000 neurons / 150 types) to measure decay.",
+    "working_set_gb": 1.4,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Figures come from file sizes read off the male CNS download page and the FlyWire Zenodo API, with the edge counts and the 2-3 GB sparse-matrix RAM stated as estimates; nothing was timed or run."
+  },
+  "roi": 7.3,
+  "verdict": "park",
+  "verdict_reason": "The data is excellent: open CC-BY, clean feather files, a neuron count that matches the paper exactly, standard community IDs, and a ready female partner. But B (7/12) and D (2/6) miss their thresholds, there is no pretrained backbone, and the type/dimorphism labels are expert matches made with NBLAST/connectivity, so male-specific is 0.946-AUROC recoverable from NBLAST alone. With one animal per sex, sex is confounded with individual and pipeline. Revisit if a second female/male whole-brain connectome or an open connectome backbone appears.",
+  "c2_backfill": {
+    "score": 1,
+    "why": "NTAC is open but tested only within-dataset; ACDC cross-sex covers only the VNC; NBLAST reaches only 61.7% top-1."
+  }
+}

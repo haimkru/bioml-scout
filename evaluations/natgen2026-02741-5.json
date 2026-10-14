@@ -1,0 +1,52 @@
+{
+  "paper_id": "natgen2026-02741-5",
+  "title": "Multiancestry genome-wide association and multiomics analyses elucidate spatiocellular features of multiple sclerosis genetics.",
+  "doi": "10.1038/s41588-026-02741-5",
+  "journal": "Nature Genetics",
+  "data_url": "https://humandbs.dbcls.jp/en/dataset/NHA000209",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "NBDC (Japan's National Bioscience Database Center) dataset NHA000209 page: unrestricted access, 1.2 GB. Fetched the readme (column dictionary). HEAD on the zip: 1,156,348,648 bytes. Ranged reads of the zip's file index list 4 gzipped TSVs (GWAS, genome-wide association study, summary statistics on hg19): African 272 MB, cross-population 429 MB, European 208 MB, Japanese 247 MB. Decoded the first ~14,000 rows of the African file: columns CHR, POS, SNP, EA, NEA, P, BETA, SE, OR, Z, Direction, parsing cleanly. Also saw that single-cell data E-GEAD-1251 (PBMCs, peripheral blood immune cells, from 20 MS patients) is listed as unrestricted, and that the raw single-cell data JGAD001005 is controlled access.",
+    "what_came_from_paper_text_only": "Case and control counts (29,374 cases, 1,843,563 controls), the 22 novel loci, and the cell-type enrichment results. Total variant counts per file were not seen, because the full files exceed the 50 MB cap. Individual-level genotypes (UK Biobank, All of Us, Genomics England, MVP through dbGaP) need access applications. The lesion snRNA-seq and spatial data come from a different study's UCSC Cell Browser."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Summary statistics are unrestricted on NBDC NHA000209 and the zip responds to a direct download (checked). Individual-level genotypes are controlled access, but the project doesn't need them."},
+    "a2_label_is_a_column": {"pass": false, "note": "Each variant does have BETA/Z columns (checked), but these are association statistics smeared across correlated nearby variants (LD, linkage disequilibrium), not one measured outcome per item. A usable label such as 'causal variant' or 'causal gene' would have to be built by fine-mapping, a statistical method that picks the likely causal variant at each locus."},
+    "a3_inputs_present": {"pass": true, "note": "Genomic coordinates and alleles are present (hg19), so sequence context could be pulled from the reference genome."},
+    "a4_units_stated": {"pass": true, "note": "The readme states BETA is a log odds ratio, gives SE (standard error), OR (odds ratio), Z and P, and says positions are on hg19."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Probably millions of variants per file (the gz files are 208–429 MB), but the total wasn't counted. At the locus level there are only about 200+ independent loci, which is tiny."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.16 GB compressed; one ancestry file is 208–429 MB gz", "note": "Fits on the laptop if streamed with pandas in chunks."},
+    "a7_counts_match_paper": {"pass": true, "note": "The NBDC page's cohort counts match the abstract (29,374 cases and 1,843,563 controls cross-population). Variant counts were not verified."},
+    "a8_label_provenance": {"pass": false, "note": "Any per-variant 'causal' label would come from a fine-mapping model (SuSiE or PolyFun posteriors), so the project would be distilling another model. Predicting raw Z-scores from annotations is a heritability-enrichment analysis, which the paper itself already does."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PolyFun + SuSiE (functionally informed fine-mapping, Weissbrod et al. 2020, Nature Genetics)", "open_weights": true, "score_and_split": ">32% more fine-mapped variants (posterior causal probability above 0.95) than SuSiE alone across 49 UK Biobank traits; evaluated in simulations and on UK Biobank data.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "V2D variant-to-disease machine-learning framework (PMC12633601)", "open_weights": null, "score_and_split": "Models disease effect sizes from fine-mapping posteriors plus ~100 functional annotations; scores not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Borzoi-informed fine mapping (bioRxiv 2025.07.09.663936)", "open_weights": null, "score_and_split": "Uses a deep-learning DNA sequence model as a fine-mapping prior; scores not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "AlphaGenome or Borzoi variant-effect scores as features (the DNA models are not fine-tuned)", "freeze_and_head_viable": null, "hardware": "CPU for precomputed scores", "licence": "AlphaGenome non-commercial"},
+  "integration": {"partner_dataset": "GWAS Catalog / FinnGen summary statistics; AlphaGenome precomputed variant effects", "join_key": "chromosome:position:allele on hg19", "bigger_question_one_sentence": "Do the Japanese-specific MS risk variants have regulatory effects in immune cells that European-trained priors miss? This is a fine-mapping question, not a supervised one."},
+  "controls": {"positive_control": "The HLA-DRB1*15:01 signal in the MHC (major histocompatibility complex) region", "negative_control": "Shuffle annotations across variants", "external_validation": "IMSGC (International MS Genetics Consortium) European fine-mapping"},
+  "honest_claim_h3": "At best, the model ranks variants by prior causal probability at MS loci, judged against fine-mapping posteriors that are themselves model outputs.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and regulatory annotations around each genetic variant to predict whether it truly drives multiple sclerosis risk.",
+    "train_on": "Per-variant DNA context and functional annotations for the variants in the four ancestry summary-statistic files. The variant total is unknown (the files weren't fully downloaded).",
+    "predict": "Whether a variant is causal at a risk locus. No measured truth exists: it would come from statistical fine-mapping of association signals, which is another model's output.",
+    "why_worthwhile": "Statistical geneticists would get better candidate variants for experimental follow-up in non-European populations. But this task is already served by open fine-mapping tools."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Rejected. The only supervised framing is 'predict causal variant from annotations', and its label is a fine-mapping posterior (circular) or an LD-smeared association statistic. That framing is functionally informed fine-mapping, which PolyFun and similar tools already cover openly.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 1.2, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated, because the project was rejected at Part A.", "cheapest_killing_check": "Count the independent genome-wide significant loci (about 200+), which is the real unit of supervision. It is far below the 400 needed."},
+  "verdict": "reject",
+  "verdict_reason": "The data downloads freely and parses cleanly (NBDC NHA000209, 4 TSVs, checked). But these are GWAS summary statistics: there is no measured per-item label, and any 'causal variant' label would be a fine-mapping model output (A2 and A8 fail). The single-cell part has only 20 patients."
+}

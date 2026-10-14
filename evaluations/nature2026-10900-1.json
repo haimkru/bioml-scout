@@ -1,0 +1,57 @@
+{
+  "paper_id": "nature2026-10900-1",
+  "title": "Asymmetric prefrontal representations for leader-follower dynamics.",
+  "doi": "10.1038/s41586-026-10900-1",
+  "journal": "Nature",
+  "data_url": "https://doi.org/10.5281/zenodo.20723195",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 20723195 via its API: CC-BY-4.0, 5 files: ctable_light_combined.mat (784,781,359 bytes) plus imaging_data.zip/.z01-.z03 (~172 GB total). A ranged read of the first bytes of the .mat shows a 'MATLAB 7.3 MAT-file' (HDF5 container) created Jan 2026; the file was not downloaded (over the 50 MB cap). The GitHub repo HerbertWuLab/Yuan_manuscript_2026 was listed: MATLAB scripts show ctable is a MATLAB table with one row per session (columns pair, cp_rate, phase, cno, and a nested per-trial table 'stable'). I opened the one small data file in the repo, YC069_phase4a_correct_traj_nose_neck_rot.txt: 64,793 rows x 13 columns (frame number, nose/neck x-y for both mice, trial_no, trial_type 1-4, correct), 1,024 trials, no missing values, correct = 1 on every row (correct trials only), one pair only.",
+    "what_came_from_paper_text_only": "89 pairs trained, 88 reached criterion; 673 sessions from 40 pairs in the role analyses; 30 fps tracking with SLEAP; calcium imaging in 6 leaders and 6 followers (82 sessions); the leader on a trial is defined from arrival order at the reward zone; per-trial counts across the whole cohort and the full set of columns in the nested trial tables were not verified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo, CC-BY-4.0, no login; checked via the Zenodo API and a ranged read of the .mat file."},
+    "a2_label_is_a_column": {"pass": true, "note": "Per the MATLAB scripts (not opened), the nested per-trial tables hold leader, initiator, outcome and arrival times as columns; in the opened one-pair text file only trial_type (reward zone) and correct (all 1) are present."},
+    "a3_inputs_present": {"pass": true, "note": "Trajectories are present as x-y coordinates (verified in the one-pair text file); no identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Paper states 30 fps; coordinates look like centimetres centred on the arena (values roughly -25 to 25), but no units are written in the file itself."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Tens of thousands of trials likely (1,024 correct trials in one pair alone), but the independent unit is the pair: 40 pairs in the role analyses and only 12 imaged mice. Total trial count not verified."},
+    "a6_fits_laptop": {"pass": false, "working_set": "Behaviour: 785 MB MATLAB v7.3 table; neural: ~172 GB split zip", "note": "The neural data, which is the paper's novel part, is ~172 GB of imaging archives (verified sizes) and cannot be subset without downloading it all; only the behavioural table fits, and it is a MATLAB table object that Python readers generally cannot decode without MATLAB."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not checkable without opening the 785 MB .mat; the paper's internal counts (89 pairs, 40 pairs, 673 sessions) are self-consistent."},
+    "a8_label_provenance": {"pass": false, "note": "The interesting behavioural label (who led a trial) is defined from which mouse reaches the reward zone first, i.e. computed from the same trajectories a model would use as input; the zone choice on correct trials is set by the moving visual cue, so it is near-trivial."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "The paper's own multi-agent inverse reinforcement learning (MAIRL) value-function model and logistic choice models", "open_weights": true, "score_and_split": "Model comparison by nested chi-squared tests and log-likelihood gain per animal; 'self + distance' model beats baseline at predicting reward-zone choice; no held-out-pair evaluation reported.", "authors_named_unsolved": "Not retrieved as a specific sentence; value encoding was weaker and less consistent in leader sessions than in followers.", "runnable_as_baseline": true},
+      {"name": "LISBET, a self-supervised transformer for social behaviour from body-tracking coordinates (used in this paper)", "open_weights": true, "score_and_split": "Used here for unsupervised motif segmentation across 20 pairs; no predictive score for leader/follower reported.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "MABe / MABe22 multi-agent behaviour benchmarks (T-BERT, T-GPT, T-PointNet representation models)", "open_weights": null, "score_and_split": "Frame-level behaviour classification and representation-learning tasks on other mouse dyad/triad datasets; not this task.", "authors_named_unsolved": "Methods from human action datasets do not fully transfer to animal data (from the search summary).", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "LISBET (pose-trajectory transformer) or CEBRA embeddings", "freeze_and_head_viable": true, "hardware": "CPU for behaviour embeddings; neural data unusable on a laptop", "licence": "LISBET open source (licence not checked)"},
+  "integration": {"partner_dataset": "MABe22 mouse-triplet trajectories", "join_key": "none (no shared identifiers; only a shared data type)", "bigger_question_one_sentence": "No join exists; at most a transfer test of pose embeddings between arenas, which does not address the leader-follower question."},
+  "controls": {"positive_control": "Reward zone on correct trials should be decodable from late-trial trajectory almost perfectly.", "negative_control": "Shuffle leader labels within session.", "external_validation": "None found: no second cooperative-foraging dataset from another lab."},
+  "honest_claim_h3": "A model could say which mouse of one of ~40 Mount Sinai pairs will reach the reward zone first from its early movement, in one arena paradigm, but the label is a function of the same trajectories.",
+  "plain_idea": {
+    "one_liner": "Use both mice's early movement in a trial to predict which mouse will lead the pair to the reward.",
+    "train_on": "Nose and neck positions of both mice at 30 frames per second for each trial; 1,024 correct trials verified for one pair, cohort total unknown (40 pairs in the analyses).",
+    "predict": "Which mouse arrives at the reward zone first (the trial's leader), which the authors compute from the tracked arrival times, not from an independent measurement.",
+    "why_worthwhile": "Weak: it would show how early in a trial the role is visible in movement, but the paper already models choices from these features and the answer is mostly in the trajectory itself."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This is the same data the paper's own MAIRL and logistic models used; the cohort is ~40 pairs from one lab and one arena."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurement of the label; leader identity is a deterministic function of arrival times."},
+    "models_beatable": {"answer": "partly", "why": "The 2026 MAIRL model was evaluated with within-animal likelihood tests rather than held-out pairs, but the target itself is not a meaningful one to beat."},
+    "guaranteed_improvement": {"answer": "no", "why": "No accessible new data measuring the same quantity in the same paradigm joins to this one."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict trial leader (or reward-zone choice) from the first second of two-mouse trajectories, holding out whole pairs; or decode role from mPFC calcium activity. The first is circular (leader is defined from the trajectories), the second needs the 172 GB imaging archive.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.8, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Behaviour-only estimate from file sizes; nothing timed. The .mat table may need MATLAB to export, which makes the hours to a feature table unknown.", "cheapest_killing_check": "Try loading ctable_light_combined.mat in Python (h5py/mat73); a MATLAB table object usually comes back as opaque references, which alone stalls the behaviour project."},
+  "verdict": "reject",
+  "verdict_reason": "The neural data that makes this paper novel is ~172 GB of imaging zips (fails A6), and the behavioural label of interest, which mouse leads, is computed from the same trajectories a model would use (fails A8). On top of that, the only behaviour table is a 785 MB MATLAB table object, with only 40 pairs as independent units."
+}

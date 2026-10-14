@@ -1,0 +1,157 @@
+{
+  "paper_id": "nar2026-gkag685",
+  "title": "Neurochondrin promotes U5 snRNP maturation by regulating AAR2 release from PRPF8.",
+  "doi": "10.1093/nar/gkag685",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE299993",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all 7 processed GEO files (~40 MB gzipped): 5 rMATS splicing-event tables (198,381 rows total; skipped-exon table 93,080 rows x 29 columns), a differential-expression table (61,806 genes) and an FPKM expression table (61,806 genes x 6 samples). Computed per-event read coverage, FDR, change in percent-spliced-in (dPSI), replicate spread, missing values and duplicates. Confirmed the genome build is GRCh38 by matching the file's NCDN coordinates (chr1:35,557,473-35,567,274) to Ensembl GRCh38 (35,557,442-35,567,274) versus GRCh37 (36,023,074). Queried PRIDE (PXD068384: partial submission, CC0 licence, immunoprecipitation mass spectrometry of NCDN interactors) and the ENCODE API (668 shRNA RNA-seq knockdown experiments; 2 each for PRPF8, EFTUD2, SNRNP200, PRPF6).",
+    "what_came_from_paper_text_only": "Methods details (HISAT2 v2.2.1 alignment, rMATS v4.1.0, edgeR for differential expression), the claim of 'thousands of NCDN-regulated AS events', the TCGA SplAdder percent-spliced-in comparison in glioblastoma, and all the molecular biology (NCDN-AAR2-PRPF8 interaction, U5 snRNP maturation). The Europe PMC supplementary-file listing timed out twice, so supplementary sheets S2/S3 were not retrieved (supplement not retrievable); the GEO tables appear to contain the same event and gene lists. I did not download raw RNA sequencing reads or the raw mass-spectrometry files."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All 7 GEO processed files downloaded over public HTTPS with no login; PRIDE proteomics is CC0. Verified by downloading, not by reading."},
+    "a2_label_is_a_column": {"pass": true, "note": "Label is literally a column: 'IncLevelDifference' (change in exon inclusion) plus per-replicate 'IncLevel1'/'IncLevel2' (percent-spliced-in), with PValue and FDR, in every event table I opened."},
+    "a3_inputs_present": {"pass": true, "note": "Sequence is NOT in the files, but GRCh38 coordinates and Ensembl gene IDs are, so sequence comes from one bulk genome FASTA (~3.1 GB) rather than thousands of per-item lookups. Pass with a cost; build was inferred by me, not stated anywhere in the files or the paper."},
+    "a4_units_stated": {"pass": true, "note": "Column names carry the units: inclusion levels are fractions 0-1, IncLevelDifference is a difference of those fractions, FPKM and raw junction counts are named. rMATS column semantics are documented in rMATS docs, not inside the files."},
+    "a5_enough_rows": {"pass": true, "n_rows": 198381, "note": "198,381 events total; 23,684 skipped exons survive dedup + coverage >=20 reads + intermediate control inclusion; only 656 of those are responsive (FDR<=0.05, |dPSI|>=0.1), 855 at |dPSI|>=0.05. Passes the 400-row classification bar but thinly — counted by me in the files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~40 MB of tables plus a 3.1 GB GRCh38 FASTA that can be read by index", "note": "No GPU needed for frozen-embedding plus small-head baseline; peak memory a few GB. Verified by parsing the tables on this laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper claims 'thousands of AS events (|dIncLevel|>0.02, FDR<=0.05)'; the files give 3,555 at exactly those thresholds, and GEO lists the 6 samples (3 shRNA vs 3 control) the design implies. One inconsistency: methods say edgeR but the DE file has DESeq2-style columns (baseMean, lfcSE, padj)."},
+    "a8_label_provenance": {"pass": true, "note": "Label is percent-spliced-in computed by rMATS from junction read counts of a real RNA-seq experiment — a measurement, not another model's output. Caveat: those same counts must never be used as features, since the label is computed from them."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Five event tables plus DE and FPKM tables; join on Ensembl gene ID and coordinates works, but no single table."},
+    "B2": {"score": 2, "why": "Gzipped tab-separated files parsed first try with pandas; no fixing needed (done in the files)."},
+    "B3": {"score": 2, "why": "All inclusion levels come from one rMATS 4.1.0 run in one lab; already normalised as fractions."},
+    "B4": {"score": 1, "why": "12,658 skipped-exon rows carry an 'NA' replicate inclusion value; low-coverage events need a drop policy I had to set."},
+    "B5": {"score": 2, "why": "Zero duplicate rows on chromosome+strand+six exon coordinates in the 93,080-row skipped-exon table (checked)."},
+    "B6": {"score": 1, "why": "rMATS columns documented only externally; genome build absent from files; methods name edgeR while DE headers are DESeq2."},
+    "C1": {"score": 1, "why": "Transfer question is informative either way, but 656 responsive exons from one condition make a null result ambiguous."},
+    "C2": {"score": 1, "why": "KATMAP (2025, open code) models knockdown splicing; SpliceAI/Pangolin predict splicing; none applied to a non-RNA-binding assembly factor."},
+    "C3": {"score": 1, "why": "Angle is unique-application (first model of U5-assembly-chaperone response) but the underlying exon task is well served."},
+    "C4": {"score": 2, "why": "The alternative is one knockdown RNA-seq experiment per factor per cell line — lab work costing weeks (from paper's methods)."},
+    "C5": {"score": 1, "why": "Obvious dummies exist (predict no change, 2.8% base rate, splice-site strength) but no published number on this label."},
+    "D1": {"score": 2, "why": "SpliceBERT (pre-mRNA language model) and DNABERT-2 (DNA language model) have downloadable weights on HuggingFace."},
+    "D2": {"score": 2, "why": "About 24,000 windows of <=1 kb; embeddings cached once on laptop CPU, then a small classifier head."},
+    "D3": {"score": 1, "why": "DNABERT-2 repository states Apache-2.0 for code, but per-checkpoint licences were not verified here; AlphaGenome weights are non-commercial."},
+    "E1": {"ok": true, "why": "GeneID and Chr columns present in the files, so whole-gene or whole-chromosome holdout is possible."},
+    "E2": {"ok": true, "why": "7,356 genes and 23 chromosomes among the 23,684 coverage-filtered skipped-exon events (counted)."},
+    "E3": {"ok": true, "why": "Dummy baselines computable: predict dPSI = 0, per-gene mean, 2.8% positive base rate."},
+    "E4": {"ok": true, "why": "Three replicates per condition; I measured median within-condition inclusion spread 0.0725 (control) and 0.0540 (knockdown)."},
+    "E5": {"ok": true, "why": "Direction bias is a pre-stated control: 433 of 656 responsive exons gain inclusion on knockdown, matching the paper."},
+    "E6": {"ok": true, "why": "Label shuffling and coverage/expression-only ablation are trivial on a 23,684-row table."},
+    "E7": {"ok": true, "why": "ENCODE has shRNA RNA-seq for PRPF8, EFTUD2, SNRNP200, PRPF6 (verified via API); plus TCGA SplAdder inclusion values."},
+    "E8": {"ok": false, "why": "No model number published on this data; I reproduced the event count, which is not a model benchmark."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs and GRCh38 coordinates present and build confirmed against Ensembl (checked in the files)."},
+    "G2": {"score": 2, "why": "ENCODE shRNA knockdown collection (668 experiments, U5 factors included) and TCGA SplAdder inclusion values are named, joinable resources."},
+    "G3": {"score": 1, "why": "Event-to-event joins across pipelines (rMATS vs SplAdder) are one-to-many and depend on event definition."},
+    "G4": {"score": 2, "why": "Combined question: are NCDN-dependent exons the same exons that need core U5 proteins and that mis-splice in glioblastoma?"},
+    "H1": {"score": 2, "why": "All 198,381 tested events reported with both directions, so non-responsive exons (negatives) are present in the files."},
+    "H2": {"score": 0, "why": "One cell line (U251), one lab, one factor, and the three 'replicates' are three different shRNA constructs."},
+    "H3": {"score": 2, "why": "Honest claim statable in one sentence (see honest_claim_h3), with the cell line and coverage filter named."},
+    "H4": {"score": 1, "why": "Design documented in GEO and paper, but genome build, off-target shRNA caveat and the edgeR/DESeq2 mismatch are not."},
+    "I1": {"score": 1, "why": "Splicing-factor community (KATMAP users, ENCODE RNA-binding-protein groups) plus the Fudan NCDN lab; no group waiting on it."},
+    "I2": {"score": 1, "why": "Would change which exons get picked for RT-PCR validation; unlikely to redirect larger experiments."},
+    "I3": {"score": 1, "why": "Precision among top-ranked exons roughly matches the 'which exons do I validate' decision."},
+    "I4": {"score": 1, "why": "Splice-site strength alone may explain most of the response; machine learning helps somewhat, not obviously essential."},
+    "J1": {"score": 2, "why": "Grouped splits, frozen pretrained embeddings, calibration and a transfer test — real modelling work."},
+    "J2": {"score": 1, "why": "Splicing plausibility needs domain reading; the measured direction bias gives one sanity check."},
+    "J3": {"score": 2, "why": "A cleaned, sequence-annotated 23,684-exon U5-dependency table is shareable even if the model fails."},
+    "J4": {"score": 1, "why": "A 2-3 week budget is plausible for the NCDN side alone, but nothing is committed in writing."},
+    "J5": {"score": 1, "why": "Kill condition easy to state (precision@100 below twice base rate) but no date written in NOTES.md yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "KATMAP (Nature Biotechnology 2025) — interpretable regression inferring a splicing factor's activity and target exons from its knockdown data plus binding motifs", "open_weights": true, "score_and_split": "Evaluated on 15 knockdowns with many splicing changes; trained on 70% of differentially spliced exons per experiment, tested on the held-out 30%, scoring direction of change per exon; library and pretrained models on GitLab (LaptopBiologist/katmap)", "authors_named_unsolved": "Models one splicing factor at a time, ignores factors acting in concert, and ignores RNA folding that can make a predicted binding site inaccessible", "runnable_as_baseline": false},
+      {"name": "SpliceAI — convolutional network predicting splice-site probability from DNA sequence", "open_weights": true, "score_and_split": "Widely benchmarked on splice-site detection and variant effects; reported by a 2025 methods review as not designed to predict percent-spliced-in of cassette exons", "authors_named_unsolved": "Quantitative exon inclusion levels and tissue/condition-specific splicing are outside its target function", "runnable_as_baseline": true},
+      {"name": "Pangolin — deep model predicting splice-site usage across tissues and species", "open_weights": true, "score_and_split": "On tissue-differential inclusion comparisons it outperformed SpliceTransformer and SpliceAI (BioCiphers 2025 commentary); evaluated on tissue splice-site usage, not factor knockdowns", "authors_named_unsolved": "Condition- and perturbation-specific splicing changes are not modelled", "runnable_as_baseline": true},
+      {"name": "SpliceTransformer — transformer predicting tissue-specific splicing", "open_weights": true, "score_and_split": "~85% top-k accuracy and ~91% area under the precision-recall curve on tissue-specific splice-site prediction versus SpliceAI, Pangolin, MMSplice, HAL, MaxEntScan; similar to SpliceAI and worse than Pangolin on inclusion-change subsets", "authors_named_unsolved": "Links to disease mechanism and quantitative inclusion changes remain open", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {
+    "name": "SpliceBERT (pre-mRNA language model trained on 72 vertebrates) or DNABERT-2 (DNA language model, HuggingFace zhihan1996/DNABERT-2-117M)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: ~24,000 windows of <=1 kb embedded once and cached, then logistic regression or gradient-boosted trees as the head",
+    "licence": "DNABERT-2 repository lists Apache-2.0 for code; individual checkpoint licences not verified in this session. AlphaGenome, the strongest splicing backbone, has non-commercial weights."
+  },
+  "integration": {
+    "partner_dataset": "ENCODE shRNA RNA-seq knockdown collection (668 experiments verified via the ENCODE API, including 2 each for PRPF8, EFTUD2, SNRNP200 and PRPF6 — the core U5 small nuclear ribonucleoprotein proteins) and TCGA SplAdder exon inclusion values for glioblastoma",
+    "join_key": "GRCh38 exon coordinates (build confirmed against Ensembl) plus Ensembl gene ID",
+    "bigger_question_one_sentence": "Are the exons that need neurochondrin the same exons that need the core U5 proteins, and are those the exons already mis-spliced in glioblastoma tumours?"
+  },
+  "controls": {
+    "positive_control": "Two, both pre-stated: the model must recover the direction bias I measured (433 of 656 responsive exons gain inclusion when NCDN is knocked down), and must predict control-condition inclusion level from sequence well, since that is a known sequence-encoded quantity.",
+    "negative_control": "Shuffle the change-in-inclusion labels within chromosome and confirm collapse to the 2.8% base rate; train on read coverage and gene expression change alone to show how much of the signal is a coverage artefact.",
+    "external_validation": "ENCODE knockdowns of the core U5 proteins PRPF8, EFTUD2 and SNRNP200 in K562 and HepG2 cells (experiments confirmed to exist), provided per-exon splicing tables can be obtained without re-running rMATS on raw reads."
+  },
+  "honest_claim_h3": "Among skipped-exon events with at least 20 junction reads in U251 glioblastoma cells, local pre-mRNA sequence predicts which exons change inclusion when neurochondrin is depleted by shRNA — one factor, one cell line, one lab, 656 strongly responsive exons.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around an exon to predict whether that exon's inclusion changes when a spliceosome assembly factor is lost.",
+    "train_on": "One row per alternative splicing event with the genomic sequence around it; 23,684 skipped-exon events pass coverage filters out of 93,080 reported, and 198,381 events exist across all five event types (counts I made in the files).",
+    "predict": "Output is the change in percent-spliced-in (the fraction of transcripts including the exon) after neurochondrin knockdown, measured by rMATS from RNA sequencing of three knockdown versus three control U251 glioblastoma cultures.",
+    "why_worthwhile": "Splicing labs could rank exons for laboratory validation without running a knockdown experiment per factor; even a failure tells us whether dependence on U5 small nuclear ribonucleoprotein levels is written into the local sequence."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Smaller than the competition — 656 responsive exons from one knockdown versus KATMAP's 15 knockdowns and ENCODE's 668 shRNA experiments — but it covers an area they miss: a non-RNA-binding assembly chaperone, in glioblastoma cells rather than K562/HepG2."},
+    "confidence_score": {"answer": "partly", "why": "Three replicates per condition give a per-event inclusion spread (median 0.0725 in controls, measured by me), enough for per-exon uncertainty; I did not verify that SpliceAI, Pangolin or KATMAP lack calibrated per-exon confidence."},
+    "models_beatable": {"answer": "no", "why": "KATMAP is 2025, Nature Biotechnology, open code and pretrained models, evaluated on held-out exons; Pangolin and SpliceTransformer are recent and benchmarked against each other. Expecting to beat them at their own tasks is unrealistic."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails two conditions: the ENCODE partner data measures other factors in other cell lines (not the same quantity the same way), and no existing model takes this label, so there is no shared split or runnable baseline on it."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "ENCODE shRNA knockdown RNA-seq (668 experiments confirmed via the ENCODE API, including PRPF8, EFTUD2, SNRNP200, PRPF6) gives the same kind of label — change in exon inclusion on factor loss; GTEx/ASCOT and TCGA SplAdder give baseline exon inclusion across tissues and tumours (known resources; TCGA SplAdder used by the paper itself).",
+    "approx_items": null,
+    "join_key": "GRCh38 exon coordinates plus Ensembl gene ID",
+    "why": "Hundreds of other knockdown experiments carry the same measurement, so a model can be trained on them and tested on this independent factor and cell line instead of learning from one condition."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Junction read counts in the same table are the arithmetic inputs to the inclusion label, so using them as features would be guaranteed leakage.",
+      "Gene expression change from the differential-expression file correlates with the splicing label because knockdown changes both, so expression features can stand in for the answer.",
+      "Exons from the same gene or the same overlapping locus share nearly identical sequence context and would otherwise appear in both train and test.",
+      "Read coverage sets the precision of the label, so a model can learn 'high coverage means a confident small change' rather than biology.",
+      "The three knockdown 'replicates' are three different shRNA constructs, so construct-specific off-target effects enter the label as structured noise, not random noise."
+    ],
+    "split": "Hold out whole genes grouped by the Ensembl GeneID column, with a stricter whole-chromosome holdout using the Chr column; both columns were seen in the files (7,356 genes, 23 chromosomes among filtered events).",
+    "checks": [
+      "Shuffle the change-in-inclusion labels within chromosome; performance must fall to the 2.8% positive base rate.",
+      "Train a model on read coverage and expression change alone to quantify the confounder's share of the signal.",
+      "Measure nearest-neighbour sequence similarity between each test window and the training windows to catch overlapping loci."
+    ],
+    "verdict": "Manageable — the grouping columns exist and the leaky features are easy to name and exclude, but the coverage confounder needs its own ablation."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 100 exons ranked as responsive, because a laboratory would RT-PCR-validate a few dozen; reported alongside Spearman correlation on the change in inclusion among coverage-filtered events, for ranking use.",
+    "baselines": "Random precision is 2.8% (656 responsive of 23,684 filtered skipped exons, counted by me); per-gene mean change; a one-feature logistic model on splice-site strength (MaxEntScan). No published number exists for this label.",
+    "success": "Precision at top 100 of at least 25% (roughly nine times the 2.8% base rate) on held-out chromosomes using sequence-only features, and a model trained on ENCODE core-U5-factor knockdowns beating that same base rate on the NCDN events.",
+    "noise_ceiling": 0.0725,
+    "kill": "Stop if precision at top 100 is under twice the 2.8% base rate after one week, or if coverage and expression change alone match the sequence model."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes sequence-based splicing method work; would need the transfer result to hold — a model trained on ENCODE U5-protein knockdowns predicting NCDN-responsive exons in a different cell line."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes careful sequence-feature analyses with honest grouped splits; a modest but well-controlled account of which exons depend on U5 small nuclear ribonucleoprotein levels fits there."},
+    "fallback": {"journal": "bioRxiv preprint plus a machine-learning-in-computational-biology workshop", "why": "A negative transfer result plus the cleaned 23,684-exon labelled table is a useful community contribution even without a performance win."}
+  },
+  "pitch": {
+    "headline": "Fully open 198,381-event splicing table from a brand-new spliceosome assembly factor knockdown; 656 strongly responsive exons nobody has modelled.",
+    "what_makes_the_data_unusual": "NCDN is not an RNA-binding protein, so motif-based tools like KATMAP cannot explain its responsive exons. All counts here were measured in the downloaded files; GRCh38 coordinates confirmed against Ensembl; mass-spectrometry partner data is CC0.",
+    "the_win": "A sequence-only model reaching 25% precision in its top 100 predicted NCDN-responsive exons against a 2.8% base rate, and transferring from ENCODE PRPF8/EFTUD2 knockdowns.",
+    "even_if_it_fails": "We learn whether an exon's dependence on U5 small nuclear ribonucleoprotein levels is sequence-encoded and transferable across factors and cell lines, and the cleaned filtered exon table remains usable.",
+    "who_wants_it": "Splicing-factor labs choosing exons to validate (KATMAP users, ENCODE RNA-binding-protein groups) and the Fudan group studying neurochondrin in glioma."
+  },
+  "ml_idea": "Build a per-exon table from the five rMATS tables (198,381 events; 23,684 skipped exons after coverage and dedup filters), attach GRCh38 sequence windows around each splice site, and predict whether and how the exon's inclusion changes on NCDN knockdown — using frozen SpliceBERT or DNABERT-2 embeddings plus a small head, with whole-gene and whole-chromosome holdout. The higher-value version trains on ENCODE knockdowns of the core U5 proteins (PRPF8, EFTUD2, SNRNP200) and uses these NCDN events purely as an independent test of whether 'U5 dependence' of an exon transfers across factors and cell lines.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 4.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 6,
+    "cv_run_minutes": 15,
+    "compute_note": "Table parsing and all counts were timed on this laptop (seconds per file, 40 MB gzipped total). Embedding time is an estimate: ~24,000 windows of <=1 kb at a few sequences per second on CPU. The 4 GB working set is the indexed GRCh38 FASTA plus tables; the ENCODE arm would add days of work, not more memory.",
+    "cheapest_killing_check": "Already done for the local side: only 656 skipped exons reach FDR<=0.05 with |change in inclusion|>=0.1 after dedup and coverage filtering. The remaining killing check is whether per-exon rMATS tables for ENCODE PRPF8/EFTUD2/SNRNP200 knockdowns can be downloaded without re-processing raw reads — if not, the project collapses to one condition and should not start."
+  },
+  "verdict": "park",
+  "verdict_reason": "Part A passes on verified files: open GEO tables, the label is a real measured column (change in percent-spliced-in), clean parsing, GRCh38 coordinates, and negatives included. But the design is effectively one perturbation in one cell line with three shRNA constructs as replicates, leaving only 656 strongly responsive exons above a measured noise floor of ~0.07 inclusion units, in a field where KATMAP (2025, open) and Pangolin/SpliceAI are strong. Park it as a ready-made external test set for a U5-dependency model trained on ENCODE knockdowns, and start only if those ENCODE per-exon splicing tables turn out to be downloadable."
+}

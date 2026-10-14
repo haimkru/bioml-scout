@@ -1,0 +1,111 @@
+{
+  "paper_id": "nar2026-gkag724",
+  "title": "Intrinsic catalytic parameters drive specificity of non-templated poly(UG) tail synthesis.",
+  "doi": "10.1093/nar/gkag724",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://academic.oup.com/nar/article-lookup/doi/10.1093/nar/gkag724#supplementary-data",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Ran paper_context.py (no full text via Europe PMC, HTTP 500; supplementaryFiles endpoint returned a non-zip 297-byte error). Pulled and text-extracted the PubMed Central HTML (PMC13384256): read the Data Availability statement verbatim and the complete text of Table 1, the paper's only kinetic parameter table (8 enzyme/substrate/NTP combinations: oma-1-G/U/A/C RNA each with UTP and GTP; kcat, KM, kcat/KM, 3 replicates each). Also fetched the publisher page to list the supplementary items. The single supplementary file (gkag724_supplemental_file.pdf) is not programmatically retrievable: the PMC /bin/ URL returns a 1,817-byte HTML challenge page, not the PDF.",
+    "what_came_from_paper_text_only": "Contents of the supplementary file: Table S1 (RNA substrate sequences), Table S2 (kinetic parameters for ATP and CTP), Figures S1-S9 (purification scheme, gel images, concentration-dependence plots). These come from the article's in-text citations of its own supplement, not from opening the PDF. No deposited machine-readable dataset (no Zenodo, Dryad, Figshare, GEO or PDB accession) exists; the only text-mined identifiers anywhere are UniProt A8XG46 and PDB 3OVA, both cited as background, not as this paper's data."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "Data availability states only 'available in the article and in its online supplementary material'. There is no data deposit; the sole supplement is one PDF, and the PMC copy of it returns an HTML challenge page rather than the file. Numbers would have to be retyped out of a table or read off gel images."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "The kinetic values (kcat, KM, kcat/KM) are cells in a typeset journal table, not a column in a data file. Any feature/label table would have to be hand-built from the PDF and the gel quantifications."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The model inputs would be RNA substrate sequences (supplementary Table S1) and the incoming nucleotide identity; those are stated in the paper, though only inside the PDF."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are explicit and consistent in Table 1: kcat in min^-1, KM in micromolar, kcat/KM in M^-1 s^-1, with standard errors."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 8,
+      "note": "Decisive failure. Table 1 holds 8 measured combinations (four RNA 3'-end identities x two nucleotides) for a single enzyme; supplementary Table S2 adds at most 8 more (ATP, CTP). Even counting the three replicates per condition as rows, the total is a few dozen, versus the ~1,500 the checklist requires (~400 for classification)."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "<1 MB",
+      "note": "One PDF. Size is never the problem here."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The 8 reported combinations in the extracted Table 1 match the abstract's description exactly; there is nothing large enough to disagree about."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels are real physical measurements: Michaelis-Menten fits to gel-based single-nucleotide-resolution extension assays, three independent replicates, no model-derived values."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RealKcat (enzyme turnover-number predictor, found via web search only; abstract-level information)",
+        "open_weights": null,
+        "score_and_split": "Search snippet reports training on 27,176 experimental entries and >85% test accuracy; I did not retrieve the paper, so the split is unverified.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DLKcat, TurNuP, PreTKcat (general enzyme kcat predictors from protein sequence plus substrate structure; identified in search results only)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; these are general kcat regressors, and none is specific to non-templated RNA nucleotidyltransferases.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model) or ESM-2 (a protein language model) would be the natural fits in principle",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU would be ample, but there is nothing to fit: 8 labelled points cannot support any head on a high-dimensional embedding.",
+    "licence": "Not assessed; irrelevant given the row count."
+  },
+  "integration": {
+    "partner_dataset": "BRENDA or SABIO-RK (curated enzyme kinetics), joinable in principle on UniProt accession A8XG46 / EC number",
+    "join_key": "UniProt accession",
+    "bigger_question_one_sentence": "Cannot be written usefully: this paper contributes 8 kinetic measurements on one enzyme, so joining it to a kinetics database adds 8 rows to an existing resource rather than enabling a new question."
+  },
+  "controls": {
+    "positive_control": "Would be recovering the known 49-fold UTP preference on 3'-G RNA and 72-fold GTP preference on 3'-U RNA, but with 8 points this is the entire dataset, not a control.",
+    "negative_control": "Label shuffling is meaningless at n=8.",
+    "external_validation": "None; no second lab has measured RDE-3 poly(UG) kinetics at this resolution."
+  },
+  "honest_claim_h3": "No honest modelling claim is available: with 8 measured substrate-nucleotide combinations for a single enzyme, any model would be fitting a lookup table that a reader can already see printed in Table 1.",
+  "plain_idea": {
+    "one_liner": "Use RNA 3'-end identity and incoming nucleotide to predict how fast a tail-adding enzyme extends the RNA.",
+    "train_on": "The project considered would take, for each example, the RNA substrate sequence (especially its last base) plus which nucleotide is offered (UTP, GTP, ATP or CTP). Verified count of distinct measured examples: 8 in the main table, at most about 16 including the supplement.",
+    "predict": "The catalytic efficiency (kcat/KM) of RDE-3, a C. elegans enzyme that adds alternating U and G bases to RNA without a template. The true answer comes from gel-based extension assays fitted to Michaelis-Menten curves, three replicates per condition.",
+    "why_worthwhile": "The biology is genuinely interesting - it explains how RNA interference in nematodes marks RNAs for silencing - but the measurement count is far too small for machine learning; the paper's own table already answers the question for every combination tested."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "None viable. The only conceivable task - predicting nucleotide-addition efficiency from RNA 3'-end context - has 8 measured data points for one enzyme, all printed in a journal table. A machine-learning project would need an assay run across hundreds of substrate sequences or dozens of enzyme variants, which this paper does not provide.",
+  "effort": {
+    "hours_to_feature_table": 1,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.1,
+    "embedding_hours": 0,
+    "cv_run_minutes": null,
+    "compute_note": "Retyping 8-16 numbers out of a PDF takes an hour; no computation was estimated because there is no trainable dataset.",
+    "cheapest_killing_check": "Count the rows in Table 1. I did this from the PubMed Central HTML in one fetch: 8 substrate-nucleotide combinations, three replicates each. That single count kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A fails on A5, A2 and A1. This is a careful single-enzyme biochemistry paper, not a dataset: the entire quantitative output is 8 kinetic parameter sets (four RNA 3'-end bases x UTP/GTP) for one C. elegans enzyme, verified by reading Table 1 in full from the PubMed Central HTML, plus at most 8 more in a supplementary table. The label exists only as cells in a typeset table, there is no machine-readable deposit, and the one supplementary PDF is not even programmatically retrievable. Nothing about the measurement quality is at fault - three replicates, explicit units, real physical labels - the dataset is simply two to three orders of magnitude too small for any model."
+}

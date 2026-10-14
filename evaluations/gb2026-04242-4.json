@@ -1,0 +1,122 @@
+{
+  "paper_id": "gb2026-04242-4",
+  "title": "COSIGT: population-scalable genotyping of complex loci from low-coverage sequencing data using pangenome graphs.",
+  "doi": "10.1186/s13059-026-04242-4",
+  "journal": "Genome Biology",
+  "data_url": "https://doi.org/10.5281/zenodo.21620008",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded cosigt_paper-0.2.tar.gz (91,210,477 bytes) from Zenodo record 21620008 and opened all 20 gzipped prediction tables with pandas; every one parsed on the first try. Counted rows, distinct loci and distinct samples in each (e.g. 12,324 rows / 326 loci / 38 samples per coverage level for the main benchmark; 15,307 / 265 / 64 for structural variants; 11,674 + 14,862 + 2,262 for the leave-all-out sets; 1,824 rows x 12 ancient-DNA condition files). Confirmed QV (quality value, a Phred-style log score) equals -10*log10(error_rate) to within 2e-12. Ran the decisive leakage test: for the 7,747 of 12,324 calls at 30X coverage where the tool returned a haplotype belonging to the query sample itself, QV_1_cosigt equals 10*log10(2*S) exactly (largest deviation 2.6e-13), and the implied alignment length S divided by the region length from the BED file has a median of 1.000. Fitted a gradient-boosted baseline on just two shipped features with 5-fold cross-validation grouped by locus (R-squared 0.502 versus a per-locus-mean ceiling of 0.672). Checked the column list of every table for a cosine-similarity score (none present) and opened region_distances_CMRGs.tsv (1,496 rows, 326 unique loci, 0 of the 265 structural-variant loci), the three region BED files, and hla_comparison.tsv (7 data rows).",
+    "what_came_from_paper_text_only": "The definition of QV (edit distance between predicted and true haplotype, divided by alignment length, via the edlib aligner) and the fact that haplotype-resolved de novo assemblies from HPRC (Human Pangenome Reference Consortium) and HGSVC (Human Genome Structural Variation Consortium) are the ground truth. Also from text only: that COSIGT does emit per-call cosine-similarity scores in its normal output, and that the Moli-sani cohort of 1,085 people is controlled access requiring a committee-reviewed application. I did not re-run COSIGT or download any assemblies or sequencing reads."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Open Zenodo archive, no login; I downloaded and extracted all 91 MB. Code is GPL-3.0, the prediction repository is MIT, the paper is CC-BY. The one restricted piece (the Moli-sani cohort of 1,085 people) is not needed for the project considered."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Marginal pass, with a caveat. Quality values and error rates are literally shipped columns (QV_1_cosigt, QV_sum_cosigt, avg_error_rate_cosigt). But the only label I would trust (see A8) is QV_frac, which I had to derive as QV_sum_pred divided by QV_sum_best, and a clean right/wrong label needs string-parsing haplotype names. The column that is ready to use is the one that should not be used."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Partial. Locus coordinates are present for all 591 loci in BED files, plus one complexity number (mean pairwise haplotype distance) for the 326 medically relevant genes and structural-variant type/length for the 265 structural-variant loci. Richer inputs (graph topology, repeat content) are absent: per-locus graph files ship for exactly one locus, CYP2D6."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are stated and internally consistent. QV is a Phred-style score defined in Methods as -10*log10(max(0.5, edit distance)/alignment length); error rate is the dimensionless ratio. I confirmed the two are exact transforms of each other (largest deviation 2e-12)."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 115289,
+      "note": "About 115,289 labelled rows across the 20 tables, counted directly. Passes on raw count, but the honest unit is smaller: features vary across only 591 loci and 4-5 coverage settings, since the sample axis carries no features beyond an identifier. Between-locus variance is 58-68% of the total, so the sample axis is not worthless, but most of the modelling signal lives in 591 rows."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.1 GB",
+      "note": "The whole prediction set is about 15 MB compressed and loads in seconds; I did all of this on the laptop. Only the unavailable richer-feature version (rebuilding 591 local pangenome graphs from roughly 100 haplotype-resolved assemblies) would be too large."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Everything matched. Paper says 326 medically relevant genes, 265 structural-variant loci, 38 HPRC short-read samples, 36 after removing the two shared individuals, 48 ancient-DNA loci; the files show exactly 326, 265, 38, 36 and 48. The only blemish is 24 duplicated sample-locus pairs in one structural-variant file out of 14,862 rows."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAILS, leakage by construction, verified exactly. The quality value is defined as -10*log10(edit distance / alignment length), and the alignment length is essentially the region length, which is also the strongest available feature. For the 7,747 of 12,324 calls at 30X where the tool returned a correct haplotype, the edit distance is pinned at its floor of 0.5, so QV collapses to 10*log10(2 * region length) exactly (largest deviation 2.6e-13; implied length over BED length has median 1.000). On those rows QV correlates 0.963 with log10(region length), and 0.659 across all rows. A model predicting QV from locus features would mostly be rediscovering the formula. The error-rate column shares the same denominator and is not a fix (per-locus correlation with log10 length is still -0.52). One clean escape exists, QV_frac (predicted quality divided by best achievable quality, which cancels the length term), 28,798 rows, range 0.236-1.000 - but it exists only at a single coverage, which removes the low-coverage question the paper is about."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "StratoMod (Communications Biology, 2024) - interpretable machine learning that predicts germline variant-calling errors from genomic context",
+        "open_weights": true,
+        "score_and_split": "Reported to predict recall for both HiFi and Illumina sequencing using explainable boosting machines over genomic-context features; I found it through search and read the abstract and summary only, so I am not quoting a specific number or split.",
+        "authors_named_unsolved": "Framed around small variants (single-nucleotide and short insertion/deletion) in difficult-to-map and homopolymer regions; extension to large complex and structurally variable loci is not covered.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "GIAB (Genome in a Bottle) genomic stratifications (Nature Communications, 2024) - the community's existing BED-file answer to 'which regions are hard to call'",
+        "open_weights": true,
+        "score_and_split": "Not a model; a curated set of region annotations (low complexity, mappability, segmental duplications, GC content) used to stratify benchmarking results. It is the dumb-baseline competitor to any locus-difficulty predictor.",
+        "authors_named_unsolved": "Coverage of newly resolved hard-to-sequence regions on the T2T-CHM13 reference is named as ongoing work.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ForestQC (PLOS Computational Biology, 2020) and VEF - random-forest filters that predict whether a variant call is a false positive",
+        "open_weights": true,
+        "score_and_split": "Both reported to outperform GATK VQSR (Variant Quality Score Recalibration) on sequencing-quality features; I read abstracts only and am not quoting numbers.",
+        "authors_named_unsolved": "Both operate per small variant from caller-emitted annotations, not per complex locus and not on pangenome-graph genotypers.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Locityper (Nature Genetics, 2025) - the competing targeted genotyper, benchmarked head-to-head in this paper",
+        "open_weights": true,
+        "score_and_split": "Median quality value above 35 across 256 challenging medically relevant loci from short and long reads; in this paper's own tables it reaches 98.2% high-quality calls at 30X versus COSIGT's 93.9%, and loses badly at 1X.",
+        "authors_named_unsolved": "Low-coverage performance, which is precisely the gap COSIGT was built to fill.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "HyenaDNA or Nucleotide Transformer (DNA language models) on each locus's reference sequence",
+    "freeze_and_head_viable": false,
+    "hardware": "Would need GRCh38 downloaded and 591 loci of 25 kb-400 kb embedded; long-context DNA models on CPU are slow and 591 labelled loci is far too few examples for a high-dimensional embedding.",
+    "licence": "Open weights, permissive, but irrelevant here because the label is contaminated and the example count is tiny."
+  },
+  "integration": {
+    "partner_dataset": "GIAB (Genome in a Bottle) genomic stratifications and the UCSC segmental-duplication / RepeatMasker tracks",
+    "join_key": "GRCh38 genomic coordinates (chromosome, start, end), which are present for all 591 loci",
+    "bigger_question_one_sentence": "Does the existing catalogue of 'difficult' genomic regions explain where a pangenome graph genotyper fails at low coverage, or do complex loci fail for reasons the catalogue does not capture? - a good question, but it cannot be answered with a length-coupled label."
+  },
+  "controls": {
+    "positive_control": "Available and strong: the paper reports that quality scales logarithmically with region length (Supplementary Fig. S14), so any working pipeline must recover that. Ironically this is also the leak - the control and the label share the same arithmetic.",
+    "negative_control": "Label shuffling across loci would be trivial to run; so would ablating the complexity feature versus the length feature.",
+    "external_validation": "Genuinely good: the two assembly sources are independent (HPRC built with hifiasm, HGSVC built with Verkko), the leave-all-out design holds out the truth haplotypes entirely, and an ancestry-mismatched set (7 American-ancestry samples against a non-American graph, 2,262 rows) exists. Wasted on a bad label."
+  },
+  "honest_claim_h3": "The best claim the shipped data supports is: 'among 591 pre-selected complex human loci, the fraction of achievable genotyping quality a pangenome graph genotyper reaches at 30X coverage is predictable from locus length and haplotype diversity' - which the paper's own Supplementary Figures S14-S17 already show one feature at a time.",
+  "plain_idea": {
+    "one_liner": "Use the properties of a difficult gene region to predict how accurately a genotyping tool will resolve it from shallow sequencing.",
+    "train_on": "One row per (person, gene region, sequencing depth): 115,289 rows I counted, spanning 591 complex human loci, about 100 people, and depths of 1X, 2X, 5X and 30X, plus 12 simulated ancient-DNA conditions. The inputs available are the region's length, one haplotype-diversity number, and the structural-variant type.",
+    "predict": "The quality value of the genotype call - how closely the haplotype sequence the tool picked matches the person's true haplotype, measured as edit distance against a haplotype-resolved genome assembly built from long reads.",
+    "why_worthwhile": "Anyone planning a low-coverage or ancient-DNA population study would want to know in advance which complex genes they can trust and which they cannot, instead of discovering it after the run. It would also tell the tool's authors where to spend effort."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered: predict per-locus genotyping quality (and the COSIGT-minus-Locityper quality difference, which is already a shipped column) from locus length, haplotype diversity, structural-variant class and sequencing depth, cross-validated with loci held out, extended to the simulated ancient-DNA conditions. It dies on label construction. The version that would actually be valuable - a calibrated per-call confidence score, since the authors currently rely on a single empirical cosine-similarity threshold (Supplementary Fig. S20) - needs the per-call cosine-similarity values, which COSIGT emits but this release does not contain, plus a re-run over 1000 Genomes read alignments. That means raw sequencing data, which is out of scope, and far more than laptop compute.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": 2,
+    "compute_note": "Measured, not estimated: I built the joined feature/label table and ran a 5-fold grouped cross-validation on this laptop in under a minute. The data is genuinely tiny and model-ready - the problem is entirely what the label means, not what it costs to load.",
+    "cheapest_killing_check": "The check that killed it, and it takes ten minutes: join the prediction table to the region BED file and correlate the quality value against log10(region length). It comes out at 0.66 across all rows and 0.96 on correct calls, because the quality value's denominator IS the region length."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A8, leakage by construction, verified exactly rather than suspected. The quality-value label is defined as -10*log10(edit distance / alignment length), and for the 62.9% of calls that are correct the edit distance is pinned at a constant floor, so the label becomes 10*log10(2 * region length) exactly - I reproduced it to within 2.6e-13. Region length is also the strongest feature available, so a model would score well by rediscovering arithmetic. Two secondary problems confirm the call rather than cause it: a gradient-boosted model on just the two shipped features already reaches R-squared 0.502 against a per-locus-mean ceiling of 0.672, leaving almost no headroom, and the paper's own Supplementary Figures S14-S17 already publish the univariate version of this analysis. The one clean label, QV_frac (28,798 rows, length cancels in the ratio), exists only at 30X coverage and therefore cannot address the low-coverage question the paper is about. Worth noting for the record: the data itself is exemplary - 20 gzipped tables that all parsed first try, counts matching the paper exactly, units defined in Methods, near-zero missingness. This is a good dataset for the wrong question."
+}

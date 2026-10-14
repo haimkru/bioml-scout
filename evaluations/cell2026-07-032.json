@@ -1,0 +1,47 @@
+{
+  "paper_id": "cell2026-07-032",
+  "title": "Hierarchical and context-dependent encoding of actions in human posterior parietal and motor cortex.",
+  "doi": "10.1016/j.cell.2026.07.032",
+  "journal": "Cell",
+  "data_url": "https://doi.org/10.22002/6bhj2-vy860",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "CaltechDATA record 6bhj2-vy860 (CC0 licence) holds one 17.5 GB zip, data_and_code.zip. I read its file directory with ranged downloads (146 entries: 86 MATLAB .mat files, 24 MATLAB scripts, 2 README documents) and pulled out the spike files for both participants without downloading the whole archive. Spike tensors (trials x 100 ms time bins x units): participant JJ intention task, 144x36x421 for motor cortex (MC) and 144x36x326 for superior parietal lobule (SPL). Participant RD intention and observation tasks, 144x36x441, 479 and 532 units across three arrays. Labels are 144 per file, 12 conditions with 12 trials each, values baseline-normalised. In RD's observation file the second array has 0.2% missing values (NaN). RD's unit-quality file lists 481 units for that array, but the spike tensor has 479.",
+    "what_came_from_paper_text_only": "Europe PMC returned only the abstract; the full text failed with HTTP 500. Units are pooled across sessions into a 'pseudo-population' (6 spike sessions for RD), which I inferred from the README and from every array sharing the same 144 trials; I did not confirm it in the methods. I did not open the dissociation-experiment files, the local field potential (LFP) files (about 5 GB each) or the eye-tracking files."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public download, CC0 licence, no login. It is one 17.5 GB zip, but ranged reads pull out individual files, which I verified."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified: labels.mat gives a condition from 1 to 12 for each trial (hand x action x direction), and labels_names.mat names them."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: binned, baseline-normalised spike-rate tensors are present for every array."},
+    "a4_units_stated": {"pass": true, "note": "The README states 100 ms bins, net-normalisation to baseline, and 1000 Hz sampling for LFP (local field potential)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 144, "note": "Verified: each participant and task has only 144 labelled trials (12 per class over 12 classes). That makes about 576 trials across the main experiments, and they are pooled pseudo-trials, not independent recordings. This is far below the 400-trial floor for classification within any one setting."},
+    "a6_fits_laptop": {"pass": true, "working_set": "about 60 MB of spike tensors", "note": "The spike data is small; the LFP files (about 5 GB each) are optional."},
+    "a7_counts_match_paper": {"pass": true, "note": "Small mismatch: 481 units in the quality file versus 479 in the spike tensor for RD's MCL array (lateral motor cortex). Not checked against the paper text, which was unavailable."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are the experimenter-instructed task conditions, not a model's output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "The authors' own within-task and cross-task population decoders (MATLAB scripts within_decoding_analysis.m and cross_decoding_analysis.m, released with the data)", "open_weights": true, "score_and_split": "Not seen; the full text could not be retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "NDT3 (Neural Data Transformer 3, a pretrained intracortical motor decoder) could be considered, but it expects spike trains paired with movement signals, not net-normalised pooled rates.", "freeze_and_head_viable": false, "hardware": "GPU likely", "licence": "Data CC0; NDT3 licence not checked"},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "Decoding the intended hand or action from motor cortex during the intention task (the paper reports strong encoding).", "negative_control": "Shuffle the labels.", "external_validation": "The second participant (JJ versus RD)."},
+  "honest_claim_h3": "With 144 pooled pseudo-trials per task, a model could only restate that SPL (superior parietal lobule) carries shared intention and observation codes in two people. The authors' own linear decoders already show this.",
+  "plain_idea": {
+    "one_liner": "Use human parietal and motor cortex spiking to predict which hand action a paralysed person intends or watches, and test transfer between intending and watching.",
+    "train_on": "For each trial, the binned spike rates of 326–532 recorded units. There are 144 trials per participant per task (verified), and 2 participants.",
+    "predict": "One of 12 instructed conditions (hand x lift/slide/rotate x direction), set by the experiment's design.",
+    "why_worthwhile": "It would help brain-computer interface groups decide whether decoders trained on watched actions could calibrate decoders for intended actions. But the authors already ran exactly this cross-decoding."
+  },
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Cross-task decoding (train on observation, test on intention) of 12 action conditions from SPL versus motor cortex populations. It is not viable: the trial count is tiny and the authors already did it.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.06, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated from the tensor sizes I loaded; nothing was timed.", "cheapest_killing_check": "Count the labelled trials per task: 144 (done), which kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5: only 144 labelled pseudo-trials per participant and task (12 classes x 12 trials), from 2 people, and the paper's own decoders already cover the obvious task."
+}

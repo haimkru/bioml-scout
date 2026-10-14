@@ -1,0 +1,70 @@
+{
+  "paper_id": "nature2026-10949-y",
+  "title": "Automated prototyping of genetic codes.",
+  "doi": "10.1038/s41586-026-10949-y",
+  "journal": "Nature",
+  "data_url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41586-026-10949-y/MediaObjects/41586_2026_10949_MOESM5_ESM.xlsx (Source Data Fig. 4); raw reads: ENA PRJEB120976; proteomics: MassIVE doi:10.25345/C5Z31P24Q",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all 7 Source Data spreadsheets (MOESM3-MOESM9, 10-16 KB each) with pandas: 2,020 numeric cells in total. The biggest single table (MOESM5 = Source Data Fig. 4) holds exactly 768 aminoacylation percentages laid out as 48 named E. coli tRNA genes (alaV...valW) x a 4x4 block of 3'-end nucleotide combinations, values 0-100, with no header row and no sequence column. MOESM7/8/9 are 48-column x 2-row replicate tables of the same 48 tRNAs. Also queried the European Nucleotide Archive project PRJEB120976 (20 runs, individual FASTQ files up to 10.8 GB, ~80 GB total raw reads) and listed both GitHub repositories (FelixRadford/tSCAN_v1.0 and FelixRadford/AGENTEX) via the GitHub API: both contain only Opentrons liquid-handling robot scripts, no sequence-analysis code and no data. Checked the Zenodo record for AGENTEX (10.5281/zenodo.21321703): embargoed until 2027-12-31.",
+    "what_came_from_paper_text_only": "The Methods statement that the oligo pools contained '48 unique E. coli isoacceptor tRNAs with all combinations of base 75, all combinations of bases 74 and 75'; the figure legends saying rows are position 74 and columns position 75 and that n = 2 independent replicates; the claim that the percentages are aminoacylation levels measured by periodate oxidation plus next-generation sequencing (tSCAN). The nucleotide order of the 4x4 grid in the file is not written anywhere in the file itself and was not confirmed against the figure image."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All 7 Source Data .xlsx files downloaded with no login (checked). Raw reads are public in ENA PRJEB120976. Only the Zenodo robot-protocol archive is embargoed to 2027, and it holds no data."},
+    "a2_label_is_a_column": {"pass": true, "note": "The aminoacylation percentage is a value in the sheet (checked in MOESM5), so it is not constructed across sources - but it sits in an unheaded 4x4 block per tRNA, so which nucleotide each row/column means has to be read off the published figure. A silent mislabelling risk, not a construction failure."},
+    "a3_inputs_present": {"pass": true, "note": "The model input (tRNA sequence) is NOT in the files; only gene names such as alaV, argQ are given (checked). That is 48 lookups in GtRNAdb, not thousands, so it passes, but the sequences are external."},
+    "a4_units_stated": {"pass": true, "note": "Values run 0-100 and the Fig. 3 sheets carry a header beginning 'CCA aminoacylation...' (checked); MOESM5 carries no header at all and the percent unit is inferred from the figure legend."},
+    "a5_enough_rows": {"pass": false, "n_rows": 768, "note": "FAILS. The single clean table is 48 tRNAs x 16 3'-end combinations = 768 measured cells (counted exactly). Pooling every non-overlapping condition across all 7 files gives roughly 995 unique tRNA-variant measurements (768 lysate + 192 PURE system + ~35 archaeal tRNAs); 2,020 numeric cells in total only because replicates and figure panels repeat the same 48 tRNAs. That is below the ~1,500-row bar for a regression target, and the design is a complete 48 x 16 factorial grid, so there are no unmeasured combinations left for a model to predict - a lookup table reproduces the data exactly."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.09 MB (seven spreadsheets)", "note": "The processed data is 90 KB total (checked). The only larger route, ~80 GB of raw FASTQ in ENA, would also need a sequence-analysis pipeline that is not published."},
+    "a7_counts_match_paper": {"pass": true, "note": "768 numeric cells = 48 tRNAs x 16 base-74/75 combinations, matching the Methods text exactly; Fig. 3 panels sum to 384 = 48 x 4 ends x 2 translation systems (both counted in the files)."},
+    "a8_label_provenance": {"pass": true, "note": "The percentage is a physical measurement (periodate oxidation, beta-elimination, then sequencing read counts of charged vs uncharged tRNA), not another model's output. The read-counting step uses an unpublished script, so the exact formula is unverifiable."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": null,
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Machine Learning Enables Prediction of Pyrrolysyl-tRNA Synthetase Substrate Specificity (ACS Synthetic Biology, 2023) - predicts which non-standard amino acids a synthetase accepts, not which tRNA 3' ends it tolerates",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond title and abstract summary; different task (amino acid substrate, not tRNA variant).",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Uncovering substrate specificity determinants of class IIb aminoacyl-tRNA synthetases with machine learning (2024) - decision-tree ensemble trained on >35,000 Pfam synthetase sequences to classify AspRS/AsnRS/LysRS",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond title and abstract summary; it classifies synthetase protein sequences, it does not predict tRNA charging levels.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Chi-T / RS-ID, automated orthogonal tRNA generation (Nature Chemical Biology, 2024) - assembles chimeric orthogonal tRNAs from isoacceptor parts",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond title; generative design of orthogonal tRNA bodies, no published model of 3'-end charging tolerance.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {"name": "RNA-FM or an RNA language model would nominally fit tRNA sequences", "freeze_and_head_viable": true, "hardware": "CPU, trivial at 48 sequences", "licence": "n/a - not pursued, the dataset is too small to need a backbone"},
+  "integration": {"partner_dataset": "GtRNAdb (E. coli tRNA gene sequences) and the Modomics tRNA modification database", "join_key": "tRNA gene name (alaV, argQ, ...)", "bigger_question_one_sentence": "Do post-transcriptional modifications or identity-element context explain which tRNA bodies tolerate a non-CCA 3' end - a question the 48-gene grid is too small to answer statistically."},
+  "controls": {"positive_control": "The model should recover the paper's own strongest known effects: tRNA-Pyl from M. alvus and M. mazei is barely charged by E. coli lysate, and glutamine and tyrosine tRNAs charge poorly (both visible in the Fig. 2 source data I opened).", "negative_control": "Shuffle the 768 percentages within tRNA and confirm collapse to the per-tRNA mean.", "external_validation": "None found - no second dataset measures aminoacylation of non-CCA tRNA variants."},
+  "honest_claim_h3": "A model here could only claim: among 48 E. coli isoacceptor tRNAs transcribed in vitro and charged in one lab's cell-free lysate, the charging percentage of a held-out tRNA gene with a mutated 3' end can be predicted - and because every one of the 768 combinations was already measured, the claim has no unmeasured case to apply to.",
+  "plain_idea": {
+    "one_liner": "Use a transfer RNA's sequence and its mutated three-prime end to predict how well an enzyme loads it with an amino acid",
+    "train_on": "Each example is one E. coli transfer RNA gene (48 of them, sequences fetched from GtRNAdb, a public tRNA gene database) paired with the two nucleotides that replace the normal CCA tail; I counted exactly 768 such examples in the file.",
+    "predict": "The output is the aminoacylation percentage, i.e. what fraction of that transfer RNA molecule carries an amino acid, measured by chemically destroying uncharged ends and counting surviving molecules by sequencing (the paper's tSCAN assay), with two replicates per point.",
+    "why_worthwhile": "Genetic-code-expansion labs choosing which three-prime end to use for a new orthogonal code would want a rule rather than a full robot run; but since the paper already measured every combination, the rule is a lookup table, not a model."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict aminoacylation percentage from transfer RNA sequence plus the identity of the two nucleotides replacing the normal CCA three-prime tail, holding out whole tRNA genes. Rejected: the released table is a complete 48-gene x 16-variant grid of 768 measurements with no unmeasured cells, so a lookup table is exact and the only generalisation axis (new tRNA bodies) has 48 groups.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.0001, "needs_gpu": false, "peak_ram_gb": 0.5, "embedding_hours": 0.05, "cv_run_minutes": 1, "compute_note": "Measured file sizes (90 KB total) and parsed every sheet with pandas in under a second; the 4 hours is for fetching 48 GtRNAdb sequences and reconstructing the unlabelled 4x4 grid axes from the published figure.", "cheapest_killing_check": "Count the numeric cells in Source Data Fig. 4 - it is 768, i.e. 48 tRNAs x 16 three-prime-end combinations, with every combination already measured. That took one pandas call and kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5. The released processed data is 2,020 numeric cells across seven small spreadsheets, of which the one coherent table is 768 aminoacylation percentages over just 48 E. coli tRNA genes and 16 three-prime-end variants - a complete factorial grid with no unmeasured combinations, so a per-cell lookup is exact and machine learning adds nothing. The richer per-read data exists only as ~80 GB of raw FASTQ in ENA PRJEB120976, and the tSCAN analysis code the paper cites turns out to be Opentrons robot protocols, not an analysis pipeline, so regenerating per-variant labels would mean writing the pipeline from scratch and breaks the no-raw-sequencing rule as well as the laptop budget. Secondary problems: tRNA sequences are absent (gene names only) and the 4x4 grid in the file has no headers, so the nucleotide axes must be read off a figure."
+}

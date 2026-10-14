@@ -1,0 +1,142 @@
+{
+  "paper_id": "nar2026-gkag830",
+  "title": "RNA-Lexis: a probabilistic algorithm using a non-parametric segmentation logic to detect meaningful sequences in RNA.",
+  "doi": "10.1093/nar/gkag830",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21744120 (code); https://www.ebi.ac.uk/pride/archive/projects/PXD076018 (mass spectrometry)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the Zenodo code archive (2.97 MB, RNA_lexis v0.2.4, MIT licence): 40 files, of which the only data are two FASTA sequence files (NORAD human 5,401 nucleotides, NORAD mouse 4,945 nucleotides, 1 sequence each). Listed all 9 files in PRIDE PXD076018 via the EBI (European Bioinformatics Institute) API: six Thermo .raw instrument files of 651-772 MB each, one 3,948 MB zip, and two small design files. Read the sample design table (sdrf.tsv): exactly 6 runs = 3 SNHG14 RNA pulldowns vs 3 random-shuffled-RNA controls, all in one cell line (LN-229 glioblastoma). Unzipped the Europe PMC supplement (13.9 MB): a single 24-page PDF of figures, no machine-readable tables.",
+    "what_came_from_paper_text_only": "The synthetic benchmark (800 transcripts with planted cores plus 200 random controls; 500 sequences of 500 nucleotides with a planted 12-nucleotide motif) is described in the methods but I found no deposited file or generator script for it in the code archive. The four analysed transcripts (XIST, NORAD, SNHG14, LINC01001) are named as Ensembl links; I did not re-fetch them, but they are single sequences. GRID-seq chromatin-contact comparisons and the histone-binding result are reported in the text only; no processed protein table under the 50 MB cap exists in PRIDE."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Code downloads freely from Zenodo (MIT licence) and PyPI; four transcript sequences are public in Ensembl. But the only deposited measurements, the pulldown mass spectrometry, are raw instrument files (6 x ~700 MB) plus a 3.9 GB zip, all over the 50 MB cap and excluded by the no-raw-mass-spec rule; no processed protein table is provided."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL and the reason evaluation stopped. Nothing in this paper's deposited files contains a prediction target: the Zenodo archive is source code plus two FASTA sequences, the supplement is a figure PDF, and PRIDE holds unprocessed spectra. Any label (motif functionality, protein binding, localisation) would have to be built from scratch out of other databases."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Sequences themselves are present rather than referenced for NORAD (two FASTA files I opened); the other three transcripts are one Ensembl REST call each. Inputs are the only part of a feature/label table that exists."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Not applicable in the usual sense: there is no measurement table and therefore no units column. The mass spectrometry would need MaxQuant label-free quantification intensities, which are not deposited in processed form."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 4,
+      "note": "FAIL, verified. Four real human transcripts analysed; two of them shipped as FASTA. The experimental arm is 6 mass spectrometry runs (3 pulldown, 3 control) in a single cell line. Far below the ~1,500-row or ~400-row-classification bar."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~3 MB of code plus ~10 kB of sequence; the PRIDE raw data is ~8 GB and would not fit the policy, but is not needed.",
+      "note": "The tool itself runs on a laptop CPU in seconds to minutes on single transcripts; size is not the problem here."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "What is deposited matches the paper: NORAD FASTA length 5,401 nucleotides matches Ensembl ENST00000565493, and the 6 PRIDE runs match the described 3-versus-3 pulldown design. The 800+200 synthetic benchmark is simply absent rather than contradictory."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "The only available 'labels' are defined by the method itself. xmotifs and cores are outputs of RNA-Lexis computed from the input sequence, so training on them means distilling the algorithm, not learning biology; the synthetic benchmark's labels are planted by construction. This is textbook leakage-by-construction."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RNA-Lexis (this paper's own algorithm, a rule-based segmenter that extends recurring sequence seeds)",
+        "open_weights": true,
+        "score_and_split": "On its own synthetic benchmark (800 planted-core transcripts, 200 random controls) the authors tuned minimum core length 3-14 nucleotides and report recall, precision, specificity and F1, picking the default by best F1; on real data it is evaluated only anecdotally on 4 transcripts.",
+        "authors_named_unsolved": "The abstract states plainly that the method nominates candidates and that 'biological function remains dependent on orthogonal experimental validation' - i.e. linking a discovered motif to a function is the unsolved part.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MEME and STREME (MEME Suite motif discovery, probabilistic and discrete models)",
+        "open_weights": true,
+        "score_and_split": "STREME (Bioinformatics 2021) is the standard comparator and was used as the comparison in this paper's own simulation on a 60-sequence corpus; MEME Suite handles hundreds of thousands of sequences and motif widths 3-30.",
+        "authors_named_unsolved": "Variable-length and long motifs, and motifs in single sequences rather than corpora, remain hard for position-weight-matrix methods.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RNALoc-LM (RNA subcellular localisation predictor built on RNA-FM, an RNA language model)",
+        "open_weights": null,
+        "score_and_split": "Reported in Bioinformatics 2025 to outperform earlier methods on a benchmark of 1,003 long non-coding RNAs, 1,124 microRNAs and 27,682 circular RNAs from RNALocate; split details not read beyond the abstract.",
+        "authors_named_unsolved": "Interpretability - which sequence motifs drive the prediction - is presented as the open question they partly address via attention.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "LncLocFormer (transformer for multi-label long non-coding RNA localisation) and RiNALMo (650-million-parameter RNA language model pretrained on 36 million non-coding RNA sequences)",
+        "open_weights": true,
+        "score_and_split": "LncLocFormer (Bioinformatics 2023) reports state-of-the-art multi-label localisation accuracy; RiNALMo (Nature Communications 2025) reports state-of-the-art structure prediction generalising to unseen RNA families. Splits not verified beyond abstracts.",
+        "authors_named_unsolved": "Both name generalisation to unseen families and to function (as opposed to structure) as open.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM or RiNALMo (RNA language models with open weights) would be the natural backbone for any lncRNA sequence task",
+    "freeze_and_head_viable": true,
+    "hardware": "Frozen embeddings of a few thousand lncRNAs are feasible on a laptop CPU, though long transcripts (>4,000 nucleotides) need chunking.",
+    "licence": "RNA-Lexis code is MIT; RNA-FM weights are open. Licence is not the obstacle here."
+  },
+  "integration": {
+    "partner_dataset": "RNALocate v2 / NPInter / POSTAR (RNA-protein binding) joinable on Ensembl transcript identifier, which this paper does use.",
+    "join_key": "Ensembl transcript ID (e.g. ENST00000565493)",
+    "bigger_question_one_sentence": "Do the variable-length recurrent elements RNA-Lexis finds predict where proteins actually bind a long non-coding RNA, measured independently by crosslinking experiments? - a real question, but it would be answered using those other databases, with this paper contributing only a feature extractor and 4 example transcripts."
+  },
+  "controls": {
+    "positive_control": "NORAD's roughly a dozen Pumilio Response Elements (consensus UGUANAUA) are a genuine built-in positive control, and the bundled FASTA exists precisely as a smoke test - but it is one sequence, not a dataset.",
+    "negative_control": "The paper's own 200 random-control transcripts and the 3 random-shuffled-RNA pulldown controls; neither is deposited as a usable table.",
+    "external_validation": "None available from this paper; would have to come entirely from RNALocate, POSTAR or similar."
+  },
+  "honest_claim_h3": "Nothing can honestly be claimed from a model trained on this paper's data, because the paper deposits an algorithm plus four example sequences and six unprocessed mass spectrometry runs, not a set of labelled examples.",
+  "plain_idea": {
+    "one_liner": "Use the recurrent variable-length sequence blocks a new algorithm finds in long RNAs to predict where proteins bind them.",
+    "train_on": "The project I considered would feed each long non-coding RNA's sequence, summarised as the algorithm's discovered motif blocks, to a classifier. This paper supplies exactly 4 such RNAs (2 as FASTA files I opened), so the examples would all have to come from elsewhere.",
+    "predict": "Which regions of a long non-coding RNA bind protein. The true answer would come from crosslinking-immunoprecipitation experiments in public databases, not from this paper, whose only measurement is one pulldown experiment (3 vs 3 runs) in one glioblastoma cell line.",
+    "why_worthwhile": "Labs studying long non-coding RNAs currently guess which fragment to delete or pull down; a reliable motif-to-binding map would pick the fragment for them. But this paper's files cannot test that - it is a tool paper, so the answer would be a verdict on the tool, not on the biology."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper deposits 4 transcript sequences and 6 raw mass spectrometry runs. MEME/STREME run on hundreds of thousands of sequences, and RNALoc-LM's benchmark alone has 1,003 long non-coding RNAs plus 27,682 circular RNAs. We would have strictly less data, not more."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are only 3 biological replicates on one RNA in one cell line, which cannot support per-prediction calibrated uncertainty, and the measurements are not even deposited in processed form."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "RNA-Lexis itself is a 2026 rule-based segmenter tuned on its own synthetic benchmark and evaluated anecdotally on 4 real transcripts, so a learned model would likely beat it - but a win against a tool on a benchmark the tool's authors invented is not a result anyone needs."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: there is no shared labelled evaluation set to run the existing model on, because this paper provides no labels at all. Any comparison would be on a dataset we assembled ourselves, on which no published number exists."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: use RNA-Lexis xmotifs/cores as interpretable features to predict protein binding or subcellular localisation of long non-coding RNAs, benchmarked against k-mer features and a frozen RNA language model (RNA-FM). The idea is reasonable but it needs RNALocate/POSTAR for labels and GENCODE for sequences; this paper would contribute only a pip-installable feature extractor and 4 case-study transcripts, so it is not a candidate dataset.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: the only deposited data is ~3 MB of code and ~10 kB of sequence, so compute is trivial; the 8 GB of raw mass spectrometry in PRIDE is both over the size cap and excluded by the no-raw-mass-spec rule. No feature table can be built, so embedding and cross-validation times are undefined.",
+    "cheapest_killing_check": "Count the labelled rows the paper deposits. Answer: 4 transcript sequences and 6 mass spectrometry runs, with zero outcome columns. That check took one download and killed it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A methods/tool paper, not a dataset. Verified in the files: the Zenodo archive is MIT-licensed source code whose only data are two single-sequence FASTA files (NORAD human and mouse), the 13.9 MB supplement is a 24-page figure PDF with no machine-readable tables, and PRIDE PXD076018 contains only raw Thermo spectra (6 files, 651-772 MB each, plus a 3.9 GB zip) from a 3-versus-3 pulldown in one cell line. Fails A2 (no prediction target is a column anywhere), A5 (4 real transcripts analysed) and A8 (the only candidate labels, xmotifs and cores, are computed from the input sequence by the method itself, so a model would distil the algorithm rather than learn biology). The underlying idea - do recurrent variable-length RNA elements predict protein binding - is a fair question, but answering it would use RNALocate/POSTAR/GENCODE, with this paper supplying only a pip-installable feature extractor."
+}

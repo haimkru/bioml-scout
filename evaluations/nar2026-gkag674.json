@@ -1,0 +1,125 @@
+{
+  "paper_id": "nar2026-gkag674",
+  "title": "Translation accuracy in E. coli.",
+  "doi": "10.1093/nar/gkag674",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/LynchLab/ErrorRateAnalysis (processed tables, GPL-3.0) and https://www.ebi.ac.uk/pride/archive/projects/PXD064116 (raw mass spectrometry, CC0)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the site-level table evo_analysis/data/218_long_everything_table.csv (32.8 MB) from the authors' GitHub: 601,556 rows (one per codon position), 1,725 locus IDs, 1,714 named genes, 0 duplicate (locus_id, aa_pos) keys. Recomputed the wild-type translation error rate as sum(ms_mut_count)/sum(ms_wt_count+ms_mut_count) = 1.8186e-3, which matches the paper's stated 1.82e-3. Verified 210,078 positions have any mass-spectrometry coverage, 3,782 of them have at least one detected mistranslation, and 6,692 mistranslation spectra total. Recovered per-site replicate structure from the mean/standard-error columns: 2,196 of 3,782 positive sites (58%) are a single spectrum seen in 1 of 3 biological replicates, 83.6% have 2 or fewer spectra across all three, and only 127 sites agree across all three replicates. Also opened 218_stats.csv (61 codons x 26 columns; its per-codon rates match my recomputation at Spearman 0.993 on the 27 codons whose spelling joins), abundance_analyzed_processed_218_all_pep99_4levels.csv (1,714 rows), codon_error_rates_by_expr_levels.csv (105 rows), wt_ecoli-1.xlsx (19,023 peptide groups x 17 columns), the GitHub file tree, the two README files, the PRIDE file manifest (34 files: 9 .raw ~950 MB each, 13 .mzML 228 MB-1.0 GB, 13 .mzid 41-99 MB, 1 small SDRF; no processed tables), the Zenodo record metadata, and the 18-page supplementary PDF (text extraction yielded only 13,081 characters, i.e. captions only).",
+    "what_came_from_paper_text_only": "That the 'abundance' column is PaxDb protein abundance and the 'level' column (values 1-10) is an expression stratum; neither unit is stated inside the CSV. That the two mutant strains are a restrictive RpsL K43N variant and an error-prone rpsD-truncation variant. That Proteome Discoverer 3.1 (commercial Thermo software) performed the database searches. The amino-acid and codon substitution spectra (the 20x19 and codon-to-amino-acid matrices, Supplementary Tables S2-S7 and Figures S3-S9) I only read as figures and captions; I could not extract them as numbers."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified by downloading: the GitHub repository is public under GPL-3.0 and the 32.8 MB site-level table and the Excel peptide exports came down and parsed. PRIDE PXD064116 is public CC0. The Zenodo deposit is marked access_right 'restricted' (uploaded anonymously for reviewers), but it only duplicates the GitHub code, so nothing is gated."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified in the file: ms_mut_count (mistranslation spectra at that position) and ms_wt_count (correct-sequence spectra) are both literal columns, with replicate means and standard errors alongside. No construction across sources is needed for an 'error / no error' label. The destination amino acid, however, is NOT a column anywhere downloadable, so the substitution-identity label would have to be rebuilt."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: amino acid and DNA codon are given per position with contiguous aa_pos 1..n, so I reconstructed a real protein sequence directly from the table (MVLLVMKSSTTIITAYFDIGRGDWTANKGFREKLARSVDV). Protein abundance and expression stratum are pre-joined. No identifier lookups required."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Spectrum counts are integers and rates are dimensionless proportions, both documented in the repository README and in 218_stats.csv column names. Minor gap seen in the files: the 'abundance' and 'level' columns carry no stated unit, which the paper supplies as PaxDb abundance."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 210078,
+      "note": "FAILS as 'enough data in disguise', the same way the scCT-DB candidate did. The 210,078 covered positions rest on only 6,692 mistranslation spectra, and I verified the label is essentially unreplicated at that resolution: 2,196 of 3,782 positive sites (58%) are one spectrum in one of three replicates, 83.6% have 2 or fewer across all three, and just 127 sites reproduce in all three. Aggregated to the units where the measurement is actually reproducible, the dataset is 61 codons (one strain) or the 333-360 genes clearing the authors' own 3,000-sampled-codon threshold, at a median of 6 error events per gene. Both are below the 1,500-row bar, and 360 is below even the 400-row classification floor. Compounding this, only the wild-type strain (218) has a processed table in the repository; the accurate (219) and error-prone (220) strains have none, and regenerating them needs commercial Proteome Discoverer licences, so the paper's headline three-way comparison is out of reach."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.1 GB",
+      "note": "Verified: the whole site-level table is 32.8 MB on disk and loads into roughly 65 MB in pandas. No GPU needed for any baseline. Laptop feasibility was never the problem here."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Strongest part of the deposit, and verified by recomputation: my error rate of 1.8186e-3 matches the paper's 1.82e-3, the 1,714 genes with abundance matches the paper's Figure 4C, 218_stats.csv has exactly 61 codons, and my per-codon rates reproduce theirs at Spearman 0.993. Only trivial drift: I count 333 genes with abundance and >=3,000 sampled codons where the paper says 332. One format wrinkle: 218_stats.csv spells codons with U while the long table uses T."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label traces to a physical measurement (peptide fragmentation spectra on an Orbitrap Fusion Lumos), not to another model's output, and it is not computable from the sequence features, so there is no circularity. Two honest caveats seen in the data: peptide identification uses Percolator, a semi-supervised support-vector machine, for its error probabilities, and the authors discard seven substitution classes as chemical artifacts because their mass shifts are indistinguishable from chemical modifications."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "deTELpy, an open Python package for detecting amino-acid substitutions (mistranslation events) in mass spectrometry data, from the Toth-Petroczy group (Bioinformatics, 2024)",
+        "open_weights": true,
+        "score_and_split": "A detection pipeline rather than a predictive model, so it reports no accuracy on a split. Found by search; I read the listing and abstract, not the code.",
+        "authors_named_unsolved": "Their companion analyses argue preferred synonymous codons ARE translated more accurately, the direct opposite of this paper's conclusion, so which measurement is right is openly unsettled.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Landerer, Poehls and Toth-Petroczy's aggregated proteome-wide error-rate resource, built from 80 public mass spectrometry datasets",
+        "open_weights": null,
+        "score_and_split": "Not a predictive model. Reports an E. coli error rate of 8.99e-5, roughly 20-fold below this paper's 1.82e-3; this paper's discussion attributes the gap to uncontrolled acquisition settings across the pooled studies.",
+        "authors_named_unsolved": "Comparability of spectral counts across instruments and dynamic-exclusion settings.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Mordret et al. 2019 (Molecular Cell), the original proteome-wide substitution-detection method, applied to E. coli and yeast",
+        "open_weights": null,
+        "score_and_split": "Statistical analysis, not a held-out predictive model. Reported that most substitutions arise from codon-anticodon mispairing and that errors fall at rapidly evolving, energetically tolerant sites.",
+        "authors_named_unsolved": "Distinguishing genuine mistranslation from chemical and search artifacts.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Riboformer, a transformer that predicts codon-resolution ribosome dynamics (Nature Communications, 2024)",
+        "open_weights": true,
+        "score_and_split": "Predicts translation speed and stalling from ribosome profiling, not fidelity, so it is adjacent rather than competing. No fidelity benchmark exists for it.",
+        "authors_named_unsolved": "Separating local sequence effects from global cellular factors in elongation.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model with small CPU-runnable checkpoints)",
+    "freeze_and_head_viable": false,
+    "hardware": "Embeddings for 1,725 proteins / 601,556 residues are perfectly affordable on a laptop CPU (a few hours), so hardware is not the obstacle.",
+    "licence": "MIT, permissive. Irrelevant here: with only 6,692 mistranslation events to fit, a 640-dimension-per-residue representation would overwhelm the signal, so the backbone cannot be used honestly."
+  },
+  "integration": {
+    "partner_dataset": "PaxDb protein abundance (already merged into the table) and the Toth-Petroczy group's 80-dataset aggregated error-rate resource",
+    "join_key": "E. coli locus tag / gene symbol for PaxDb; codon (61 three-letter strings) for the cross-study comparison",
+    "bigger_question_one_sentence": "The join that would matter is whether this well-controlled single-instrument measurement and the 80-dataset aggregate agree on which codons are mistranslated most, but that comparison lives on 61 points and is a statistics note, not a model."
+  },
+  "controls": {
+    "positive_control": "Available and genuinely good: the model must recover the textbook alanine-to-serine and alanine-to-glycine mischarging signal, and reproduce the authors' published per-codon rates, which I already matched at Spearman 0.993.",
+    "negative_control": "Label shuffling is runnable, and the essential ablation is spectral coverage alone, since I measured that detection probability climbs from 0.4% to 7.6% across coverage deciles and would do most of the work unaided.",
+    "external_validation": "Partly available: the Toth-Petroczy 80-dataset codon rates give an independent second source, but only at 61-codon resolution. Cross-strain validation is impossible because the accurate and error-prone strain tables were never deposited."
+  },
+  "honest_claim_h3": "The most a model could honestly claim is: among the 35% of E. coli wild-type codon positions that this one stationary-phase experiment sampled deeply enough to see, a codon's identity and its gene's abundance predict the chance a mistranslation spectrum was detected there about as well as the authors' own two-term regression already does (R-squared 0.23), with per-site truth resting on single unreplicated spectra 58% of the time.",
+  "plain_idea": {
+    "one_liner": "Use codon identity, neighbouring sequence and gene abundance to predict how often each protein position is built with the wrong amino acid.",
+    "train_on": "One table of 601,556 codon positions across 1,725 E. coli genes (verified), of which 210,078 positions were actually observed by the mass spectrometer. Each row carries the amino acid, the DNA codon, position in the protein, the gene's protein abundance, and how many spectra supported the correct versus an incorrect residue.",
+    "predict": "The per-position rate of amino-acid misincorporation. Ground truth is spectral counting from mass spectrometry: peptides are matched against a database containing every single-substitution variant, and an error is called when a variant peptide is confidently identified.",
+    "why_worthwhile": "Researchers studying why the genetic code uses some synonymous codons more than others would use it, because this paper and a competing group disagree about whether preferred codons are translated more or less accurately. Even a failed model would put a number on how much of mistranslation is predictable at all versus irreducibly random."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was a rate regression over the 210,078 observed codon positions: model the number of mistranslation spectra as a binomial draw with spectral coverage as the exposure offset, using codon identity, flanking sequence context, position in protein and gene abundance as features, split by held-out genes clustered by sequence similarity. It is rejected because the 210,078 rows carry only 6,692 error events, 58% of positive sites are a single unreplicated spectrum, and the reproducible aggregate units number 61 codons or ~360 genes. A stronger variant, predicting WHICH amino acid gets substituted, is blocked outright: the destination amino acid appears nowhere in any downloadable file, only in supplementary PDF figures.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 4,
+    "cv_run_minutes": 10,
+    "compute_note": "Timed in practice, not guessed: the 32.8 MB table downloaded and fully parsed in under a minute and all my statistics ran in seconds on this laptop. The embedding figure is an estimate for ESM-2's small checkpoint over 601,556 residues on CPU, and is moot since the event count rules the backbone out.",
+    "cheapest_killing_check": "The check that killed it, and it took two minutes: recover each positive site's replicate support from the mean and standard-error columns and count how many are single unreplicated spectra. The answer was 2,196 of 3,782 (58%), with only 127 sites reproducing in all three replicates. Anyone evaluating a rare-event proteomics table should run this first."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Rejected at A5 for 'enough data in disguise'. This is an unusually honest and well-packaged deposit, and it passes every other killer: the site-level table downloads cleanly, the label is a literal column, sequences are reconstructible from the table itself, and my recomputed error rate of 1.8186e-3 reproduces the paper's 1.82e-3 exactly. But the 210,078 labelled positions rest on just 6,692 mistranslation spectra, and I verified the label barely replicates at that resolution: 58% of positive sites are one spectrum in one of three replicates, 83.6% have two or fewer across all three, and only 127 reproduce in all three. Aggregated to the units that do reproduce, the dataset is 61 codons or ~360 adequately sampled genes, where the authors' own two-predictor regression already reaches R-squared 0.23 and leaves little headroom above Poisson noise. Three further structural blocks seal it: detection probability rises from 0.4% to 7.6% across coverage deciles, so coverage rather than biology would drive any apparent signal; the destination amino acid, which is the novel and interesting part of this paper, exists only as supplementary PDF figures; and only the wild-type strain has a processed table, so the headline three-strain fidelity comparison would require commercial Proteome Discoverer licences to regenerate."
+}

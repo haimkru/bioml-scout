@@ -1,0 +1,61 @@
+{
+  "paper_id": "nar2026-gkag794",
+  "title": "Sequential-GAM constructs the single-cell geometric 3D genome structure.",
+  "doi": "10.1093/nar/gkag794",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE193989",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all 20 processed files in GEO series GSE193989 (10 cells x 2 parental genomes; columns chr,start_resolution,end_resolution,zaxis; 21,057-102,934 rows each; 254,937 unique 10 kb bins in the union). Downloaded the Sequential-GAM GitHub repository tree (84 files) and inspected its only example cell's 3D coordinate file (chr1_10kb_location_data_overlap.txt, 9,560 bins, x/y/z) plus one NP (nuclear profile) and one distance file. Ran two checks of my own: (1) cross-cell reproducibility of the depth coordinate after per-cell centring - median Spearman correlation 0.01 at 1 Mb bins across all 45 cell pairs, maximum 0.09; (2) a positive control against mouse gene density per 1 Mb from UCSC refGene - median Spearman 0.08 with the wrong sign and inconsistent across cells.",
+    "what_came_from_paper_text_only": "That only 10 cells were produced in two batches, the 200 nm section thickness, the 4.3975 um nuclear radius, and the reconstruction recipe (constitutive lamina-associated domain fragments forced to within 0.5 um of the nuclear periphery, remaining loci placed by maximum likelihood under a power-law distance prior). Supplementary tables were not retrievable: the Europe PMC supplementaryFiles endpoint timed out on two attempts, and the NCBI GEO web page is behind a browser challenge (the FTP listing worked instead)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO GSE193989 processed CSV files download freely over FTP (20 files, 0.16-0.88 MB each) and the code repository is public; no login or application needed."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. The paper's quantity of interest - radial distance of a locus from the nuclear centre - is not a column anywhere in the download. The only per-locus number is 'zaxis', the depth of the cryosection stack in micrometres (cell-specific offsets: 0.79-2.99 for one cell, 7.14-8.54 for another), which is a coordinate in the arbitrary cutting frame, not a radius. Getting the paper's label would mean re-running their Python 2.7 / TensorFlow 1.13 maximum-likelihood reconstruction on raw sequencing reads; only one example cell's chromosome 1 coordinates are published."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs would be mm10 genomic coordinates, which are present and standard; DNA sequence and mouse embryonic stem cell epigenomic tracks are fetchable separately."},
+    "a4_units_stated": {"pass": false, "note": "The CSV files have no units column, no header documentation and no README; micrometres is only inferable from the methods text (200 nm sections, 4.3975 um radius) and from values falling on a 0.2 um grid."},
+    "a5_enough_rows": {"pass": false, "n_rows": 254937, "note": "254,937 unique 10 kb bins looks ample, but the independent unit is the cell and there are 10 of them, all one cell line (mouse embryonic stem cell F123), one lab, two batches; the authors state each cell costs about USD 1200 and two days."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~10 MB compressed, ~120 MB in memory as a pandas table", "note": "Verified: all 20 files loaded and cross-correlated on a laptop in under a minute."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper says 10 cells in two batches; GEO has 127 section-level samples and exactly 20 processed files = 10 cells x 2 parental genomes. Consistent."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL. Where radial positions do exist they are the output of the authors' own inference, which injects constitutive lamina-associated domain annotations (forced within 0.5 um of the periphery) and a power-law genomic-distance-to-spatial-distance prior. A sequence or epigenomics model predicting that label would partly be rediscovering the annotation the authors fed in - circularity plus leakage by construction."
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "LADDER (lamina-associated domain finder), Patterns 2026",
+        "open_weights": null,
+        "score_and_split": "Reported by its authors as a multimodal deep-learning model predicting chromatin tethering to the nuclear lamina in 512 kb windows from DNA sequence plus gene, LINE1 and SINE repeat density, with predictions described as cell-type independent and validated across mammalian species; I read the search abstract only and did not retrieve its exact metric, split or code.",
+        "authors_named_unsolved": "Not verified - I did not retrieve the discussion section.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer or DNABERT-2 (DNA language models) would fit mm10 10 kb bins", "freeze_and_head_viable": true, "hardware": "CPU, embeddings cacheable", "licence": "Permissive for both, but irrelevant here because no usable label exists"},
+  "integration": {"partner_dataset": "Mouse embryonic stem cell Lamin-B1 DamID and 4D Nucleome TSA-seq tracks, joinable on mm10 coordinates", "join_key": "mm10 genomic coordinates (10 kb bins)", "bigger_question_one_sentence": "Does a sequencing-based geometric reconstruction of the nucleus agree with antibody- and proximity-based measurements of radial position - a question this data cannot answer because the radial positions themselves are not published."},
+  "controls": {"positive_control": "Gene-rich regions should sit closer to the nuclear centre. I ran this and it failed: median Spearman 0.08 between gene density per 1 Mb and the centred depth coordinate, with inconsistent sign across the 10 cells.", "negative_control": "Label shuffling would be runnable, but there is no label worth shuffling.", "external_validation": "Mouse embryonic stem cell Lamin-B1 DamID exists publicly, but nothing in the download can be compared to it on a per-locus basis."},
+  "honest_claim_h3": "The strongest honest claim any model built on the downloadable files could make is 'this predicts which cryosection of one of ten mouse embryonic stem cells a 10 kb genomic bin was sequenced in', which is a statement about the cutting geometry of that one cell, not about nuclear organisation.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence to predict how far a genomic region sits from the centre of the cell nucleus.",
+    "train_on": "10 kb windows of the mouse genome (254,937 distinct windows appear across the files) with their measured position in the nucleus, from 10 single cells of one mouse embryonic stem cell line.",
+    "predict": "The distance of each window from the nuclear centre. The true answer was meant to come from slicing a fixed nucleus into 200 nm sections, sequencing each section, and reconstructing 3D coordinates - but only the section-depth coordinate was deposited, not the reconstructed distance.",
+    "why_worthwhile": "Groups studying nuclear architecture would like a sequence-only predictor of radial position to extend to cell types nobody can section; even a failure would tell us whether section-based depth data carries any reproducible radial signal."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "10 cells of one mouse embryonic stem cell line from one lab, versus LADDER (Patterns 2026), which trained on genome-wide lamina-association maps across several mammalian species."},
+    "confidence_score": {"answer": "no", "why": "There are 10 cells, and I measured their mutual agreement on the per-locus depth coordinate at a median Spearman of 0.01, so per-prediction uncertainty would be dominated by noise with no way to separate biological heterogeneity from sectioning artefact."},
+    "models_beatable": {"answer": "no", "why": "The nearest existing model, LADDER, is from 2026 and reports cross-species validation; there is no published number on this paper's data to beat."},
+    "guaranteed_improvement": {"answer": "no", "why": "The first condition fails outright: the label the existing models predict (lamina association) is not measured in this download, so this data cannot be added to their inputs or evaluated on their split."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The intended project was: embed each 10 kb mm10 window with a DNA language model, freeze it, and fit a head predicting the window's radial distance from the nuclear centre, held out by chromosome, with cross-cell variance as a second target. It dies because the radial distance is not in the deposited data - only the cryosection depth coordinate is - and the version that does exist was built with lamina annotations injected as constraints.",
+  "effort": {"hours_to_feature_table": 40, "working_set_gb": 0.12, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": 60, "cv_run_minutes": 20, "compute_note": "Timed the actual data handling: all 20 files load and cross-correlate in under a minute at about 0.12 GB of RAM. The 40 hours and 60 embedding hours are estimates for the DNA-language-model route over roughly 255,000 windows on CPU, not measured.", "cheapest_killing_check": "Open one zlocation CSV and ask whether any column is the radial distance from the nuclear centre. It is not - it is the cryosection depth in the cutting frame, with a different offset in every cell. Second cheapest: correlate the centred depth with gene density (I got a median Spearman of 0.08 with inconsistent sign across cells, so the expected radial gradient is not recoverable from the deposited numbers)."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A8. The paper's headline quantity - radial distance of each genomic region from the nuclear centre - is not a column in the public download; the only per-locus number is the cryosection depth in each cell's arbitrary cutting frame, and reconstructing the radial position would mean re-running a Python 2.7 / TensorFlow 1.13 maximum-likelihood pipeline that forces known lamina-associated regions to the periphery, making any sequence-based model partly circular. Two checks I ran confirm the deposited numbers are unusable as a label: cross-cell agreement on the depth coordinate is a median Spearman of 0.01 across all 45 cell pairs, and the gene-density positive control comes out at 0.08 with the wrong sign. Compounding this, the independent unit is the cell and there are only 10, all from one mouse embryonic stem cell line in one lab, and the files carry no units or column documentation."
+}

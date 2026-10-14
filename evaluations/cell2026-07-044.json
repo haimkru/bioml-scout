@@ -1,0 +1,132 @@
+{
+  "paper_id": "cell2026-07-044",
+  "title": "Ancient genomes reveal distinct human dispersals and social stratification in the settlement history of western Remote Oceania.",
+  "doi": "10.1016/j.cell.2026.07.044",
+  "journal": "Cell",
+  "data_url": "https://www.ebi.ac.uk/ena/browser/view/PRJEB102472",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Found the deposit by searching the European Nucleotide Archive (ENA, the public sequence repository): study PRJEB102472, title identical to the paper, public since 2026-08-09, submitted by University of Tuebingen. Pulled the full machine-readable file report: 88 sequencing runs, 88 distinct biological samples, every run library_strategy 'Targeted-Capture' and submitted_format 'FASTQ', total 99.2 GB of fastq (93.4 GB as submitted). Confirmed one file is openly reachable with no login (HTTP 200, 683,477,225 bytes for run ERR17609954). The ENA study description states 'new genome-wide data from 70 individuals'. No processed genotype matrix, no per-individual table, and no code deposit exists in this project.",
+    "what_came_from_paper_text_only": "Everything about the analyses and results: that 70-72 individuals were sequenced (abstract/ENA description/press release disagree slightly: 70 in ENA, 72 in the publisher press item), the ancestry-proportion estimates, the admixture dating, the five-generation family tree, the strontium/isotope work. The article is closed in Europe PMC (no PMCID, isOpenAccess=N) so I could not read the Data and Code Availability statement or the supplementary tables; I did not scrape the publisher site. Crossref shows a CC-BY 4.0 licence on the version of record, so supplementary tables probably are open at cell.com, but I did not open them."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Public and open: ENA PRJEB102472, no login or application, HEAD on ERR17609954.fastq.gz returned HTTP 200 and 683 MB. Verified in the repository, not just the paper."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The only deposited data is 88 raw FASTQ read files. There is no label column anywhere: every quantity of interest (ancestry proportion, dispersal assignment, kin relation, social status) would have to be built from scratch via trimming, alignment to the human reference, pseudo-haploid genotype calling at the 1240k capture panel, merging with a reference panel, then ADMIXTURE/qpAdm/READ. This is exactly the 'you would have to build the thing you are predicting' failure."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Raw reads are present, so inputs are not mere accession pointers; but they are reads, not an analysis-ready feature matrix. Verified from the ENA file report."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Not applicable/unmet: no measurement table was deposited, so there are no units to state. Radiocarbon dates (years before present) and ancestry fractions exist only in the paywalled supplementary tables I could not open."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 70,
+      "note": "FAIL. The unit of analysis is the ancient individual: 70 per the ENA study description (88 sequencing libraries, 88 ENA samples, several libraries per individual). Far below the ~400 minimum for classification, let alone 1,500."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "99.2 GB of gzipped FASTQ",
+      "note": "FAIL on the project's own rules: 99.2 GB of raw sequencing reads, which this project never downloads, and reaching a feature table needs an ancient-DNA alignment and genotyping pipeline rather than a laptop-scale read of a table."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Mismatch I could not resolve: abstract/press item say 72 individuals, the ENA study description says 70, and the deposit holds 88 samples/runs. Without the supplementary table I cannot tell which number is the individual count."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL. The interesting labels (Southeast Asian- versus Papuan- versus Polynesian-related ancestry proportions, admixture dates) are themselves outputs of population-genetic models (ADMIXTURE, qpAdm, DATES) fitted to the same genotypes that would be the features. Predicting them is distilling those tools and is also leakage by construction."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Temporal Population Structure (TPS), a model that dates ancient genomes from genotypes",
+        "open_weights": true,
+        "score_and_split": "Median error ~592 years against radiocarbon dates; trained on ~3,591 quality-filtered ancient Eurasians from AADR (Allen Ancient DNA Resource) v50, 75% of samples within 1,632 years.",
+        "authors_named_unsolved": "Accuracy outside Eurasia and for sparse, low-coverage genomes.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Locator, a neural network that predicts latitude and longitude from unphased genotypes",
+        "open_weights": true,
+        "score_and_split": "Reported to work from as few as ~2,000 ancestry-informative SNPs (single nucleotide polymorphisms); evaluated on held-out individuals in the source publications I found via search, not on Oceanian ancient data.",
+        "authors_named_unsolved": "Extrapolation beyond the sampled geographic range.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PANE (Principal component Ancestry proportions using Non-negative least squares Estimation), 2025, Genome Biology",
+        "open_weights": true,
+        "score_and_split": "Reported to recover ancestry proportions reliably even with large fractions of missing genotypes in ancient samples; evaluated on simulated and published ancient genotype data.",
+        "authors_named_unsolved": "Reliability for very low-coverage ancient DNA and for closely related source populations.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "none that fits",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "AADR (Allen Ancient DNA Resource) v66, April 2026, ~17,634 ancient individuals genotyped at up to ~1.2M SNPs with curated dates and locations",
+    "join_key": "individual identifier plus SNP position on the human reference build; these 70 individuals are not yet in AADR v66",
+    "bigger_question_one_sentence": "Does a date- or location-from-genotype model trained on Eurasia-dominated AADR data transfer to Remote Oceania? — a real question, but the 70 individuals here are a test set at best, not a training set, and the paper deposits no genotypes to join on."
+  },
+  "controls": {
+    "positive_control": "Would exist in principle (a model must recover the known Southeast Asian versus Papuan ancestry split, and the known west-to-east settlement chronology), but there is no deposited table to run it on.",
+    "negative_control": "Label shuffling would be runnable only after building genotypes and labels ourselves.",
+    "external_validation": "AADR plus earlier Oceanian ancient-DNA studies (PRJEB14728 Lapita capture data, PRJEB40109 Vanuatu) exist as independent sources, confirmed present in ENA."
+  },
+  "honest_claim_h3": "No honest claim is available from this deposit: with 70 ancient individuals and only raw reads, any model would be describing 70 skeletons whose ancestry labels were produced by the very population-genetic tools the model would be imitating.",
+  "plain_idea": {
+    "one_liner": "Use ancient DNA from Pacific island burials to predict each person's ancestry mix and burial date.",
+    "train_on": "What the model would see: genotypes at roughly a million common DNA positions for each ancient individual. Verified count of individuals: 70 (88 sequencing libraries), which is far too few.",
+    "predict": "Ancestry proportions (how much Southeast Asian-related versus Papuan-related versus Polynesian-related ancestry) and the burial date. The 'true answers' come from statistical ancestry software (ADMIXTURE, qpAdm) plus radiocarbon dating of bone.",
+    "why_worthwhile": "Archaeologists and population geneticists would like a cheap genotype-only estimate of date and origin for skeletons that cannot be radiocarbon dated; but that question needs thousands of individuals from a compendium such as AADR, not this one study's 70."
+  },
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "70 individuals here versus ~17,634 ancient individuals in AADR v66 that TPS and similar models already use; the only genuine advantage is geographic (first ancient genomes from Fiji), which is a test set, not a training set."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No deposited per-individual table, no replicate genotype calls released, so there is nothing from which to estimate per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "TPS (2022), Locator and PANE (2025) are open, recent and evaluated against radiocarbon dates and simulations; with 70 individuals we could not train anything competitive."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: this paper deposits no genotypes, so our model cannot even see what the existing baselines see, let alone that plus new data."
+    }
+  },
+  "label_elsewhere": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict ancestry proportions and/or burial date from ancient Oceanian genotypes. The deposit (ENA PRJEB102472) contains only 88 raw FASTQ files for ~70 individuals, so the label would have to be manufactured with ADMIXTURE/qpAdm (circular) and the sample size is two orders of magnitude too small. If this transfer question is wanted, build it on AADR v66 (~17,634 ancient individuals with curated dates and coordinates) and use these 70 Oceanians, once curated into AADR, purely as an out-of-region test set.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 99.2,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "No modelling estimates made because Part A failed. The 99.2 GB working set is the exact sum of fastq_bytes over all 88 runs in the ENA file report; this project's rules forbid downloading raw reads.",
+    "cheapest_killing_check": "Count the units of analysis in the deposit: the ENA file report says 88 samples / 70 individuals, which kills it in one API call before any download."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Only 70 ancient individuals, and the deposit is 99 GB of raw reads with no label column: A2, A5, A6, A7 and A8 all fail."
+}

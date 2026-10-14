@@ -1,0 +1,128 @@
+{
+  "paper_id": "nar2026-gkag770",
+  "title": "Cytoplasmic RBM20 granules modulate non-RBM20 target splicing through interactions with other splicing factors.",
+  "doi": "10.1093/nar/gkag770",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE180216 (RNA-seq counts, public); MassIVE MSV000096692 (proteomics, raw only, marked incomplete)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened all three public processed files from GEO series GSE180216 (gene-level read counts): each has 40,174 gene rows; columns are 3 wild-type, 3 heterozygous + 3 homozygous mouse hearts for each of two Rbm20 variant lines, i.e. 15 samples total. Queried the MassIVE proteomics record MSV000096692 through its machine-readable API: it contains raw mass-spectrometry files only (no processed peak or quantification files), is flagged 'dataset_is_complete = false' and 'Dataset with no associated published manuscript'; the file listing and public FTP directory both timed out.",
+    "what_came_from_paper_text_only": "The headline counts of 25 nuclear-speckle-associated and 12 cytoplasmic-granule-associated proteins, the 21-sample proximity-labelling design (5 wild-type, 5 nuclear-signal control, 5 export-signal control, 4 GFP control, 4 S640G variant), and all splicing-change results. Europe PMC's supplementary-file endpoint timed out on two attempts, so the supplementary quantification tables were not retrievable."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The RNA-seq count tables download cleanly, but they are reused from an earlier 2021 paper. This paper's own new data (proximity-labelling proteomics) is in MassIVE as raw mass-spectrometry only, flagged incomplete, with the paper itself stating it is private behind a shared password; the processed intensity table exists only in a supplement I could not retrieve."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "No label column anywhere. 'Is this protein in the granule?' must be constructed by differential-enrichment analysis of unreleased intensity tables; 'does this exon change?' must be constructed by re-aligning raw sequencing reads, because only gene-level counts were deposited, no exon-inclusion (PSI, percent-spliced-in) values."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs would be protein or genomic sequences obtainable from rat/mouse reference databases via gene symbols present in the count files; no thousands-of-lookups problem, though gene symbols rather than stable identifiers are used."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "GEO files are plainly raw integer read counts per gene, stated in the file name. Proteomics units (label-free quantification intensity, log2-transformed) are stated in the paper figure legend but the table itself was not seen."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 37,
+      "note": "The biological unit is the protein for the granule task: 25 nuclear-speckle plus 12 cytoplasmic-granule proteins = 37 labelled items, far under the ~400 classification floor. For any sample-level task the unit is the mouse heart: 15 samples. 40,174 gene rows are not independent examples of anything predictable here."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~3 MB uncompressed for all GEO count tables",
+      "note": "Trivially laptop-sized; re-processing the raw sequencing reads for splicing would not be, and raw mass-spec is barred by project policy."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO sample count (15) matches the deposited files and the series record. The paper's 21 proteomics samples could not be cross-checked against files because the deposit listing was unavailable."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels trace to real physical measurements (mass spectrometry after biotin proximity labelling; RNA sequencing), not to another model's output. Provenance is fine; it is the quantity that fails."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Protein Condensate Atlas (Nature Communications 2024) - predictive models of which proteins join heteromolecular condensates",
+        "open_weights": true,
+        "score_and_split": "Reported proteome-wide condensate-composition predictions; exact split and metric not read beyond the abstract-level summary retrieved by search.",
+        "authors_named_unsolved": "Not read in detail; abstract frames condensate composition as only partly predictable from sequence.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "PICNIC - sequence- and AlphaFold-structure-based classifier for proteins involved in biomolecular condensates",
+        "open_weights": true,
+        "score_and_split": "F1-score 0.81 on held-out test data, 0.84 for the variant that adds Gene Ontology features (from the web-server paper abstract retrieved by search).",
+        "authors_named_unsolved": "Not read in detail.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model) would be the natural fit for a condensate-membership task",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop would suffice for 37 proteins, which is exactly the problem",
+    "licence": "ESM-2 is permissively licensed (MIT)"
+  },
+  "integration": {
+    "partner_dataset": "Considered: DrLLPS / PhaSepDB (curated phase-separation and condensate protein databases) joined on UniProt accession, to enlarge the 37-protein label set.",
+    "join_key": "UniProt accession (would need mapping from the gene symbols used here)",
+    "bigger_question_one_sentence": "Could not write a sentence that this paper's data answers and the public condensate databases do not already answer on their own, because this paper contributes 37 proteins to resources that already hold thousands."
+  },
+  "controls": {
+    "positive_control": "RBM20 itself and known interactors CELF1 and MBNL2 should score as granule-associated; available but only as single cases.",
+    "negative_control": "The paper's own spatial controls (nuclear-localisation-signal and nuclear-export-signal TurboID constructs) and GFP control are a genuinely good experimental negative control set - but they live in the unreleased proteomics table.",
+    "external_validation": "Public condensate databases (PhaSepDB, DrLLPS) and the 2021 Nature Communications study of RBM20 granules in processing bodies could serve, but they would dwarf rather than validate this data."
+  },
+  "honest_claim_h3": "At best: 'among 37 proteins detected near RBM20 in one rat heart-derived cell line in one lab, sequence features separate nuclear-speckle from cytoplasmic-granule residents' - a claim too small and too single-source to be worth testing.",
+  "plain_idea": {
+    "one_liner": "Use protein sequence to predict whether a protein joins RBM20 nuclear speckles or cytoplasmic granules.",
+    "train_on": "The project considered would train on protein sequences of the proteins found near RBM20 by proximity labelling: 37 proteins in total (25 nuclear-speckle, 12 cytoplasmic-granule), a count taken from the paper because the underlying table was not released.",
+    "predict": "Which of the two RBM20 compartments a protein belongs to. The true answer comes from in-cell proximity labelling with TurboID (an enzyme that biotin-tags nearby proteins) followed by label-free mass spectrometry in rat H9c2 heart-derived cells.",
+    "why_worthwhile": "Cardiomyopathy researchers studying RBM20 would like to know which splicing factors get trapped in cytoplasmic granules, but 37 examples from one cell line cannot train or honestly test such a model."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper adds 37 proteins. PICNIC and the Protein Condensate Atlas were trained on curated condensate databases holding thousands of proteins, so our contribution is a rounding error rather than an edge."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Replicates exist (4-5 per group) and would in principle support per-protein noise estimates, but with 37 proteins there is no group large enough to calibrate a confidence on, and the intensity table is not public."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "PICNIC is recent, open, uses sequence plus AlphaFold structure features and reports F1 0.81-0.84 on held-out data; nothing about 37 rat-cell proteins beats that."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the sample-size condition outright: there is no training set here, and the compartment label (RBM20 speckle versus RBM20 cytoplasmic granule) is not the same quantity the existing condensate models predict, so they cannot serve as a baseline on the same split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: (a) classify proteins as RBM20 nuclear-speckle versus cytoplasmic-granule residents from sequence embeddings - only 37 labelled proteins; (b) predict exon-inclusion changes in Rbm20-variant mouse hearts - only gene-level counts were deposited, so the splicing label would have to be built from raw reads, and there are only 15 hearts. Neither survives Part A.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed beyond the downloads: the three GEO count files total about 0.9 MB gzipped and parse in under a second; nothing here is computationally hard, the data is simply too small to model.",
+    "cheapest_killing_check": "Count the labelled items. 25 + 12 = 37 proteins, and 15 mouse hearts - one line of the abstract and one GEO page, which is exactly what killed it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Far too few labelled examples (37 proteins, 15 hearts), no label column, and this paper's own proteomics data is raw-only and flagged incomplete in MassIVE."
+}

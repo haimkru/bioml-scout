@@ -1,0 +1,138 @@
+{
+  "paper_id": "cell2026-07-017",
+  "title": "A complete genome for the common marmoset.",
+  "doi": "10.1016/j.cell.2026.07.017",
+  "journal": "Cell 189(16), Aug 2026 (PMID 42561915, PMC13456403). It is an NIHMS author manuscript: Europe PMC says isOpenAccess=N and its fullTextXML endpoint returned HTTP 500, but NCBI efetch returned the full JATS text. Senior author is B. Paten (UCSC).",
+  "data_url": "https://public.gi.ucsc.edu/~pnhebbar/marmoset/ (hub tracks, v1.1 FASTA, pangenome, VCFs). GenBank GCA_049354715.1 / GCA_049354665.1 / GCA_049354655.1 / GCA_049354675.1 (RefSeq GCF_049354715.1). SRA PRJNA1228037. Zenodo 10.5281/zenodo.21269302. Code at github.com/ph09/t2t_marmoset.",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "UCSC public directory: listed recursively with sizes. Downloaded the small files: chrom.sizes, trackDb, genes.txt, isoseq.txt, centrodip.bed (28 CDR rows), track description HTML, per-sample SNP/indel tables, the pangenome seqfile and the v1.1 .fai. Read bigWig/bigBed headers with HTTP range requests. calJac240_pri 5mC bigWig: 322.7 MB, 29,500,125 bases covered, min 0, max 100, mean 70.4. I decoded the first data block: 1-bp bedGraph entries per CpG with values like 75.0, 97.14, 61.54, and no coverage field. The second animal's bigWigs give 29,113,912 bases (calJac220_pri) and 27,912,195 (calJac240_alt). genes.bb: 365,082 transcript items, 35-field bigCat schema including pbIsoformSupported, exonRnaSupport and intronRnaSupport. cenSat.bb: 3,042 items covering 140.8 Mb. SD.bb: 64,350 SEDEF items. NCBI Datasets: calJac240_pri is 2,933,409,465 bp on 24 chromosomes with 27 contigs, which matches the UCSC chrom.sizes sum exactly. GenBank genomic.fna.gz is 865 MB. SRA runinfo: 6 runs from 2 samples (HiFi, ONT and Hi-C), about 337 GB raw. GitHub repo has 19 files, code only. Zenodo has one 13.4 MB zip, CC-BY-4.0.",
+    "what_came_from_paper_text_only": "These all come from the text only and were not checked against files: 21,121 protein-coding genes, 566 new genes (345 / 195 / 45), 58,381 pangenome SVs, 43-animal giraffe benchmark, 22,819 SV + 4,321,242 small-variant PanGenie panel, 10-tissue IsoSeq support, and the 230-animal VCF. The VCFs and the GFA are 37-300 MB+, over the cap. Table S11 and Table S14 (xlsx) could not be retrieved: the PMC bin URLs serve a JavaScript proof-of-work page and the Europe PMC supplementaryFiles endpoint says 'not open access'. Dead or mismatched links: the paper's github.com/ph09/t2tmarmoset returns 404 (the real repo is ph09/t2t_marmoset). The paper says v1.1 assemblies are on GitHub, but they are only on the UCSC directory. The hub's methylation description says raw data is on GitHub, which is false. PubMed elink to GEO/SRA/BioProject returned nothing."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Pass for the assemblies, hub tracks, pangenome and VCFs: UCSC HTTP, GenBank FTP and Zenodo all download with no login. The 230-animal Pittsburgh colony VCF fails A1. It is on the AD Knowledge Portal (Synapse syn61849889, MARMO-AD), where folder metadata is anonymous but file download needs a registered account. The supplementary xlsx files are blocked by a PMC anti-bot proof-of-work page."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Weak pass, and only for one side task. The paper's deliverable is a genome, which has no prediction target. The one measured per-row value is CpG 5mC percent in the 5mC bigWig, a value column after bigWigToBedGraph extraction with no cross-source join. Every other candidate label (gene models, cenSat/nwmSF, SDs, CDRs, PanGenie genotypes) is a pipeline output; see A8."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Pass (checked). The input sequence is present: the GCA_049354715.1 FASTA (865 MB gz) uses the same CM111785.1-style coordinates as the hub bigWigs. The v1.1 FASTA (2.8 GB, CM111785.2 names, 569 kb longer) does NOT match hub coordinates, so v1 must be used."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass (checked). The bigWig header max is 100 and the track HTML says 0-100 percent of reads 5mC per CpG. The paper's Methods say 'fraction modified', a wording mismatch that the data resolves as percent. Read coverage was stripped in the bedgraph conversion, so per-site confidence is not recoverable."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 29500125,
+      "note": "Pass on rows (checked): 29,500,125 CpG positions in calJac240_pri. The biological unit is weak, though: one cell type (cultured primary fibroblasts) from 2 colony animals, 4 haplotypes. Loci are not independent; neighbouring CpGs are highly correlated, so CV must be by chromosome."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "About 3.2 GB raw per animal (865 MB gz FASTA ≈ 2.9 GB + 323 MB bigWig). A subsampled table of ~1M CpGs × 1 kb windows is under 1 GB. Whole-genome DNA-LM inference is not laptop-feasible.",
+      "note": "Borderline pass. It fits under 5 GB if streamed per chromosome, and a CpG-density/CNN baseline needs no GPU. Frozen-LM embeddings only work on a subsample of roughly 100k-300k windows. Every file is over the 50 MB scout cap, so nothing large was downloaded."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Pass for what could be checked: genome length 2,933,409,465 bp and 24 chromosomes agree across NCBI and UCSC chrom.sizes. The paper's gene, SV and new-gene counts could not be checked (the supplements are blocked and the VCFs are over the cap). There are three link and version inconsistencies (dead GitHub URL, v1.1 location, v1 vs v1.1 coordinates) but no conflicting counts."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Pass with caveat. 5mC% comes from the dorado sup 5mCG model applied to raw ONT signal, then modkit pileup: a basecaller model's call, but the standard proxy for bisulfite and not computed from the assembly sequence. Risk: ONT mod-callers have sequence-context biases, so a sequence model may partly learn caller bias, especially in satellites. All other labels fail A8: CAT2 genes used IsoSeq hints (leakage by construction), and cenSat/SD/CDR are HMM, SEDEF or centrodip outputs computed from the same sequence or methylation."
+    }
+  },
+  "part_a_verdict": "pass",
+  "scores": {
+    "b_model_readiness": 7,
+    "c_worth_asking": 6,
+    "d_backbone_fit": 5,
+    "g_integration": 5,
+    "h_missing_data": 5,
+    "i_does_anyone_care": 3,
+    "j_fit_finishability": 5
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Deep5mC (Comput Struct Biotechnol J 2025, PMC11879672; github.com/qgenlab/Deep5mC). CNN+transformer, 2,561 bp input, outputs 5mC percent at the centre CpG.",
+        "open_weights": false,
+        "score_and_split": "MCC > 0.86 and F1 > 0.93 on a cross-chromosome split of Roadmap WGBS (37 human epigenomes, hg19). Code is public with no licence. I found no pretrained .pt file in the repo, and the README says training or inference needs a >24 GB GPU.",
+        "authors_named_unsolved": "Extending to other species ('across-species ... transfer learning is a promising approach') and adding chromatin and TF context.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Methyl-GP (Nucleic Acids Res 2025, 10.1093/nar/gkaf223, PMC11952970). Fine-tuned DNA language model plus fusion module.",
+        "open_weights": null,
+        "score_and_split": "Beats prior predictors on 17 benchmark datasets of 4mC, 5hmC and 6mA site classification (abstract only). That is a different task (short-window site calling), not genome-wide 5mCpG level.",
+        "authors_named_unsolved": "Not read beyond the abstract. It claims multi-species sequence-pattern conservation improves generalization.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepMethylation (PLoS Comput Biol 2026, PMC13340841). Sequence plus tissue epigenomic features.",
+        "open_weights": null,
+        "score_and_split": "Average AUROC 0.909 across tissues (abstract). It needs tissue epigenomic tracks that do not exist for marmoset, so it is not transferable here.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "CDR-Finder (Bioinformatics 2024, PMC11663805; EichlerLab). Threshold-based detection of centromere dip regions from methylation, not a predictor from sequence.",
+        "open_weights": true,
+        "score_and_split": "Detection tool; no predictive split.",
+        "authors_named_unsolved": "Not read.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 (117M) frozen with a ridge/MLP head on CpG-centred 512-1,000 bp windows. Alternative: Nucleotide Transformer v2 multispecies. AlphaGenome does not output DNA methylation as far as I know, and its 1 Mb context is CPU-prohibitive.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU on a subsample of about 100k-300k CpG windows: hours, cached once. Whole-genome scoring of 29.5M CpGs would need a GPU.",
+    "licence": "Licences were not re-verified this session; check DNABERT-2 (believed Apache-2.0) and NT (believed non-commercial) before use. Data: GenBank is unrestricted. The UCSC personal directory states no licence. Zenodo code is CC-BY-4.0. The GitHub repo has no licence."
+  },
+  "integration": {
+    "partner_dataset": "T2T-CHM13 ONT methylation (github.com/marbl/CHM13) and T2T ape methylomes (marbl/Primates hub, CC0), both cited in the paper's CDR Methods. Neither was opened this session.",
+    "join_key": "Genomic coordinates on GCA_049354715.1, lifted with the provided calJac240_vs_hs1.chain (6.2 MB, verified present). Liftover is 1:1 in unique sequence. In SDs and satellites it fails or is ambiguous, so the collapse rule is to drop multi-mapping CpGs. Expected coverage loss is concentrated in exactly the newly resolved regions.",
+    "bigger_question_one_sentence": "Does the sequence-to-CpG-methylation mapping learned on human and ape T2T genomes transfer across about 40 My to a New World monkey, and does it break specifically in lineage-specific satellites and duplications that have no human ortholog?"
+  },
+  "controls": {
+    "positive_control": "Three, all fixed in advance. (1) Hypomethylation at CpG-island promoters of protein-coding TSSs from genes.bb. (2) Hypermethylated alpha-satellite arrays with 28 CDR dips (centrodip.bed, verified) that must show as low. (3) Trivial target: CpG count in the window.",
+    "negative_control": "Label shuffle; shuffle within chromosome; dinucleotide-shuffled windows, which should fall to the CpG-density baseline. Also hold out by chromosome, not by haplotype, because pri/alt are the same animal.",
+    "external_validation": "The second animal (calJac220 bigWigs, 29.1M CpGs, verified headers) is an independent animal but the same colony and tissue. Human CHM13 and T2T apes give cross-species transfer (not opened). No year or source column."
+  },
+  "honest_claim_h3": "Predicts ONT/dorado-called CpG methylation percent in cultured primary fibroblasts from two captive Pittsburgh-colony marmosets, from local DNA sequence. It says nothing about other tissues, in-vivo state or population variation, and in satellites it may partly reproduce the basecaller's sequence-context bias.",
+  "pitch": {
+    "headline": "29,500,125 verified per-CpG methylation values on a gap-free marmoset genome, including 140.8 Mb of satellite with no human counterpart.",
+    "what_makes_the_data_unusual": "The methylation labels and the input sequence sit on the same verified coordinates and download without a login: a 322.7 MB bigWig covering 29,500,125 CpG positions (min 0, max 100, mean 70.4), a second animal at 29,113,912 positions, 3,042 cenSat intervals spanning 140.8 Mb, 365,082 transcripts, and a 6.2 MB marmoset-to-human chain file — all read from the files, with the genome length of 2,933,409,465 bp across 24 chromosomes matching NCBI and UCSC chrom.sizes exactly. What comparable methylation-prediction datasets don't have is that satellite and duplicated sequence, which is newly resolved here and has no human ortholog to train on.",
+    "the_win": "A region-stratified Spearman correlation for human/ape-trained sequence-to-methylation prediction tested on held-out marmoset chromosomes — separate numbers for CpG islands and promoters, gene bodies, 64,350 segmental duplications, and the 140.8 Mb of cenSat — which would be the first such cross-species figure, the extension Deep5mC's authors explicitly named as open. It cannot be framed as beating Deep5mC's MCC above 0.86: those weights aren't released and the repo requires a GPU over 24 GB, and the human and ape partner methylomes this depends on were not opened in this evaluation.",
+    "even_if_it_fails": "A failure is informative, because the question is answered either way: if the rule collapses only in marmoset-specific satellites and duplications while holding in promoters and gene bodies, that localizes where sequence stops determining methylation across roughly 40 million years. The honest limit is that a failure inside satellites cannot be separated from the dorado basecaller's own sequence-context bias, because per-site read coverage was stripped from the published values.",
+    "who_wants_it": "The Paten lab at UCSC (senior author on the paper) and the telomere-to-telomere primate genomics community, plus Deep5mC's authors, who called across-species transfer a promising open direction. No lab's decision changes — methylation can simply be sequenced directly with ONT — so the realistic effect is narrower: whether anyone trusts a sequence-based methylation predictor inside lineage-specific repeats."
+  },
+  "plain_idea": {
+    "one_liner": "Use the local DNA sequence around each cytosine-guanine site to predict its methylation level, training on human and apes, testing on marmoset.",
+    "train_on": "Each example is a window of about 512–1,000 DNA letters centred on one cytosine-guanine (CpG) site. Training uses the complete, telomere-to-telomere (gap-free) human and ape methylation maps, but their number of sites is unknown because those files were not opened. Marmoset animal 240 has 29,500,125 measured sites (verified) and is also the within-marmoset training animal. Animal 220 has 29.1 million and is the within-marmoset test animal. On a laptop only a subsample of about 100,000–300,000 windows would be used, and whole chromosomes are held out for testing because neighbouring sites are highly correlated.",
+    "predict": "The model outputs the percent of sequencing reads (0–100) in which the cytosine at that site carries a methyl mark. The true value comes from Oxford Nanopore long-read sequencing of cultured fibroblasts (connective-tissue cells) from two captive Pittsburgh-colony marmosets. The methyl call is made by the sequencer's basecalling software model from the raw electrical signal, not by a chemical (bisulfite) assay, so in repeat regions the label may partly reflect the caller's own sequence bias. Per-site read coverage was stripped, so the confidence of each value is unknown.",
+    "why_worthwhile": "No lab's decision would change, because labs can simply sequence methylation directly, so the value is the scientific answer: does the sequence-to-methylation rule learned in human and apes carry across about 40 million years to a New World monkey? Either way we learn whether it breaks specifically in marmoset-specific satellite repeats and duplicated regions with no human counterpart, a cross-species question that the authors of an existing methylation predictor name as open."
+  },
+  "ml_idea": "Cross-primate transfer benchmark. Fit a CpG-density/CGI rule and a frozen DNABERT-2 + ridge head on human/ape T2T methylomes, then test on marmoset held-out chromosomes, reporting Spearman stratified by region class: CGI/promoter, gene body, SD, cenSat, acrocentric p-arms. Within marmoset, train on animal 240 and test on animal 220.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "cheapest_killing_check": "Download only the calJac240_pri bigWig (323 MB) plus one chromosome's sequence. On a held-out chromosome, compute the Spearman of a ±500 bp CpG observed/expected rule against 5mC%. Also count CpGs inside cenSat intervals, where the only novel signal lives. If the rule is within ~0.05 of a quick CNN outside satellites, or satellite CpGs are uniformly about 90% methylated except the 28 CDRs, stop.",
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 5,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Numbers come from repository-reported file sizes (865 MB gzipped FASTA, 323 MB bigWig) and an estimated ~1M-CpG subsampled window table; nothing was downloaded or timed, and embedding time is given only as unquantified \"hours\"."
+  },
+  "roi": 6.3,
+  "verdict": "park",
+  "verdict_reason": "Excellent T2T genome with public, verified files, but it is not an ML dataset. Part A passes only for an off-label side task (sequence to ONT CpG methylation), and every annotation label fails A8 as a pipeline output. B is 7/12: coverage was stripped, and the data is binary bigWig plus FASTA at about 3 GB per animal. H2 is 0 (one cell type, 2 animals). I is 3/8: nobody's decision changes, because labs just sequence ONT. The transfer angle (human/ape to marmoset satellites) is real, and Deep5mC's authors name cross-species as open, but it is genomics-scale and needs unverified partner methylomes.",
+  "c2_backfill": {
+    "score": 1,
+    "why": "Deep5mC predicts 5mC% from sequence but is human-only with no released weights; Methyl-GP and DeepMethylation don't transfer."
+  }
+}

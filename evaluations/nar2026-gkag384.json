@@ -1,0 +1,40 @@
+{
+  "paper_id": "nar2026-gkag384",
+  "title": "LiMeNEx: an interactive webserver on lipid biochemical gene-regulatory network.",
+  "doi": "10.1093/nar/gkag384",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://zenodo.org/records/19007355",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the Zenodo record's supplementary_data.zip (5.6 MB, CC-BY-4.0; 973 files) and parsed it. Table S3 (22 per-pathway CSVs) has 73,505 rows with columns TF, TargetGene, Tissue, Experiment, Chea, Signor, Trrust: 31,551 unique TF-gene pairs, 385 TFs, 324 target genes, 43 tissues. Table S4 has 452 literature pairs with Effect (184 Activation, 92 Repression, 176 Unknown). S2 lists 408 metabolites with ChEBI/KEGG/PubChem links. S7 holds the per-pathway node lists and CellDesigner XML files. No negative (non-interacting) pairs and no measured numeric outcome anywhere.",
+    "what_came_from_paper_text_only": "The edges are copied from SPP (Signaling Pathways Project) ChIP-seq, ChEA3, TRRUST v2 and SIGNOR 3.0, with manual literature checks; the confidence score is just a count of tissues per pair (1-3 tissues = low, 23,595 pairs). The Europe PMC supplementaryFiles endpoint timed out; I used Zenodo instead. Webserver not probed."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo zip downloaded without login, CC-BY-4.0 (checked)."},
+    "a2_label_is_a_column": {"pass": false, "note": "No outcome column. The only possible target is whether a TF-to-gene link exists, but the files list only positive links, so the negatives would have to be built by sampling non-listed pairs (checked in S3/S4)."},
+    "a3_inputs_present": {"pass": false, "note": "Inputs are bare gene symbols. Sequences, promoter regions or expression features would all have to be fetched from outside sources (checked)."},
+    "a4_units_stated": {"pass": true, "note": "Not applicable: categorical edges, no numeric values."},
+    "a5_enough_rows": {"pass": true, "n_rows": 73505, "note": "73,505 TF-gene-tissue rows, 31,551 unique pairs (counted). Only positives, though."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~10 MB unzipped CSVs", "note": "Trivially small."},
+    "a7_counts_match_paper": {"pass": true, "note": "Roughly consistent: 324 target genes in S3 vs 330 enzymatic genes in the paper, 385 TFs vs 345 in the abstract. The gap is unexplained but small."},
+    "a8_label_provenance": {"pass": false, "note": "The edges are copied from SPP ChIP-seq, ChEA3, TRRUST and SIGNOR, so a model would only re-learn those databases on a subset. The confidence score is computed from the tissue count, so it can't be used as a label."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": "Data CC-BY-4.0"},
+  "integration": {"partner_dataset": "GTEx (tissue gene expression), via gene symbol", "join_key": "HGNC gene symbol (would need mapping to Ensembl IDs)", "bigger_question_one_sentence": "Not pursued: the regulatory edges already come from larger public resources (SPP, ChEA3), so joining this subset adds nothing those sources don't already have."},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "A model trained here could only claim to reproduce which ChIP-seq or literature TF-to-gene links the source databases list for 324 human lipid-metabolism genes. It could not claim to find true regulation, because non-links were never tested.",
+  "plain_idea": {
+    "one_liner": "Use a transcription factor and a lipid-enzyme gene to predict whether the factor regulates that gene, and in which tissues.",
+    "train_on": "Pairs of a gene-controlling protein (transcription factor) and a lipid-enzyme gene, 31,551 unique positive pairs across 43 tissues (counted). No confirmed non-pairs.",
+    "predict": "Whether a link exists. The 'true' answers are entries copied from public ChIP-seq (protein-DNA binding experiment) and literature databases, not new measurements.",
+    "why_worthwhile": "Lipid biologists could rank candidate regulators of an enzyme. But the source databases already do this at genome scale, so a subset model would teach little."
+  },
+  "pitch": null,
+  "ml_idea": "Link prediction on a TF-to-enzyme-gene graph with tissue context. Rejected: positive-only edges copied from existing databases, inputs are bare gene symbols, and the larger upstream sources (SPP, ChEA3) are the better place to do this.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.01, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from the unzipped file sizes; nothing was timed.", "cheapest_killing_check": "Count how many rows record a tested non-interaction. Done: zero, which kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2, A3 and A8. The files hold only positive TF-to-gene links copied from SPP, ChEA3, TRRUST and SIGNOR, keyed by gene symbol. There is no measured outcome and no negatives, and any label would just redistribute existing databases."
+}

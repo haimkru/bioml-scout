@@ -1,0 +1,58 @@
+{
+  "paper_id": "nature2026-10791-2",
+  "title": "Mitochondrial metabolism and epigenetic crosstalk drive SASP.",
+  "doi": "10.1038/s41586-026-10791-2",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319937",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Read GEO metadata for all five series. GSE279411 (bulk RNA-seq) has 12 samples; GSE319937 (bulk RNA-seq) has 18. Opened GSE319937_TPM_values.csv.gz: 57,500 genes x 18 samples (6 conditions x 3 replicates), with Ensembl IDs and gene names. GSE279410 (ChIP-seq, chromatin immunoprecipitation sequencing) lists 27+ samples; GSE326624 lists 6 samples plus 2 averaged bigWig signal tracks. GSE324238 (single-nucleus multiome) is 2 mice: Vehicle and CTPI2 (an inhibitor of the citrate carrier SLC25A1) .h5 matrices, 62.5 MB each, a 1.52 GB Seurat object and a 5.1 GB RAW tar, all checked by HEAD only.",
+    "what_came_from_paper_text_only": "Experimental design (irradiation-induced senescence in IMR90 fibroblasts, CCCP mitochondrial clearance, acetate/mtDNA rescue, aged-mouse CTPI2 treatment) and the source-data tables, which are figure-level summaries and were not retrieved. The supplement listing timed out."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All GEO series are public and the processed TPM/count files download (verified for GSE319937)."},
+    "a2_label_is_a_column": {"pass": false, "note": "The only labels are experimental condition names in sample headers (e.g. Prol, IR, IR.CCCP). No measured per-item outcome column exists for a prediction task; any gene-level label (for example 'is a SASP gene') would have to be built from curated lists."},
+    "a3_inputs_present": {"pass": true, "note": "Expression matrices with Ensembl gene IDs are present in the files."},
+    "a4_units_stated": {"pass": true, "note": "Files are named TPM (transcripts per million) and raw counts."},
+    "a5_enough_rows": {"pass": false, "n_rows": 30, "note": "The bulk RNA-seq sets have 12 + 18 = 30 samples (verified), and the multiome set has 2 animals. That is far below 400 labelled units; the many cells in the multiome all come from one vehicle and one treated mouse."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~130 MB for bulk TPM plus the two .h5 matrices", "note": "The processed matrices fit; the 5.1 GB raw tar is unnecessary."},
+    "a7_counts_match_paper": {"pass": true, "note": "The 18 GSE319937 columns match its stated design of 6 conditions x 3 replicates."},
+    "a8_label_provenance": {"pass": true, "note": "Conditions are experimental interventions, not model outputs."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "SenCID (senescence identification from transcriptomes; trained on 52 datasets, 602 samples, 30 cell types)", "open_weights": null, "score_and_split": "Not retrieved beyond the search snippet.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "SenePy (single-cell senescence signatures, Nature Communications 2025)", "open_weights": null, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "DeepScence (deep neural network for senescent cells in single-cell and spatial data, Cell Genomics)", "open_weights": null, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "SenCat logistic-regression senescence scores (14 primary cell types, 30+ senescence paradigms, Molecular Cell 2026)", "open_weights": null, "score_and_split": "Not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Geneformer or scGPT (single-cell foundation models) could embed the multiome cells", "freeze_and_head_viable": null, "hardware": "CPU feasible for ~tens of thousands of cells", "licence": "Apache-2.0 (Geneformer); not checked for this use"},
+  "integration": {"partner_dataset": "GTEx (tissue gene expression), joinable on Ensembl gene ID", "join_key": "Ensembl gene ID", "bigger_question_one_sentence": "None strong: 30 bulk samples cannot support a learned model, and the join would only annotate genes."},
+  "controls": {"positive_control": "SASP genes such as IL6 and CXCL8 rising from Prol to IR samples", "negative_control": "Label shuffle across 18 samples (underpowered)", "external_validation": "SenCat or the SenCID compendium of senescence transcriptomes"},
+  "honest_claim_h3": "With 30 bulk samples from one fibroblast line and two mice, a model could only separate the authors' own treatment conditions, which differential expression already does.",
+  "plain_idea": {
+    "one_liner": "Use gene expression of senescent cells to predict whether mitochondrial metabolism is intact or blocked.",
+    "train_on": "Bulk RNA-seq profiles of IMR90 fibroblasts under 6 conditions in triplicate (18 samples, verified), plus 12 more from a second set.",
+    "predict": "The experimental condition (proliferating, senescent, mitochondria-depleted, rescued), which is known from the lab design.",
+    "why_worthwhile": "Little: the condition is known by design and 30 samples are too few to learn a general rule; existing senescence classifiers already cover this."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "We have 30 bulk samples; SenCID was trained on 602 samples from 52 datasets."},
+    "confidence_score": {"answer": "no", "why": "Triplicates give per-condition noise, but too few conditions to calibrate a predictor."},
+    "models_beatable": {"answer": "no", "why": "Recent (2024-2026) senescence classifiers exist and reportedly reach very high accuracy on bulk data; there is nothing to beat with 30 samples."},
+    "guaranteed_improvement": {"answer": "no", "why": "Adding 30 samples measured in one cell line would not make better predictions near-certain."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Classify mitochondrial or acetyl-CoA perturbation states from senescent-cell transcriptomes. Not viable at n = 30.",
+  "effort": {"hours_to_feature_table": 1, "working_set_gb": 0.13, "needs_gpu": false, "peak_ram_gb": 2, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated from verified file sizes; nothing timed.", "cheapest_killing_check": "Count GEO samples: 12 + 18 bulk RNA-seq and 2 multiome mice, done, and it kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "A mechanistic paper with 30 bulk RNA-seq samples (verified) and 2 multiome mice; the only labels are treatment conditions (fails A2/A5), and senescence classifiers like SenCID already exist."
+}

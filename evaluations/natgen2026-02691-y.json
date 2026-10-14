@@ -1,0 +1,142 @@
+{
+  "paper_id": "natgen2026-02691-y",
+  "title": "Promoter strength and position govern promoter competition through transcript-dependent insulation.",
+  "doi": "10.1038/s41588-026-02691-y",
+  "journal": "Nature Genetics",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE312207 (Micro-C, 44 MB) and GSE296229 (ChIP-seq bigWig tracks, 5.7 GB)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded GSE312207_RAW.tar (45,987,840 bytes) and opened all 12 .mcool chromatin-contact files with h5py: each is a region-capture Micro-C map of the Sox2 locus only (78,948 contact pixels at 1 kb resolution, 9 resolution levels, mouse genome), covering 6 cell-line conditions (Ef1a / Neutral / Rpl13a promoter inserts, forward and reverse) x 2 parental alleles. Read the GSE296229 file list via NCBI FTP: 54 bigWig tracks (RNA Polymerase 2, Rad21/cohesin, Input) for 6 conditions, total 5.7 GB, so metadata only. Read the full text of the author preprint (PMC12247958) including Methods, Data availability and every figure legend.",
+    "what_came_from_paper_text_only": "The experimental design and all counts of promoters, orientations and clones come from the preprint text and figure legends; the published Nature Genetics version is paywalled, has no PubMed Central record, and its supplementary tables and any Source Data file could not be retrieved through Europe PMC or PubMed Central (project rules forbid scraping the publisher site). I never saw a table of the actual fluorescence measurements that would be the prediction target."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The two GEO series are public and I downloaded and opened GSE312207 myself. But the data availability statement says 'Raw data and cell lines are available upon request from wysocka@stanford.edu', and the flow-cytometry files that carry the phenotype are exactly that raw data."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The prediction target (how much the inserted promoter lowers endogenous Sox2) is not a column anywhere I could obtain. It is a residual that the authors compute in R from raw flow-cytometry files: gate single cells, then take residuals of lm(log2(eGFP) ~ log2(side-scatter) + log2(mCherry)). Those raw files are available on request only, and no processed value table is in either GEO series."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The inputs would be the 1 kb inserted promoter sequences (850 bp upstream, 150 bp downstream of the main transcription start site). The preprint says they are listed in Supplementary Table 1, which I could not retrieve, but they are recoverable from the mouse genome given the gene names."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are clearly described in Methods: linear fluorescence intensity from flow cytometry, converted to log2 residuals; quantitative PCR values converted to relative concentrations via standard curves and normalised to the housekeeping gene Rpl13a."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "FAIL, and this is the decisive one. This is a clonal, low-throughput screen, not a massively parallel assay. A 'small library' of housekeeping and developmental promoters plus Ef1a, CAG and two negative controls was inserted in forward and reverse orientation, with 3 clonal lines each measured in triplicate. Figure 1b lists the promoters as an image so I could not count them exactly, but the whole study involves on the order of tens of distinct promoter constructs, not the ~1,500 labelled rows the checklist requires. The deposited genomics covers only 6 conditions."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.044 GB verified (Micro-C); 5.7 GB if the ChIP-seq bigWigs were added, but only the ~1 Mb Sox2 region matters so a subset is tiny.",
+      "note": "Size is not the problem here. The Micro-C tar is 44 MB and opened in seconds on CPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The 12 Micro-C files and 18 ChIP-seq samples in GEO match the conditions described in the preprint figures. No contradiction found, though the paper never states a total count of promoter constructs in text."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label traces to a real physical measurement, fluorescence of an eGFP knock-in reporter at endogenous Sox2 measured by flow cytometry, not to any model's prediction. No circularity."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Enformer, a deep neural network that predicts gene expression and chromatin tracks from DNA sequence (Nature Methods, 2021)",
+        "open_weights": true,
+        "score_and_split": "Not evaluated on promoter competition. Retrieved via web search only; its reported strength is predicting gene expression and enhancer-promoter interactions from sequence over ~100 kb.",
+        "authors_named_unsolved": "Long-range distal regulatory effects remain hard; benchmark write-ups retrieved here report that Enformer-class models systematically underpredict the magnitude of knockdown effects, with the gap widening as enhancer-to-promoter distance grows.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Borzoi, a sequence-to-RNA-seq-coverage model with ~524 kb context",
+        "open_weights": true,
+        "score_and_split": "Not evaluated on promoter competition; no number retrieved for this task.",
+        "authors_named_unsolved": "Same distal-element gap reported in the benchmark post retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "AlphaGenome, a 1 Mb-context multi-track regulatory model (Nature, 2025)",
+        "open_weights": null,
+        "score_and_split": "Not evaluated on promoter competition; no number retrieved for this task.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "EPInformer, a framework predicting gene expression from promoter-enhancer sequence plus epigenomic data (Nature Communications)",
+        "open_weights": null,
+        "score_and_split": "Not evaluated on promoter competition at an engineered locus.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models) would be the natural encoder for a 1 kb promoter fragment; Enformer embeddings are the alternative.",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU is enough to embed a few dozen 1 kb sequences.",
+    "licence": "Open weights for Nucleotide Transformer and DNABERT-2; AlphaGenome is non-commercial."
+  },
+  "integration": {
+    "partner_dataset": "None usable. The closest would be mouse embryonic stem cell promoter activity from published massively parallel reporter assays, joinable on Ensembl gene or genome coordinates.",
+    "join_key": "mouse genome coordinates (mm10/mm39) or Ensembl gene ID",
+    "bigger_question_one_sentence": "Could not be written usefully: with tens of constructs there is nothing to join that would survive as a training set."
+  },
+  "controls": {
+    "positive_control": "The paper supplies strong ones for itself (Ef1a and CAG as strong promoters, a bacterial coding sequence and an empty insert as neutral controls), and a model would have to recover the published inverse relationship between inserted-promoter output and Sox2 output.",
+    "negative_control": "Label shuffling would be trivial to run, but with tens of points it would be statistically uninformative.",
+    "external_validation": "None exists. No other lab has run this assay at this locus."
+  },
+  "honest_claim_h3": "A model trained here could at best claim: among roughly twenty hand-picked mouse promoters inserted at one of two sites in one Sox2 locus in one embryonic stem cell line, sequence features predict how much endogenous Sox2 expression drops - a claim too narrow and too under-powered to generalise to any other locus.",
+  "plain_idea": {
+    "one_liner": "Use an inserted promoter's DNA sequence and position to predict how much it suppresses a neighbouring gene's expression.",
+    "train_on": "Each example would be one 1 kb promoter fragment inserted into a fixed site in the mouse Sox2 gene region, plus its orientation (forward or reverse) and which of two insertion sites was used. The number of examples is on the order of tens; I could not get an exact count because the promoter list is published as a figure image.",
+    "predict": "The output would be how far endogenous Sox2 expression falls. The truth comes from flow cytometry of an eGFP (green fluorescent protein) reporter knocked into the Sox2 gene, converted to a residual after statistically removing cell-size and control-allele effects.",
+    "why_worthwhile": "Gene-regulation labs and groups building sequence-to-expression models would like a direct measurement of how one promoter steals activity from another, since current models are known to underpredict long-range regulatory effects. The scale here is far too small to support that."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Sequence-to-expression models such as Enformer and Borzoi were trained on thousands of genome-wide tracks. This paper contributes on the order of tens of engineered measurements at a single locus, which is not more data and is too narrow to be a useful specialist slice."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Three clonal replicates per construct would let you estimate noise, but with tens of constructs any per-prediction confidence estimate would itself be unreliable."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "Enformer (2021) and Borzoi (2024) are reported in a retrieved benchmark to underpredict distal regulatory effects, so there is a real gap. But you cannot train a competitor on tens of examples; the most you could do is test existing models against this data as a tiny external benchmark."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the sample-size condition outright. There is no training set, the phenotype values are not downloadable, and no shared evaluation split exists with any published model."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: embed each inserted 1 kb promoter sequence with a DNA language model, add orientation and insertion-site features, and regress the measured drop in endogenous Sox2 expression. A secondary idea was to use the paper's six Micro-C contact maps as a tiny benchmark for whether sequence models predict transcription-dependent insulation. Both die on sample size: tens of constructs and six chromatin maps.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed for a model run. I did time the real download and open: the 44 MB Micro-C tar fetched and all 12 files opened with h5py in well under a minute on CPU. Embedding a few dozen 1 kb sequences with a small DNA language model would take minutes.",
+    "cheapest_killing_check": "Count the promoters in Figure 1b and ask whether a table of the eGFP and mTagBFP2 values exists in downloadable form. Both answers are already in: tens of promoters, and no such table in GEO."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A on two counts. A5: this is a clonal low-throughput screen of roughly tens of inserted promoters, each with 3 clonal lines, not the ~1,500 labelled rows needed; the deposited genomics covers just 6 conditions (12 Micro-C files I opened, 18 ChIP-seq samples). A2: the prediction target is not a column anywhere public - it is a regression residual the authors compute from raw flow-cytometry files that the paper says are 'available upon request', and the processed supplementary tables sit behind a Nature Genetics paywall with no PubMed Central copy. The biology is genuinely interesting and the measurement is a real physical one (A8 passes cleanly), but this is a mechanism paper, not a dataset."
+}

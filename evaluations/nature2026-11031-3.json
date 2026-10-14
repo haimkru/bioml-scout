@@ -1,0 +1,46 @@
+{
+  "paper_id": "nature2026-11031-3",
+  "title": "Lsp2 links early-life diet to adult translation and lifespan in Drosophila.",
+  "doi": "10.1038/s41586-026-11031-3",
+  "journal": "Nature",
+  "data_url": "ftp://ftp.jpostdb.org/JPST003763/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the jPOST FTP folder for PXD062930/JPST003763 (158 files, mostly 1.4-13 GB Thermo .raw files plus a 707 GB all-in-one zip). Downloaded and opened sample_info_for_pSILAC.xlsx (60 pulse-SILAC samples: 4 larval whole-body label checks, 56 adult head samples across diet x day x genotype, 4-6 replicates each), report.pg_matrix_Larvae_prepupa_Lsp2RNAi.tsv (9,468 protein groups x 48 runs of plain label-free abundance; UniProt IDs and gene symbols present), and report_pSILAC_samole_01_04_.parquet (78,330 precursor rows, DIA-NN output with a Channel column H/M/L; only the 4 larval check samples).",
+    "what_came_from_paper_text_only": "Data availability statement (from the bioRxiv preprint 10.1101/2025.05.18.654697, not the paywalled Nature version): sequencing runs DRR622306-DRR622313 and DRR626770-DRR626793 at DDBJ, proteomics PXD062930, code 'on request'. Lifespan curve data and sample sizes were not seen; no Nature source data was retrievable (no PMCID, publisher pages not scraped). The adult pSILAC precursor reports (report_pSILAC_samole_05_12.parquet, 122.7 MB; report_pSILAC_samole_29_60.parquet, 512 MB) exceed the 50 MB cap and were not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Checked: anonymous FTP at jPOST works; small processed files downloaded without login. Lifespan data not located in any repository."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked in files: the only per-item label that is plausible for ML (fraction of each adult head protein still built from larval heavy-labelled lysine/arginine) is not a column. It must be computed from precursor-level DIA-NN channel quantities (H/M/L) across runs, with policy choices on missing channels and peptide-to-protein roll-up. The lifespan outcome is a handful of survival curves, not a table."},
+    "a3_inputs_present": {"pass": true, "note": "Checked: UniProt accessions and gene symbols present; sequences would need a one-shot UniProt proteome download (easy)."},
+    "a4_units_stated": {"pass": true, "note": "Checked: DIA-NN quantities are arbitrary intensity units; a heavy fraction would be unitless."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Per-protein: ~9,468 protein groups in the label-free matrix (checked); number with quantified adult heavy channel unknown (adult parquet not opened). Per-condition (diet to lifespan) n is tiny: 2 larval diets x 2 genotypes."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.65 GB of precursor parquet", "note": "Adult precursor reports total ~635 MB; fits RAM but exceeds the project's 50 MB download cap."},
+    "a7_counts_match_paper": {"pass": true, "note": "Sample sheet lists 60 pSILAC samples consistent with the design described; paper counts not seen to compare."},
+    "a8_label_provenance": {"pass": true, "note": "Heavy fraction would be a direct mass-spectrometry measurement, not a model output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "ESM-2 (protein language model) would fit a per-protein retention task", "freeze_and_head_viable": true, "hardware": "CPU", "licence": "MIT"},
+  "integration": {"partner_dataset": "UniProt Drosophila proteome; published fly protein turnover (pulse-SILAC) datasets", "join_key": "UniProt accession", "bigger_question_one_sentence": "Which sequence or abundance properties make a protein carry larval amino acids into adulthood, beyond simply being slow-turnover?"},
+  "controls": {"positive_control": "Ribosomal proteins and storage proteins (Lsp1/Lsp2) should show high larval-label retention, as the paper reports.", "negative_control": "Shuffle per-protein labels.", "external_validation": "None identified with the same larva-to-adult labelling design."},
+  "honest_claim_h3": "At best: predicts which adult fly head proteins retain larval-derived lysine/arginine at day 3-6 under two larval diets in one strain, which is largely a protein-turnover proxy.",
+  "plain_idea": {
+    "one_liner": "Use a protein's sequence to predict how much of it, in the adult fly head, is still built from amino acids eaten as a larva.",
+    "train_on": "Each adult head protein's sequence (and abundance); roughly several thousand proteins, exact count unknown because the adult files exceed the download cap.",
+    "predict": "The fraction of the protein carrying heavy-isotope lysine/arginine fed only during the larval stage, measured by mass spectrometry; it would have to be computed from peptide-level channel intensities.",
+    "why_worthwhile": "Would show whether larval nutrient carry-over is a general turnover effect or specific to certain protein classes; but the label is not tabulated and overlaps heavily with protein half-life work."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Per-protein regression of larval-label retention in adult heads from ESM-2 embeddings plus abundance, ePR vs control as a second task. Blocked because the label must be built from 635 MB of precursor-level DIA-NN output and the lifespan outcome has only a few conditions.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 0.65, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 1.5, "cv_run_minutes": 2, "compute_note": "Estimated, not timed: ~5,000 fly proteins through ESM-2 35M on CPU; precursor parquet roll-up in pandas.", "cheapest_killing_check": "Download report_pSILAC_samole_29_60.parquet and count proteins with a quantified heavy channel in at least 4 of 6 replicates per condition."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 (checked in the files): the only usable per-protein label, how much larval heavy-labelled amino acid remains in each adult protein, isn't a column. It has to be built from precursor-level DIA-NN channel intensities in files over the 50 MB cap. The diet-to-lifespan outcome covers only a few conditions, and the per-protein task is mostly a stand-in for protein turnover."
+}
