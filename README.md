@@ -22,7 +22,7 @@ open dashboard.html             # the live copy, rebuilt every minute while a ru
 
 ## Where it has got to
 
-As of 14 October 2026, with the run still going: 771 of 1,027 papers evaluated, from 8 journals
+As of 14 October 2026, with the run still going: 774 of 1,027 papers evaluated, from 8 journals
 published between 1 July and 1 October 2026.
 
 | verdict | papers | what it means |
@@ -30,7 +30,7 @@ published between 1 July and 1 October 2026.
 | **do it** | 25 | passed every deal-breaker, with the data opened and checked |
 | **verify first** | 35 | looks good, but one specific count needs confirming |
 | park | 62 | passed the deal-breakers, weak case |
-| rejected | 649 | failed a deal-breaker — usually the data needs an access application, or the label would have to be constructed |
+| rejected | 652 | failed a deal-breaker — usually the data needs an access application, or the label would have to be constructed |
 
 The highest-scoring candidates are mostly protein-sequence tasks with a measured label, which is
 what the rubric is built to surface: a frozen ESM-2 backbone plus a small head, on a laptop.
