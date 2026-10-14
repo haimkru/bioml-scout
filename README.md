@@ -110,8 +110,56 @@ Before making this repository public, note that `scripts/fetch.py` puts a contac
 User-Agent header, which is the polite convention for the NCBI and Europe PMC APIs but is a real
 email address.
 
-## Requirements
+## Installing
 
-Python 3.11 (`uv` recommended, standard library only — no pip install needed for the pipeline),
-the `claude` CLI, and a Mac or Linux machine. No GPU. The optional dashboard screenshotting uses
-headless Chrome.
+There is nothing to build and nothing to pip install: every script in `scripts/` uses only the
+Python standard library.
+
+```bash
+git clone git@github.com:haimkru/bioml-scout.git
+cd bioml-scout
+
+python3 -V                 # 3.9 or newer; macOS ships 3.9, which is enough
+claude --version           # the agent runner: https://claude.com/claude-code
+```
+
+That is the whole installation. To check it, read the evaluations already in the repo — both of
+these work on a fresh clone, with no network and no API key:
+
+```bash
+python3 scripts/rank.py                      # -> PROJECTS.md, projects.csv
+python3 scripts/dashboard.py --slim          # -> dashboard.html
+open dashboard.html
+```
+
+To run the pipeline on new papers you also need:
+
+| for | what | note |
+|---|---|---|
+| evaluating papers | the `claude` CLI, signed in | each paper is one agent session |
+| `scripts/harvest.py` | nothing extra | queries Europe PMC over plain HTTPS |
+| `scripts/supervise.sh` | macOS | uses `caffeinate`, and BSD `date` to read the reset time out of a usage-limit message |
+| new-candidate alerts | macOS | `osascript` notifications; `--no-notify` turns them off |
+| screenshots of the dashboard | headless Chrome | optional, only used to produce `docs/dashboard.png` |
+
+No GPU, and about 10 GB free disk if you let the cache fill up. On Linux the Python side works
+unchanged; `supervise.sh` needs its two macOS commands swapped (`caffeinate` dropped, `date -j`
+replaced with `date -d`).
+
+### First run
+
+```bash
+# 1. build the queue for a date range, then stop and read the summary
+python3 scripts/harvest.py --start 2026-07-01 --end 2026-10-01
+
+# 2. evaluate ten dataset papers first and read a few of the JSON files by hand,
+#    to see whether the agent is really opening data or just paraphrasing abstracts
+./scripts/run_queue.sh 10 1
+
+# 3. when the output looks right, hand it to the supervisor and leave it
+nohup ./scripts/supervise.sh 1 1x 300 > logs/supervise.out 2>&1 &
+```
+
+Step 2 is the one people skip and regret. If the evaluations are shallow, edit
+`.claude/agents/paper-evaluator.md`, delete those ten JSON files, and run it again — iterating on
+ten papers is cheap, iterating after several hundred is not.
