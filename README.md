@@ -5,15 +5,18 @@ decides whether it is a good basis for a machine-learning project. It only *find
 trains nothing itself.
 
 **The dashboard** holds every evaluation, scored and browsable — hover a point for the one-line
-idea and the arithmetic behind its score, click it for the full report. Open it with:
+idea and the arithmetic behind its score, click it for the full report.
+
+**[⤓ Download the dashboard](../../raw/main/docs/dashboard.html)** (7 MB) — then open the
+downloaded file. GitHub shows `.html` as source text instead of rendering it, so the file has to
+reach your browser from disk. Nothing is hosted, and the repository stays private.
+
+Or, from a clone:
 
 ```bash
 open docs/dashboard.html        # the committed snapshot
 open dashboard.html             # the live copy, rebuilt every minute while a run is going
 ```
-
-GitHub serves `.html` as source text rather than rendering it, so the link below is a picture of
-the page, not the page itself.
 
 ![dashboard](docs/dashboard.png)
 
