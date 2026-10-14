@@ -1,6 +1,8 @@
 # bioml-scout
-edited: 10.14.2026
-author: haim krupkin+claude
+
+Edited: 10.14.2026
+
+Author: haim krupkin+claude
 
 Reads recent open-access biology papers, finds the data attached to them, opens that data, and
 decides whether it is a good basis for a machine-learning project. 
