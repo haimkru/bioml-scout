@@ -1,0 +1,174 @@
+{
+  "paper_id": "nar2026-gkag845",
+  "title": "Distinguishing self from non-self RNA by editing-specific inosine patterns.",
+  "doi": "10.1093/nar/gkag845",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE293616 (18 peak files) + Supplementary_data_file2.xlsx in the article supplement + https://doi.org/10.5281/zenodo.17876716 (code and editing tables)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the article supplement and parsed Supplementary_data_file2.xlsx with pandas: 6 data sheets of identical 18-column schema, 14,405 rows total (2,048 regions bound/protected by MDA5, an immune sensor for double-stranded RNA, and 12,357 input-RNA control regions), zero missing values except 1,139 blank gene names, 1 exact duplicate coordinate, 101 of 2,048 positives overlapping a control interval, 25 chromosomes. Downloaded GSE293616_RAW.tar (1.9 MB) and read all 18 per-replicate narrowPeak files (1,180-8,948 peaks each), confirming the 2 genotypes x 3 conditions x 3 replicates design from the GEO series matrix, and computed replicate agreement myself: a single MDA5 replicate's peaks overlap another replicate's peaks only 54% of the time (range 36-65%). Read the Legend sheet, which defines all 18 columns and all 6 sheets. Downloaded the Zenodo archive (215 KB) and found it is a code snapshot plus per-sample dsRNA editing tables of only 267 duplexes each. Tested the UCSC mm10 sequence endpoint on one peak region and got DNA back.",
+    "what_came_from_paper_text_only": "The genome build (GRCm38/mm10), the peak caller (Genrich 0.6.1, adjusted p < 0.01) and the subtraction/joining rules, the wet-lab protocol (RNase protection with recombinant MDA5 lacking its signalling domain), and the three hand-picked regions the authors cloned and tested in vitro (Rnf168 chr16:32300187-32300400, Knl1 chr2:119104854-119104978, Zkscan3 chr13:21392247-...). I did not download the mouse genome or compute any sequence features."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All three sources open and fetched without login: article supplement zip (14 MB), GEO tar (1.9 MB), Zenodo (215 KB). Article is CC BY; Zenodo record is CC BY 4.0."},
+    "a2_label_is_a_column": {"pass": true, "note": "Label is the sheet a row sits in, and the Legend sheet spells out what each sheet means, so it becomes a column with a 3-line concatenation. Caveat I verified: the negative class is 'peaks of the input RNA', a choice rather than a measured non-binding call, and 101 of 2,048 positives overlap a negative interval."},
+    "a3_inputs_present": {"pass": true, "note": "Sequence is not in the file; rows carry mm10 coordinates plus strand. Resolving them is one genome download and a standard interval-to-sequence step, not thousands of lookups. I confirmed the UCSC mm10 endpoint returns DNA for one of the paper's own regions."},
+    "a4_units_stated": {"pass": true, "note": "Legend sheet names every column; the two numeric columns are explicitly minimal and maximal -log(p-value) from Genrich; coordinates are BED-style on GRCm38, stated in Methods. Verified in the file."},
+    "a5_enough_rows": {"pass": true, "n_rows": 14405, "note": "14,405 rows counted in the file: 2,048 MDA5-protected, 12,357 input control. The secondary task (editing-dependence among protected regions) has 1,190 versus 858. Both above the classification floor."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~20 MB of tables plus a ~800 MB mm10 2bit genome for sequence extraction; total peak sequence is only 5.68 Mbp (counted).", "note": "Random-access sequence extraction uses almost no memory; embedding is batched. CPU-only is fine."},
+    "a7_counts_match_paper": {"pass": true, "note": "Exact match: paper states 1,190 / 435 / 423 MDA5-protected peaks and the sheets hold exactly 1,190 / 435 / 423 rows. Minor text wobble only in derived percentages (760 vs 749 repeat-overlapping peaks quoted in two places)."},
+    "a8_label_provenance": {"pass": true, "note": "Label comes from a physical measurement: RNase digestion of liver RNA with and without recombinant MDA5, sequenced, then peak-called by Genrich. No model output anywhere in the chain, and nothing computed from the DNA sequence that would be the model input."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "Six sheets, identical 18-column schema, verified; concatenate and the sheet name is the label."},
+    "B2": {"score": 1, "why": "pandas/openpyxl read it first try, but two sheets lost the 'overlaps_intron' header (read as Unnamed:16)."},
+    "B3": {"score": 2, "why": "One experiment, one peak caller, one parameter set; verified identical columns across all sheets."},
+    "B4": {"score": 2, "why": "No censored or qualitative values in the file; only gene_name is ever blank (1,139 rows)."},
+    "B5": {"score": 1, "why": "Counted 1 exact duplicate coordinate and 101 positives overlapping a control interval; both trivially droppable."},
+    "B6": {"score": 2, "why": "Legend sheet defines all 18 columns and all 6 sheets; GEO matrix names all 18 samples."},
+    "C1": {"score": 2, "why": "'Does sequence beat repeat annotation, and does a wild-type model transfer to editing-deficient RNA' is informative either way."},
+    "C2": {"score": 2, "why": "Searched: no model predicts MDA5 occupancy; dsRID and dsRNAscan predict dsRNA existence in human only."},
+    "C3": {"score": 2, "why": "Novel plus diversity: no machine learning on MDA5-protection data, and mouse liver versus the human cell lines others use."},
+    "C4": {"score": 2, "why": "Label needs knockout mice, RNase protection with purified protein, and sequencing; months of work per dataset."},
+    "C5": {"score": 2, "why": "Obvious dummies available in the file itself: majority class (14.2% positive) and the annotation booleans plus length."},
+    "D1": {"score": 2, "why": "DNABERT-2 and HyenaDNA have open weights on HuggingFace and take mouse genomic DNA directly."},
+    "D2": {"score": 2, "why": "14,405 sequences, median 237 bp (I counted lengths); embed once on CPU, then fit a head."},
+    "D3": {"score": 2, "why": "DNABERT-2 and HyenaDNA are Apache-2.0; Nucleotide Transformer v2 is the non-commercial fallback."},
+    "E1": {"ok": true, "why": "Hold out whole repeat families and whole chromosomes; also hold out the editing-deficient genotype entirely."},
+    "E2": {"ok": true, "why": "25 chromosomes, 20 of them with at least 47 positives (counted in the file)."},
+    "E3": {"ok": true, "why": "Majority class and a logistic regression on the 11 annotation booleans plus length, both computable from the file."},
+    "E4": {"ok": true, "why": "I measured it: single MDA5 replicates agree on only 54% of peaks (36-65%) across the 18 GEO files."},
+    "E5": {"ok": true, "why": "Model must recover the published LINE enrichment (42% vs 1.2%, I recomputed) and rank the three lab-tested regions correctly."},
+    "E6": {"ok": true, "why": "Label shuffling, annotation-block ablation and random-sequence features all runnable on this table."},
+    "E7": {"ok": true, "why": "Held-out genotype inside the data, plus a human MDA5-filament dsRNA set and dsRNAscan human annotations found by search."},
+    "E8": {"ok": true, "why": "Reproduced the paper's own numbers exactly (1,190/435/423 rows, ~58% repeat overlap); descriptive, not a model score."},
+    "G1": {"score": 2, "why": "mm10/GRCm38 coordinates plus strand and gene symbols, present in every row of the file."},
+    "G2": {"score": 2, "why": "REDIportal mouse A-to-I editing atlas and UCSC RepeatMasker/Dfam both join on mm10 coordinates."},
+    "G3": {"score": 2, "why": "Interval join, cleanly one-to-many: many editing sites per region, collapse by count and mean editing level."},
+    "G4": {"score": 2, "why": "Asks whether editing density explains which repeat dsRNAs escape MDA5, beyond repeat family and base-pairing."},
+    "H1": {"score": 2, "why": "12,357 measured input-region negatives in the file, plus 6 RNase-only libraries in GEO as matched negatives."},
+    "H2": {"score": 0, "why": "One lab, one species, one tissue (mouse liver); only the genotype and replicate vary. Verified in GEO metadata."},
+    "H3": {"score": 2, "why": "Statable precisely: protection of liver-expressed regions from RNase by MDA5 in vitro, not interferon induction."},
+    "H4": {"score": 2, "why": "Paper itself flags the total-RNA/pre-mRNA artifact and the LINE binding-versus-activation mismatch."},
+    "I1": {"score": 2, "why": "Jantsch lab (Vienna), Bass lab (Utah, dsRNAscan), Hur lab (MDA5 filaments), ADAR1-inhibitor oncology programmes."},
+    "I2": {"score": 2, "why": "Output is a ranked clone-and-test list; the authors picked their three test regions by hand."},
+    "I3": {"score": 2, "why": "Precision in the top ~50 ranked regions matches the decision, since only a handful get cloned."},
+    "I4": {"score": 1, "why": "A LINE-overlap plus length rule already separates classes strongly (42% vs 1.2%), so sequence must earn its place."},
+    "J1": {"score": 2, "why": "Grouped splits, frozen-backbone transfer, calibration against replicate support: the modelling skills wanted."},
+    "J2": {"score": 1, "why": "Needs RNA-editing and innate-immunity intuition to judge plausibility; reachable but not in-house."},
+    "J3": {"score": 2, "why": "A sequence-annotated, repeat-family-labelled mouse MDA5-protected dsRNA table is useful even if the model is mediocre."},
+    "J4": {"score": 1, "why": "Three weeks is realistic given 20 MB of tables, but no budget is written down yet."},
+    "J5": {"score": 1, "why": "Kill condition is defined in this evaluation but not yet committed to a date in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "dsRID (double-stranded RNA identifier, Bioinformatics 2023)",
+        "open_weights": true,
+        "score_and_split": "Tree-based classifiers (random forest, logistic regression, support vector machine, selected by the automated tool TPOT) trained on alignment-derived features from human long-read RNA sequencing; evaluated on a random split within human brain data. I did not retrieve its exact reported score.",
+        "authors_named_unsolved": "Identifying which endogenous double-stranded RNAs are actually immunogenic remains the open problem; dsRID only flags regions that look double-stranded in read alignments.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "dsRNAscan (human dsRNA atlas, bioRxiv 2025, resource at dsrna.chpc.utah.edu)",
+        "open_weights": true,
+        "score_and_split": "Not a learned model: a thermodynamic/self-alignment scanner. Predicted ~5 million human double-stranded RNAs and only 2,018 that are both long and highly base-paired, i.e. candidate MDA5 ligands. No held-out performance number, because there is no measured MDA5-binding label to score against.",
+        "authors_named_unsolved": "They state that editing sites are a poor proxy for double-stranded RNA and that unedited double-stranded RNA cannot be found this way; which predicted duplexes actually engage immune sensors is left open.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "A-to-I editing-site predictors: ADAR-GPT (PNAS 2026), DeepADAR (NeurIPS workshop 2024), PreAIS (2025), EditPredict (2021)",
+        "open_weights": null,
+        "score_and_split": "EditPredict reports 99.5% and 93.6% validation accuracy for Alu and non-Alu human sites on random splits. These predict whether an adenosine is edited, which is a different label from MDA5 occupancy.",
+        "authors_named_unsolved": "They address editing, not immune recognition; none claims to predict which double-stranded RNA activates MDA5.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 or HyenaDNA (DNA language models) on mm10 peak sequence, with RNA-FM as an option for regions under 1,022 nucleotides",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: 14,405 sequences of median 237 bp embedded once (~3 h estimated), then a gradient-boosting or logistic head in minutes",
+    "licence": "DNABERT-2 and HyenaDNA are Apache-2.0; Nucleotide Transformer v2 is CC-BY-NC-SA if used instead"
+  },
+  "integration": {
+    "partner_dataset": "REDIportal mouse A-to-I RNA editing atlas (same group's Picardi lab) and the UCSC RepeatMasker/Dfam mouse repeat annotation",
+    "join_key": "mm10 (GRCm38) genomic interval plus strand",
+    "bigger_question_one_sentence": "Does how densely and where a repeat-derived duplex is A-to-I edited explain which duplexes stay invisible to MDA5, over and above what repeat family and predicted base-pairing already explain?"
+  },
+  "controls": {
+    "positive_control": "The model must recover the published enrichment I recomputed from the file (LINE overlap 42% of protected regions versus 1.2% of controls) and the length difference, and must rank the three regions the authors cloned and showed activate MDA5 in vitro (two SINE-derived, one LTR-derived) above the LINE-derived regions that failed to activate.",
+    "negative_control": "Shuffle the protected/not labels and confirm collapse to the 14.2% positive rate; replace sequence embeddings with random vectors of the same shape; ablate the annotation block to see how much of the signal is just repeat class.",
+    "external_validation": "Train on the editing-competent (Mavs-deficient) genotype and test on the editing-deficient (Adar/Mavs double-deficient) genotype; then test cross-species on the human MDA5-filament dsRNA set (bioRxiv 2026) and on dsRNAscan's long, highly-paired human duplexes."
+  },
+  "honest_claim_h3": "The model predicts which mouse liver transcript regions are protected from RNase digestion by recombinant MDA5 lacking its signalling domain, among regions expressed highly enough in liver to be peak-called in two MAVS-deficient genotypes; it predicts binding in a tube, not interferon induction in an animal, and the paper's own experiments show these differ for LINE elements.",
+  "plain_idea": {
+    "one_liner": "Use genomic sequence to predict which of an animal's own RNA regions get grabbed by the immune sensor MDA5.",
+    "train_on": "For each of 14,405 mouse liver genomic regions (counted in the file) the model sees the mm10 reference sequence of the region plus flanks, and optionally its repeat-family and predicted base-pairing features.",
+    "predict": "A yes/no score for 'protected by MDA5', with the true answer coming from RNase-protection sequencing of liver RNA incubated with purified MDA5 (2,048 protected regions versus 12,357 input-RNA regions), and a second yes/no for whether protection appears only when A-to-I RNA editing is absent (1,190 versus 858).",
+    "why_worthwhile": "Labs studying autoimmune interferon disease and ADAR1 inhibitors in cancer currently pick candidate self-RNAs by hand (this paper cloned three); a ranked list would tell them which to test, and even a failure would show that sequence alone cannot explain MDA5's choices."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "Nobody else has measured MDA5 occupancy genome-wide in mouse tissue-derived RNA; dsRID and dsRNAscan are human and predict whether a duplex exists, not whether MDA5 binds it. But our set is small in absolute terms: 2,048 protected regions, one tissue, one lab."},
+    "confidence_score": {"answer": "partly", "why": "The 18 GEO libraries give 3 biological replicates per condition, so each region carries replicate support (1, 2 or 3) and a min-to-max -log(p) range, and I measured the between-replicate agreement at 54%. That supports a calibrated per-region confidence, which dsRNAscan's thermodynamic scores do not provide; dsRID does output classifier probabilities."},
+    "models_beatable": {"answer": "partly", "why": "dsRID is a 2023 tree-ensemble on alignment features evaluated on a random human split, so it is dated and weakly split, but it answers a different question, so beating it would not be a like-for-like comparison. The editing-site predictors (ADAR-GPT 2026, DeepADAR 2024) are modern and strong, but on a different label."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition 'the existing model can be run as our baseline' fails: no published model takes mouse genomic coordinates and returns an MDA5-occupancy score, so there is nothing to wrap and extend. The real baseline has to be built from this paper's own annotation columns."}
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "The human MDA5-filament RNA sequencing set (bioRxiv 2026, 'Identification of highly immunogenic endogenous dsRNAs from cellular MDA5 filaments', found by search) and the Nature Genetics 2026 cytosolic dsRNA/MDA5 study; dsRNAscan's human duplex atlas holds predictions rather than measurements; REDIportal holds A-to-I editing, a related but different label. Found by search, not downloaded.",
+    "approx_items": null,
+    "join_key": "Genomic coordinates within a species; orthologous gene symbol across species",
+    "why": "A second, independently produced MDA5-occupancy set in human cells makes a genuine cross-species generalisation test possible, which is the strongest evidence a model of this kind can offer."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Repeat elements are near-identical by definition: thousands of copies of the same LINE or SINE family sit across the genome, so copies of one family in both train and test let the model memorise a consensus instead of learning anything.",
+      "The negative class is input-RNA peaks, which sit mostly in exons and 3' untranslated regions (79% and 43% in the file) while positives sit mostly in introns and LINEs (61% and 42%), so a model can score well by learning transcript region type rather than double-strandedness.",
+      "Peak calling depends on expression level and library depth, which differ systematically between the two genotypes, so the editing-dependence label partly encodes which library a region came from.",
+      "Peaks were joined within 200 bp and subtracted base-wise, so neighbouring fragments of one long duplex can end up as separate rows, some in train and some in test."
+    ],
+    "split": "Primary: hold out whole repeat families, taken from the UCSC RepeatMasker mm10 table (the family name is not in this file, only boolean class columns, so it must be joined in). Secondary: hold out whole chromosomes, using the chr column I verified is present with 25 values. Third: hold out the editing-deficient genotype entirely, using the sheet name as the genotype column.",
+    "checks": [
+      "Shuffle protected/not labels and confirm precision-recall area under the curve collapses to the 14.2% positive rate.",
+      "BLAST or MMseqs2 every test region against the training regions and report the nearest-neighbour identity distribution; drop test regions above 80% identity to anything in train and re-score.",
+      "Train on the annotation booleans and length alone, and on transcript region type alone, to see how much of the headline score is region type rather than sequence.",
+      "Merge peaks within 1 kb into single units before splitting, and confirm the score does not drop sharply, which would mean fragments were leaking."
+    ],
+    "verdict": "Serious but manageable: the repeat-family split is the whole ball game here, and it must be built before any number is believed."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 50 ranked regions (a lab clones and tests a handful, so the top of the list is the decision), reported alongside precision-recall area under the curve on held-out repeat families.",
+    "baselines": "Majority class gives a precision-recall area under the curve of 0.142 (2,048 of 14,405 rows, counted by me). The real baseline is a logistic regression on the 11 annotation booleans plus peak length, all present in the file; its value is not yet computed and must be the first thing measured. No published predictive number exists for this task.",
+    "success": "Sequence-model precision-recall area under the curve at least 0.10 above the annotation-plus-length baseline on held-out repeat families, and at least 0.65 accuracy on the editing-dependence task against its 58.1% majority class (1,190 of 2,048).",
+    "noise_ceiling": 0.54,
+    "kill": "If after two weeks the sequence model is within 0.02 precision-recall area under the curve of the annotation-plus-length baseline on held-out repeat families, stop and write it up as a one-page negative note."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes sequence-to-function models with biological payoff; would need the model to transfer from mouse to the human MDA5-filament set and nominate duplexes that someone then validates."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes well-evaluated predictors on newly released genomics data; a honest repeat-family-held-out comparison of sequence versus annotation baselines on 14,405 regions fits squarely."},
+    "fallback": {"journal": "Bioinformatics (Applications Note) or a bioRxiv preprint", "why": "Even if sequence adds nothing over repeat annotation, the cleaned, sequence-resolved, repeat-family-labelled mouse MDA5-protected dsRNA table plus the 54% replicate-agreement ceiling is a publishable resource-and-caveat note."}
+  },
+  "pitch": {
+    "headline": "The only genome-wide measurement of which of a mammal's own RNAs the immune sensor MDA5 actually grabs, and nobody has modelled it.",
+    "what_makes_the_data_unusual": "2,048 MDA5-protected regions against 12,357 measured negatives from the same assay, in mouse liver, with 3 replicates per condition and a matched editing-deficient genotype. All verified in the files; existing tools (dsRID, dsRNAscan) are human and predict duplex existence, not binding.",
+    "the_win": "A sequence model that beats the repeat-annotation baseline by 0.10 precision-recall area under the curve on held-out repeat families and whose top 50 regions include the SINE and LTR duplexes the authors validated in vitro.",
+    "even_if_it_fails": "We learn that MDA5 occupancy is explained by repeat family and expression rather than sequence, and we publish the 54% replicate-agreement ceiling I measured, which caps what anyone can claim from this assay.",
+    "who_wants_it": "The Jantsch lab in Vienna and the Bass lab in Utah, who pick candidate immunogenic self-RNAs by hand (this paper cloned three), plus ADAR1-inhibitor oncology programmes choosing which self-RNAs to watch."
+  },
+  "ml_idea": "Two linked classification tasks on mm10 sequence. Task 1: protected by MDA5 (2,048) versus input-RNA control (12,357), with a frozen DNA language model (DNABERT-2 or HyenaDNA) embedding of each region plus flanks feeding a small head, compared head-to-head against a logistic regression on the repeat/region annotation booleans and length that ship in the file. Task 2, the one that avoids the region-type confound because both classes come from the same assay: among protected regions, predict whether protection appears only when A-to-I editing is lost (1,190 editing-deficient-specific versus 858 shared or editing-competent). Everything is split by held-out repeat family and held-out chromosome, with a held-out-genotype transfer test and a cross-species test against the human MDA5-filament set.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 1.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 3,
+    "cv_run_minutes": 10,
+    "compute_note": "Row counts, lengths (median 237 bp, 5.68 Mbp total) and replicate agreement are measured, not estimated. Embedding time is estimated at roughly 1.5 sequences per second for a small DNA language model on a laptop CPU; I did not time a forward pass. The 8 hours covers concatenating the sheets, pulling mm10 sequence, and joining the UCSC RepeatMasker family table needed for the split.",
+    "cheapest_killing_check": "Fit logistic regression on the 11 annotation booleans plus peak length with whole repeat families held out. If it already reaches an area under the curve of 0.90 or more, the sequence model has nothing to add to Task 1 and the project narrows to Task 2 only."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer verified in the actual files, not the abstract: 14,405 rows parse cleanly, the paper's 1,190/435/423 peak counts match the sheets exactly, every column is documented in a Legend sheet, the label traces to RNase protection with purified MDA5 rather than any model, and 12,357 measured negatives plus 6 RNase-only control libraries are available. The task itself is unmodelled: searching found dsRID and dsRNAscan for human duplex detection and a crowded field of A-to-I editing-site predictors, but nothing that predicts MDA5 occupancy, so this is a Novel angle with a built-in held-out-genotype transfer test and a cross-species validation set. Effort is tiny (20 MB of tables, CPU-only, frozen DNA language model plus a head). Two honest caveats are written into the plan rather than discovered later: repeat elements are near-duplicates so the split must hold out whole repeat families, and the first hour must check whether the repeat-annotation baseline already solves Task 1, with Task 2 (editing-dependence among protected regions) as the confound-free fallback."
+}

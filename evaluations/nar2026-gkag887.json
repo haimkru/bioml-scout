@@ -1,0 +1,156 @@
+{
+  "paper_id": "nar2026-gkag887",
+  "title": "UFold-X: an enhanced Dual & Dynamic U-Mamba model for long-range RNA secondary structure prediction.",
+  "doi": "10.1093/nar/gkag887",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://drive.google.com/drive/folders/1cqapZOsJmlrVYiKbKADnDzilU7eZML27 (data + weights); code https://github.com/AI4Bread/UFold-X; Zenodo https://doi.org/10.5281/zenodo.20651866",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the public Google Drive folder: 16 dataset files (.cPickle/.pickle) and 8 model-weight files (.pt), no login needed. Downloaded RCSB1800.cPickle (4.21 MB) and RCSB4000.cPickle (18.26 MB) and read them with a restricted unpickler (no code execution): RCSB1800 = exactly 40 records, sequence lengths 611-1799 nucleotides; RCSB4000 = exactly 61 records, lengths 2821-4810. Each record holds a one-hot sequence array (1800x4 or 5000x4, zero-padded), a 3-column structure-label array, the true length, a PDB-derived file name (e.g. 8T2S-2D-bpseq.txt) and an explicit base-pair list (10-2812 pairs). Got byte sizes of the other 12 dataset files by HTTP HEAD and estimated record counts from the constant per-record size: RNAstralign_train_1800 ~9,342 and test ~1,099 (paper says 8,793 / 1,035), BGSU1800 ~644/162, BGSU5000 ~1,243/311, Rfam1800 ~1,019/255, Rfam5000 ~1,660/416. Read the GitHub README (states 20-40 GB GPU memory for training, CUDA-only mamba-ssm wheel, ~2 h per test set) and the full text from PMC13569499.",
+    "what_came_from_paper_text_only": "The 30,451-sequence RNAstralign total, the ArchiveII count (3,975), the 12,711 RNA Mapping Database chemical-reactivity constructs for the UFold-X-R reactivity variant, the 66-sequence cross-clan test set and the 161-sequence cross-family test set, and all reported accuracy numbers (cross-family F1 0.495 vs CONTRAfold 0.444 vs UFold 0.389). None of ArchiveII, RNAstralign-600, RNAstralign-all, the chemical-reactivity data, the cross-clan test set or the cross-family test set is present in the released Drive folder, even though the repository's data README claims all testing data is there."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Public Google Drive folder, no login: I listed all 24 files and downloaded two of them. Caveat: the headline cross-clan and cross-family test sets and ArchiveII are not in the folder despite the README saying they are."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The label is in the file: each record carries an explicit base-pair list (verified, e.g. 338 pairs for PDB entry 8T2S) plus a structure-label array, so the paired-partner target needs no construction across sources."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Sequences are stored as one-hot arrays inside the same records (verified shapes 1800x4 and 5000x4); no accession lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Structure labels are nucleotide index pairs, which are unambiguous. Noted separately: the SHAPE (selective 2'-hydroxyl acylation) reactivity variant uses normalised reactivity in arbitrary units that differ between experiments, but that data is not released here."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 9342,
+      "note": "Aggregate rows are sufficient: RNAstralign_train_1800 ~9,342 records estimated from file size (paper says 8,793). But the long-RNA contribution itself is tiny and mostly redundant: 40 + 61 Protein Data Bank structures verified exactly, 66 cross-clan test sequences per the paper."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "~3.1 GB of pickles on disk, but 17-channel L-by-L input tensors: 1.7 GB per sequence in float32 at L=5000",
+      "note": "FAIL. The baseline needs a GPU three ways: the authors' own README states 20-40 GB of GPU memory for training; mamba-ssm (the state-space kernel the model is built on) ships CUDA-only wheels and the README insists the CUDA/torch versions match; and one test set takes ~2 hours on their GPU. The model's input is a 17-channel length-by-length matrix, so a single 5,000-nucleotide RNA is 1.7 GB in float32 before any U-Net activations, far past 16 GB of CPU RAM. No streaming or subsetting route exists, because the long sequences are the whole point of the paper."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "RCSB1800 = 40 and RCSB4000 = 61 records match the paper exactly, and size-based estimates for RNAstralign (~9,342 / ~1,099) sit within ~6% of the stated 8,793 / 1,035. Mismatch is in coverage, not counts: files the README promises are absent."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the paper's headline benchmark. For the cross-clan experiment the authors mutate 5-10% of bases to make 2,640 artificial sequences, then write: 'we apply CONTRAfold ... and treat the predicted structures as reference labels'. So the flagship long-RNA training labels are another model's output, which caps the model at CONTRAfold's accuracy and explains why it lands 'comparable to classical approaches'. The PDB-derived labels I opened are fine (base pairs annotated from experimental 3D structures by RNApdbee 2.0), and RNAstralign labels come from comparative sequence analysis, which is itself an inference rather than a direct measurement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "UFold-X (this paper's own model; a convolutional U-Net plus a Mamba state-space branch)",
+        "open_weights": true,
+        "score_and_split": "F1 (harmonic mean of precision and recall on predicted base pairs) 0.495 on a 161-sequence cross-family split vs CONTRAfold 0.444 and UFold 0.389; on the 66-sequence cross-clan split, only 'comparable to' classical thermodynamic methods. I verified 8 weight files exist in the Drive folder but did not run them.",
+        "authors_named_unsolved": "They state that models trained on few Rfam clans are 'prone to severe performance degradation' on structurally novel RNA classes, and that long-RNA training data is scarce - which is why they fell back on CONTRAfold-generated labels.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "UFold (2022, Nucleic Acids Research; the predecessor U-Net)",
+        "open_weights": true,
+        "score_and_split": "Self-reported F1 0.654 on the RNAstralign test split and 0.91 on ArchiveII, both same-family splits that are now known to be inflated.",
+        "authors_named_unsolved": "Long sequences: limited receptive field, which is the gap UFold-X claims to fill.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "sincFold (2024, Briefings in Bioinformatics; convolutional network with short- and long-range blocks)",
+        "open_weights": true,
+        "score_and_split": "Median F1 0.911 on ArchiveII and, per its authors, the best deep-learning generalisation under family-fold cross-validation (each RNA family held out in turn), improving on 5 of 9 families.",
+        "authors_named_unsolved": "Cross-family generalisation remains well below within-family performance.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MXfold2 (2021, Nature Communications; deep network regularised by thermodynamic folding energies)",
+        "open_weights": true,
+        "score_and_split": "Evaluated on ArchiveII and bpRNA-new, the standard splits UFold-X also reports against.",
+        "authors_named_unsolved": "Pure learned models overfit families; hence the thermodynamic regulariser.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Szikszai et al. 2022, Bioinformatics - 'Deep learning models for RNA secondary structure prediction (probably) do not generalize across families'",
+        "open_weights": true,
+        "score_and_split": "Showed F1 falling ~36% when moving from within-family to between-family test sets; this is the honest re-evaluation of the whole field, already published.",
+        "authors_named_unsolved": "Whether any sequence-only deep model can fold an unseen family at all.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RibonanzaNet (2024, Das lab, Stanford; transformer trained on chemical-mapping data)",
+        "open_weights": true,
+        "score_and_split": "Trained on 2.1M crowd-sourced RNA sequences with DMS and 2A3 chemical mapping (806,578 released for the Kaggle competition); also predicts secondary structure.",
+        "authors_named_unsolved": "Pseudoknots and long transcripts beyond the ~450-nucleotide training length.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None that fits. RNA-FM and RiNALMo (RNA language models) cap at ~1,022 nucleotides, which excludes the 600-5,000 nucleotide regime that is this paper's entire contribution; RibonanzaNet was trained on ~450-nucleotide constructs.",
+    "freeze_and_head_viable": false,
+    "hardware": "Authors' own README: 20-40 GB GPU memory for training, CUDA-only mamba-ssm, ~2 h per test set.",
+    "licence": "Code CC-BY-4.0 on Zenodo; weights shared on Google Drive without a stated licence."
+  },
+  "integration": {
+    "partner_dataset": "Rfam 15.0 clan annotations and the Protein Data Bank / RNAsolo representative sets, which the paper already uses.",
+    "join_key": "PDB identifier (the file names carry it, e.g. 8T2S) and Rfam family/clan accession.",
+    "bigger_question_one_sentence": "Does accuracy on long RNAs fall with evolutionary distance from the training clan - a good question, but the usable test material is 40 + 61 + 66 highly redundant, mostly ribosomal structures, and the published cross-family work already answers it."
+  },
+  "controls": {
+    "positive_control": "Available in principle: predicted base pairs must be Watson-Crick or wobble, and the model should nail 5S and 16S ribosomal RNA, which dominate these sets.",
+    "negative_control": "Label shuffling is runnable, but only on a GPU.",
+    "external_validation": "The PDB-derived sets (RCSB, BGSU, Rfam-from-RNAsolo) are three overlapping views of the same Protein Data Bank entries, so they are not independent of each other; genuine external validation would need bpRNA-new or Rfam clans not in training."
+  },
+  "honest_claim_h3": "At best: 'among long RNAs whose 3D structures are already in the Protein Data Bank - overwhelmingly ribosomal RNA - a Mamba-based network predicts base pairs about as well as thermodynamic folding does, when trained on sequences whose labels came from a thermodynamic folding program.'",
+  "plain_idea": {
+    "one_liner": "Use an RNA sequence to predict which of its nucleotides pair with which, for long RNAs over 600 nucleotides.",
+    "train_on": "One-hot encoded RNA sequences padded to 1,800 or 5,000 nucleotides; I verified ~9,342 training records for the 600-1,800 nucleotide set and 40 + 61 exact records for the two Protein Data Bank sets.",
+    "predict": "A pairing partner for every nucleotide (a contact matrix). True answers come either from 3D structures solved by crystallography or cryo-electron microscopy and annotated by the RNApdbee tool, or from comparative sequence alignments - and, for the headline cross-clan benchmark, from the CONTRAfold program's own predictions.",
+    "why_worthwhile": "Reliable folding of long RNAs would help anyone studying long non-coding RNAs or viral genomes, but the honest finding here is that the released material cannot support a new long-RNA model on a laptop."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The training material is the same RNAstralign/ArchiveII/PDB pool every competitor uses (~8,793 sequences for the long split), and the long-RNA extension adds only 40 + 61 verified PDB structures plus PDB re-slices. For chemical-reactivity modelling, RibonanzaNet's 806,578 released sequences dwarf the 12,711 constructs used here."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate structure determinations per sequence in the released pickles - one structure label per record - so per-prediction uncertainty cannot be calibrated from this data."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "sincFold (2024) and MXfold2 (2021) are open and already evaluated with family-fold cross-validation, and Szikszai et al. (2022, Bioinformatics) published the honest cross-family re-evaluation of the whole field. The crowded-field exception needs reproducible models to be absent or dishonestly evaluated; here they are neither."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: UFold-X cannot be run as our baseline without CUDA and 20-40 GB of GPU memory, so there is no shared starting point to improve on."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train or re-evaluate a long-RNA base-pair predictor on the released pickles (which are genuinely feature/label ready, with sequences and explicit pair lists in one record). It dies on compute - 17-channel length-by-length tensors, 1.7 GB per 5,000-nucleotide sequence, and a CUDA-only state-space kernel - and on label provenance, since the flagship cross-clan training labels are CONTRAfold predictions rather than measurements.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 3.1,
+    "needs_gpu": true,
+    "peak_ram_gb": 30,
+    "embedding_hours": null,
+    "cv_run_minutes": 120,
+    "compute_note": "Disk size measured by HEAD on all 14 remaining files (3.1 GB total) plus the two I downloaded. Peak RAM is the authors' own stated 20-40 GB of GPU memory; the 1.7 GB-per-sequence input figure is my arithmetic (17 channels x 5000 x 5000 x 4 bytes), and the pickles actually store float64, doubling it. The 120-minute figure is the README's own per-test-set time on their GPU, not timed by me.",
+    "cheapest_killing_check": "Count the non-redundant long RNAs that carry an experimentally derived structure. Done: 40 (RCSB1800) + 61 (RCSB4000) verified in the files, plus 66 cross-clan test sequences from the paper - and the BGSU, Rfam and RCSB sets are three overlapping slices of the same Protein Data Bank entries, mostly ribosomal RNA."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A6: the baseline requires a GPU with 20-40 GB of memory by the authors' own README, needs CUDA-only mamba-ssm, and feeds 17-channel length-by-length tensors that reach 1.7 GB for a single 5,000-nucleotide RNA - no streaming route exists because long sequences are the point. Also fails A8: the headline cross-clan benchmark trains on CONTRAfold's predicted structures as 'reference labels', so the model distils a thermodynamic program rather than learning from measurements. Secondary reasons: the experimentally grounded long-RNA material is 40 + 61 Protein Data Bank structures (verified exactly) plus a 66-sequence cross-clan test set, all dominated by ribosomal RNA and overlapping across the BGSU/Rfam/RCSB slices; the released Drive folder omits ArchiveII, the cross-clan set and the cross-family set that the README promises; and the field is saturated with open, honestly evaluated models (sincFold, MXfold2, plus Szikszai et al. 2022, which already published the cross-family re-evaluation)."
+}

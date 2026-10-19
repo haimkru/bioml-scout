@@ -1,0 +1,190 @@
+{
+  "paper_id": "nar2026-gkag515",
+  "title": "Microbe Decoder uncovers functional traits of microbes in microbiome datasets.",
+  "doi": "10.1093/nar/gkag515",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/thackmann/microbedecoder (mirrored at https://doi.org/10.5281/zenodo.18651323, CC-BY-4.0)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened: database_clean.zip (36 MB CSV, 27,010 organism rows x 55 columns) and gene_functions_database.rds (41 MB; 22,734,429 genome-gene pairs, 15,100 genomes x 11,866 KEGG orthology gene-family IDs, all pairs unique, median 1,474 genes per genome). Built the full feature/label table myself: a 15,100 x 11,866 sparse presence/absence matrix (22.7 MB in memory) joined to trait labels on IMG genome ID (12,513 of 15,101 genome IDs matched; 11,776 also carry a full GTDB taxonomy string, giving 706 families and 44 phyla). Trained a 100-tree random forest on two traits: fermentation (n=4,344, 1,130 positive) scored balanced accuracy 0.915 on random 5-fold and 0.826 when whole families were held out; aerobic growth (n=5,883, 4,772 positive) scored 0.944 random and 0.921 held-out-family, in 4-8 seconds per 5-fold run. Opened the shipped pretrained forest fermentation.rds (50 trees, 11,866 predictors, 4,394 training rows, out-of-bag error 8.3%/11.9%). Opened Supplementary Datasets.xlsx and read the per-trait published scores (30 machine-learning rows, mean balanced accuracy 0.875). Read the preprocessing R script that defines every label as a one-line text match on a named column.",
+    "what_came_from_paper_text_only": "The rank-by-rank generalisation curve (Supplementary Fig. S5: 'highest at species or genus, moderate for family and order, low for higher ranks') is described in the text; I could not render the supplementary PDF (no poppler installed), so I reproduced the effect myself instead. The provenance of individual BacDive fields (curated strain description versus BacDive's own AI-predicted values) comes from the methods text, not from a field-level flag I inspected. The web server's behaviour and the three case studies were not tested."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Plain anonymous HTTPS downloads from GitHub and a Zenodo record licensed CC-BY-4.0; no login, no application. I downloaded 45 MB of it."},
+    "a2_label_is_a_column": {"pass": true, "note": "Traits sit in named columns (e.g. 'Oxygen tolerance (BacDive)', 'Metabolites produced (Fermentation Explorer)') as semicolon-separated value lists; each binary label is one published text-match rule, which I re-implemented in 30 lines and which reproduced the authors' counts."},
+    "a3_inputs_present": {"pass": true, "note": "Features are shipped as explicit gene-family identifiers per genome (22.7M genome-gene pairs in one file). No sequence download and no identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Traits are presence/absence, so unitless by nature; every numeric column names its unit in the header ('Temperature for growth in degrees', 'Salt for growth in moles per liter', 'Cell length in microns', 'Incubation period in days')."},
+    "a5_enough_rows": {"pass": true, "n_rows": 11776, "note": "11,776 genomes have both gene-content features and a GTDB taxonomy; labelled counts per trait that I computed range from 9,031 (FAPROTAX2-sourced traits) and 8,094 (oxygen tolerance) down to 1,276 (fermentation end products). Main traits pass; individual rare end products (55-95 positives) are too small alone."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~450 MB as text, 22.7 MB as a sparse matrix", "note": "Observed: whole pipeline (read 409 MB gene table, build matrix, train, 5-fold cross-validate two traits) ran in 75 seconds on CPU with peak memory well under 4 GB."},
+    "a7_counts_match_paper": {"pass": true, "note": "My labelled counts match the paper's published evaluation-set sizes exactly once you divide by their 30% test fraction: gram stain 7,473 (paper 2,242 test = 7,473 total), oxygen tolerance 8,094 (2,428 test = 8,093), end products 1,276 (383 test = 1,277)."},
+    "a8_label_provenance": {"pass": true, "note": "Labels trace to lab observations curated from literature: BacDive strain descriptions (Gram stain, motility, spore formation, oxygen tolerance), Fermentation Explorer from Bergey's Manual and primary papers (end products), FAPROTAX2 curated taxon assignments. None is another model's output. Caveat to check first: FAPROTAX assigns a trait to a whole taxon from one cultured member, so gene-based models partly re-learn taxonomy, and BacDive also hosts AI-predicted fields that must be excluded."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two files joined on IMG genome ID; join works but keeps 12,513 of 15,101 (83%), verified in files."},
+    "B2": {"score": 1, "why": "CSV parsed first try; gene table is R .rds, needing one R call to export (0.7 s, verified)."},
+    "B3": {"score": 1, "why": "Each trait binary from one source, but BacDive, FAPROTAX2 and Fermentation Explorer labels not mutually comparable."},
+    "B4": {"score": 2, "why": "No censored or qualitative placeholders in trait columns; values are lists or missing, verified across 55 columns."},
+    "B5": {"score": 1, "why": "15,101 unique genome IDs, but 416 duplicate genus/species/strain rows and 372 'negative;positive' motility conflicts."},
+    "B6": {"score": 2, "why": "Column names carry source and unit; every label rule published in preprocessing R script I read."},
+    "C1": {"score": 2, "why": "Accuracy-decay-by-taxonomic-distance question is informative either way; I already measured a 0.09 drop."},
+    "C2": {"score": 1, "why": "MICROPHERRET, BacDive-AI (2025), Bacformer and this paper's own forests all exist and are open."},
+    "C3": {"score": 1, "why": "Clear 'better evaluation plus uncovered end-product traits' case, but gene-to-trait prediction itself is well worked."},
+    "C4": {"score": 2, "why": "Alternative is culturing an isolate and running lab phenotype assays; most microbiome taxa are unculturable."},
+    "C5": {"score": 2, "why": "Supplementary Dataset S3 gives balanced accuracy for all 30 traits; I reproduced two within 0.02."},
+    "D1": {"score": 2, "why": "Bacformer bacterial genome language model, open weights on HuggingFace, matches bacterial genomes."},
+    "D2": {"score": 1, "why": "Bacformer needs per-protein embeddings and proteomes not in this release; the gene-content baseline needs no backbone."},
+    "D3": {"score": 2, "why": "Bacformer checkpoints are Apache-2.0 and this dataset is CC-BY-4.0; both checked on the source pages."},
+    "E1": {"ok": true, "why": "GTDB taxonomy string present for 11,776 joinable genomes; I ran a held-out-family split with it."},
+    "E2": {"ok": true, "why": "706 GTDB families and 44 phyla among joinable genomes, counted in the file."},
+    "E3": {"ok": true, "why": "Majority class and a taxonomy-only predictor (the paper's own taxonomy tool) are both computable."},
+    "E4": {"ok": true, "why": "Same traits reported separately by BacDive, FAPROTAX2 and Fermentation Explorer, so disagreement gives a noise floor."},
+    "E5": {"ok": true, "why": "Methanogenesis and oxygenic photoautotrophy scored 1.000 in the paper; marker genes must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffling and gene-block ablation run in seconds; a 5-fold run took 4-8 s measured."},
+    "E7": {"ok": true, "why": "100 literature model organisms (Dataset S1), 5 lab-measured rumen isolates, plus BacDive strains outside this table."},
+    "E8": {"ok": true, "why": "Per-trait published numbers in Dataset S3; my quick forest hit 0.915 vs their 0.896 on fermentation."},
+    "G1": {"score": 2, "why": "NCBI taxonomy ID, GTDB accession, IMG genome ID, BacDive ID, LPSN ID and KEGG gene IDs all present."},
+    "G2": {"score": 2, "why": "GTDB (hundreds of thousands of genomes) joins on GTDB accession; BacDive joins on BacDive ID, present for 19,114 rows."},
+    "G3": {"score": 1, "why": "Organism-to-genome is one-to-one (15,101 unique IDs) but species have many strains; 17% of IDs lack gene data."},
+    "G4": {"score": 2, "why": "Combination asks whether cultured-isolate trait models transfer to GTDB's uncultured majority and when they fail."},
+    "H1": {"score": 1, "why": "BacDive traits have explicit negatives (6,044 Gram-negative vs 3,774 positive); FAPROTAX and end-product traits treat absence as negative."},
+    "H2": {"score": 1, "why": "Cultured, validly named prokaryotes only; no uncultured taxa or eukaryotes, and phyla are heavily skewed."},
+    "H3": {"score": 2, "why": "Honest claim written as one sentence, restricted to cultured isolates with curated trait records."},
+    "H4": {"score": 2, "why": "Paper states the cultured-only limitation and that accuracy falls at higher taxonomic ranks."},
+    "I1": {"score": 2, "why": "Hackmann lab (rumen microbiology), BacDive curators at DSMZ, and FAPROTAX/PICRUSt2 users in microbiome labs."},
+    "I2": {"score": 2, "why": "Shows whether community trait-abundance plots for uncultured taxa can be trusted, changing which organisms get targeted."},
+    "I3": {"score": 1, "why": "Balanced accuracy matches a yes/no trait call, but the real use needs calibrated probabilities, which nobody checked."},
+    "I4": {"score": 1, "why": "Marker genes alone nail some traits (methanogenesis 1.000), so a lookup competes; that is itself the finding."},
+    "J1": {"score": 2, "why": "Grouped splits, calibration, multi-label learning and optional genome-language-model transfer: real modelling."},
+    "J2": {"score": 1, "why": "I can check marker-gene controls, but end-product predictions need a microbiologist to sanity-check."},
+    "J3": {"score": 2, "why": "The harmonised genome-gene-trait table and the measured decay curve are shareable even if no model improves."},
+    "J4": {"score": 2, "why": "Three weeks: one to rebuild all 30 traits, one for splits and calibration, one to write up."},
+    "J5": {"score": 1, "why": "Kill condition stated here (no decay gap and no calibration error by week two) but not yet in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Microbe Decoder's own machine-learning tool (this paper): 30 random forests over KEGG gene-family presence",
+        "open_weights": true,
+        "score_and_split": "Mean balanced accuracy 0.875 across 30 traits (range 0.69-1.00) on a random 70/30 strain split where train and test may share a species; the paper says accuracy falls to 'low' when only the phylum is shared. I opened fermentation.rds: 50 trees, 11,866 predictors, 4,394 training rows.",
+        "authors_named_unsolved": "The database covers cultured prokaryotes only; the authors call out extending to uncultured prokaryotes and eukaryotes, and note that predictions degrade for organisms unrelated to those in the database.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MICROPHERRET (Bizzotto et al., Environmental Microbiome 2024): 89 per-trait classifiers on KEGG gene families",
+        "open_weights": true,
+        "score_and_split": "Reported best Matthews correlation coefficient 0.83 (support vector machine), 0.81 logistic regression, 0.79 random forest, with labels from FAPROTAX; split reported as cross-validation plus tests on fragmented and incomplete genomes, from the article page. I read the abstract and repository listing, not the trained models.",
+        "authors_named_unsolved": "Robust performance only above about 70% genome completeness; relies on KEGG annotation availability.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BacDive-AI (Koblitz et al., Communications Biology 2025): machine-learning trait predictions over curated BacDive data",
+        "open_weights": null,
+        "score_and_split": "Described as generating over 50,000 new trait values for nearly 16,000 strains with high-confidence model scores; I read the search summary and this paper's Dataset S4 comparison (BacDive-AI balanced accuracy 0.95 on 4 'other traits' for the rumen isolates, n=10 positives), not the original split definition.",
+        "authors_named_unsolved": "Not retrieved (the article page timed out), so I am not quoting one.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Bacformer (Wiatrak et al., bioRxiv 2025): bacterial genome language model, 27M parameters, with the BacBench trait benchmark",
+        "open_weights": true,
+        "score_and_split": "Reported to predict phenotypes including oxygen tolerance and growth temperature, with genome embeddings clustering by Gram stain before fine-tuning; I confirmed Apache-2.0 checkpoints exist on HuggingFace but did not retrieve its numbers or splits.",
+        "authors_named_unsolved": "Not retrieved; not quoting one.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Traitar (Weimann et al., mSystems 2016) and PICA/PhenDB",
+        "open_weights": true,
+        "score_and_split": "Classic protein-family-based trait classifiers; per the 2025 review found in search, PhenDB was last updated 2020 and Traitar is no longer online, so no current honest benchmark exists.",
+        "authors_named_unsolved": "A 2025 Bioinformatics review of this field names failure to generalise to out-of-distribution genomes and false-positive gene associations as the open problems.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Bacformer (macwiatrak/bacformer-masked-complete-genomes, HuggingFace) for the transfer arm; no backbone needed for the gene-content baseline",
+    "freeze_and_head_viable": false,
+    "hardware": "Gene-content baseline: laptop CPU, 5-fold cross-validation in 4-8 seconds per trait (measured). Bacformer arm needs per-protein embeddings for thousands of proteins per genome, so a GPU and a proteome download.",
+    "licence": "Bacformer checkpoints Apache-2.0; this dataset CC-BY-4.0 (Zenodo record)."
+  },
+  "integration": {
+    "partner_dataset": "GTDB (genome taxonomy and hundreds of thousands of genomes, mostly uncultured) and BacDive (curated strain phenotypes)",
+    "join_key": "GTDB accession and GTDB taxonomy string (15,584 rows), BacDive ID (19,114 rows), NCBI taxonomy ID (15,584 rows) - all present and counted in the file",
+    "bigger_question_one_sentence": "Do trait predictors trained on cultured isolates still work on the uncultured majority of the tree of life, and can we tell in advance which predictions to distrust?"
+  },
+  "controls": {
+    "positive_control": "Methanogenesis must be predicted from the methyl-coenzyme M reductase gene family (K00399 and relatives) and oxygenic photoautotrophy from photosystem gene families; both scored balanced accuracy 1.000 in the paper, so anything lower means the pipeline is broken. Secondary control: genome size (number of distinct gene families) must be predictable near-perfectly from the features.",
+    "negative_control": "Shuffle trait labels within taxonomic family and confirm balanced accuracy collapses to the majority-class value; also ablate the ~500 universally present core gene families and confirm performance barely moves, and replace features with random binary vectors of the same density.",
+    "external_validation": "The 100 literature-characterised model organisms in Supplementary Dataset S1, the five lab-measured rumen isolates in Dataset S2/S4, and BacDive strains that have a phenotype but no row in this table."
+  },
+  "honest_claim_h3": "Among cultured, validly published prokaryotes that have both a sequenced genome in IMG and a literature-curated trait record, gene-family presence predicts trait presence with balanced accuracy around 0.88 when a close relative is in training, but this falls by roughly 0.09 for fermentation when the organism's whole family is unseen, and the drop is largest for traits whose labels were propagated across a taxon rather than measured on the strain itself.",
+  "plain_idea": {
+    "one_liner": "Use the gene families present in a microbe's genome to predict lab-measured traits such as fermentation, oxygen tolerance or spore formation.",
+    "train_on": "For each organism, a 11,866-long yes/no vector of which KEGG gene families its genome contains (KEGG is a standard catalogue of gene functions). I verified 15,100 genomes with such vectors and 11,776 that also carry a full taxonomy string, with 4,344 to 9,031 labelled examples depending on the trait.",
+    "predict": "A yes/no call for each of 30 traits. The true answers come from published laboratory work: BacDive strain descriptions (Gram stain, motility, spore formation, oxygen tolerance), measured fermentation end products curated in Fermentation Explorer, and curated taxon-level metabolic assignments in FAPROTAX.",
+    "why_worthwhile": "Microbiome researchers routinely convert gene catalogues into claims about what a community does; this would measure how far such claims survive when the organism has no cultured relative, which is the normal case in environmental samples. Even a negative result tells the field which trait predictions to stop trusting."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "This table merges three label sources into one genome-keyed file: MICROPHERRET trained on FAPROTAX labels alone and BacDive-AI on BacDive alone. The 12 fermentation end-product traits (1,276 labelled genomes, e.g. 190 butyrate producers) appear in no other tool's training set. But the overall scale, about 9,000 labelled genomes, is not larger than what existing models used."},
+    "confidence_score": {"answer": "partly", "why": "Several traits are asserted independently by two or three of the source databases, so disagreement gives a real noise estimate, and 706 families let you report per-clade uncertainty. The existing tools, including this paper's, report the fraction of trees voting positive as a 'probability' and multiply it by relative abundance without ever checking calibration."},
+    "models_beatable": {"answer": "partly", "why": "This paper's shipped forests are small (50 trees, verified inside fermentation.rds) and evaluated on a random 70/30 strain split that allows species sharing; MICROPHERRET is a 2024 support vector machine. But Bacformer (2025, open Apache-2.0 weights, pretrained on about 1.3M genomes) is a strong modern competitor on the same phenotypes."},
+    "guaranteed_improvement": {"answer": "no", "why": "The obvious upgrade, genome language model embeddings, needs protein sequences that are not in this release and would have to be pulled from NCBI or IMG, a different data path; and Bacformer's published numbers come from its own splits, so the baseline-plus-strictly-more-data condition fails."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "BacDive (DSMZ's curated strain phenotype database, which supplies 19,114 of the rows here via BacDive ID and holds many more strains - known resource, and the 2025 Communications Biology paper found in search reports new predictions for nearly 16,000 strains); FAPROTAX and FAPROTAX2 taxon-to-function tables; Fermentation Explorer; the BacBench trait benchmark released with Bacformer (found in search).",
+    "approx_items": null,
+    "join_key": "BacDive ID, NCBI taxonomy ID, GTDB accession (all three present as columns in database_clean.csv)",
+    "why": "Trait values exist for tens of thousands of strains outside this table, so a model trained here can be tested on strains the authors never used, which is the external validation this field is missing."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Close relatives on both sides of the split: two strains of the same species have nearly identical gene content, so a random split is close to testing on training data (I measured balanced accuracy 0.915 random versus 0.826 held-out-family for fermentation).",
+      "FAPROTAX-derived labels are assigned to whole taxa from one cultured member, so the label itself partly encodes taxonomy and the model can score well by recognising the clade rather than the metabolism.",
+      "A single marker gene can be definitionally tied to the trait (methyl-coenzyme M reductase for methanogenesis), which is a real signal but inflates headline accuracy and hides whether anything else was learned.",
+      "Genome completeness and annotation depth vary (7 to 3,286 gene families per genome) and correlate with how well-studied an organism is, which also drives whether it has a trait record at all.",
+      "Absence of a trait in FAPROTAX or Fermentation Explorer is treated as a negative, so some 'negatives' are untested organisms."
+    ],
+    "split": "Group by GTDB family, and separately by order and phylum, using the 'GTDB Taxonomy' column that I confirmed is present for 11,776 joinable genomes (706 families, 44 phyla). Report accuracy as a curve across held-out rank, with the same trait and the same metric, so the decay is the result.",
+    "checks": [
+      "Shuffle labels within family and confirm balanced accuracy falls to the majority-class baseline.",
+      "Train a taxonomy-only model (family one-hot) and report how much of the gene-based model's accuracy it already achieves - the gap is the real gene signal.",
+      "Train on the single most important gene family alone for each trait and report that number next to the full model.",
+      "Report, for every test genome, the gene-content similarity to its nearest training genome, and plot accuracy against it.",
+      "Split the results by label source (strain-measured BacDive versus taxon-propagated FAPROTAX) and compare the decay curves."
+    ],
+    "verdict": "Manageable: the grouping column is already in the file and I have already run one grouped split, so the main risk is forgetting to report the taxonomy-only comparison rather than any hidden leak."
+  },
+  "success_criteria": {
+    "metric": "Balanced accuracy per trait as a function of the held-out taxonomic rank (species, genus, family, order, class, phylum), reported alongside a taxonomy-only baseline - balanced accuracy because the published table uses it and because the user's decision is a yes/no trait call on an imbalanced set. Secondary: expected calibration error of the predicted probability, because those probabilities get multiplied by abundance to make community trait claims.",
+    "baselines": "Majority class (e.g. 0.50 balanced accuracy by construction); the paper's own per-trait numbers in Supplementary Dataset S3 (mean 0.875, fermentation 0.896, aerobe 0.940, nitrate reduction 0.746, iron respiration 0.693); my own quick 100-tree forest, measured at 0.915 random / 0.826 held-out-family for fermentation and 0.944 / 0.921 for aerobe.",
+    "success": "Two things together: (a) the decay curve is produced for all 30 traits with the taxonomy-only baseline beside it, and (b) at held-out family, the gene-content model beats the taxonomy-only baseline by at least 0.05 balanced accuracy averaged over traits, or we show it does not - either outcome is the paper. A modelling win would be recovering the species-split number (0.875 mean) at the family-held-out level.",
+    "noise_ceiling": null,
+    "kill": "If, after one week, the gene-content model and a family-one-hot taxonomy model are within 0.02 balanced accuracy at every held-out rank and the probabilities turn out already calibrated, there is no finding - stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes evaluation papers that change how a widely used class of tools is interpreted; it would take a clear, trait-by-trait demonstration that gene-based trait prediction is largely taxonomic memorisation, plus a fix that restores accuracy on unseen phyla."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes careful re-evaluations and benchmarks of genomics tools; the likely result - a 30-trait decay curve by taxonomic distance plus a calibration audit of the probabilities these tools emit - fits exactly, and a related NLP-plus-genome phenotype paper appeared there in 2025."},
+    "fallback": {"journal": "Bioinformatics (application note or short benchmark) or a bioRxiv preprint with the harmonised table deposited on Zenodo", "why": "Even if no model improves, the reusable genome-by-gene-family matrix joined to 30 curated traits with grouped-split code is a citable artefact for this subfield."}
+  },
+  "pitch": {
+    "headline": "A 15,100-genome by 11,866-gene matrix joined to 30 lab-measured microbial traits, with the authors' own per-trait scores to beat.",
+    "what_makes_the_data_unusual": "Three independent trait sources (BacDive strain tests, curated fermentation end products, FAPROTAX taxon assignments) in one CC-BY-4.0 table keyed to genomes, plus a GTDB taxonomy column giving 706 families for honest grouped splits.",
+    "the_win": "A 30-trait curve showing how balanced accuracy falls with taxonomic distance - I already measured fermentation dropping from 0.915 on random folds to 0.826 with whole families held out.",
+    "even_if_it_fails": "We would still learn whether published trait predictions for uncultured organisms are trustworthy, and would ship a reusable matrix; the honest risk is that the answer is 'a lookup on a few marker genes does most of it'.",
+    "who_wants_it": "The Hackmann lab (rumen microbiology), BacDive's curators at DSMZ, and anyone running FAPROTAX or PICRUSt2 on environmental samples, who would learn which trait calls to drop."
+  },
+  "ml_idea": "Rebuild all 30 trait labels from the published one-line rules, assemble the 15,100 x 11,866 gene-presence matrix, and measure how trait prediction degrades as the test organism's nearest training relative gets more distant (held-out genus, family, order, class, phylum), always next to a taxonomy-only baseline and split by whether the label was measured on the strain or propagated across the taxon. Add a calibration audit of the predicted probabilities, since those probabilities are multiplied by taxon abundance to make community-level claims. Optional second arm: compare gene-presence features with Bacformer genome embeddings on a subset where proteomes are obtainable.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 0,
+    "cv_run_minutes": 5,
+    "compute_note": "Timed, not estimated: reading the 409 MB gene table took 48 s, building the sparse matrix 1 s, and a 100-tree random forest 5-fold run took 4-8 s per trait; all 30 traits across six held-out ranks is therefore a few minutes. The Bacformer arm would add roughly 100 CPU-hours of protein embedding and is excluded from these numbers.",
+    "cheapest_killing_check": "Already done: count genomes that have both gene-content data and a trait label after the join - 12,513 of 15,101 IMG genome IDs match the gene table, 11,776 also carry a GTDB taxonomy, and fermentation keeps 4,344 labelled genomes with 1,130 positives."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A check was verified by opening the files, and I built the full feature/label table and ran a grouped-split baseline in 75 seconds on CPU: 15,100 genomes x 11,866 gene families, 30 trait labels defined by published one-line rules, counts matching the paper exactly, GTDB taxonomy present for honest splits, and the authors' per-trait scores supplied as a spreadsheet. The field is crowded (MICROPHERRET, BacDive-AI, Bacformer, this paper's own forests), so the project is not 'beat their number' but the question none of them answered: how much of gene-to-trait accuracy is taxonomic memorisation, and are the emitted probabilities calibrated - informative whichever way it comes out, and already half-evidenced by the 0.915 to 0.826 drop I measured for fermentation."
+}

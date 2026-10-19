@@ -1,0 +1,142 @@
+{
+  "paper_id": "nar2026-gkag409",
+  "title": "SNIPSNP: precision design of CRISPR/Cas9 knock-in reagents for variant correction and disease modeling.",
+  "doi": "10.1093/nar/gkag409",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/JokingHero/snipsnp_figures (figure data + ClinVar benchmark); https://doi.org/10.5281/zenodo.18717152 (R package source only)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unpacked the 0.93 MB supplementary zip and parsed both Excel workbooks sheet by sheet: 13 sheets, every HDR (homology-directed repair) measurement counted = 111 replicate-level percentages across 4 genes (IL2RG, ADA2, STAT3, IKZF2), from <=30 unique guide/template conditions. Downloaded the figures repository: clinvar_ag.csv = 35,320 rows x 5 columns (3 AlphaGenome splice scores + variant id + is_ag_risky flag), clinvar_guides.csv = 12,973 rows x 9 columns (guide sequences and coordinates, 1,116 unique variant ids, no outcome column). Read the Zenodo record metadata (software only, GPL-3.0, one 736 KB source zip). Read the 12-page supplementary PDF in full. Read the plotting script snipsnp_plot_ADA2_data.R, which loads data/20230125_ADA2_barcoding.csv; that file returns HTTP 404 and is absent from both repositories and both supplementary tables.",
+    "what_came_from_paper_text_only": "That the 96-template ADA2 barcoding screen produced a nonlinear relationship between seed-region mismatch count and precise editing (Figure 2B-C) - I could not check it because the underlying per-template read-count file is not published. Also from text only: the ~1,000 randomly sampled ClinVar pathogenic variants, the 9% of synonymous candidates with CADD > 15, and the claim that SNIPSNP templates beat correction-only templates, since no head-to-head numeric table beyond the 111 values exists."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Everything offered downloads without login: supplementary zip from Europe PMC, GPL-3.0 R package from Zenodo, figure/ClinVar CSVs from GitHub. Verified by opening all of them."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "A column literally named HDR (percent precise editing) exists in four sheets, so the target is present for the small experiment. Caveat: for the 35,320-row and 12,973-row tables there is no outcome column at all."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Guide RNA 20-mers, 23-mer protospacer+PAM and 100 bp repair-template sequences are spelled out as letters in Supplementary Table 2 and clinvar_guides.csv; no accession lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "HDR is percent of alleles edited, measured by droplet digital PCR or amplicon sequencing; the supplementary methods state both readouts. Mixing two assays is a comparability worry, not a missing-unit failure."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 111,
+      "note": "FAILS. I counted every measured value in the files: 111 replicate-level HDR percentages, from at most 30 distinct guide/template conditions across only 4 genes. The checklist needs ~1,500 rows for regression or ~400 for classification. The 96-template ADA2 screen, the only design that approaches a real screen, is still only 96 conditions and its data file is a 404."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~6 MB total (0.93 MB supplement + 3.5 MB of CSVs + 2.2 MB RDS)",
+      "note": "Trivially laptop-sized; verified by downloading everything."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Mostly consistent, but clinvar_guides.csv holds 1,116 unique variant ids where the supplementary methods state exactly 1,000 randomly sampled variants, and I could not reconcile the difference. More seriously, the paper's Figure 2C reports results for 96 repair templates whose read-count file is absent (HTTP 404), so that count cannot be checked at all."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAILS for the only large table. The sole label-like column in clinvar_ag.csv, is_ag_risky, is AlphaGenome's own splice predictions thresholded at 0.99 - I confirmed the rule in analyze_clinvar.R - so it is both another model's output (circularity) and computable from the three score columns sitting beside it (leakage by construction). The safety_tier, disruption_tier and CADD fields in clinvar_snps.rds are likewise SNIPSNP's own rules plus a published predictor, not measurements. Only the 111 HDR percentages trace back to a physical assay."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SNIPSNP itself (the paper's own rule-based design engine, an R package)",
+        "open_weights": true,
+        "score_and_split": "No held-out predictive evaluation is reported. It is a filter-and-rank heuristic (hard filters plus priority groups), validated by 111 HDR measurements at 4 loci, not by a train/test split.",
+        "authors_named_unsolved": "The authors note that guide efficiency models fail per guide and are tolerated as missing values, and that theoretical safety scores (CADD, AlphaGenome) can conflict with population evidence - i.e. no calibrated model ranks blocking-variant choices.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CUNE (Computational Universal Nucleotide Editor), a machine-learning ssODN design model for point mutations",
+        "open_weights": null,
+        "score_and_split": "Reported in the HDR template-design literature as a predictive aid for single-stranded oligo design; I found it only via review mentions and did not retrieve its own evaluation numbers.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Random-forest HDR site-selection model of Mathis-type ssODN studies (Scientific Reports 2019, s41598-019-39142-0)",
+        "open_weights": null,
+        "score_and_split": "Random forest on guide and ssODN nucleotide/dinucleotide composition, 5-fold cross-validation on a mouse dataset; reported an 83% improvement in HDR efficiency over conventionally chosen targets. Split appears to be random folds, not held-out loci.",
+        "authors_named_unsolved": "Identified repair-template sequence composition as the governing factor with region-dependent influence, implying the positional rules inside the template are not resolved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Deep-learning microhomology template design (Nature Biotechnology 2025, s41587-025-02771-0)",
+        "open_weights": null,
+        "score_and_split": "Predicts repair at the genome-cargo interface and guided tandem-repeat homology arms; demonstrated precise integration at 32 loci in HEK293T plus Xenopus and mouse brain. Evaluation is experimental validation at new loci rather than a reported split metric.",
+        "authors_named_unsolved": "Frames sequence-context-specific rules at the cargo junction as newly learnable, implying generalisation across cell types and cargo sizes remains open.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Not assessed beyond noting the obvious fit - a DNA language model such as Nucleotide Transformer or DNABERT-2 would embed the 100 bp repair templates - because Part A failed first.",
+    "freeze_and_head_viable": null,
+    "hardware": "Would be CPU-only and trivial at this scale; irrelevant with 111 labelled values.",
+    "licence": "R package is GPL-3.0-or-later (verified in the Zenodo record); supplementary tables carry the article's licence."
+  },
+  "integration": {
+    "partner_dataset": "In principle ClinVar and dbSNP (already joined by the authors) and AlphaGenome's precomputed variant effects, on genomic coordinates in GRCh38.",
+    "join_key": "chromosome:position:REF>ALT in GRCh38, present in clinvar_ag.csv ids and clinvar_guides.csv variant_id",
+    "bigger_question_one_sentence": "Cannot be written usefully here: joining more annotation to these tables adds more predicted annotations to a set that still contains no measured editing outcome, so the combination would answer nothing new."
+  },
+  "controls": {
+    "positive_control": "Available in principle - the textbook result that a mismatch in the PAM or seed region raises HDR is visible in the STAT3 sheet (blocking SNVs 2.2-14.4% versus no SNVs 0.5-9.0%) - but with 4 guides there is nothing to hold out.",
+    "negative_control": "Label shuffling is runnable but meaningless at n = 111 replicate values from <=30 conditions.",
+    "external_validation": "None attached. No second dataset of measured HDR outcomes is deposited with this paper, and the 96-template screen that could have served is a 404."
+  },
+  "honest_claim_h3": "At best: 'among 30 guide/template designs at 4 immune-disease genes measured in one Bergen laboratory, HDR percentage rises with the number of blocking variants placed in the PAM and seed region' - a restatement of the paper's own figures, not a model claim.",
+  "plain_idea": {
+    "one_liner": "Use repair-template sequence and blocking-variant placement to predict how often a CRISPR knock-in edit lands precisely.",
+    "train_on": "What a model would see: the 20-letter guide sequence, the 100-letter repair template, and where the silent 'blocking' changes sit relative to the cut site. Verified count of labelled examples: 111 replicate measurements from at most 30 distinct conditions.",
+    "predict": "Percent of DNA copies carrying the intended edit (HDR, homology-directed repair). The true answer comes from droplet digital PCR or Illumina amplicon sequencing of edited primary human T cells, as stated in the supplementary methods.",
+    "why_worthwhile": "Gene-therapy and disease-modelling labs currently pick blocking variants by rule of thumb, so a calibrated ranking would save weeks of wet-lab screening - but this paper does not supply enough measurements to build or test one."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "111 measured HDR values from 4 genes is far smaller than the mouse ssODN dataset behind the 2019 random-forest model or the 32-locus integration screens behind the 2025 Nature Biotechnology deep-learning model. The only large tables here (35,320 and 12,973 rows) contain no measurements at all."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Replicates exist (3-4 per condition, e.g. STAT3 sgRNA 1 at 5.8, 6.1, 4.4, 8.5%) so a noise estimate is computable, but with <=30 conditions there is no way to calibrate per-prediction confidence over any design space."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "SNIPSNP is a 2026 rule-based ranker with no held-out evaluation, and the 2019 random forest used random folds on composition features - both are beatable in principle. But beating them needs a screen of thousands of templates, which this paper does not provide."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first and third conditions: there is no runnable baseline with a published number on these data, and no new data measuring HDR percentage the same way joins to these 111 values on any key."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The idea considered and abandoned: embed the 100 bp repair template with a DNA language model (for example Nucleotide Transformer) plus positional features for each blocking variant, and regress HDR percentage, holding out whole genes to test whether blocking-variant rules transfer across loci. It dies on sample size - 111 replicate measurements from at most 30 conditions at 4 genes, with the one 96-template screen unpublished. A viable version of this project would need a published pooled template library (thousands of templates with read counts), which this paper does not deposit.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.006,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated from the actual file sizes I downloaded (~6 MB total) and the 111 rows I counted; nothing needed timing because everything fits in memory many times over. Effort is low only because the dataset is tiny.",
+    "cheapest_killing_check": "Count the measured HDR values in Supplementary Table 1 - it takes five minutes with pandas and returns 111 across 4 genes, which kills the project immediately. Then check whether data/20230125_ADA2_barcoding.csv exists in the figures repository; it returns HTTP 404."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5, A8 and A7. Only 111 measured HDR (homology-directed repair) percentages exist across 4 genes and at most 30 guide/template conditions - verified by parsing every sheet - against a threshold of ~1,500 rows. The two large tables (35,320 AlphaGenome-scored candidate variants, 12,973 guide sequences) carry no measured outcome; their only label-like column, is_ag_risky, is AlphaGenome's own splice score thresholded at 0.99 and therefore both another model's output and computable from its neighbouring columns. The one genuinely screen-like experiment - 96 ADA2 repair templates with per-template HDR read counts, shown in Figure 2C - is loaded by the authors' plotting script from data/20230125_ADA2_barcoding.csv, which returns HTTP 404 and appears in neither repository nor supplement; publishing that file would be the single thing that makes this paper worth revisiting, and even then 96 conditions is below the classification threshold. Worth noting for the project log: SNIPSNP is a well-built, openly licensed (GPL-3.0) design tool, and the underlying task - ranking silent blocking variants by how well they stop Cas9 re-cleavage without creating splice or coding risk - is genuinely unmodelled and would be a good project on top of a published pooled template library from elsewhere."
+}

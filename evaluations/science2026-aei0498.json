@@ -1,0 +1,111 @@
+{
+  "paper_id": "science2026-aei0498",
+  "title": "A noncontiguous code for RNA-guided DNA recognition at the origin of CRISPR-Cas.",
+  "doi": "10.1126/science.aei0498",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/20945944 (code only); https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1507409 (raw sequencing)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the Zenodo deposit (VIPR_analysis_scripts_v1.0-rc8.zip, 139 KB zipped / 540 KB unzipped): it holds only Python/R scripts, a Snakemake workflow, environment files and two toy fixtures (a 3-row target_context.tsv and a 1-sequence FASTA); its own docs/supplemental_data_crosswalk.md and docs/MISSING_ITEMS.md state the frozen datasets, guide lists, alignments and trees live in the paper's supplement, not here. Downloaded the preprint's Europe PMC supplementary bundle (PMC13142463, 4.3 MB) and read all 38 pages of the only document in it: a methods-and-figures PDF with figures S1-S22 and no tables S1-S3 and no data S1-S4. Listed the open sequencing deposit via NCBI: BioProject PRJNA1507409 = 17 raw FASTQ runs (13 small-RNA-seq, 2 ChIP-seq, 2 pull-down; ~8 GB), no processed count tables, no GEO series. The Science supplement URL and article page both return HTTP 403.",
+    "what_came_from_paper_text_only": "All counts of systems and guides come from the bioRxiv preprint text (PMC13142463): 664-670 representative VIPR systems, 7 VIPR types, 137 manually inspected unique VIPR RNA (vrRNA) sequences, 20 SUSP1 and 66 Pseudomonas fulva natural target assignments. None of those tables could be opened. The number of guides with measured activity (roughly 20-30 across green-fluorescent-protein repression, in vitro binding and plaque assays) is my count from the figure legends, not from a data file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The processed data a model would need (tables S1-S3 listing the 664-670 VIPR systems and their accessions; data S1-S4 with sequences, alignments, trees, guide query sets and target assignments) exists only in the Science supplement, which returns HTTP 403 without a subscription. The open CC-BY preprint supplement on PubMed Central is a figures-and-methods PDF containing none of those tables, and the Zenodo deposit says in writing that it excludes 'full search databases, frozen study datasets, raw FASTQs, and large derived outputs'. What is openly downloadable is 17 raw FASTQ runs, which are barred by the project's no-raw-sequencing rule and contain no labelled table."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "No label column exists in any file I could open. Every candidate target label (which DNA sites a VIPR RNA binds) would have to be constructed by rerunning the authors' nhmmer search pipeline against a pangenome we would have to rebuild from accessions listed in the unavailable supplement."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "Neither the Vipr protein sequences nor the VIPR RNA sequences are present in any open file; the archive ships one 15-base synthetic test sequence. Sequences would have to be re-fetched one accession at a time from a list we cannot read."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Not the failure point: the measured readouts the paper does report (percent of matching NN positions, fold change in plaquing efficiency, fluorescence) are described with units in the methods, they just are not in a downloadable table."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "The only experimentally measured activity labels are roughly 20-30 guide/target combinations across the green-fluorescent-protein repression assay, the in vitro competitive binding assay and the phage plaque assays (counted from figure legends in the preprint). That is one to two orders of magnitude below the 400-row classification floor. The 664-670 catalogued systems are sequence annotations, not measurements."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~8 GB of raw FASTQ in BioProject PRJNA1507409; the code archive is 540 KB",
+      "note": "Size is not the blocker; there is simply nothing processed to load."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "The paper itself gives three different totals for the same catalogue - 664 systems (Fig. 1C), 667 representative systems (Fig. 5A) and 670 representative Vipr protein sequences (fig. S2 legend) - and with no downloadable table there is no way to tell which is right."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "The large-scale 'targets' are outputs of the authors' own rule-based search (nhmmer with wildcard-spaced queries, then an 80 percent NN-match cutoff), i.e. computed deterministically from the guide sequence that would also be the model input. Predicting them is leakage by construction, and the 7-type VIPR classification is read off a phylogenetic tree built from the same protein sequences a classifier would use as features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Evo 2 (genomic language model, Nature 2026), used inside this very paper to score VIPR RNA conservation and entropy",
+        "open_weights": true,
+        "score_and_split": "Not evaluated on any VIPR task; the paper uses it only to make sequence logos. No accuracy number applies.",
+        "authors_named_unsolved": "Evo 2's authors frame discovery of unannotated genetic elements as open; this paper's authors name no benchmark at all.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Deep-learning guide-RNA activity and off-target predictors for CRISPR-Cas9/Cas12 (large reviewed family, e.g. the 2023 Briefings in Bioinformatics review and the 2025 CRISPRoffT resource)",
+        "open_weights": true,
+        "score_and_split": "Numbers are for Cas9/Cas12 guides on their own datasets; none has ever seen a VIPR RNA, so no transferable score exists.",
+        "authors_named_unsolved": "Reviews name generalisation to new Cas effectors and cell types as unsolved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Evo 2 or Nucleotide Transformer would be the natural DNA/RNA backbone for VIPR RNA sequences",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU embedding would be feasible for ~100-nucleotide guides, but there is no labelled set to fit a head on",
+    "licence": "Zenodo code is CC-BY 4.0; the preprint is CC-BY 4.0; the Science version and its supplement are not open"
+  },
+  "integration": {
+    "partner_dataset": "IMG/VR v4 (uncultivated virus genomes) and RefSeq phage genomes, which the authors themselves searched",
+    "join_key": "NCBI nucleotide accession plus genomic coordinates",
+    "bigger_question_one_sentence": "Which phages across the global virome carry VIPR systems and whose genomes do their guides point at - a real question, but one that needs the authors' accession tables, which are not public."
+  },
+  "controls": {
+    "positive_control": "Would be recovering the conserved GGY motif spacing from held-out VIPR RNA sequences - but no open sequence set exists to do it on.",
+    "negative_control": "Label shuffling is runnable in principle; moot with ~20 measured guides.",
+    "external_validation": "The companion structural paper (Science 10.1126/science.aei3472) and its cryo-electron-microscopy structures are an independent source, but they test mechanism, not a predictive model."
+  },
+  "honest_claim_h3": "With the openly available files, no model claim is supportable at all: the only processed artefacts are two toy test fixtures and 17 raw FASTQ runs, so any claim would rest on tables we cannot read.",
+  "plain_idea": {
+    "one_liner": "Use VIPR guide RNA sequence to predict which double-stranded DNA sites the VIPR complex binds and silences.",
+    "train_on": "Intended input was each VIPR RNA (a ~100-nucleotide RNA made of 9-16 GGY/NN repeats) paired with a candidate DNA site; the paper describes 664-670 systems and 137 inspected guide sequences, but none of those sequences is in a file we can download, so the usable count is zero.",
+    "predict": "Intended output was whether a guide binds and represses a given site, with truth from the authors' green-fluorescent-protein repression assay and phage plaque assays - roughly 20-30 measured guide/target combinations in total.",
+    "why_worthwhile": "If it worked, gene-editing tool builders would get a VIPR guide-design rule as useful as the existing Cas9 rules; as it stands the honest lesson is that a headline discovery paper can be published with its catalogue locked behind a paywall."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: a guide-to-target binding or repression predictor for VIPR (Viral Interference Programmable Repeat) RNAs, and as a fallback a classifier that flags Vipr-family proteins in new phage genomes. Both die on data access - the system catalogue and guide/target tables are paywalled - and the first also dies on sample size (roughly 20-30 measured guides) and on label provenance (the large-scale targets are outputs of the authors' own deterministic string-matching rule applied to the same guide sequences that would be the model's input).",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 8.0,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "No estimate possible because no feature/label table can be assembled; the 8 GB figure is the summed size of the 17 raw FASTQ runs reported by NCBI's run-info service, which the project rules bar from download anyway.",
+    "cheapest_killing_check": "Open the Zenodo deposit and read docs/supplemental_data_crosswalk.md - it says in one sentence that the supplement, not the archive, holds the frozen accessions, guide lists and processed tables, and the supplement is behind Science's paywall. Five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A fails on A1 first: the Zenodo deposit is code only and explicitly excludes the datasets, the open CC-BY preprint supplement contains figures and methods but none of tables S1-S3 or data S1-S4, the Science supplement returns HTTP 403, and the only open data is 17 raw FASTQ runs. A5, A2, A3, A7 and A8 also fail - roughly 20-30 measured guides, no sequences or labels in any openly readable file, three conflicting catalogue counts (664 / 667 / 670) in the paper itself, and large-scale 'targets' that are deterministic outputs of the authors' own search rule applied to the candidate model inputs. Outstanding biology; nothing to model."
+}

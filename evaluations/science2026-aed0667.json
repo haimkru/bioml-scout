@@ -1,0 +1,59 @@
+{
+  "paper_id": "science2026-aed0667",
+  "title": "Crush-resistant air sacs allow insect larvae to exploit aquatic habitats at extreme depth.",
+  "doi": "10.1126/science.aed0667",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5061/dryad.4tmpg4fqk",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all 9 small files from the Dryad deposit (CC0 licence) and read every row count and column: Data_S1 lakefly acoustic layers 62 rows x 25 cols; Data_S2 fish tracks 213,945 rows x 16 cols (19 rows carry a -9999 sentinel for missing values); Data_S3 water-quality sonde profile 261 rows; Data_S4 crush depth 206 rows x 4 cols from 161 unique larvae across 5 Chaoborus species and instars 2-4 plus pupae, depth of failure 7.3-570.8 m; Data_S5 air-sac area vs pressure 909 rows but only 58 distinct air sacs from 32 larvae; Data_S6 81 rows; Data_S7 274 rows; Data_S8 10 rows. Also read the 15.7 kB README, which documents every column and its units.",
+    "what_came_from_paper_text_only": "Science full text is paywalled and not in PubMed Central, so the abstract plus the Dryad README were the only narrative sources. I did not open AZFP_Data.zip (12.91 GB of proprietary .01A raw echosounder binaries); its size and format come from the Dryad file listing and README."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Dryad deposit doi:10.5061/dryad.4tmpg4fqk, CC0, no login. The site sits behind a bot challenge, but all 9 small files downloaded intact with sizes matching the Dryad file listing."},
+    "a2_label_is_a_column": {"pass": true, "note": "For the air-sac project the label is a real column: depth.m (crush depth) in Data_S4 and Area (air-sac profile area) in Data_S5-S8. For the only large table, Data_S2 fish tracks, there is no outcome column at all - any label (species, prey encounter) would have to be constructed by joining tracks to lakefly layers on time and depth."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are plain columns I read in the files: species name, instar stage, applied pressure in psi, pH, air-sac length and width in mm. No identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Units are stated in both the README and column names and are consistent: metres, mm, mm^2, psi, pH units, dB re 1 m^2 for target strength. I confirmed value ranges are consistent with those units."},
+    "a5_enough_rows": {"pass": false, "n_rows": 206, "note": "FAIL, verified by counting. Every table with a measured label is far under the ~1,500-row bar: crush depth 206 rows from 161 larvae; air-sac compression 909 rows but only 58 independent sacs (the rest are repeated pressure steps on the same sac); pH series 81, 274 and 10 rows; acoustic layers 62 rows with a 3-class visually assigned label. The one large table (213,945 fish tracks) has no label."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~35 MB of CSV for all usable tables; 12.91 GB zip of raw sonar ignored", "note": "The small tables fit in memory trivially. The raw acoustic archive is 12.91 GB of proprietary binary, over the 50 MB download rule and the laptop working-set guidance."},
+    "a7_counts_match_paper": {"pass": true, "note": "File sizes match the Dryad API listing exactly and the README's per-file column descriptions match the parsed headers. The paywalled article text could not be cross-checked for sample sizes."},
+    "a8_label_provenance": {"pass": true, "note": "Crush depth and air-sac area are direct physical measurements (pressure chamber to implosion; imaged sac profile), not model outputs. The exception is Data_S1's DVM stage, which the README says was assigned 'based on visual examination' and is largely derivable from the depth and acceleration columns beside it."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Brautaset et al. deep convolutional network for acoustic target classification (ICES Journal of Marine Science, 2020)", "open_weights": null, "score_and_split": "Not retrieved beyond the search result title and abstract snippet; I did not open the paper, so I quote no number.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "None applicable", "freeze_and_head_viable": false, "hardware": "CPU only; no sequence, molecule or image data for any open backbone to encode", "licence": "n/a"},
+  "integration": {"partner_dataset": "None identified: the data carries no standard biological identifier (no UniProt, Ensembl, InChIKey or NCBI taxonomy ID), only free-text species abbreviations like 'C. edulis'.", "join_key": "none", "bigger_question_one_sentence": "Cannot be written - no joinable key exists, so any partner resource would need a species-name mapping built by hand for 5 midge species."},
+  "controls": {"positive_control": "Crush depth should rise monotonically with instar, which the paper already reports - so a model that recovers it adds nothing.", "negative_control": "Label shuffling across the 161 larvae is runnable but meaningless at this sample size.", "external_validation": "None found: no second dataset measures Chaoborus air-sac implosion pressure."},
+  "honest_claim_h3": "A model here could only claim 'the implosion depth of a Chaoborus air sac can be read off its species and instar for the 5 species and 161 larvae measured in one study' - which is a lookup table, not a model.",
+  "plain_idea": {
+    "one_liner": "Use midge larva species, developmental stage and air-sac size to predict the water depth at which its air sac implodes.",
+    "train_on": "Species name, instar (developmental stage 2-4 or pupa) and, where available, air-sac length and width in millimetres. I verified only 206 crush-depth measurements from 161 individual larvae exist.",
+    "predict": "The simulated freshwater depth in metres at which the air sac or respiratory horn failed, measured directly by raising hydrostatic pressure in a chamber until the sac imploded (7.3-570.8 m across the dataset).",
+    "why_worthwhile": "Insect physiologists and freshwater ecologists would like a rule for how deep a given lake-fly larva can go, but with two usable features and 206 rows the honest answer is a two-column table of group means, not a learned model."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: (1) regress air-sac implosion depth on species and instar - 206 rows, 2 features, a group-mean lookup table does the whole job; (2) classify the diel-migration stage of an acoustic lake-fly layer - 62 rows with a visually assigned label that is nearly computable from the depth and acceleration columns next to it; (3) use the 213,945 fish tracks - no label column exists, so the target would have to be constructed by matching tracks to prey layers on time and depth, which is exactly the Part A2 failure mode.",
+  "effort": {
+    "hours_to_feature_table": 1.0,
+    "working_set_gb": 0.04,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": 1.0,
+    "compute_note": "Estimated from actually loading every file: the biggest usable table is a 34 MB CSV that pandas read in a couple of seconds; nothing here needs more than a laptop minute. No timing of a model was done because no model is warranted.",
+    "cheapest_killing_check": "Count rows and independent individuals in Data_S4 and Data_S5 - done, and it killed the project: 206 crush-depth rows from 161 larvae, and 909 compression rows from only 58 distinct air sacs."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on verified counts: the only measured labels sit in 10-206 row tables (161 larvae), and the single large table, 213,945 fish tracks, has no outcome column, so a target would have to be constructed. Beautifully documented CC0 data and a lovely piece of biology, but it is a physiology experiment with 5 species and 2 usable features - a group-mean lookup table, not a machine-learning project. No open-weight backbone fits the data type and no standard identifier exists for integration."
+}

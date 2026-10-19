@@ -1,0 +1,57 @@
+{
+  "paper_id": "science2026-adv8291",
+  "title": "Chemically induced skin tumors arise from long-lived stem cells of the upper hair follicle.",
+  "doi": "10.1126/science.adv8291",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5281/zenodo.20076432",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the Zenodo deposit (manuscript-code-v1.0.0.zip, 304,596 bytes, CC-BY-4.0) and opened both data files: mutations_per_sample.tsv.gz is 468 rows x 14 columns (88 sequenced samples, 80 with at least one call, 42 distinct RAS hotspot variants in Hras/Kras/Nras at codons 12/13/61, VAF 1.0e-5 to 1.0e-2, 209 of 468 calls supported by a single mutant molecule, no duplicate sample-variant pairs, no missing values); depths_per_sample.tsv.gz is 52 rows x 103 columns giving molecule depth at 21 positions for 88 samples in 9 treatment groups of 8-10 mice. Read all four READMEs. Checked NCBI for GSE261766: 28 single-cell samples, only two series-level processed R objects on the FTP site (integrated_corrected_cds_v3.RDS.gz = 495,634,018 bytes verified by HEAD, chemotherapy_additional_samples.RDS.gz = 1.0 GB listed), no per-sample count matrices; BioProject PRJNA1088744 belongs to the earlier 2024 paper.",
+    "what_came_from_paper_text_only": "The paper itself has no open full text (Europe PMC isOpenAccess = N, fullTextXML returns HTTP 500) and the supplementary file endpoint returned no archive, so lineage-tracing tumour counts, duplex-sequencing library construction and the 3,163-cell / 12,768-gene single-cell figures come from the methods excerpts quoted in the Zenodo READMEs, not from files I opened. I did not open the two large R objects (both far over the 50 MB cap)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo deposit is open CC-BY-4.0 and downloaded first try; GEO GSE261766 processed objects are public with no login, though both are too large to open here."},
+    "a2_label_is_a_column": {"pass": true, "note": "For the mutation table the measurable outcome (mutant-molecule count, depth, variant allele fraction) is already a column; treatment group only needs parsing out of the sample name."},
+    "a3_inputs_present": {"pass": true, "note": "Candidate features are present in the files: trinucleotide context, genomic position, gene, amino-acid change, per-sample depth; no external lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Depth and alternate-allele depth are molecule counts, variant allele fraction is a plain ratio, and the README defines mutated genomes per million genomes sequenced."},
+    "a5_enough_rows": {"pass": false, "n_rows": 468, "note": "FAIL, counted in the files: 468 mutation calls across just 42 possible variants in 88 mouse samples grouped into 9 treatment arms of 8-10 mice; the full sample-by-variant grid is only 4,576 cells, 468 of them non-zero, and the real experimental unit is the mouse (n=88) or the group (n=9), far below the ~1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "18 KB of compressed tables from Zenodo; the alternative single-cell route is a 496 MB and a 1.0 GB compressed R object", "note": "The mutation tables are trivial on a laptop; the single-cell objects would need roughly 10-20 GB of RAM to load in R, which is the limit here but was not the reason for rejection."},
+    "a7_counts_match_paper": {"pass": true, "note": "Sample and group counts in the files are internally consistent (88 depth columns, 9 groups); the paper's own numbers could not be cross-checked because there is no open full text."},
+    "a8_label_provenance": {"pass": false, "note": "The mutation calls are genuine measurements, but the obvious single-cell project fails here: the cell-of-origin and stem-cell-state labels are Louvain clusters plus marker-gene calls derived from the same expression matrix that would be the model's input, which is leakage by construction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "With 468 mutation calls over 42 hotspot variants in 88 mice, any model could only claim to re-describe the published group averages of RAS mutant-clone frequency; it could not claim to predict anything new.",
+  "plain_idea": {
+    "one_liner": "Use chemical treatment history and local DNA sequence context to predict how often each RAS hotspot mutation appears in mouse skin.",
+    "train_on": "Each example would be one mouse skin sample paired with one RAS hotspot position: the treatment arm (carcinogen, tumour promoter, both, or none), time point, sex, the three-letter DNA context and the number of DNA molecules sequenced there. Verified counts: 88 samples, 42 variants, 468 non-zero mutation calls.",
+    "predict": "The number of mutant DNA molecules at that position, measured by duplex sequencing (an error-corrected method that reads both strands of each DNA molecule) processed with the deepUMIcaller and deepCSA pipelines.",
+    "why_worthwhile": "Cancer-prevention and mutagenesis groups would like to know which hotspot mutations a given exposure enriches, but this particular table is far too small to learn that; the honest value here is the data-size finding itself."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Two framings were considered and both die. (1) Predict RAS hotspot mutant-clone frequency from exposure plus sequence context: the measured outcome is a real column, but there are only 468 calls over 42 variants in 88 mice and 9 treatment groups, which is a small analysis-of-variance problem, not a machine-learning dataset. (2) Classify hair-follicle stem-cell state or tumour cell of origin from single-cell expression: the labels are clusters and marker-gene calls computed from the very expression values that would be the input, and only two large pre-integrated R objects are downloadable, with no per-sample count matrices.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.02,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": 1,
+    "compute_note": "Both Zenodo tables loaded into pandas in under a second on this laptop, so the effort numbers are measured, not estimated; the single-cell alternative would instead need 10-20 GB of RAM to open a 496 MB compressed R object, which I did not attempt.",
+    "cheapest_killing_check": "Count unique samples and mutation calls in mutations_per_sample.tsv.gz: 88 and 468. That took five minutes and killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5: only 468 duplex-sequencing mutation calls across 42 RAS hotspot variants in 88 mice (9 treatment groups), verified by opening the files. The single-cell alternative also fails A8 because its cell-state labels are clusters derived from the input expression matrix. Searches surfaced generic cell-of-origin classifiers but I did not retrieve them, so no existing-model audit is recorded."
+}

@@ -1,0 +1,113 @@
+{
+  "paper_id": "nar2026-gkag783",
+  "title": "Sam68 stimulates polymerase theta-mediated end-joining by suppressing poison exon inclusion in Polq mRNA.",
+  "doi": "10.1093/nar/gkag783",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE324nnn/GSE324893/suppl/GSE324893_JUMoutput_WTvsKhdrbs1KO_CEevents.xlsx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the 3.5 MB supplement and parsed all 7 Excel tables. Supplementary Table 5 = 1,578 cassette exons (one alternative exon per row) with a deltaPSI column; Table 6 = 3 sheets (2,527 / 2,731 / 2,679 exons) from a re-analysed published Sam68-knockout dataset; 4,485 unique exon events in total. Downloaded the GEO processed file (GSE324893, 342 kB) and confirmed it is the same 1,578 rows with identical deltaPSI values. Computed the cross-dataset reproducibility of deltaPSI myself on all shared events (not the paper's selected subset): Pearson r = 0.19-0.27, Spearman 0.10-0.21, sign agreement 54-57%. Confirmed the coordinates are GRCm39 by pulling chr16:36,836,664-36,836,780 from the UCSC mm39 application programming interface: it returns a canonical AG splice acceptor immediately before the listed exon start and contains the exact guide RNA sequence listed in Supplementary Table 1 for the poison-exon deletion.",
+    "what_came_from_paper_text_only": "That deltaPSI means wild-type minus Sam68-knockout inclusion and came from 3-versus-3 RNA sequencing replicates processed with STAR v2.7.7a and JUM v3.0.0 against GRCm39 (Ensembl 114 annotation); that all tested events were output (p-value setting 1) rather than only significant ones. I did not touch the raw RNA sequencing reads or the targeted amplicon sequencing (SRA PRJNA1436449, 189 samples), so no per-replicate inclusion values were verified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Opened the supplement zip and separately downloaded the GEO processed Excel file over public FTP. No login, no application."},
+    "a2_label_is_a_column": {"pass": true, "note": "'deltaPSI_control-knockout' is a literal column in all four sheets; no construction needed. Verified in the files."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are GRCm39 coordinates (exon start/end plus both flanking exons, with chromosome and strand), not sequence. One genome download resolves them; I confirmed via the UCSC mm39 interface that a test exon returns the right sequence with a canonical splice acceptor."},
+    "a4_units_stated": {"pass": true, "note": "deltaPSI is a fraction of transcripts including the exon; the sign convention (wild-type minus knockout) is stated in Methods but not in the file itself."},
+    "a5_enough_rows": {"pass": true, "n_rows": 4485, "note": "Passes on count: 1,578 exons in this study, 4,485 unique across four comparisons. But only 20 of 1,578 reach q<0.05 and only 40 have an effect larger than 0.2, so the signal-bearing rows are far fewer. This is the project's real problem, scored under C and E."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~2 MB of tables plus a ~2.6 GB mouse genome FASTA read one chromosome at a time", "note": "Comfortable on 16 GB with no GPU for the baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO file and Supplementary Table 5 agree exactly (1,578 rows, identical deltaPSI). The paper's claim of '16 cassette exon events found in all four datasets' reproduced exactly when I joined the sheets."},
+    "a8_label_provenance": {"pass": true, "note": "deltaPSI is computed by JUM v3.0.0 from STAR junction read counts in 3-versus-3 RNA sequencing replicates: a measurement summary, not another model's output, and independent of the DNA sequence features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Four sheets in three Excel files plus a genome FASTA; join on AS_event_ID worked perfectly in the files."},
+    "B2": {"score": 2, "why": "Both main tables parsed with pandas on the first try with default header; only Table 7 needed a header offset."},
+    "B3": {"score": 1, "why": "Same JUM pipeline and units throughout, but values from the two cell systems disagree (r=0.19-0.27, measured)."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; zero missing deltaPSI across all 4,485 rows, checked."},
+    "B5": {"score": 2, "why": "No duplicate AS_event_ID within any sheet; cross-sheet repeats are the intended design, checked."},
+    "B6": {"score": 1, "why": "Columns self-describing, but no data dictionary; sign convention only in Methods, 12 genes labelled 'NONE'."},
+    "C1": {"score": 0, "why": "Failure is uninterpretable: the label's own cross-dataset reproducibility is r~0.2, so a weak model proves nothing."},
+    "C2": {"score": 1, "why": "SpliceAI, Pangolin, SpliceTransformer, TrASPr all open and honestly benchmarked; none on Sam68 in mouse specifically."},
+    "C3": {"score": 1, "why": "Genuinely unmodelled data (novel angle), but too noisy to support any claim; diversity angle thin."},
+    "C4": {"score": 2, "why": "Each answer currently needs a knockout cell line plus deep RNA sequencing: slow and costly, per Methods."},
+    "C5": {"score": 1, "why": "Obvious dummies (predict zero, per-gene mean); off-the-shelf Pangolin comparison possible, but no published number on this split."},
+    "D1": {"score": 2, "why": "Open-weight DNA models fit directly: Nucleotide Transformer, DNABERT-2, HyenaDNA, plus Pangolin and SpliceAI weights."},
+    "D2": {"score": 2, "why": "Only 4,485 sequence windows; embeddings cacheable once on CPU in a few hours, head trained in minutes."},
+    "D3": {"score": 2, "why": "Nucleotide Transformer and Pangolin weights are openly licensed for research; nothing blocks the use."},
+    "E1": {"ok": true, "why": "Chromosome and gene columns present in the files; hold out whole chromosomes or whole genes."},
+    "E2": {"ok": true, "why": "1,366 distinct genes over 20 chromosomes, verified by counting unique values in the table."},
+    "E3": {"ok": true, "why": "Predict-zero and per-gene-mean dummies computable directly from the deltaPSI column."},
+    "E4": {"ok": true, "why": "I estimated it: cross-dataset Pearson 0.19-0.27, sign agreement 54-57% on all shared exons."},
+    "E5": {"ok": true, "why": "The Polq poison exon is negative in all four datasets (-0.22 to -0.53); a working model must rank it high."},
+    "E6": {"ok": true, "why": "Label shuffling and flank-sequence ablation are trivial to run on a 4,485-row table."},
+    "E7": {"ok": true, "why": "The three re-analysed sheets from the published embryoid-body knockout (GSE153800) are an independent experiment."},
+    "E8": {"ok": false, "why": "No model has ever been scored on this data, so there is no published number to reproduce."},
+    "G1": {"score": 2, "why": "Mouse gene symbols plus GRCm39 coordinates and strand, verified to resolve correctly against UCSC mm39."},
+    "G2": {"score": 2, "why": "UCSC phyloP conservation tracks join on the same coordinates; ENCODE's 472 RNA-binding-protein knockdown splicing tables are a named human partner."},
+    "G3": {"score": 1, "why": "Coordinate-to-annotation join is clean one-to-many, but the ENCODE join needs a mouse-human ortholog exon mapping built from scratch."},
+    "G4": {"score": 1, "why": "'Do the same exons respond to Sam68 in mouse and human?' is a real question, but needs a reproducible label to answer."},
+    "H1": {"score": 2, "why": "All tested events output, not just hits: 822 negative and 756 positive deltaPSI, most near zero, counted in the file."},
+    "H2": {"score": 1, "why": "One species, one lab, one RNA-binding protein; two cell systems (stem cells and embryoid bodies)."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one sentence and is narrow; see honest_claim_h3."},
+    "H4": {"score": 1, "why": "Replicate counts and pipeline are explicit in Methods, but the poor cross-dataset agreement is never mentioned."},
+    "I1": {"score": 2, "why": "Named: the Tijsterman lab in Leiden and the RNA-binding-protein splicing groups (Yeo, Barash) cited in the search."},
+    "I2": {"score": 0, "why": "A model capped at r~0.2 by label noise would not redirect any experiment; the 20 significant hits are already a list."},
+    "I3": {"score": 1, "why": "Precision among the top few exons matches the real decision, but 20 significant events cannot estimate it."},
+    "I4": {"score": 0, "why": "With this signal level, a motif count or an off-the-shelf splice score plausibly does as well as a model."},
+    "J1": {"score": 1, "why": "Genome-window extraction plus a frozen DNA-model head is real ML, but the outcome is near-predetermined."},
+    "J2": {"score": 2, "why": "Polq poison exon and canonical splice-site grammar give clear sanity checks; I verified the acceptor myself."},
+    "J3": {"score": 1, "why": "The reproducibility measurement is a shareable result on its own; the model would not be."},
+    "J4": {"score": 1, "why": "Roughly two weeks estimable from the file sizes, but no budget is stated anywhere."},
+    "J5": {"score": 1, "why": "A sharp kill condition exists and I already ran it; it was not pre-registered."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "SpliceAI (deep network predicting splice sites from DNA sequence, 2019)", "open_weights": true, "score_and_split": "Reported top-k accuracy ~0.95 for splice-site prediction on held-out chromosomes; in an independent benchmark against the MFASS experimental assay (27,733 variants) it was beaten by Pangolin.", "authors_named_unsolved": "Tissue- and condition-specific splicing, and effects beyond its ~10 kb sequence window.", "runnable_as_baseline": true},
+      {"name": "Pangolin (SpliceAI-architecture model trained across 4 species and 4 tissues, Genome Biology 2022)", "open_weights": true, "score_and_split": "Best predictor in a published benchmark on the MFASS assay; reported area under the precision-recall curve 0.56 for splice-disrupting variants; tissue-specific version r=0.8 versus SpliceAI 0.67.", "authors_named_unsolved": "Predicting splicing changes caused by trans-acting factors (such as the loss of one RNA-binding protein) rather than by cis variants.", "runnable_as_baseline": true},
+      {"name": "Adjusted Motif / modular splicing model trained on ENCODE RNA-binding-protein knockdowns (Genome Biology 2023)", "open_weights": true, "score_and_split": "Predicts the sign and magnitude of knockdown-induced inclusion change better than chance for well-studied factors (TIA1, PTBP1, QKI, RBFOX); evaluated on human ENCODE knockdown data.", "authors_named_unsolved": "Generalising to RNA-binding proteins without in vitro affinity models, and to factors with weak or indirect effects.", "runnable_as_baseline": true},
+      {"name": "TrASPr (transformer for condition-specific splicing, 2025)", "open_weights": true, "score_and_split": "Inclusion predicted within 10% in nearly 90% of test cases on ENCODE cell lines; evaluated on 68 cassette exons regulated by four condition-specific RNA-binding proteins.", "authors_named_unsolved": "Small numbers of validated condition-specific exons available for training and testing.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer v2 (open-weight DNA language model), with Pangolin as an off-the-shelf comparator", "freeze_and_head_viable": true, "hardware": "Laptop CPU; ~4,485 sequence windows embedded once in a few hours and cached", "licence": "Research-permissive for both; nothing blocking"},
+  "integration": {"partner_dataset": "UCSC phyloP conservation tracks for GRCm39, and ENCODE's RNA-binding-protein knockdown splicing tables (196 proteins in two human cell lines, 408 knockdown-versus-control comparisons)", "join_key": "GRCm39 genomic coordinates for phyloP; mouse-human ortholog plus lifted exon coordinates for ENCODE", "bigger_question_one_sentence": "Are the exons that respond to loss of Sam68 in mouse the same ones that respond to its human counterpart KHDRBS1, i.e. is an RNA-binding protein's splicing target set conserved?"},
+  "controls": {"positive_control": "The Polq poison exon (chr16:36,836,674-36,836,770, GRCm39), which is negative in all four datasets (-0.22 to -0.53) and which I confirmed has a canonical splice acceptor; also exon length recovered from sequence as a plumbing check.", "negative_control": "Shuffle deltaPSI within chromosome and confirm performance collapses to the predict-zero dummy; replace flanking intron sequence with random DNA of the same length.", "external_validation": "The three re-analysed sheets from the published embryoid-body Sam68 knockout (GEO GSE153800) are an independently generated experiment, already in the supplement."},
+  "honest_claim_h3": "A model here could at best claim to rank, among the ~4,485 alternative exons that had enough RNA sequencing coverage in mouse embryonic stem cells or embryoid bodies, which ones shift inclusion when Sam68 is deleted - and because the measured shift itself agrees only 55% of the time in sign between the two available experiments, the model could not be distinguished from one that has learned nothing.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around an alternative exon to predict whether losing the RNA-binding protein Sam68 changes that exon's inclusion.",
+    "train_on": "Each example is one alternative ('cassette') exon, given as mouse genome GRCm39 coordinates for the exon itself and its two flanking exons, from which the surrounding DNA sequence is extracted. I counted 4,485 unique exons: 1,578 from this paper's own mouse embryonic stem cells, the rest from three re-analysed timepoints of a published Sam68-knockout experiment.",
+    "predict": "The output is delta-PSI, the change in 'percent spliced in' - the fraction of that gene's transcripts containing the exon - calculated as wild-type minus Sam68-knockout. It comes from three-versus-three RNA sequencing replicates quantified by the JUM v3.0.0 junction-counting tool.",
+    "why_worthwhile": "If it worked, RNA-splicing labs could guess which exons an RNA-binding protein controls without building a knockout cell line and sequencing it. Even failure would quantify how reproducible single-knockout splicing measurements actually are, which the field rarely reports."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "4,485 mouse exons for one RNA-binding protein, against ENCODE's 196 proteins knocked down in two human cell lines (408 comparisons) that the existing models were trained on."},
+    "confidence_score": {"answer": "no", "why": "Only summary statistics are released (delta-PSI, p-value, q-value); the GEO deposit contains the same summary table and no per-replicate inclusion values, so per-prediction uncertainty cannot be calibrated - and the q-values themselves do not hold up, since significant events agree across datasets at only r=0.23-0.57."},
+    "models_beatable": {"answer": "no", "why": "Pangolin (2022) and TrASPr (2025) are open, recent, and evaluated on held-out chromosomes or independent assays; the 2023 ENCODE-trained motif model already does the knockdown-response task honestly in human."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails three conditions at once: the existing models predict a different quantity (inclusion level, not knockout-induced change), no new data measures Sam68-dependent delta-PSI the same way, and no shared evaluation split exists."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "ENCODE's RNA-binding-protein knockdown resource (searched: 196 proteins depleted in K562 and HepG2, 408 knockdown-versus-control comparisons with rMATS splicing-change tables, Van Nostrand et al. Nature 2020); VastDB and ASCOT hold inclusion levels for many exons across tissues (known resources).",
+    "approx_items": null,
+    "join_key": "Genomic coordinates (human hg38 for ENCODE, requiring an ortholog mapping from mouse GRCm39) plus gene symbol",
+    "why": "The same kind of label - how much an exon's inclusion changes when one RNA-binding protein is removed - already exists for hundreds of proteins in human, which is exactly why a single mouse protein's 4,485 noisy measurements add little."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Extract DNA sequence windows around 4,485 alternative exons (GRCm39 coordinates verified against UCSC mm39), embed them with a frozen open-weight DNA language model, and fit a head to predict the measured change in exon inclusion upon Sam68 knockout, holding out whole chromosomes and validating on the independently generated embryoid-body dataset. The idea is sound and the data is tidy, but the label does not survive its own reproducibility test.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 2.8,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 6,
+    "cv_run_minutes": 10,
+    "compute_note": "Tables are ~2 MB and I parsed them in seconds; the cost is the one-time GRCm39 FASTA download (~800 MB compressed, ~2.6 GB on disk) read one chromosome at a time, plus an estimated few hours to embed 4,485 windows on CPU. Only the table parsing and one coordinate lookup were actually timed.",
+    "cheapest_killing_check": "Join Supplementary Table 5 to the three sheets of Table 6 on AS_event_ID and correlate delta-PSI across datasets. I ran it: 1,082-1,195 shared exons, Pearson r = 0.19-0.27, sign agreement 54-57%. Ten minutes, and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A passes cleanly - the label is a real column, the counts match GEO exactly, the coordinates resolve, and negatives are present - but the label is mostly noise. Across all exons shared between this paper's experiment and the independently generated dataset the authors themselves re-analysed, the change in exon inclusion agrees in sign only 54-57% of the time (Pearson r = 0.19-0.27), barely better than a coin flip; the paper's own headline correlation of 0.86-0.94 comes from just 16 hand-selected exons. Only 20 of 1,578 exons reach a false-discovery rate of 5% in this study, and the per-replicate values needed to model the noise were never deposited (GEO holds only the same summary table). That caps any model at a correlation around 0.2 and, worse, makes failure uninterpretable: you could never tell a model that learned nothing from a label that measures nothing. The surrounding field (SpliceAI, Pangolin, TrASPr, and a 2023 model trained on ENCODE's 408 RNA-binding-protein knockdown comparisons) is open and honestly evaluated, so there is no edge to exploit either. The only other data here is raw amplicon sequencing of CRISPR repair outcomes (SRA PRJNA1436449), where the label would have to be constructed by running the authors' SIQ pipeline on raw reads across just four target sites - a clear A2 failure."
+}

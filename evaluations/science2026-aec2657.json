@@ -1,0 +1,97 @@
+{
+  "paper_id": "science2026-aec2657",
+  "title": "Generative design of bacteriophages with genome language models.",
+  "doi": "10.1126/science.aec2657",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5281/zenodo.17101843",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 17101843 (CC-BY-4.0, open): two FASTA sequence files, microviridae_sft_training_data_raw.fna (77.8 MB) and ..._processed.fna (72.5 MB). I pulled byte ranges from both and read the headers: raw entries are NCBI accessions with free-text descriptions ('J02482.1 Escherichia phage phiX174', 'D00624.1 Chlamydia phage Chp1', and mostly metagenome-assembled entries like 'OP549799.1 MAG: Wigfec virus K19_81'); processed entries keep the same headers but have a soft-prompt token ('+', '+$', etc.) glued to the front of the sequence. Header density across three 200 kB samples spread through the raw file was 34-43 per chunk, which extrapolates to roughly 15,000 sequences, consistent with the stated 14,466. I also checked both fine-tuned model records on HuggingFace (evo-1-7b-131k-microviridae, 32.6 GB; evo-2-7b-8k-microviridae, 13.0 GB; both Apache-2.0, not gated).",
+    "what_came_from_paper_text_only": "Counts of designs and outcomes (about 10,000 Evo 1 plus 1,000 Evo 2 genomes sampled, 302 candidates chosen, 285 synthesised and assembled, 16 viable) and the reported result that model likelihood predicts viability with area under the receiver-operating curve of 0.86, all read from the bioRxiv preprint text (10.1101/2025.09.12.675911). The one supplementary spreadsheet (File S1) would not download: bioRxiv returned HTTP 429 (rate limited) on four attempts, the Science version is paywalled, and there is no PubMed Central copy, so I never saw the per-design table of sequences and viability outcomes."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "The Zenodo deposit is open CC-BY-4.0 and the byte ranges I requested returned data; but each FASTA is above the 50 MB download cap, and the supplementary table holding the experimental outcomes was not retrievable (bioRxiv rate-limited, Science paywalled, no PubMed Central copy)."},
+    "a2_label_is_a_column": {"pass": false, "note": "KILLER. The only downloadable data is raw DNA sequence in FASTA format with no outcome of any kind: no viability flag, no fitness value, no host column. Any prediction target would have to be constructed, either by parsing hosts out of free-text descriptions (absent for the majority, which are unhosted metagenome-assembled 'MAG: Wigfec virus' style entries) or by re-running a 7-billion-parameter model to score sequences. Verified by reading the file headers, not inferred from the paper."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are fine: complete genome nucleotide sequences are in the file, no accession lookups needed (checked in the downloaded byte ranges)."},
+    "a4_units_stated": {"pass": false, "note": "Not applicable/absent: there is no measurement column at all in the open files, so no units. The soft-prompt tokens encode identity-to-PhiX174 bands documented in the Zenodo description, which is metadata, not a measured outcome."},
+    "a5_enough_rows": {"pass": false, "n_rows": 285, "note": "The only measured outcome in the whole study is viability of the synthesised designs: 285 assembled and tested, 16 viable (paper text). That is far under the ~400-row floor for classification, and 16 positives cannot support a held-out evaluation. The 14,466 sequences are unlabelled language-model training data, not labelled rows."},
+    "a6_fits_laptop": {"pass": false, "working_set": "150 MB of FASTA, but 13-33 GB of model weights for the likelihood feature", "note": "The sequences themselves are laptop-sized, but the paper's own predictive signal is the likelihood from Evo 1 (32.6 GB of weights) or Evo 2 (13.0 GB), which needs a GPU; verified the file sizes on HuggingFace."},
+    "a7_counts_match_paper": {"pass": true, "note": "My header-density extrapolation from three sampled byte ranges gives roughly 15,000 sequences in the raw file, consistent with the paper's 14,466 curated Microviridae sequences; I could not verify the 285/16 design counts because the supplementary table did not download."},
+    "a8_label_provenance": {"pass": false, "note": "The only label-like field in the open data, the soft-prompt token, is computed directly from the sequence (percent identity to PhiX174), which is leakage by construction. The real outcome, viability, is a wet-lab plaque/growth-inhibition measurement, but it is not in any file I could open."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Evo 1 and Evo 2 fine-tuned on Microviridae (this paper's own genome language models)",
+        "open_weights": true,
+        "score_and_split": "The authors report that model likelihood separates viable from non-viable designs with area under the receiver-operating curve 0.86 for both Evo 1 and Evo 2, evaluated on the 285 synthesised designs (paper text; I could not see the underlying table).",
+        "authors_named_unsolved": "Scaling genome-scale generative design beyond a single small template phage, and understanding why most generated genomes fail, remain open per the preprint discussion.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "iPHoP, an integrated machine-learning framework for virus host prediction",
+        "open_weights": true,
+        "score_and_split": "Published high-confidence host genus prediction at an estimated under 10 percent false discovery rate across 216,015 metagenome-derived phage genomes (from the PLOS Biology paper found in search).",
+        "authors_named_unsolved": "Strain-level and species-level host resolution, and prediction for viruses unlike anything in reference databases.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CHERRY and vHULK, deep-learning phage host predictors",
+        "open_weights": true,
+        "score_and_split": "vHULK reports roughly 83 percent precision and 79 percent recall at host genus level on test sets reduced to 90 percent redundancy; independent benchmarks name CHERRY the most accurate at species level.",
+        "authors_named_unsolved": "Generalisation to novel, metagenome-derived phages and to hosts absent from training.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Evo 2 (7B) / Evo 1 (7B) genome language models, or a laptop-scale DNA model such as HyenaDNA or DNABERT-2",
+    "freeze_and_head_viable": false,
+    "hardware": "Evo weights are 13-33 GB and need a GPU; a small DNA backbone would fit a laptop but there is no label to fit a head to.",
+    "licence": "Apache-2.0 for both fine-tuned checkpoints; data is CC-BY-4.0."
+  },
+  "integration": {
+    "partner_dataset": "PhageScope / INPHARED / NCBI Virus (phage genomes with host metadata), joinable on the NCBI nucleotide accessions present in the FASTA headers",
+    "join_key": "GenBank/RefSeq nucleotide accession (e.g. J02482.1, OP549799.1)",
+    "bigger_question_one_sentence": "Could ask whether genome-language-model likelihood tracks natural Microviridae host range, but the paper's own measured outcomes are too few to test anything, so the join stays decorative."
+  },
+  "controls": {
+    "positive_control": "Wild-type PhiX174 (accession J02482.1 is in the raw file) must score as highly viable under any viability model.",
+    "negative_control": "Shuffled or frame-disrupted genomes should score as non-viable; label shuffling on the 285 designs would collapse immediately given only 16 positives.",
+    "external_validation": "None available: no second laboratory has synthesised and tested a comparable set of generated phage genomes, and the follow-up preprint I found (bioRxiv 2026.06.12.731871) appears to re-analyse the same designs."
+  },
+  "honest_claim_h3": "On the open data one could only claim 'a model reproduces the sequence statistics of 14,466 Microviridae genomes'; the claim that would matter, 'predicts which synthetic phage genomes assemble into infectious virions', rests on 285 tested designs with 16 successes that are not in any file I could download.",
+  "plain_idea": {
+    "one_liner": "Use a designed phage genome sequence to predict whether it will assemble into a working, bacteria-killing virus.",
+    "train_on": "Intended input: the full DNA sequence of each computer-designed PhiX174-like phage genome. Only 285 such genomes were actually built and tested, and their sequences are not in the open deposit.",
+    "predict": "Yes/no viability, measured in the lab by whether the synthesised genome produces virus that inhibits Escherichia coli C growth; 16 of 285 did.",
+    "why_worthwhile": "Phage-therapy and synthetic-biology groups spend weeks and real money synthesising each design, so a cheap pre-screen would raise a 6 percent hit rate; but with 16 positives the question cannot be answered honestly from this data."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The paper's own fine-tuned Evo models were trained on the same 14,466 Microviridae sequences we would have; we would have strictly less, since the 285 design sequences and their outcomes are not in the open deposit."},
+    "confidence_score": {"answer": "no", "why": "No replicate structure and no measured values are in the open files; with 16 positives out of 285 no calibrated per-design confidence is estimable."},
+    "models_beatable": {"answer": "no", "why": "The baseline is a 2025-2026 7-billion-parameter genome language model from the same group, already reporting area under the receiver-operating curve 0.86 on the only existing test set; the phage host-prediction tools (iPHoP 2023, CHERRY, vHULK) are also open and benchmarked."},
+    "guaranteed_improvement": {"answer": "no", "why": "We cannot even run the existing model as a baseline on a laptop (13-33 GB of weights, GPU), and we do not have the labelled design table, so the 'sees everything it sees plus more' condition fails outright."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict viability (and then fitness) of generated PhiX174-like phage genomes from sequence, using a small DNA language model fine-tuned as a cheap stand-in for Evo likelihood. Dead on arrival: the open deposit is unlabelled sequence only, and the labelled set is 285 designs with 16 successes.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.15,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Sequence files are 150 MB total and trivial to stream; the blocker is not compute but the absence of labels, so the per-task compute estimates are left null rather than invented. Model weight sizes (32.6 GB and 13.0 GB) read from the HuggingFace API.",
+    "cheapest_killing_check": "Count the labelled rows: 285 synthesised designs with 16 viable. That alone kills it, and it took one read of the preprint plus a failed attempt at the supplementary table."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A5. The only open data (Zenodo 17101843, CC-BY) is 150 MB of Microviridae FASTA sequence with no outcome column of any kind, verified by reading the headers; the sole measured label, viability, covers 285 synthesised designs with 16 successes, lives in a supplementary spreadsheet I could not download, and is already modelled by the authors' own open 7-billion-parameter Evo checkpoints (area under the receiver-operating curve 0.86), which need a GPU to run as a baseline."
+}

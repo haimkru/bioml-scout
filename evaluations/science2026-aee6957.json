@@ -1,0 +1,56 @@
+{
+  "paper_id": "science2026-aee6957",
+  "title": "The genomic identity of early smallpox in South America.",
+  "doi": "10.1126/science.aee6957",
+  "journal": "Science",
+  "data_url": "https://www.ebi.ac.uk/ena/browser/view/PRJEB104199",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Queried NCBI BioProject 1505226 (= ENA PRJEB104199) and the ENA file report: exactly 11 raw FASTQ sequencing runs from exactly 2 BioSamples (SAMEA122916220 'CAM9_208', SAMEA122916221 'CAM9_205'), ~16.6 GB of compressed FASTQ in total, all library source METAGENOMIC, organism Variola virus (taxid 10255). The ENA 'analysis' endpoint returned an empty table, i.e. no assembled or consensus genomes are deposited. NCBI elink from the PubMed record to the nucleotide database returned no linked GenBank records. A GenBank count of all Variola virus sequences 150-250 kb long (i.e. whole genomes) returned 84 worldwide. I did not download any FASTQ (project rules forbid downloading raw sequencing reads).",
+    "what_came_from_paper_text_only": "Everything scientific: the ~1492-1631 CE date range, the ~1296 CE divergence estimate, the extinct-lineage placement, and the claimed 'constant tempo of gene inactivation then constraint then rebound in substitution rates'. The paper is not open access (Europe PMC: no PMCID, no full text, no supplement), so I could not read the methods, the data availability statement, or any supplementary table."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "ENA/SRA raw reads are public with no login or access application; I confirmed the FTP paths and byte sizes in the ENA file report. Only raw FASTQ is released, however - no processed genome, alignment or table."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL, and this is the stopping point. There is no feature/label table of any kind - only raw metagenomic reads. Every quantity the paper reports (consensus genome, which genes are inactivated, the divergence date, the substitution rate) would have to be constructed from scratch by read trimming, mapping to a variola reference, ancient-DNA damage filtering, consensus calling, open-reading-frame annotation and Bayesian tip-dating."},
+    "a3_inputs_present": {"pass": false, "note": "Raw reads are present but no modelling input exists: no assembled sequence, no variant table, no gene presence/absence matrix. The assembled genomes are not in ENA (empty analysis record) nor linked from PubMed to GenBank."},
+    "a4_units_stated": {"pass": false, "note": "Not applicable - there is no measurement table, so no units to state. Dates in the abstract are given as calendar years common era but are model estimates, not deposited measurements."},
+    "a5_enough_rows": {"pass": false, "n_rows": 2, "note": "FAIL hard. The unit of analysis is the viral genome, and there are exactly 2 BioSamples (two individuals from one burial context), whose genomes the press coverage says are >99.9% identical, i.e. effectively one outbreak strain. Even pooling every variola genome on Earth gives 84 GenBank entries - far under the ~400 minimum for classification."},
+    "a6_fits_laptop": {"pass": false, "working_set": "~16.6 GB compressed FASTQ (11 runs, 297 million reads, 41 Gbp)", "note": "Over the ~5 GB working-set limit, and the project rules forbid downloading raw sequencing reads. Read mapping plus ancient-DNA authentication on 41 billion bases is a server job, not a 16 GB laptop job, even though no GPU would be needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "The 2 BioSamples match the paper's 'two Inca-Colonial individuals'. Nothing else could be cross-checked because the full text and supplement are paywalled."},
+    "a8_label_provenance": {"pass": false, "note": "The headline quantities are not physical measurements of the deposited samples: the ~1296 CE divergence date and the substitution-rate shifts are outputs of a Bayesian phylogenetic model, and gene-inactivation calls come from an annotation pipeline. Training on them would be distilling the authors' phylogenetic model, which is the circularity A8 warns about."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Orthopoxvirus reservoir-host predictor (Communications Biology, 2025, nature.com/articles/s42003-025-07746-0)", "open_weights": null, "score_and_split": "Not retrieved - I saw only the search-result title and snippet, which say that adding viral genomic features to host ecological traits improved reservoir-host prediction accuracy. No number or split verified.", "authors_named_unsolved": "Not retrieved (abstract snippet only).", "runnable_as_baseline": null},
+      {"name": "Compositional-feature machine learning on monkeypox virus genomes (Frontiers in Genetics, 2024, 10.3389/fgene.2024.1361952)", "open_weights": null, "score_and_split": "Not retrieved - search snippet only; describes genome compositional representation (dinucleotide/codon features) used for host-adaptability analysis in a related orthopoxvirus. No number verified.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer or HyenaDNA (DNA language models) could in principle embed poxvirus genome segments", "freeze_and_head_viable": false, "hardware": "CPU could embed 86 genomes, but with 86 labelled items there is nothing to fit a head on", "licence": "Nucleotide Transformer weights are openly downloadable; irrelevant here given the sample size"},
+  "integration": {"partner_dataset": "GenBank orthopoxvirus genomes (84 whole variola genomes worldwide, counted via NCBI esearch; plus ~hundreds of other Orthopoxvirus genomes)", "join_key": "NCBI taxonomy ID and genome coordinates against a variola reference (e.g. GCF_000859885)", "bigger_question_one_sentence": "Can a sequence model date an undated ancient orthopoxvirus genome without a molecular clock? - a real question, but 86 dated genomes worldwide is one to two orders of magnitude too few to answer it."},
+  "controls": {"positive_control": "None usable: with 2 genomes there is no held-out set on which a model could recover a known relationship.", "negative_control": "Label shuffling is meaningless at n=2.", "external_validation": "The ~84 other public variola genomes and the earlier ancient variola genomes (e.g. the 17th-century Lithuanian child, the Viking-age genomes) would be the external set, but together they are still under 100 items."},
+  "honest_claim_h3": "No honest model claim is possible from this deposit: with two near-identical viral genomes (>99.9% identical per the press coverage) released only as raw metagenomic reads, any model trained here would describe one outbreak strain, not smallpox evolution.",
+  "plain_idea": {
+    "one_liner": "Use an ancient virus genome sequence to predict the calendar year the virus was alive, without a molecular clock.",
+    "train_on": "Whole genome sequences of dated variola (smallpox) virus isolates together with their known or radiocarbon-estimated dates. Verified count of candidate items: 2 from this paper, 84 variola whole genomes in GenBank worldwide.",
+    "predict": "The calendar date of the sampled virus. The true answer would come from radiocarbon dating of the human remains or from the recorded collection year of 20th-century isolates.",
+    "why_worthwhile": "Ancient-pathogen labs currently date strains with Bayesian tip-dating that needs strong clock assumptions; a sequence-only dating model would be a useful independent check. But it cannot be built from this dataset."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This deposit adds 2 genomes to a world total of 84 public variola whole genomes (my GenBank count). That is not more or better data for any machine learning model."},
+    "confidence_score": {"answer": "no", "why": "The two samples are from the same burial context and are near-identical, so they give no replicate structure for estimating prediction uncertainty across strains."},
+    "models_beatable": {"answer": "no", "why": "The relevant incumbent is not a machine learning model at all but BEAST-style Bayesian phylogenetic dating, which is the field standard and is what the paper itself uses; the two orthopoxvirus machine learning papers I found address a different task (reservoir host)."},
+    "guaranteed_improvement": {"answer": "no", "why": "No baseline can be run on our data, the existing orthopoxvirus models solve a different task, and the sample size is 2 - every condition for a guaranteed improvement fails."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: sequence-to-date regression for ancient orthopoxvirus genomes (embed a genome with a DNA language model, predict calendar year, validate against radiocarbon and recorded collection dates). The idea is sound in principle but this paper contributes 2 genomes and the entire public variola corpus is 84 whole genomes, so there is no training set.",
+  "effort": {"hours_to_feature_table": 40, "working_set_gb": 16.6, "needs_gpu": false, "peak_ram_gb": 8, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated, nothing timed. 16.6 GB is the summed compressed FASTQ byte count from the ENA file report; 40 hours is a rough estimate for building a consensus genome and gene-inactivation table from 11 raw ancient-DNA read sets including damage authentication, and the result would still be 2 rows.", "cheapest_killing_check": "Count the BioSamples in ENA project PRJEB104199. It is 2. One API call, which is what killed this."},
+  "verdict": "reject",
+  "verdict_reason": "Only raw sequencing reads are released - no feature or label table exists (A2) - and the dataset is 2 near-identical viral genomes from one outbreak (A5), with 16.6 GB of raw FASTQ as the only download (A6) and the paper's headline dates being Bayesian model outputs rather than measurements (A8). A superb archaeology paper and a non-starter as a machine learning project."
+}

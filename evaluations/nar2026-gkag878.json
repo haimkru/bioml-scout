@@ -1,0 +1,57 @@
+{
+  "paper_id": "nar2026-gkag878",
+  "title": "CIZ1 regulates G1 length and the CDK threshold for initiation of DNA replication to prevent DNA replication stress.",
+  "doi": "10.1093/nar/gkag878",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.6084/m9.figshare.31037887",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Retrieved the open-access full text (PMC13569497, CC BY) and the data availability statement, then queried the Figshare deposit's application programming interface for its complete file manifest: 29 files, 732.6 MB total, comprising 28 AVI movies of live-cell microscopy, one 56 MB PowerPoint of supplementary figures and one 1.5 MB PDF of figures. No table file of any kind (no CSV, TSV, XLSX) exists in the deposit. Europe PMC's supplementary-file endpoint refused the archive as over its 200 MB limit, consistent with it being the same movies. I read the methods and every figure legend for sample sizes.",
+    "what_came_from_paper_text_only": "All measured quantities and their sample sizes (50 tracked cells for the CDK activity sensor, 30 cells for cell-cycle length, 150 DNA fibres per condition for replication fork rate, 100 nuclei per EdU experiment in triplicate) come from the figure legends and methods; I did not open the movies themselves or re-measure anything, and no numeric source-data file exists to open."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Figshare deposit 10.6084/m9.figshare.31037887 is public, CC BY 4.0, no login; I confirmed 29 direct download URLs and their checksums via the Figshare API."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. There is no label column anywhere. The deposit holds only raw AVI microscopy movies plus figure images; every measured outcome (G1 phase length, cytoplasm-to-nucleus ratio of the CDK activity sensor, replication fork rate) exists only as dots in published plots. Building the target would require segmenting and tracking cells in the movies from scratch, i.e. constructing the label."},
+    "a3_inputs_present": {"pass": false, "note": "Movie pixels are present for the live-imaging figures only; the DNA-combing images, flow cytometry FCS files and immunoblot images behind most of the paper's numbers are not deposited at all."},
+    "a4_units_stated": {"pass": true, "note": "Units are stated in the figure legends (hours for phase length, kilobases per minute for fork rate, origins per kilobase) but only for numbers printed in figures, not in any file."},
+    "a5_enough_rows": {"pass": false, "n_rows": 50, "note": "FAIL. Largest per-cell set is 50 tracked cells for the CDK sensor and 30 cells for cell-cycle length; fork rates are n=150 fibres per condition. Far under the ~1,500-row bar, and the movies yield at most a few hundred cell tracks."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.73 GB of AVI movies", "note": "Size itself is fine on a laptop, but turning video into measurements needs deep-learning segmentation and tracking, which realistically wants a graphics processing unit (GPU)."},
+    "a7_counts_match_paper": {"pass": true, "note": "Nothing to compare: the deposit contains no counts. Figure legends are internally consistent (n=50, n=30, n=150)."},
+    "a8_label_provenance": {"pass": true, "note": "Labels, where they exist in figures, trace to real measurements (microscopy, EdU incorporation, DNA combing), not to another model's output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Cell-ACDC, an open framework for segmenting, tracking and cell-cycle-annotating live-cell movies (BMC Biology 2022)", "open_weights": true, "score_and_split": "Reports segmentation and tracking accuracy on yeast and mammalian live-imaging benchmarks; I read the abstract only, not the numbers.", "authors_named_unsolved": "Automated cell-cycle annotation still needs human correction; they ship a semi-automated workflow rather than a fully automatic one.", "runnable_as_baseline": true},
+      {"name": "pcnaDeep, a Mask R-CNN based single-cell tracker that reads cell-cycle phase from a PCNA (proliferating cell nuclear antigen) reporter (Bioinformatics 2022)", "open_weights": true, "score_and_split": "Reported to detect division events and build lineages accurately on its own imaging data; numbers not retrieved.", "authors_named_unsolved": "Generalising to reporters and cell types outside the training imaging set.", "runnable_as_baseline": true},
+      {"name": "CellCycleNet, a neural network predicting cell-cycle phase from a DNA stain alone, trained against a Fucci fluorescent cell-cycle reporter as ground truth (Life Science Alliance 2025)", "open_weights": null, "score_and_split": "Classifies nuclei as G1 versus S/G2 in fixed cells; split and score not retrieved.", "authors_named_unsolved": "Distinguishing S from G2, and transfer to new cell lines.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Cellpose or StarDist for nuclear segmentation, as feature extractors rather than freeze-and-head backbones", "freeze_and_head_viable": false, "hardware": "GPU preferred for video segmentation and tracking", "licence": "Open (BSD/MIT family) for Cellpose and StarDist; Figshare data is CC BY 4.0"},
+  "integration": {"partner_dataset": "None usable: the deposit carries no gene, protein, cell-line or coordinate identifier that joins to a large resource.", "join_key": "none", "bigger_question_one_sentence": "Cannot be written — the deposit is movie pixels from one cell line (NIH 3T3 and its CIZ1 knockout), with no identifier to join on."},
+  "controls": {"positive_control": "Would exist in principle (a trained tracker must recover the textbook result that cells spend longer in G1 than in S phase), but there is no measurement table to test it against.", "negative_control": "Label shuffling is possible only after labels are built, which is the failure point.", "external_validation": "Other Fucci and CDK-sensor movie sets exist in the literature, but none is deposited alongside this one and none shares its reporter construct."},
+  "honest_claim_h3": "At best: 'an automated tracker reproduces the published G1-length and CDK-sensor differences between wild-type and CIZ1-knockout NIH 3T3 mouse fibroblasts in 28 movies from one lab' — a re-measurement of one paper's figures, not a predictive model.",
+  "plain_idea": {
+    "one_liner": "Use live-cell movies of a kinase activity sensor to predict how long a cell will stay in the first growth phase.",
+    "train_on": "Frames from 28 deposited microscopy movies of mouse fibroblasts carrying two fluorescent reporters (a nuclear histone marker and a sensor whose location reports cyclin-dependent kinase activity). The number of usable single-cell tracks is unknown and is at most a few hundred; the paper's own analyses used 30 to 50 cells.",
+    "predict": "Length of the G1 phase (the growth phase before DNA copying starts) and whether the cell enters DNA replication. The true answer would have to be re-derived by segmenting and tracking cells in the same movies, since no measurement file was deposited.",
+    "why_worthwhile": "Cell-cycle timing labs would like an automatic reader of kinase-sensor movies, but this deposit is too small and too unlabelled to build one; the only certain gain is a re-measurement of one paper's figures."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "28 movies from one cell line in one lab, against tools like Cell-ACDC and pcnaDeep that were built on multi-cell-line, multi-reporter imaging benchmarks."},
+    "confidence_score": {"answer": "no", "why": "Three biological replicates and 30 to 50 cells per condition are too few to estimate per-prediction uncertainty."},
+    "models_beatable": {"answer": "no", "why": "Cell-ACDC (2022) and pcnaDeep (2022) are open, maintained and already do segmentation plus cell-cycle annotation on this exact data type; there is no number here to beat."},
+    "guaranteed_improvement": {"answer": "no", "why": "No baseline can be run on this deposit because no ground-truth measurement table exists, so the first condition (existing model runnable as our baseline on the same labels) fails outright."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: train a model to read single-cell cyclin-dependent kinase activity traces from the deposited movies and predict G1 phase length or the timing of DNA replication onset, with CIZ1 genotype as a held-out condition. Dead on arrival because the deposit contains no measurement table, only video and figure images, and the paper's own sample sizes are 30 to 150 per condition.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.73, "needs_gpu": true, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Not estimated beyond the deposit size, which I read from the Figshare API manifest; no feature table can be built without first writing a full segmentation-and-tracking pipeline, so downstream costs are undefined.", "cheapest_killing_check": "List the Figshare deposit's files and look for a single CSV, TSV or XLSX of per-cell measurements. There is none — 28 AVI movies, one PPTX, one PDF. That one API call kills the project in under a minute."},
+  "verdict": "reject",
+  "verdict_reason": "No data table exists: the deposit is 28 live-cell microscopy movies plus figure images under CC BY, so the prediction target (G1 phase length, kinase activity, fork rate) would have to be constructed from scratch by segmenting and tracking cells, failing A2. Sample sizes are also fatal — 50 tracked cells for the kinase sensor, 30 for cell-cycle length, 150 DNA fibres per condition — far below the ~1,500-row bar (A5), and the inputs behind most figures (DNA combing images, flow cytometry files, blots) were never deposited (A3). The cell-cycle imaging niche is already served by open tools such as Cell-ACDC and pcnaDeep, so even the re-measurement angle is weak."
+}

@@ -1,0 +1,56 @@
+{
+  "paper_id": "science2026-aee4205",
+  "title": "Paleogenomic insight into the collapse, recovery, and management of American bison.",
+  "doi": "10.1126/science.aee4205",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5061/dryad.0zpc867cx",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and decompressed all three Dryad files (79 MB total, CC0 licence) after solving the site's automated bot challenge: each holds exactly 5,358,142 rows, one per ancestry-informative marker (a site where bison and cattle carry different DNA letters). The main file has 7 columns (chromosome, position, two bison panel allele counts, two cattle panel allele counts, distance to previous marker); the other two give positions and the two alleles. No column anywhere refers to an individual bison. Also downloaded the preprint's supplementary workbook: Table S1 = 160 ancient samples, Table S2 = 52 modern samples, with location, radiocarbon date, sequencing depth (median 1.76x for ancient) and heterozygosity, but no cattle-ancestry column. Listed the GitHub code repo (5 scripts, same 3 data files) and counted 301 sequencing runs under NCBI BioProject PRJNA1374439.",
+    "what_came_from_paper_text_only": "The claim that 115 ancient and 45 modern genomes were analysed, that 67% of sampled bison show no cattle ancestry, and the description of how markers were filtered, all come from the abstract, the Dryad README and search snippets; the Science full text is paywalled and has no PubMed Central copy."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Dryad doi:10.5061/dryad.0zpc867cx, CC0, 79 MB, no login; downloads sit behind an automated bot challenge that a short script solves. Raw reads are in NCBI BioProject PRJNA1374439 (301 runs, open but raw sequencing)."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. Nothing in the deposit is a prediction target. Cattle-ancestry tracts would have to be constructed by running Ancestry_HMM (a hidden Markov model) over raw sequencing reads; the deposit is only that model's reference panel."},
+    "a3_inputs_present": {"pass": false, "note": "FAIL. No per-individual data at all: 5,358,142 marker rows with only pooled bison and cattle panel allele counts. Each bison's genotypes exist only as raw reads in SRA that must be aligned and piled up first."},
+    "a4_units_stated": {"pass": true, "note": "Columns are documented in the README: allele counts are integers, marker distance is in Morgans assuming a flat recombination rate, coordinates on cattle genome ARS-UCD1.2."},
+    "a5_enough_rows": {"pass": false, "n_rows": 212, "note": "FAIL at the unit that matters. 5,358,142 marker rows share one panel, so they are not independent examples; the biological unit is the individual, and supplementary tables list only 160 ancient plus 52 modern bison."},
+    "a6_fits_laptop": {"pass": false, "working_set": "79 MB deposited; terabytes of raw reads needed to make features", "note": "The deposited table is tiny, but building any feature matrix means aligning 301 raw sequencing runs to a cattle genome, which is far beyond a 16 GB laptop and barred by our no-raw-sequencing rule."},
+    "a7_counts_match_paper": {"pass": true, "note": "Marker count matches exactly: README says 5,358,142 and all three files have 5,358,142 lines. Sample counts differ between paper (115 ancient + 45 modern analysed) and supplementary tables (160 + 52 listed), presumably samples dropped at quality control."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL by circularity. The only available label, cattle ancestry per genome segment, is the posterior probability output of Ancestry_HMM; a model trained on it would be distilling that HMM, and the marker panel itself was defined using the same allele-frequency differences."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Ancestry_HMM (hidden Markov model for local ancestry inference, Corbett-Detig & Nielsen)", "open_weights": true, "score_and_split": "No held-out benchmark reported in this deposit; the paper's own validation is jackknife resampling over 1 Mb genome blocks plus a known bison-cattle F1 hybrid as a positive control.", "authors_named_unsolved": "Low-coverage ancient samples (median 1.76x depth here) and DNA damage force strand-specific read filtering, which the deposited helper script pu2ahmm_ssmode.py exists to handle.", "runnable_as_baseline": false},
+      {"name": "LAI-Net / SALAI-Net style neural local-ancestry classifiers (e.g. Aguirre et al., arXiv:2011.02081)", "open_weights": true, "score_and_split": "Reported on simulated human admixture panels, not on ancient low-coverage non-human genomes; no number applies to bison.", "authors_named_unsolved": "Generalising to reference panels and admixture histories unlike those simulated for training.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "None applicable", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "n/a"},
+  "integration": {"partner_dataset": "1000 Bull Genomes / cattle ARS-UCD1.2 variant resources, joinable on genomic coordinates", "join_key": "chromosome + position on ARS-UCD1.2", "bigger_question_one_sentence": "Which cattle genome regions introgress into bison and which are purged by selection — unanswerable here because the deposit contains no per-bison genotypes to measure introgression in."},
+  "controls": {"positive_control": "The paper's own F1 bison-cattle hybrid, which must come out ~50% cattle ancestry, but it is not in the deposited files.", "negative_control": "Pre-1000-years-old bison, which by construction carry no cattle allele reads (that filter was used to build the panel, so it is circular).", "external_validation": "Earlier bison hybridisation genotyping studies (e.g. Scientific Reports 2022 genomic evaluation of hybridization in historic and modern bison), but joining them needs individual genotypes we do not have."},
+  "honest_claim_h3": "No honest claim is available: with only a reference marker panel and no per-individual genotypes, a model could at best reproduce Ancestry_HMM's own calls on samples whose reads we cannot legitimately process.",
+  "plain_idea": {
+    "one_liner": "Use bison genome data to predict which genome segments were inherited from domestic cattle instead of from bison.",
+    "train_on": "The project considered would train on per-animal DNA letter counts at 5,358,142 marker sites where bison and cattle differ, for roughly 212 animals (160 ancient, 52 modern) — but those per-animal counts are not in the deposit, only the pooled bison and cattle reference counts are.",
+    "predict": "Cattle versus bison ancestry for each stretch of chromosome. The 'true answer' is not a laboratory measurement but the output of Ancestry_HMM, a statistical model the authors ran on the same reads.",
+    "why_worthwhile": "Bison managers at US Fish and Wildlife Service and Parks Canada decide which herds count as cattle-free, so a faster, better-calibrated ancestry caller would change breeding and translocation decisions — but this deposit cannot supply the training examples."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The deposit holds zero individual genomes; neural local-ancestry methods are trained on thousands of simulated or real admixed individuals, while this study has about 212 animals and does not share their genotypes."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements of ancestry per animal are distributed; the only uncertainty estimate is the authors' own 1 Mb block jackknife, which is not in the files."},
+    "models_beatable": {"answer": "partly", "why": "Ancestry_HMM is a 2017 hidden Markov model and neural alternatives beat such methods on human data, but beating it here would need per-individual read data this deposit does not contain."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: we cannot run Ancestry_HMM as a baseline on these animals without terabytes of raw reads, and the labels would be that baseline's own output."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a sequence model to call cattle-versus-bison ancestry along bison chromosomes, replacing the Ancestry_HMM step. Dead because the deposit distributes only the hidden Markov model's reference panel (5,358,142 marker rows of pooled allele counts), no per-animal genotypes, and the only labels available are that same model's posterior probabilities.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.08, "needs_gpu": null, "peak_ram_gb": 1.0, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Measured: the three gzipped files total 79 MB and the 5,358,142 x 7 table loads in about 0.5 GB of RAM; no estimate given for the raw-read alignment route because it is out of scope (301 SRA runs, terabytes).", "cheapest_killing_check": "Count the columns of the main deposited file: 7, none of them an individual animal. That alone kills the project in two minutes."},
+  "verdict": "reject",
+  "verdict_reason": "The Dryad deposit is only the reference marker panel for Ancestry_HMM, not a modelling dataset: no per-individual genotypes (A3), no label column (A2), labels would be another model's output (A8), and the biological sample size is about 212 animals (A5)."
+}

@@ -1,0 +1,111 @@
+{
+  "paper_id": "nar2026-gkag868",
+  "title": "Modular synthetic cross-kingdom promoters enable coordinated expression in Escherichia coli and Saccharomyces cerevisiae.",
+  "doi": "10.1093/nar/gkag868",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://europepmc.org/article/PMC/PMC13551026#supplementary-material",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the Europe PMC supplement (1.61 MB outer zip). It contains only figure images plus one inner archive holding a 22-page PDF and one spreadsheet, 'Supplementary Table S3-JYL.xlsx' (14 kB). I opened that spreadsheet with openpyxl and dumped every non-empty row: it has 9 unique hybrid promoter names (rows 7-16, with pTDH3C-J23119 listed twice) and columns for the yeast core-promoter sequence, the yeast 5' untranslated region, the E. coli promoter, a spacer, a Shine-Dalgarno sequence, a Kozak sequence and promoter length in base pairs. There is no expression, fluorescence or activity value anywhere in the file. I also pulled the full open-access text and grepped it: 'nine hybrid promoters' appears four times, confirming the design is three yeast core promoters times three E. coli J23 promoters, all measured in biological triplicate.",
+    "what_came_from_paper_text_only": "That mCherry transcript levels, fluorescence intensities and beta-galactosidase activities were measured by flow cytometry and quantitative PCR, and the prodeoxyviolacein pigment titres. Those numbers appear only inside the figure bar graphs (Figures 3-6), which I viewed only as rendered images, not as any data table. The claim that the promoters also work in Corynebacterium glutamicum and Pichia pastoris likewise rests on figures only."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Supplement downloads freely from Europe PMC with no login: a 1.61 MB zip containing a PDF and one 14 kB spreadsheet. Verified by extracting both."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAILS. The thing a model would predict - promoter strength / expression level - is not a column anywhere. The only spreadsheet contains sequences and lengths; every expression number lives inside bar graphs in the figures, so the label would have to be reconstructed by digitising images."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The input side is genuinely fine: full nucleotide sequences for each promoter part are spelled out in the spreadsheet, no accession lookups needed. Verified in the file."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "No units, because there are no measured values in any data file. The figures use relative fluorescence and relative transcript levels; the text never states an absolute unit. Verified by searching the full text for 'arbitrary unit', 'RFU' and 'a.u.' - zero hits."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 9,
+      "note": "FAILS badly. Nine hybrid promoters, verified by counting rows in the spreadsheet and cross-checked against 'nine hybrid promoters' in the text. Even multiplying by two hosts, three readouts and three replicates gives roughly 160 measurements - far under the ~1,500-row bar, and under the ~400 needed for classification."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "14 kB spreadsheet",
+      "note": "Trivially fits; the entire dataset is one small spreadsheet. Not the blocker."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Counts are consistent: the paper says nine hybrid promoters and the spreadsheet lists nine unique names. No disagreement between text and file."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Not assessed as a blocker because there is no label column to trace. Noted for the record: the spreadsheet says transcription start site positions were predicted by a promoter-prediction tool, so those annotation columns are a model's output, but they are features here, not the target."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Deep learning models of E. coli core promoter strength (Nucleic Acids Research 2025, gkaf863) and related transformer/CNN promoter-strength predictors",
+        "open_weights": null,
+        "score_and_split": "Reported Pearson correlation around 0.87 for a transformer and 0.84 for a convolutional neural network on held-out synthetic promoter libraries; split details not checked since Part A already failed.",
+        "authors_named_unsolved": "Not read in detail - the audit was stopped once Part A failed.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Model-driven generation of artificial yeast promoters (Nature Communications 2020)",
+        "open_weights": null,
+        "score_and_split": "Convolutional neural network ensemble trained on over 675,000 constitutive and 327,000 inducible yeast promoter sequences, R-squared above 0.79 on sequence-to-activity prediction.",
+        "authors_named_unsolved": "Not read in detail - the audit was stopped once Part A failed.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 would be the natural DNA backbone for promoter sequences",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU would suffice for 9 sequences, but fitting any head to 9 examples is meaningless.",
+    "licence": "Not investigated; irrelevant given the row count."
+  },
+  "integration": {
+    "partner_dataset": "Large synthetic promoter libraries already exist (over 675,000 yeast promoter sequences from the 2020 Nature Communications study; thousands of E. coli J-series and Trc variants), joinable on raw nucleotide sequence.",
+    "join_key": "Nucleotide sequence, or the standard iGEM J23 promoter part identifiers (J23117, J23118, J23119) present in the promoter names.",
+    "bigger_question_one_sentence": "Does a model trained on single-host promoter libraries predict which promoters stay equally strong in both a bacterium and a yeast - a question these nine promoters could at best spot-check, never train."
+  },
+  "controls": {
+    "positive_control": "The paper's own weak/moderate/strong ordering of the three J23 promoters is a known hierarchy a model should recover, but nine points cannot establish it.",
+    "negative_control": "Label shuffling is runnable in principle but statistically empty at n=9.",
+    "external_validation": "Published single-host promoter libraries would serve, but only as a test set for a model trained elsewhere - this paper supplies no training data."
+  },
+  "honest_claim_h3": "Nothing beyond 'these nine specific hybrid promoters behaved as designed in two hosts'; no model fitted to nine sequences could claim anything that generalises, and the expression values are not even machine-readable.",
+  "plain_idea": {
+    "one_liner": "Use a hybrid promoter's DNA sequence to predict how strongly it drives a gene in both bacteria and yeast.",
+    "train_on": "The DNA sequence of each hybrid promoter, built from a yeast core promoter plus a bacterial promoter plus translation-start signals. Verified count: 9 promoters, which is the fatal problem.",
+    "predict": "Expression strength in each host, and ideally the ratio between hosts. The true answer comes from red-fluorescent-protein readings by flow cytometry, messenger RNA levels by quantitative PCR, and an enzyme activity assay - but these exist only as bars in figures, not as numbers in any file.",
+    "why_worthwhile": "Synthetic biologists who move metabolic pathways between hosts would like to pick a promoter that behaves the same in both, and nobody has modelled cross-host consistency. The data here is three orders of magnitude too small to attempt it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict cross-kingdom promoter strength, or the bacteria-to-yeast expression ratio, from promoter sequence using a DNA language model with a frozen backbone and a small regression head. Dead on arrival - 9 promoters, and the expression values are not in any data file.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.000014,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.1,
+    "embedding_hours": 0.0,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: the whole dataset is a 14 kB spreadsheet of 9 sequences, so compute is irrelevant. No cross-validation run is meaningful at this sample size.",
+    "cheapest_killing_check": "Count the rows in the one spreadsheet in the supplement. It took two minutes and returned 9, which kills the project outright."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A small, well-executed synthetic-biology toolkit paper with no dataset behind it. Verified in the files: the entire supplement is a 22-page PDF plus one 14 kB spreadsheet listing 9 hybrid promoter sequences, built as three yeast core promoters crossed with three E. coli J23 promoters. That fails A5 (need ~1,500 rows, or ~400 for classification) by more than two orders of magnitude. It also fails A2 and A4: the prediction target - expression strength - appears nowhere as a column, only inside bar graphs in Figures 3-6, so the label would have to be reconstructed by digitising images, and no units are stated anywhere in the text. Separately, the task is already crowded: published promoter-strength models were trained on over 675,000 yeast and thousands of E. coli promoter sequences and report correlations around 0.84-0.87, so even the best case here would be a nine-point spot-check of somebody else's model."
+}

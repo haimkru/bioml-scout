@@ -1,0 +1,67 @@
+{
+  "paper_id": "nar2026-gkag736",
+  "title": "Toward a comprehensive modification landscape of yeast mitochondrial tRNAs using Nanopore direct RNA sequencing and dihydrouridine sequencing.",
+  "doi": "10.1093/nar/gkag736",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/ena/browser/view/PRJEB89858 (raw reads); supplementary tables via Europe PMC PMC13401042",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the whole supplement (4.5 MB inner zip): Supplementary_Table_S8.xlsx, Supplementary_Tables_S2_S4_S5_S10.xlsx and a 19-page Supplementary_Data.pdf. Table S8 has 5 sheets (IVT = unmodified in-vitro transcript control, wild-type, pus4-deletion, dus2-deletion, pus2-deletion), each 98 position rows (-1 to 76) x 24 mitochondrial tRNA columns; I counted 1,857 non-empty mismatch-probability values per sheet, 1,794 (tRNA, position) pairs present in all five sheets, and 221 values at or above the paper's 0.3 calling threshold in wild-type versus 11 in the control. I extracted the PDF text and read Tables S1, S3, S6, S7, S9, S11 captions plus Supplementary Figure 1 (D-site calling: 33 dihydrouridine versus 398 non-dihydrouridine uridines). Confirmed the European Nucleotide Archive project PRJEB89858 is public via the ENA browser XML.",
+    "what_came_from_paper_text_only": "Read-level processing (which basecaller, how mismatch probability was computed from ~10^5 subsampled reads), the tD-seq (dihydrouridine sequencing) per-position stop/misincorporation values, and all enzyme-dependency conclusions. The ENA filereport endpoint returned HTTP 500 three times, so I could not list run file names, formats or sizes; raw nanopore signal is off-limits under the project's raw-data rule anyway."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement opened with no login (verified); European Nucleotide Archive project PRJEB89858 is flagged PUBLIC in its XML record (verified)."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. The only machine-readable data file (Table S8) contains the feature (per-position mismatch probability) and no label. Which position carries which chemical modification exists only as counts in a PDF table (S7), 33 text rows of positive-only pseudouridine calls (S9), and coloured circles in a PDF figure-table (S11), plus the external MODOMICS database for 16 of 24 tRNAs. The target would have to be rebuilt by hand from a PDF and an outside database."},
+    "a3_inputs_present": {"pass": true, "note": "Table S5 gives the 24 mitochondrial plus 42 cytosolic tRNA reference sequences as text (verified in the spreadsheet), so no accession lookups are needed."},
+    "a4_units_stated": {"pass": true, "note": "Mismatch probability is a stated unitless 0-1 fraction (1 minus reference match probability); LC-MS/MS nucleoside abundance in Table S10 is labelled ng/mL (both seen in the files)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 1794, "note": "FAIL in substance. 1,794 (tRNA, position) pairs with all five conditions looks adequate, but the independent unit is the tRNA and there are only 24 of them, from one strain background, one lab, one flow-cell chemistry. The labelled positives are ~117 annotated modification instances across 16 tRNAs (summed from Table S7) and only 33 dihydrouridine sites (Supplementary Figure 1), with 1-16 instances per chemical type."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.12 MB of numbers (5 sheets x 1,857 values) inside a 4.5 MB supplement", "note": "Trivially laptop-sized; only the raw nanopore signal in ENA would be large, and it is excluded by policy."},
+    "a7_counts_match_paper": {"pass": true, "note": "24 isoacceptor columns, five conditions and the 0.3 threshold all match the text; 33 dihydrouridine sites in Supplementary Figure 1 matches the 33 pseudouridine rows counted separately in Table S9 as a coincidence, not a conflict."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL. The paper's own modification calls are produced by thresholding the mismatch probability at 0.3 and comparing knockout to wild-type, so using those calls as labels with the mismatch columns as features is leakage by construction. The only label independent of the features is the MODOMICS annotation, which is an external curated database covering just 16 of the 24 tRNAs."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Penguin (pseudouridine site predictor for nanopore direct RNA sequencing; support vector machine, random forest and neural network ensemble)", "open_weights": true, "score_and_split": "Reported accuracy 0.93 and area under the receiver operating curve 0.93 on its own 5-mer site split (from the search abstract, paper not retrieved in full)", "authors_named_unsolved": "Not read in full", "runnable_as_baseline": true},
+      {"name": "TandemMod (transfer-learning deep model for multiple RNA modification types from nanopore signal, Nature Communications 2024)", "open_weights": true, "score_and_split": "Abstract reports detection of 7-methylguanosine, pseudouridine and inosine with reduced training data via transfer learning; exact numbers not retrieved", "authors_named_unsolved": "Transfer across chemistries and modification types with little training data is the stated focus, implying it is not solved", "runnable_as_baseline": true},
+      {"name": "MoDorado and the Dorado v5.2.0 de novo basecalling modification models evaluated for tRNA (BMC Genomics 2026)", "open_weights": true, "score_and_split": "The evaluation reports the pseudouridine caller as most reliable on tRNA with RNA004 chemistry, and explicitly notes that dihydrouridine positions still produce elevated pseudouridine scores", "authors_named_unsolved": "Distinguishing dihydrouridine from pseudouridine, and pseudouridine from 2'-O-methyluridine", "runnable_as_baseline": true},
+      {"name": "YModPred (deep learning for multi-type RNA modification sites in S. cerevisiae, BMC Biology 2025) and the older MODOMICS-based uridine-modification support vector machine (BMC Bioinformatics 2014, area under the curve 0.936)", "open_weights": null, "score_and_split": "Sequence-only models trained on yeast modification site catalogues; splits not retrieved", "authors_named_unsolved": "Not read in full", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (an RNA language model) would be the natural sequence backbone; nanopore signal models such as Dorado/Remora are the task-specific alternative", "freeze_and_head_viable": false, "hardware": "CPU-only would suffice for 24 sequences, but 24 sequences cannot train or honestly evaluate any head", "licence": "RNA-FM is openly released; not checked in detail because the project does not reach that stage"},
+  "integration": {"partner_dataset": "MODOMICS (curated RNA modification database) and tRNAdb for modification annotations across many species", "join_key": "organism plus tRNA isoacceptor plus Sprinzl position number", "bigger_question_one_sentence": "Do nanopore basecalling error signatures transfer across organisms well enough to map modifications in tRNAs nobody has chemically characterised? - a good question, but it needs the many-organism nanopore datasets, not these 24 yeast tRNAs."},
+  "controls": {"positive_control": "Pseudouridine at position 55, which the paper detects in all 16 MODOMICS-annotated tRNAs, and the in-vitro-transcript control where only 11 of 1,857 positions exceed the 0.3 threshold", "negative_control": "The unmodified in-vitro transcript sheet is a genuine built-in negative, and label shuffling would be trivial to run", "external_validation": "MODOMICS annotations and the authors' earlier cytosolic tRNA sequencing exist, but both are already used inside this paper as the reference truth"},
+  "honest_claim_h3": "A model built on these files could claim only that a threshold-like function of nanopore mismatch probabilities separates MODOMICS-annotated modified positions from unannotated ones in 24 yeast mitochondrial tRNAs sequenced on one chemistry in one lab - which is what the authors already show with a single 0.3 cutoff.",
+  "plain_idea": {
+    "one_liner": "Use nanopore sequencing error patterns at each tRNA position to predict which chemical modification sits there.",
+    "train_on": "For each (transfer RNA, position) pair, the basecalling mismatch probability in five conditions (unmodified control, wild-type, and three enzyme knockouts). I counted 1,794 such pairs covering all five conditions.",
+    "predict": "Whether the position carries a chemical modification and which one. The true answer comes from the MODOMICS database's chemical and comparative annotations, available for only 16 of the 24 transfer RNAs (~117 annotated sites).",
+    "why_worthwhile": "Labs mapping transfer RNA modifications in non-model organisms would get a modification caller that works without knockout strains; even a failure would quantify how far error-signature calling can go. But 24 molecules from one lab is far too little to learn that mapping."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The existing nanopore modification callers (Penguin, TandemMod, Dorado/Remora models) are trained on thousands of synthetic and transcriptome-wide sites; this paper offers 24 transfer RNAs and ~117 annotated modification instances."},
+    "confidence_score": {"answer": "partly", "why": "There are two direct RNA sequencing flow cells per genotype and three tD-seq replicates, so some noise could be estimated, but the supplied Table S8 is already collapsed to one value per position and the replicate-level values are not in the files."},
+    "models_beatable": {"answer": "no", "why": "The relevant comparators are 2024-2026 (TandemMod, MoDorado, the Dorado v5.2.0 tRNA evaluation), built on the current RNA004 chemistry, whereas these data use the older RNA002-era pipeline, so our data is behind theirs rather than ahead."},
+    "guaranteed_improvement": {"answer": "no", "why": "The existing callers consume raw nanopore signal, which we are not permitted to download, so they cannot be run as a baseline on the same inputs, and the published evaluation splits could not be matched."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict modification presence and chemical type at each yeast mitochondrial transfer RNA position from the five-condition nanopore mismatch-probability vector, with MODOMICS annotations as labels and the in-vitro transcript sheet as a negative control.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.005,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated, and partly timed: loading and counting all five Table S8 sheets took under two seconds on this laptop. The eight hours are almost entirely hand-transcribing modification labels out of the supplementary PDF and mapping tRNA names onto MODOMICS entries.",
+    "cheapest_killing_check": "Count the labelled positives: sum the MODOMICS column of Table S7 (117 modification instances across 16 transfer RNAs, 33 of them dihydrouridine) and note there are only 24 independent molecules. That takes five minutes and kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2: the one machine-readable file holds the feature (per-position nanopore mismatch probability) with no label column, and the modification identities live only in a supplementary PDF's coloured-circle table and the external MODOMICS database. It also fails A8, because the paper's own modification calls are a 0.3 threshold on that same mismatch probability, so those labels are computed from the features; and A5 in substance, since the independent unit is the transfer RNA and there are 24 of them from one strain and one lab, with ~117 annotated sites. Excellent biology (Dus1/Dus2 assignments, modification circuits, a new dihydrouridine sequencing method) and a genuinely useful unmodified in-vitro transcript control, but the modelling field is already occupied by 2024-2026 signal-level callers that we cannot even benchmark against without the raw nanopore signal."
+}

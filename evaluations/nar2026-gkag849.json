@@ -1,0 +1,90 @@
+{
+  "paper_id": "nar2026-gkag849",
+  "title": "Dual-mode application of transcriptional regulation and DNA editing using the ultra-compact TnpB system.",
+  "doi": "10.1093/nar/gkag849",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://europepmc.org/article/MED/42644387 (supplement); SRA BioProjects PRJNA1415478, PRJNA1415496, PRJNA1499350",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the 9.45 MB supplement. Opened all three Excel files: 'extended data file1' (9 small raw-data sheets, 183 rows containing numbers, 816 numeric cells total: fluorescence intensities and qPCR fold-changes), 'extended data file2' (3 sheets, only 85/73/37 non-empty cells - these are picture-holding sheets for gel and microscopy panels, not numbers), and 'extended data file3' (167,709 rows x 5 columns: chrom, pos, ref, alt, variant_type from whole-genome sequencing; 89,930 insertions/deletions and 77,779 single-base changes, with no efficiency or on/off-target label). Extracted text from all 57 pages of the supplementary PDF: its tables hold plasmid, primer, guide and predicted off-target sequences, not measured efficiencies.",
+    "what_came_from_paper_text_only": "That the deposited sequencing (targeted amplicon, RNA-seq, whole-genome) lives in the three SRA BioProjects; I did not download raw reads (policy forbids fastq). The per-figure editing efficiencies and activation fold-changes quoted in the text (e.g. 0.61% and 1.37% homology-directed repair at two sites) were read from the article, not from a table."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement (9.45 MB zip, 3 xlsx + 1 PDF) downloaded and opened without login. Primary sequencing is open in SRA but is raw reads only."},
+    "a2_label_is_a_column": {"pass": false, "note": "No column anywhere pairs a guide/target sequence with an editing efficiency or activation fold-change. The numbers sit in figure-shaped blocks labelled 'T1..T10' or 'OT1..OT9'; guide sequences sit in a separate PDF table. The feature-label table would have to be built by hand from figures and PDF text."},
+    "a3_inputs_present": {"pass": true, "note": "Guide (omega-RNA) and target DNA sequences are present as text in the supplementary PDF for a few dozen sites; no accession lookups needed, but they need manual transcription from the PDF."},
+    "a4_units_stated": {"pass": true, "note": "Units are stated per sheet (mean fluorescence intensity fold-change vs non-targeting control; relative expression 2^-ddCt; indel percentage), but the three readouts are on different scales and not comparable to each other."},
+    "a5_enough_rows": {"pass": false, "n_rows": 183, "note": "183 rows containing any number across the 9 raw-data sheets, and these are experimental conditions with 3-4 replicate columns, covering on the order of 40 distinct guide-target combinations. Checklist needs ~1,500 labelled rows (or ~400 for classification). The 167,709-row whole-genome variant list has no prediction target attached."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.01 GB", "note": "Whole supplement is 9.45 MB; everything opens in pandas/openpyxl instantly."},
+    "a7_counts_match_paper": {"pass": true, "note": "Sheet contents match the figure panels they are named after; the paper quotes no total row count for the variant list, so there is nothing to disagree with."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are direct physical measurements (flow/microscopy fluorescence, qPCR, targeted amplicon sequencing analysed with Cas-Analyzer); no model-derived labels. Only the off-target candidate lists come from software (Cas-OFFinder)."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "TEEP (TnpB Editing Efficiency Predictor), a deep-learning guide-activity model from Marquart et al., Nature Methods 2024",
+        "open_weights": true,
+        "score_and_split": "Reported correlation r > 0.8 between predicted and measured omega-RNA (guide RNA) activity; trained on a library of 10,211 measured target sites for ISDra2 TnpB. Split details not checked by me beyond the abstract-level description.",
+        "authors_named_unsolved": "Transfer of guide-design rules across TnpB orthologs and to complex genomic contexts; the follow-up literature calls transferable omega-RNA scaffold rules across orthologs an open problem.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Web tools for TnpB guide design (tnpb.app; CRISPy-web 3.0 multi-modal guide design including TnpB)",
+        "open_weights": null,
+        "score_and_split": "Web services; no benchmark number retrieved by me.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "A DNA language model such as Nucleotide Transformer or DNABERT-2 would be the natural backbone for guide/target sequence features",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU would suffice for embedding ~40 short sequences, but 40 examples cannot train or honestly evaluate any head.",
+    "licence": "Backbone licences are permissive/open; irrelevant here because the dataset is too small."
+  },
+  "integration": {
+    "partner_dataset": "The 10,211-site ISDra2 TnpB activity library behind TEEP (Nature Methods 2024), joinable on 20-nt guide/target sequence and TAM (target-adjacent motif) context",
+    "join_key": "guide sequence + target-adjacent motif; genomic coordinates (hg38) for the human sites",
+    "bigger_question_one_sentence": "Do guide-activity rules learned on one TnpB ortholog (ISDra2) transfer to a different ortholog (ISDge10)? - a good question, but this paper supplies only a few dozen ISDge10 measurements to test it with, which is too few to answer it."
+  },
+  "controls": {
+    "positive_control": "Would have been the published mismatch rule: TAM-proximal mismatches abolish ISDge10 TnpB cutting while TAM-distal mismatches are tolerated (shown in the paper's Figure 6).",
+    "negative_control": "Label shuffling; not meaningful at n of roughly 40.",
+    "external_validation": "The TEEP training library (10,211 ISDra2 TnpB sites) would be the external set, but the direction of transfer would have to run the other way: train on TEEP's data and test on this paper's handful of ISDge10 sites, which gives a test set too small for a stable correlation."
+  },
+  "honest_claim_h3": "With the data in this paper, the only honest claim would be 'on roughly 40 guide-target pairs measured in one lab with one TnpB ortholog, a model ranks guides about as well as chance allows us to measure' - the sample is too small to support any statement about guide design.",
+  "plain_idea": {
+    "one_liner": "Use guide and target DNA sequence to predict how strongly a compact gene editor cuts or switches on a gene.",
+    "train_on": "Each example would be one guide RNA paired with its genomic target site, plus the guide length and the nearby motif. I counted about 40 distinct guide-target combinations with numbers in the supplement, across 183 condition rows.",
+    "predict": "Two outputs: percent of DNA molecules edited (measured by sequencing the target region), and fold increase in gene expression (measured by quantitative PCR or fluorescence of a reporter).",
+    "why_worthwhile": "Labs picking a guide for the compact TnpB editor currently test several by hand; a good predictor saves weeks of cloning. But that result already exists for a related TnpB protein, and this paper has far too few measurements to add to it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This paper contributes roughly 40 measured guide-target combinations for the ISDge10 TnpB protein; the existing TEEP model was trained on 10,211 measured sites for ISDra2 TnpB. We would have 0.4% of their data."},
+    "confidence_score": {"answer": "no", "why": "Triplicate measurements exist per condition, so noise is estimable in principle, but with ~40 combinations there is no way to produce a calibrated per-prediction confidence that would mean anything."},
+    "models_beatable": {"answer": "no", "why": "TEEP is a 2024 deep-learning model with a public web tool and reported correlation above 0.8 on a 10,211-site library; nothing in this paper's data could beat or even fairly re-test it."},
+    "guaranteed_improvement": {"answer": "no", "why": "The new data (this paper's ISDge10 measurements) comes from a different protein, different assays and a different lab than TEEP's library, so the 'same quantity measured the same way' condition fails, and the ~40 examples cannot shift a model trained on 10,211."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict TnpB editing efficiency and transcriptional-activation strength from guide/target sequence, and predict the switch point between binding-only and cutting as guide length is varied from 8 to 20 nucleotides. Rejected: the paper is a small-scale engineering study, not a screen, and the measurements never exist as a sequence-to-efficiency table.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Everything here is tiny (9.45 MB supplement, largest table 167,709 rows x 5 columns, which pandas reads in seconds on this laptop - timed, not estimated). Compute was never the constraint; sample size is.",
+    "cheapest_killing_check": "Count the distinct guide-target pairs that have a numeric efficiency attached. I did it: about 40, across 183 condition rows, versus the ~1,500 the checklist requires. Ten minutes of work kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A2. The supplement holds 183 condition rows of fluorescence and quantitative-PCR numbers (about 40 distinct guide-target combinations), not the thousands needed, and no table anywhere pairs a guide sequence with its measured efficiency - that table would have to be reconstructed by hand from figure panels and a PDF. The only large file, a 167,709-row whole-genome variant list, carries no prediction target. Separately, the task is already served: TEEP (Nature Methods 2024) predicts TnpB guide activity at r > 0.8 from a 10,211-site library, with a public web tool."
+}

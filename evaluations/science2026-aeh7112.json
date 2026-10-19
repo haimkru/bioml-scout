@@ -1,0 +1,97 @@
+{
+  "paper_id": "science2026-aeh7112",
+  "title": "A necroptotic-to-apoptotic signaling axis underlies inflammatory bowel disease.",
+  "doi": "10.1126/science.aeh7112",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE330953 (plus GSE282165, GSE330696, GSE331309; Dryad doi:10.5061/dryad.wm37pvn39)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all four GEO series matrices: GSE330953 = 51 Xenium spatial-transcriptomics biopsy sections with per-section columns for IBD status, inflammatory status (inflamed/marginal/non-inflamed), biopsy site, treatment yes/no, donor 'study id' and RHI (Robarts Histopathology Index, a numeric histology inflammation score); GSE282165 counts table opened = 60,616 Ensembl gene rows x 98 tissue samples of raw integer counts, all sample IDs unique, 96 of 98 column names carry trailing whitespace; GSE330696 = 24 organoid samples, GSE331309 = 16 organoid samples. Opened one Xenium cell-feature matrix (GSM9736159) with h5py: 480 genes + 61 negative-control probes, 34,963 cells. Listed all 306 GSE330953 files with sizes (morphology images 82 GB total, transcript tables 6.8 GB, cell-by-gene matrices only 167 MB). Queried the Dryad record: 2.12 GB total = one PDF of western-blot source images plus a README.",
+    "what_came_from_paper_text_only": "Everything about the biology and the headline claim that the signature 'predicts clinical relapse' comes from the abstract alone; the paper is paywalled in Science with no PubMed Central copy and no supplementary file listing, so I could not see the clinical tables. No relapse, remission, follow-up-time or drug-class column appears in any deposited file I opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All four GEO series download openly without login; I fetched the matrices and one cell matrix. Dryad record is public but holds only a blot-image PDF."},
+    "a2_label_is_a_column": {"pass": true, "note": "For tissue-level labels yes: IBD status, inflamed/marginal/non-inflamed and the numeric RHI histology score are columns in the GSE330953 metadata. For the paper's headline label, relapse, there is no column anywhere — that target would have to be obtained from the authors."},
+    "a3_inputs_present": {"pass": true, "note": "Expression values are in the files, not referenced: raw gene counts for bulk samples, sparse cell-by-gene matrices for each Xenium section."},
+    "a4_units_stated": {"pass": true, "note": "Bulk is raw integer read counts per Ensembl gene; Xenium is integer transcript counts per cell; RHI is a defined 0-33 histology index. Units checked in the files."},
+    "a5_enough_rows": {"pass": false, "n_rows": 51, "note": "FAILS. The labelled unit is a biopsy or an organoid culture, not a cell: 51 spatial sections from roughly 40 donors, 98 bulk tissue samples, 24 and 16 organoid samples. Even the largest set is under the ~400 needed for classification. The ~1.5 million Xenium cells are the 'big n in disguise' trap — every label (disease, inflammation grade, RHI) is attached to the section, and cells from one section are not independent examples."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.2 GB (51 cell-by-gene matrices, 167 MB) or 5 MB for the bulk counts", "note": "Would fit easily if there were enough labelled units; the 82 GB of microscopy images and 6.8 GB of transcript coordinate tables can be skipped."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked against the paper (paywalled), and the deposits disagree with themselves: in GSE282165 every sample titled CD_### is annotated 'genotype: Coeliac Disease' while the series design describes Crohn's disease and ulcerative colitis, and the design promises inflamed/marginal/non-inflamed groups that have no column at all in that series."},
+    "a8_label_provenance": {"pass": true, "note": "RHI and inflammation grade are pathologist scores on the same tissue block, and disease status is the clinical diagnosis — real measurements, not another model's output. But RHI is scored on the same section being profiled, so it is a same-sample readout rather than a future outcome."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Niche-feature explainable classifier for IBD from spatial transcriptomics (arXiv 2509.09923, 2025)",
+        "open_weights": null,
+        "score_and_split": "Reported as an interpretable classifier built from 44 engineered features over four cellular niches found by non-negative matrix factorisation; I read the search abstract only and did not retrieve a number or a split.",
+        "authors_named_unsolved": "Not retrieved — I only saw the abstract snippet.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Spatial transcriptomics atlas of IBD (Nature Communications 2026, Northwestern)",
+        "open_weights": null,
+        "score_and_split": "Not a predictive model per se: an atlas of over 3 million cells that correlates spatial expression with histopathology scores to propose molecular phenotypes linked to clinical trajectory. Abstract-level information only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Random-forest and multi-omics relapse predictors for IBD (e.g. 30-transcript ileocolectomy classifier, n=60; paediatric UC microbiome+epigenome model, n=56)",
+        "open_weights": null,
+        "score_and_split": "Published accuracies in the 80-97% range with AUCs 0.74-0.99 across the IBD machine-learning literature, almost always on small cohorts and internal cross-validation. Taken from review abstracts, not from retrieved primary papers.",
+        "authors_named_unsolved": "Reviews note external validation across cohorts as the unmet need. Abstract-level only.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Not assessed beyond the obvious candidate (scGPT or Geneformer for single-cell expression, applied to the 480-gene Xenium panel)",
+    "freeze_and_head_viable": null,
+    "hardware": "CPU would suffice for 167 MB of cell matrices, but a 480-gene panel is far narrower than the transcriptome these backbones were pretrained on.",
+    "licence": "Not checked — project rejected at Part A."
+  },
+  "integration": {
+    "partner_dataset": "Not pursued; the obvious partners would be the Nature Communications 2026 IBD spatial atlas (>3M cells) and bulk IBD cohorts such as the RISK or PROTECT studies, joinable on gene symbol or Ensembl ID.",
+    "join_key": "Ensembl gene ID / HGNC gene symbol",
+    "bigger_question_one_sentence": "Does a cell-death gene programme measured in one hospital's 51 biopsies reproduce as an inflammation marker in a 3-million-cell independent spatial atlas — a fair question, but one that needs a cohort, not this sample size, to answer."
+  },
+  "controls": {
+    "positive_control": "Available and attractive: the Xenium panel ships 61 negative-control probes and codewords in every section, and inflamed sections should separate from non-inflamed on canonical markers. Verified the control probes exist in the h5 file.",
+    "negative_control": "Label shuffling across the 51 sections is trivially runnable, but with 51 units the shuffled-label null distribution is wide enough that almost nothing would be distinguishable from it.",
+    "external_validation": "Exists in principle (the independent Northwestern IBD spatial atlas and public bulk IBD cohorts), which is the one genuinely strong feature here."
+  },
+  "honest_claim_h3": "With 51 biopsy sections from roughly 40 donors in a single centre, the honest claim is limited to 'cell-death-associated gene expression separates inflamed from non-inflamed tissue in this one cohort' — not that it predicts relapse, because no relapse, follow-up or therapy column was deposited.",
+  "plain_idea": {
+    "one_liner": "Use spatial gene-expression maps of gut biopsies to predict how severely inflamed the tissue is and whether the patient has inflammatory bowel disease.",
+    "train_on": "Each example would be one biopsy section profiled with Xenium, a microscope-based method that counts transcripts of 480 chosen genes inside each cell; I verified 51 such sections, roughly 40 donors, one section containing 34,963 cells.",
+    "predict": "The Robarts Histopathology Index, a 0-33 severity score a pathologist assigns to the same tissue block, and the clinical diagnosis (Crohn's disease, ulcerative colitis or control). Both are columns in the deposited metadata.",
+    "why_worthwhile": "IBD clinicians want a molecular readout of hidden inflammation in tissue that looks healed, because such patients relapse; but a 51-section single-centre set can only generate a hypothesis, not a usable predictor."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "51 Xenium sections and about 1.5 million cells against the Nature Communications 2026 IBD spatial atlas's stated >3 million cells, and the 480-gene panel is small; the 2025 niche-feature classifier already covers the same IBD-from-spatial-data task."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate sections per biopsy and only one donor has a technical duplicate ('NM003 NONI UC' and 'NM003 NONI UC_THIN'), so per-prediction uncertainty cannot be calibrated from this data."},
+    "models_beatable": {"answer": "partly", "why": "The IBD relapse literature is mostly small random-forest studies on 56-60 patients with internal cross-validation, which is weak; but beating them needs a larger cohort than the 51 sections or 98 bulk samples here."},
+    "guaranteed_improvement": {"answer": "no", "why": "The published spatial classifier's weights were not confirmed available, so it cannot be run as our baseline, and our data is a different platform and panel from theirs — two of the four required conditions fail."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict Robarts Histopathology Index and IBD subtype from cell-composition and neighbourhood features of 51 Xenium biopsy sections, with donor-level held-out splits. Rejected on sample size — 51 labelled sections from ~40 donors, with the ~1.5 million cells being non-independent within section. The paper's advertised relapse-prediction target has no deposited column.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": null,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed end to end: I did download and open one 3 MB cell-feature matrix in seconds, so all 51 (167 MB) would load comfortably; the 82 GB of microscopy images and 6.8 GB of transcript coordinates would be skipped.",
+    "cheapest_killing_check": "Count the labelled units, which is one line of the series matrix: 51 sections / ~40 donors for the spatial data and 98 samples for the bulk. That count kills it before any download."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5. Every label in this paper's deposited data sits on a biopsy section or an organoid culture, giving at most 51 spatial sections (~40 donors), 98 bulk tissue samples, and 24 and 16 organoid samples — all far under the ~400 needed even for classification, and the 1.5 million Xenium cells are the classic 'big n in disguise' because cells within a section share one label. Also fails A7: in GSE282165 every sample titled CD_### is annotated 'Coeliac Disease' while the series design describes Crohn's disease, and the inflamed/marginal/non-inflamed grouping the design promises has no column in that series. The paper's headline target, relapse, was not deposited at all — no follow-up, therapy or outcome column exists in any file I opened, and the Dryad deposit is a 2.1 GB PDF of western-blot images. Two independent groups have already published IBD classification from spatial transcriptomics on larger data (a 2025 niche-feature classifier and a >3-million-cell 2026 atlas), so the angle is weak as well as the n."
+}

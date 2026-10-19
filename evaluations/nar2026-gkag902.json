@@ -1,0 +1,156 @@
+{
+  "paper_id": "nar2026-gkag902",
+  "title": "GenoME: a MoE-based generative model for individualized, multimodal prediction and perturbation of genomic profiles",
+  "doi": "10.1093/nar/gkag902",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/JWei2015/GenoME",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unpacked the 8.9 MB Europe PMC supplement: Tables2026.xlsx has 7 sheets, which I opened with openpyxl and counted exactly. Table6-CRISPRi-FlowFISH = 173 data rows x 42 columns, all CellType 'HCT116', all Reference 'Guckelberger et al., 2024', Significant True=38/False=135, Regulated True=33/False=140, EffectSize range -0.511 to 0.282, distanceToTSS 1,197-522,672 bp, only 5 unique measured genes, 173 unique enhancer elements. Tables S1-S3 = 64 tissue + 9 primary-cell + 17 HCT116 rows holding only ENCODE file accessions (ENCFF...) for ATAC/ChIP/Hi-C/RNA, no measurements. Table4-marker_genes = 1,206 rows of CellMarker-style annotation. I queried the GitHub API tree for JWei2015/GenoME: the repository contains exactly 4 files (LICENSE, README.md, docs/Fig0.bmp, environment.yml), 253 KB total, last pushed 2026-06-05 - no code, no weights, no tutorial, no sample data. I extracted the supplement's M0d6d6bSUBMIT.rar with bsdtar: 2,564 lines of Python (model.py 1,226, train.py 670, dataset.py 351, data.py 317), whose load_default() loads a checkpoint from a model_path that is published nowhere.",
+    "what_came_from_paper_text_only": "The training-data scale and preprocessing (ATAC-seq BAM files merged and subsampled to 50M reads each, converted to bigWig via the ChromBPNet procedure; Hi-C in cooler format; 1 Mb input context), the claim of 63 tissue / 9 primary-cell / 17 cell-line ATAC groups, the reported accuracy numbers versus Activity-by-Contact, and the statement that source code, tutorial and sample processed data are on GitHub. I did not download any ENCODE track, so the sizes of the actual input files are from the paper's description plus general knowledge of ENCODE formats."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified by GitHub API. The data availability statement promises 'source code, tutorial, and sample processed data ... freely available on GitHub', but the repository holds only 4 files (LICENSE, README, one figure, environment.yml) and the README's 'Demo Data' link points at docs/, which contains only that figure. No trained weights exist anywhere. Model code is recoverable only from a 25 KB .rar buried in the supplement. The underlying measurements are open at ENCODE, but as raw BAM files, which this project never downloads."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "PASS for the one measurement table: Table6 has EffectSize, Significant and Regulated as columns, so the enhancer-gene label is not constructed. For the main modelling task (predicting genome-wide tracks) the 'label' is thousands of ENCODE bigWig/cooler files that must be downloaded and binned, which is construction, not a column."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL, verified in the files. Tables S1-S3 contain ENCODE file accessions (ENCFF...) only - roughly 90 biosamples x 4 assay types, with multi-accession cells for ChIP and RNA. Every input and target must be fetched and reprocessed from ENCODE; nothing is shipped as values. This is exactly the 'accession numbers needing thousands of lookups' fail condition."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "PASS for Table6: EffectSize is a fractional expression change, epigenomic covariates are labelled RPM (reads per million) and percentile, distances in base pairs. The paper also states its ATAC signal transform. Units are adequate where values exist."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 173,
+      "note": "FAIL, counted directly. The only table of measured outcomes is 173 enhancer-promoter pairs with 38 significant (33 'Regulated'), spanning just 5 unique genes in a single cell line. The checklist needs about 400 rows even for pure classification; this is under half that, with only 5 groups to hold out. Table4's 1,206 rows are gene annotations, not a prediction target."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "multi-terabyte ENCODE raw alignments plus Hi-C contact matrices; GPU mandatory",
+      "note": "FAIL. Reproducing or extending the model needs ATAC BAM files subsampled to 50 million reads for about 90 biosamples, plus ChIP-seq, RNA-seq and Hi-C targets - far beyond the 5 GB working-set limit. The architecture is a Swin-Transformer plus Mixture-of-Experts over a 1 Mb context at base-pair resolution, trained 100 epochs with batch size 8-16; this cannot be trained or even usefully fine-tuned on a 16 GB CPU laptop, and no checkpoint is released to avoid training."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Mostly matches: the paper says '173 E-P pairs with 38 active ones' and Table6 has exactly 173 rows with Significant=True for 38. Two small wrinkles - Table1 has 64 rows against the paper's '63 groups of ATAC-seq tracks in tissues', and the table carries two disagreeing labels (Significant=38 vs Regulated=33)."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "PASS but with a caveat. The enhancer-gene effect sizes are real wet-lab measurements (CRISPR interference followed by FlowFISH), credited in the table to Guckelberger et al., 2024 - so they are not this paper's data, and they are already the standard public benchmark. Separately, the paper's own 'predicted ABC score' column-style quantity is built from predicted H3K27ac, so anything derived from it would be distilling a model, not learning biology."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "GenoME (this paper) - a Mixture-of-Experts network taking DNA sequence plus ATAC-seq and emitting histone marks, RNA-seq and Hi-C",
+        "open_weights": false,
+        "score_and_split": "Reported to beat Activity-by-Contact at ranking enhancer-promoter pairs on 173 HCT116 pairs, and to predict held-out genomic regions and unseen cell types; I could not check any number because no weights and no processed data were released.",
+        "authors_named_unsolved": "Their discussion frames generalisation to cell types very different from training, and separating shared genomic context from cell-type identity, as the open problems.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Enformer-Celltyping - a self-attention network predicting histone marks in unseen cell types from DNA plus chromatin accessibility (Nature Communications 2024)",
+        "open_weights": true,
+        "score_and_split": "Published as outperforming prior best-in-class epigenetic imputation, evaluated across held-out cell types and genomic regions; I read the abstract and search result, not the numbers themselves.",
+        "authors_named_unsolved": "Capturing distal DNA interaction effects, which they address only out to about 100 kb.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "EPCOT / EPCOTv2 - a CNN-plus-transformer framework predicting epigenome, chromatin organisation and transcriptome from sequence and accessibility (Nucleic Acids Research 2023)",
+        "open_weights": true,
+        "score_and_split": "Reported as a generalisable framework across cell types; code is public at liu-bioinfo-lab/EPCOT. This paper's own Table7 lists EPCOTv2 at 600 kb window and 1,000 bp resolution versus GenoME's 1 Mb and 1 bp.",
+        "authors_named_unsolved": "Resolution and window size, which GenoME positions itself against.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "GET (General Expression Transformer) - a foundation model of transcription trained on chromatin accessibility across 213 human cell types (Nature, January 2025)",
+        "open_weights": true,
+        "score_and_split": "Reported to predict gene expression and regulatory interactions across cell types; numbers taken from the abstract and search results, not verified by me.",
+        "authors_named_unsolved": "Extending beyond expression to other modalities.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "ENCODE-rE2G and Activity-by-Contact - logistic-regression and biophysical predictors of enhancer-gene links, benchmarked on CRISPR interference data (Nature 2023/2026, EngreitzLab/ENCODE_rE2G)",
+        "open_weights": true,
+        "score_and_split": "An encyclopedia of over 92 million enhancer-gene interactions across 1,458 biosamples, benchmarked on the pooled CRISPRi datasets of which this paper's 173 HCT116 pairs are a small slice.",
+        "authors_named_unsolved": "Context-specific and long-range enhancer-gene links, now being attacked with massively parallel reporter assay data.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "C.Origami - sequence plus CTCF and accessibility to chromatin contact maps",
+        "open_weights": true,
+        "score_and_split": "Cited by this paper as a single-modality specialist for chromatin contacts; I did not retrieve its numbers.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None usable here. AlphaGenome or Nucleotide Transformer / DNABERT-2 would be the right DNA backbones in principle, but neither consumes the ATAC-seq conditioning signal that is the whole point of this paper, and the paper's own GenoME checkpoint is unreleased.",
+    "freeze_and_head_viable": false,
+    "hardware": "Any genuine version of this task needs multi-GPU training over terabytes of ENCODE tracks; freeze-and-head is not available because no checkpoint was published.",
+    "licence": "Paper is CC BY-NC (non-commercial). Repository carries an MIT licence but contains no code to license."
+  },
+  "integration": {
+    "partner_dataset": "ENCODE-rE2G, the encyclopedia of ~92 million enhancer-gene interactions across 1,458 biosamples, plus the pooled CRISPR interference benchmark it is evaluated on.",
+    "join_key": "Genomic coordinates on hg38 (enhancer chrom/start/end) plus the target gene's Ensembl identifier - both are present as columns in Table6.",
+    "bigger_question_one_sentence": "The join is technically clean but adds nothing, because this paper's 173 HCT116 pairs are already a subset of the public CRISPR interference benchmark that ENCODE-rE2G is scored on, so combining them recovers the partner resource rather than extending it."
+  },
+  "controls": {
+    "positive_control": "Available in principle: the 95 'High H3K27ac' elements in Table6 should rank above the 3 'No H3K27ac' elements, and Activity-by-Contact score should already separate regulated from non-regulated pairs. Too few rows for this to discriminate a working model from a lucky one.",
+    "negative_control": "Label shuffling on 173 rows with 38 positives would be dominated by sampling noise; feature ablation is possible but uninterpretable at this size.",
+    "external_validation": "The K562 CRISPR interference data the paper also used is public, and ENCODE-rE2G pools many more cell types - so external validation data exists, but then the project simply becomes the ENCODE-rE2G benchmark, which is already crowded and honestly evaluated."
+  },
+  "honest_claim_h3": "Any model built from what this paper actually released could only claim: 'among 173 enhancer-promoter pairs around 5 genes in one colon cancer cell line, measured by one laboratory and already published by someone else, these precomputed chromatin features rank the 38 significant pairs above the rest' - a statement about a benchmark slice, not about regulatory biology.",
+  "plain_idea": {
+    "one_liner": "Use chromatin features around an enhancer to predict whether switching it off changes a nearby gene's expression.",
+    "train_on": "The one table of measurements the paper released: 173 enhancer-promoter pairs, each with precomputed chromatin signals (H3K27ac, DNase, CTCF, H3K27me3, H3K4me1 in reads per million) and the distance to the gene's start site. Verified count: 173 rows, 5 unique genes, one cell line.",
+    "predict": "Whether silencing that enhancer significantly reduces the gene's expression, and by how much. The truth comes from CRISPR interference followed by FlowFISH, a lab assay that blocks an enhancer and measures the target gene's RNA in single cells - published by Guckelberger et al., 2024, not by this paper.",
+    "why_worthwhile": "Geneticists need to know which non-coding variants matter, and that means knowing which enhancer controls which gene. But at 173 rows this particular table cannot train anything; the same question is already being answered at scale by ENCODE-rE2G on 92 million predicted interactions."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper released 173 measured enhancer-promoter pairs, and those pairs are themselves borrowed from Guckelberger et al., 2024. ENCODE-rE2G covers 1,458 biosamples and 369 cell types; GET was trained on 213 human cell types. Our would-be data is a strict subset of theirs, four orders of magnitude smaller."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Table6 carries statistical power columns (power to detect 10-50% effects) and adjusted p-values, which could in principle support calibration, but with 38 positives across 5 genes there is no way to estimate per-prediction uncertainty that would not be dominated by sampling noise."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The competitors are a 2023 Nucleic Acids Research framework (EPCOT), a 2024 Nature Communications model (Enformer-Celltyping), a January 2025 Nature foundation model (GET) and the 2023/2026 ENCODE-rE2G encyclopedia - all recent, all with open code, and ENCODE-rE2G is evaluated on held-out CRISPR perturbation data rather than a random split. GenoME itself cannot be beaten or checked because its weights are unreleased."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: GenoME cannot be run as our baseline because no checkpoint or working code was published, so there is nothing to build on or improve against on the same split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a model on the released enhancer-promoter table to predict CRISPR interference effect size from precomputed chromatin features, with held-out genes, and compare against Activity-by-Contact. Dead on arrival at 173 rows / 38 positives / 5 genes. The alternative - reproducing or fine-tuning GenoME itself - is blocked because no weights, no processed data and no runnable code were released, and the inputs are terabytes of raw ENCODE alignments.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated, because the project is dead at Part A. For scale: the paper subsampled each of ~90 biosamples' ATAC alignments to 50 million reads and trained a Mixture-of-Experts Swin-Transformer over a 1 Mb context at base-pair resolution for 100 epochs - multi-terabyte input and multi-GPU training, with no released checkpoint that would let anyone skip it.",
+    "cheapest_killing_check": "Count the rows in the only supplementary table that holds measurements, and list the GitHub repository through the API. Both take two minutes: 173 rows, and a repository with 4 files and no code. I did exactly this and it killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Four Part A killers fail, all verified rather than read. A1: the promised source code, tutorial and sample data are absent from the GitHub repository (4 files, 253 KB, confirmed via the GitHub API), and no trained weights were released anywhere - the model code survives only as a 25 KB .rar inside the supplement, whose loader expects a checkpoint that does not exist publicly. A5: the sole table of measured outcomes holds 173 enhancer-promoter pairs with 38 significant hits across just 5 genes in one cell line, well under the ~400-row floor, and those measurements are borrowed from Guckelberger et al., 2024 rather than generated here. A3: Supplementary Tables S1-S3 provide only ENCODE file accessions for ~90 biosamples across four assay types, so every input and target would have to be fetched and reprocessed. A6: that reprocessing means terabytes of raw ATAC alignments plus Hi-C matrices and GPU training of a 1 Mb-context transformer, far past a 16 GB CPU laptop. On top of the data problems, the field is served by recent open models (EPCOT, Enformer-Celltyping, GET, ENCODE-rE2G), so even a successful rebuild would be a marginal gain in a crowded area."
+}

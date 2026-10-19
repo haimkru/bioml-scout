@@ -1,0 +1,95 @@
+{
+  "paper_id": "science2026-adv1219",
+  "title": "C1q and immunoglobulins mediate activity-dependent synapse loss in the adult brain.",
+  "doi": "10.1126/science.adv1219",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327095 (plus companion Zenodo deposit https://doi.org/10.5281/zenodo.18063582)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the GEO series GSE327095 (spatial gene-expression data) metadata files: 2 Visium slides (WT527, WT528), 3,715 and 3,549 in-tissue spots out of 4,992 capture positions each, 32,285 gene rows in features.tsv, and the tissue_positions_list.csv columns (barcode, in_tissue, array_row, array_col, pixel_row, pixel_col) - no condition, hemisphere or region column anywhere. Checked file sizes by HEAD (count matrices 40 MB and 56 MB gzipped; whole series tar 107 MB). Found and opened the companion Zenodo deposit 10.5281/zenodo.18063582 (CC-BY-4.0): listed its 7 archives (three Xenium raw-data archives of 8.4-8.7 GB each, a 9.0 GB archive of final AnnData outputs, a 1.6 GB data archive) and extracted and read the 1.8 MB code archive - 218 files including the full analysis pipeline. Read opXa_ipsi_contra_annotation.py, op1_prep.py, op2_qc.py, op4_annotation.py, and opened two differential-expression spreadsheets (838 gene rows).",
+    "what_came_from_paper_text_only": "The paper itself is paywalled with no PubMed Central copy and bioRxiv blocked retrieval (HTTP 429), so all biology - the synapse-loss and C1q puncta quantification, the amyloid-beta measurements, the mouse numbers per group - comes from the abstract and the GEO/BioProject design description only. None of those microscopy measurements are deposited in any repository I could find."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "GEO GSE327095 and Zenodo 10.5281/zenodo.18063582 are both fully open, no login; I downloaded files from both."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL, verified in the files. Nothing in the downloadable data is a prediction target. The Visium deposit is raw counts plus x/y coordinates plus images - no condition, hemisphere, brain-region or outcome column. The one meaningful contrast (hyperactivated ipsilateral versus control contralateral dentate gyrus) is constructed by the authors by hand-drawing polygon outlines on each section: their script opXa_ipsi_contra_annotation.py reads per-sample files data/dg_masks/<id>_Selection_1/2_coordinates.csv and labels each cell Ipsi/Contra/Outside by point-in-polygon test. Those mask files sit inside a 1.6 GB archive, and no equivalent exists for the two Visium sections at all. The paper's actual measured outcome - synapse and C1q puncta counts from microscopy - is deposited nowhere."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are present as real data, not accessions: count matrices and spot coordinates for Visium, raw Xenium transcript/cell tables on Zenodo."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are implied by the standard 10x Genomics format - integer unique-molecule counts per spot per gene, coordinates in pixels with a scale-factor JSON giving microns; the authors' script labels Xenium axes in micrometres."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 7264,
+      "note": "FAIL on the biological unit. 7,264 Visium spots (3,715 + 3,549, counted in the files) come from only 2 mice, and the Xenium deposit adds 3 more mice (SHG1-00586, -00593, -00594). All 5 animals are the same treatment group; the only contrast is left-versus-right hemisphere inside each section, so the effective sample size is 5 paired comparisons, not thousands. Same trap as the scCT-DB candidate: many cells, almost no independent units."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "The Visium part alone is fine (~0.5 GB working set). But the hand-drawn region masks and the annotated outputs that carry any label live in 1.6 GB and 9.0 GB 7-Zip archives, and the three Xenium raw archives are 8.4-8.7 GB each - roughly 45 GB total, far over the 5 GB working-set limit, and the machine has no 7-Zip tool installed by default."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Internally consistent: barcode count equals in_tissue==1 count exactly in both samples (3,715 and 3,549), and the gene list is byte-identical between samples. No row counts are stated in the accessible abstract to contradict."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for every label that does exist. Cell-type labels come from marker-gene enrichment scored on Leiden clusters of the same expression matrix and then hand-picked in an Excel file (op4_annotation.py). Plasma cells are called from Igkc expression plus cosine similarity to a reference profile (01_opX_plasma_cell_finding). Both are computed from the features, so predicting them from expression is leakage by construction, not biology."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "",
+    "freeze_and_head_viable": null,
+    "hardware": "",
+    "licence": ""
+  },
+  "integration": {
+    "partner_dataset": "",
+    "join_key": "",
+    "bigger_question_one_sentence": ""
+  },
+  "controls": {
+    "positive_control": "",
+    "negative_control": "",
+    "external_validation": ""
+  },
+  "honest_claim_h3": "Not applicable - the project was rejected at Part A. The strongest claim the deposited data could support is 'spatial gene expression distinguishes the stimulated from the unstimulated hippocampus in 5 mice from one laboratory, all given the same treatment', which is a descriptive statement about 5 animals rather than a model.",
+  "plain_idea": {
+    "one_liner": "Use spatial gene expression in hippocampus tissue to predict which side of the brain was artificially overactivated.",
+    "train_on": "Each example would be one small patch of mouse brain tissue (a 55-micrometre Visium spot) described by how much of each of ~32,000 genes it contains. I counted 7,264 such patches, but they come from only 2 mice (plus 3 more mice in a companion deposit using a different, smaller gene panel).",
+    "predict": "Whether the patch sits in the hyperactivated half of the brain or the untouched control half. The true answer is not measured - the authors drew the two halves by hand as polygons on each tissue image, and those outlines are not released in any small file.",
+    "why_worthwhile": "Neuroimmunology labs would like a transcriptional readout of which synapses are being pruned, so they can screen interventions without counting puncta by microscope. Even a failure would tell us how much of the hyperactivity signature is detectable at 55-micrometre resolution."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: classify Visium spots (or Xenium cells) as coming from the chemogenetically hyperactivated versus the control hemisphere of the same hippocampal section, from spatial gene expression, and test whether the immunoglobulin signature (Igkc, Igha) the authors highlight is the feature doing the work. It dies because the class label is a hand-drawn polygon that is not distributed in any usable file, the biological unit count is 5 mice, and the only ready-made labels (cell type, plasma-cell identity) are themselves computed from the same expression values.",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Visium numbers are measured, not guessed: I parsed the actual barcode, feature and coordinate files and they total well under a gigabyte, so a scikit-learn or scGPT-embedding run on 7,264 spots by 32,285 genes fits in about 3 GB. The 20 hours is dominated by hand-annotating hemisphere and hippocampal subregion on two images, which no file provides. The Xenium route was not costed because 45 GB of archives fails the size rule outright.",
+    "cheapest_killing_check": "Open tissue_positions_list.csv and the sample metadata and look for a condition column. Takes two minutes: there are six columns and none of them is the label. Then count the animals - 2 Visium plus 3 Xenium, all one treatment group."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2: no prediction target exists in any downloadable file. The deposited spatial transcriptomics is raw counts plus coordinates plus images; the hyperactivated-versus-control hemisphere label was produced by the authors drawing polygons on each section by hand, and the paper's real outcome measure - synapse and C1q puncta counts from microscopy - is not deposited at all. It also fails A5 (5 mice, all one treatment group, so thousands of spots are not independent examples), A6 (the Xenium archives that carry any annotation total ~45 GB), and A8 (the only ready-made labels, cell type and plasma-cell identity, are computed from the same expression values the model would use as features). This is a beautiful piece of mouse neuroimmunology whose evidence lives in microscope images, not in a feature-label table."
+}

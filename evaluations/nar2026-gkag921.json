@@ -1,0 +1,57 @@
+{
+  "paper_id": "nar2026-gkag921",
+  "title": "Abasic site repair in APE1-deficient mouse embryonic stem cells: a matter for the MRN complex and ATM signaling.",
+  "doi": "10.1093/nar/gkag921",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE295386",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the 13 MB Europe PMC supplement and parsed both tables: Supplementary Data 2 CRISPR screen sheet is 19,672 rows x 21 columns (gene Symbol plus log2FC/logCPM/LR/PValue/FDR for 4 contrasts), 0 duplicate symbols, 0 missing values; Supplementary Data 1 RNAseq sheet is 18,318 rows with Ensembl/Entrez/symbol and logFC + adjusted p-value for two APE1-knockout clones. Downloaded GSE295386_count_matrix.rds (2.16 MB) and loaded it in R: a 19,672 gene x 12 sample integer matrix (wild-type and APE1-knockout, timepoints T0/Tn, 3 replicates each); it is gene-level, not guide-level. Reproduced the paper's hit counts exactly from the file at |log2FC| >= 1 and FDR < 0.05. Checked the Zenodo record 15234066 through its application programming interface: access_right is 'restricted' and the file list is empty.",
+    "what_came_from_paper_text_only": "That the Mouse Brie pooled knockout library with 78,637 guide RNAs was used, that screen coverage was 500 cells per guide in APE1-knockout and only 100 cells per guide in wild-type cells, the multiplicity of infection of 0.3, and all wet-lab phenotype results (abasic site counts, differentiation assays, pulsed-field gels). Guide-level read counts exist only as raw sequencing in the linked BioProjects, which I did not download."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement zip and both GEO count matrices download without login (CC-BY 4.0). The Zenodo mirror of the 'original data' is marked restricted, but it is not needed because GEO and the supplement carry the processed tables."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the file: fitness effect of each gene knockout is already a column (e.g. KoTntoKoT0_log2FC with its FDR), for four contrasts, no construction needed."},
+    "a3_inputs_present": {"pass": false, "note": "FAIL. The screen table contains a mouse gene symbol and nothing else — zero input features. Every predictor (protein sequence, expression level, paralogue status, interaction partners) would have to be imported from outside resources, and the main sheet has no Ensembl or UniProt identifier, only a symbol needing a second mapping step for all 19,672 rows."},
+    "a4_units_stated": {"pass": true, "note": "Units are explicit in the column names and methods seen in the file: log2 fold change, log counts per million, likelihood-ratio statistic, p-value and false discovery rate, all from edgeR."},
+    "a5_enough_rows": {"pass": false, "n_rows": 19672, "note": "FAIL for the task that would be worth doing. 19,672 gene rows look ample, but the independent experimental unit is one screen in one APE1-knockout clone; the APE1-specific interaction label (knockout vs wild-type at the final timepoint) has only 23 genes past the paper's threshold, which I counted in the file (22 depleted, 1 enriched)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~15 MB (13 MB supplement zip + 2.16 MB count matrix)", "note": "Trivially laptop-sized; verified by opening everything in pandas and R on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Exact match, computed from the file: 383 wild-type hits (302 depleted, 81 enriched), 443 APE1-knockout hits (438 depleted, 5 enriched), 108 overlapping, 335 knockout-unique — identical to the paper's text."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are edgeR statistics on measured guide RNA read counts, i.e. derived from a physical measurement, not another model's prediction; the 'APE1null-specific hits' sheet is just the main table thresholded (I confirmed its 443 rows are exactly the knockout hit set)."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "DeepDEP / deep-learning cancer dependency map predictors (Science Advances 2021, seen as search results only)", "open_weights": null, "score_and_split": "Not retrieved in detail; trained on Broad DepMap CRISPR screens covering ~17,634 genes across 436-1,100+ human cell lines.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Elastic-net and expression-based gene-essentiality predictors trained on DepMap (search results only, e.g. BMC Medical Genomics 2023 'Predicting gene knockout effects from expression data')", "open_weights": null, "score_and_split": "Not retrieved in detail.", "runnable_as_baseline": null},
+      {"name": "Graph-transformer synthetic-lethality predictors (PMC11361842, 'Synthetic lethal connectivity and graph transformer improve synthetic lethality prediction', search result only)", "open_weights": null, "score_and_split": "Not retrieved in detail.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "None applicable — a gene symbol is not a sequence, molecule or cell input", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "n/a"},
+  "integration": {"partner_dataset": "DepMap (human gene dependency across ~1,100 cell lines) could in principle join via mouse-human orthologue mapping", "join_key": "gene symbol -> Ensembl orthologue", "bigger_question_one_sentence": "Does human cancer-cell-line essentiality transfer to mouse embryonic stem cells? — a real question, but this single noisy screen adds little to the mouse ESC screens already published, and the orthologue mapping is a new identifier build."},
+  "controls": {"positive_control": "Core ribosomal and proteasome genes must come out depleted — they do in the file (e.g. Rpl21 strongly depleted), so a pipeline check exists.", "negative_control": "Label shuffling across the 19,672 genes is runnable.", "external_validation": "No second APE1-knockout mouse ESC screen exists; published mouse ESC essentiality screens are a different genotype and library."},
+  "honest_claim_h3": "A model here could only claim: 'from external gene annotations, we predict the proliferation-fitness log2 fold change measured in one Brie-library screen of one APE1-knockout mouse embryonic stem cell clone' — which is a statement about one experiment, not about APE1 biology.",
+  "plain_idea": {
+    "one_liner": "Use gene annotations to predict which gene knockouts kill mouse stem cells that lack the DNA-repair enzyme APE1.",
+    "train_on": "One row per mouse gene (19,672 verified rows), with features that would all have to be fetched from outside this paper — protein sequence, expression, paralogues, interaction partners — because the file itself holds only a gene symbol.",
+    "predict": "The fitness effect of knocking that gene out, measured as the log2 change in abundance of its guide RNAs between the start and end of a pooled CRISPR screen (read counts from sequencing, summarised by edgeR).",
+    "why_worthwhile": "DNA-repair labs hunting drug targets that are lethal only when APE1 is lost would use a reliable predictor; but with one screen and one clone, even a failure teaches little beyond 'single screens are noisy'."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "One genome-wide screen of 19,672 genes in one mouse clone, against DepMap's ~17,000 genes measured across more than 1,000 human cell lines that existing essentiality models already train on."},
+    "confidence_score": {"answer": "partly", "why": "Three replicates per condition are in the count matrix I loaded, so measurement noise is estimable, but three replicates of one clone cannot calibrate predictions for new genotypes."},
+    "models_beatable": {"answer": "partly", "why": "I only saw titles and abstract snippets for the DepMap-based predictors, so I cannot state their architectures, splits or scores; I will not claim they are beatable."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: there is no existing model of APE1-specific fitness in mouse embryonic stem cells to run as a baseline, and human DepMap measures a different quantity (cancer cell line dependency) in a different species."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict each gene's knockout fitness effect in APE1-deficient mouse embryonic stem cells, or the APE1-specific component of it, from externally assembled gene features. Rejected on Part A — the deposited tables are label-only (gene symbol plus log2 fold change), and the APE1-specific label rests on a single screen of a single clone with 23 genes passing the significance threshold in the direct knockout-versus-wild-type comparison.",
+  "effort": {"hours_to_feature_table": 16, "working_set_gb": 0.02, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 2, "compute_note": "Estimated from actually opening the files: the tables load in seconds and total ~15 MB; the 16 hours is the feature side, i.e. mapping 19,672 mouse symbols to Ensembl/UniProt and pulling sequence, expression, paralogue and interaction annotations, none of which this paper provides.", "cheapest_killing_check": "Count how many genes are significant in the direct APE1-knockout-versus-wild-type comparison at the final timepoint. Answer, computed from the file: 23. That is the whole APE1-specific signal, and it kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A3: the deposited tables carry only a mouse gene symbol and the measured fitness/expression labels — no input features at all, so the entire predictor side would be imported from other databases. Also fails A5 in disguise: the apparent 19,672 rows come from one pooled screen in one APE1-knockout clone (wild-type arm at only 100 cells per guide), and the APE1-specific label that would make the project novel has 23 significant genes. The data is otherwise exemplary — it parses cleanly, has no duplicates or missing values, and reproduces the paper's 383/443/108/335 hit counts exactly — it is simply a mechanistic wet-lab result, not a modelling dataset."
+}

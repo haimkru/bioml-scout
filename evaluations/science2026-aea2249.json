@@ -1,0 +1,142 @@
+{
+  "paper_id": "science2026-aea2249",
+  "title": "The complete telomere-to-telomere sequence of a mouse Y chromosome.",
+  "doi": "10.1126/science.aea2249",
+  "journal": "Science",
+  "data_url": "https://github.com/yulab-ql/mhaESC_genome/ (also NCBI GenBank GCA_056825265.1)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed three released files (~30 MB total): mT2T-Y.251107.v1.1.0.fasta.gz = 1 record 'ChrY' of exactly 95,210,109 bp, 0 lowercase (unmasked), base composition A 29,050,824 / T 29,100,082 / C 18,551,310 / G 18,507,893; mT2T-Y_v1.1.annotation.v1.1.0.20260129.gff3.gz = 15,926 feature lines, 2,186 genes (999 lncRNA, 462 unprocessed pseudogene, 328 transcribed unprocessed pseudogene, 273 protein_coding, rest small classes), of which 2,044 carry ENSMUSG identifiers and exactly 142 carry new identifiers; feature sources are Liftoff 15,525, LiftOnPAR 361, EVM 8, '.' 32; mT2T-Y_v1.1.repeats.gff.gz = 250,981 interval rows with repeat class in the type column (LINE/L1 31,890; Simple_repeat 18,895; LTR/ERVL-MaLR 17,468; LTR/ERVK 16,577; Satellite 14,725; ...), sources RepeatMasker 244,666, TRF v4.04 4,851, GMATA 1,464. Also pulled the NCBI assembly report for GCA_056825265.1 (2,868,119,850 bp, 21 chromosomes, hifiasm v0.24.0, released 2026-04-21) and ran GEO DataSets searches for all five BioProjects (PRJNA1200255, PRJNA1245650, PRJNA1245651, PRJNA1265355, PRJNA1474243, PRJNA1418905) plus a 'mhaESC' keyword search — all returned zero processed series; SRA shows 11 raw runs for PRJNA1245650.",
+    "what_came_from_paper_text_only": "Paper is not open access and has no PMC identifier, so there is no full text, no methods section and no supplementary tables available to me — only the PubMed abstract. The claims about mapping homologous recombination loci in the pseudoautosomal region and about a Y chromosome dosage compensation mechanism from X–Y homologous gene expression come from the abstract alone; I found no deposited table behind either. The 91% repetitive content figure and the '8.70 Mb of previously unassembled sequence' figure come from the abstract and a secondary web summary, not from a file I opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified by downloading: all files are public GitHub release assets, no login, no application. Assembly is also in GenBank as GCA_056825265.1. Licence is unstated — the repository has no licence file."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Passes only narrowly and only for an uninteresting target. The repeats file genuinely has a class label in a column for 250,981 intervals, and the annotation file has gene_type for 2,186 genes. The labels the paper is actually about — X–Y gene expression and pseudoautosomal recombination — are in no released column."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The full 95,210,109 bp DNA sequence is present in the FASTA file, so any sequence feature can be cut directly from coordinates with no identifier lookups."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Coordinates are base pairs on a named genome build (mT2T-Y v1.1). The repeats file column 6 holds percent divergence from the consensus repeat (e.g. 0.0, 12.9) but is not labelled as such anywhere in the file."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 250981,
+      "note": "250,981 repeat intervals and 2,186 genes is numerically ample, but the independent biological unit is one chromosome from one inbred C57BL/6 male mouse, so the effective sample size for any biological question is one."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.13 GB",
+      "note": "30 MB of compressed downloads; the whole chromosome is 95 Mb of sequence and loads into well under 1 GB of RAM. Comfortably within a 16 GB laptop."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Unusually clean match, verified in the files: FASTA length is exactly 95,210,109 bp against the abstract's 95.21 Mb, and exactly 142 genes carry non-ENSMUSG identifiers against the abstract's '142 previously unidentified genes'."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAILS, and this is the killer. Every label in the released files is a deterministic function of the same DNA sequence that would be the model input. 244,666 of the 250,981 repeat labels are RepeatMasker output — a homology search of this sequence against the Dfam/RepBase consensus library — and the attribute column even carries the matched consensus name (e.g. 'Target \"Motif:CryptonV-N1_SSa\"'), so the answer is written beside the question. The remaining repeat rows are TRF v4.04 (4,851) and GMATA (1,464), both algorithms that simply find tandem repeats in the sequence. The 2,186 gene models come from Liftoff (2,147 of them), which transfers coordinates from an existing annotation rather than measuring anything. Predicting any of these from sequence is distilling the tool that produced them, and is leakage by construction, which is exactly what A8 forbids. The only genuinely measured quantities in the paper — RNA sequencing expression and CUT&Tag histone methylation behind the dosage compensation claim — exist solely as raw reads in SRA (BioProjects PRJNA1245650, PRJNA1245651, PRJNA1265355, PRJNA1474243); I confirmed by direct search that no GEO series or count matrix was deposited for any of them."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Terrier (deep learning repeat classifier, Briefings in Bioinformatics 2025)",
+        "open_weights": true,
+        "score_and_split": "Trained on RepBase (>100,000 repeat families) under the RepeatMasker labelling scheme; maps 97.1% of RepBase sequences to RepeatMasker categories; benchmarked against DeepTE, TERL and TEclass2 in four model organisms including mouse, with reported superior accuracy and broader coverage.",
+        "authors_named_unsolved": "Classifying degraded and lineage-specific repeats that fall outside curated libraries remains the hard part.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "GLARE (genomic language model for repetitive element classification, bioRxiv 2026)",
+        "open_weights": null,
+        "score_and_split": "Fine-tunes the NTv3 (Nucleotide Transformer v3, 650M parameter) DNA language model; highest weighted superfamily F1 of 0.958 and order F1 of 0.990 on the PanTEon benchmark test partition, with the advantage retained on held-out taxonomic clades and on artificially degraded sequences.",
+        "authors_named_unsolved": "Generalisation to unseen clades and to heavily degraded elements is the stated frontier; they test it rather than claim it solved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "CREATE (attention-based hierarchical transposable element classifier, Briefings in Bioinformatics 2025)",
+        "open_weights": null,
+        "score_and_split": "Reported to surpass previous deep learning methods at each node of the classification hierarchy on multiple public datasets, with particular strength on active DNA transposons.",
+        "authors_named_unsolved": "Hierarchical classification of low-copy and fragmented elements.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepTE / TERL / TEclass2 (earlier convolutional and transformer repeat classifiers)",
+        "open_weights": true,
+        "score_and_split": "DeepTE uses k-mer vectors with per-node convolutional classifiers; TEclass reported over 90% sensitivity for DNA transposons but only ~75% separating LINEs from SINEs; all three are superseded by Terrier in head-to-head mouse benchmarks.",
+        "authors_named_unsolved": "Distinguishing LINE from SINE and handling non-canonical elements.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer v3 / DNABERT-2 / HyenaDNA (DNA language models)",
+    "freeze_and_head_viable": true,
+    "hardware": "Embedding 95 Mb of sequence in windows is feasible on a CPU laptop over roughly a day, and a frozen-backbone linear head would train in minutes — but the target it would be trained on is invalid, so viability here is irrelevant.",
+    "licence": "Backbone licences are permissive to non-commercial; the data repository itself carries no licence file, which is a separate unresolved problem."
+  },
+  "integration": {
+    "partner_dataset": "Dfam and RepBase repeat consensus libraries, GENCODE/Ensembl mouse annotation, and the two recent mouse telomere-to-telomere assemblies (the 2025 Science mouse T2T genome and the 2025 Nature Genetics two-subspecies assemblies), joinable on genomic coordinates after liftover with the released chain files.",
+    "join_key": "Genomic coordinates plus genome build, via the supplied GRCm38 and GRCm39 liftover chain files; Ensembl gene identifiers for the 2,044 lifted genes.",
+    "bigger_question_one_sentence": "One could ask whether repeat content and satellite architecture on the Y chromosome differ systematically between mouse subspecies — but that is a comparative genomics question answered by alignment, not a prediction problem, and the labels on each side would still be RepeatMasker output."
+  },
+  "controls": {
+    "positive_control": "A model given sequence should trivially recover GC content and simple-repeat periodicity; the 14,725 satellite intervals should be the easiest class to call.",
+    "negative_control": "Shuffle the repeat-class labels and confirm collapse to the majority class. This control would not rescue the project, because the leakage here is structural rather than accidental — the label is a function of the input by definition.",
+    "external_validation": "The 2025 Science mouse telomere-to-telomere genome and the 2025 Nature Genetics assemblies of two mouse subspecies provide independent sequence, but they carry the same kind of tool-generated labels, so they validate the tool, not the biology."
+  },
+  "honest_claim_h3": "A model trained on these files could only claim to reproduce what RepeatMasker, Tandem Repeat Finder and Liftoff already output for this one chromosome of one inbred male mouse — that is, to imitate three deterministic programs whose answers are already computable from the same input in less time than training would take.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence from a newly completed mouse Y chromosome to predict which repeat family each stretch belongs to.",
+    "train_on": "Windows of DNA sequence cut from the 95,210,109 base pair mT2T-Y chromosome, labelled by the 250,981 repeat intervals in the released annotation file. Both numbers were verified by opening the files.",
+    "predict": "The repeat class of each interval (for example LINE/L1, Satellite, LTR/ERVK). The 'true answer' comes not from any laboratory measurement but from RepeatMasker, a program that searches the same sequence against a library of known repeat consensus sequences.",
+    "why_worthwhile": "It would not be worthwhile: the answer key is produced by a free program running on the identical input, so the best achievable result is to imitate that program. The genuinely interesting labels the paper advertises — which genes are expressed and where recombination happens — were never deposited in processed form."
+  },
+  "paper_type": "resource",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Terrier was trained on RepBase's 100,000-plus curated repeat families and GLARE on the PanTEon multi-species benchmark. This dataset is 250,981 intervals from a single chromosome of a single mouse, all labelled by the same tool those models were built to replace."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements and no independent re-annotation, so there is nothing from which to estimate uncertainty. RepeatMasker's percent-divergence column reflects distance to a library consensus, not measurement noise."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Terrier (2025) and GLARE (2026, built on the 650M-parameter Nucleotide Transformer v3) are current, use pretrained backbones, and were evaluated honestly on held-out taxonomic clades and degraded sequences — GLARE reports superfamily F1 of 0.958. Mouse is already one of Terrier's four benchmark organisms."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: our labels are the baseline tool's own output, so beating the baseline is logically impossible — perfect agreement with RepeatMasker is the ceiling, and any disagreement scores as an error."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: fine-tune a DNA language model (Nucleotide Transformer or DNABERT-2) to classify repeat families and satellite arrays from the newly assembled, highly repetitive mouse Y chromosome sequence, where 91% of the chromosome is repetitive. The idea dies on label provenance — the only available labels are RepeatMasker, Tandem Repeat Finder and Liftoff outputs computed from the same sequence that would be the model input. The one project that would have been genuinely novel, predicting the Y chromosome dosage compensation signal from sequence, is impossible because the RNA sequencing and CUT&Tag data behind that claim were deposited only as raw reads in SRA with no processed count matrix.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.13,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 24,
+    "cv_run_minutes": 30,
+    "compute_note": "Download and parsing were timed: all three files fetched and fully parsed in under five minutes on this laptop. The embedding figure is an estimate for tiling 95 Mb of sequence through a small DNA language model on CPU, not a timing I ran, since the project was rejected before that step.",
+    "cheapest_killing_check": "Open the repeats annotation and read the source column: 244,666 of 250,981 rows say 'RepeatMasker'. That single look tells you the label is a free program's output on the same input, and kills the project in two minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A8 on label provenance. This is an excellent genome assembly — the files are clean, open, and the counts match the paper exactly (95,210,109 bp; exactly 142 new gene identifiers) — but it is a reference sequence, not a measurement table. Every label it ships with is a deterministic function of the sequence that would be the model input: 244,666 of 250,981 repeat labels are RepeatMasker homology hits whose matched consensus name is written in the same row, 4,851 are Tandem Repeat Finder output, 1,464 are GMATA output, and 2,147 of 2,186 gene models were transferred by Liftoff rather than measured. Training on these distils the tool and cannot exceed it. The only measured quantities — the RNA sequencing and CUT&Tag data behind the paper's dosage compensation claim — were deposited as raw reads only (I confirmed zero GEO series across all five BioProjects), so that label would have to be constructed from raw sequencing, which also breaches the project's no-raw-data rule. Even setting A8 aside, C2 would score 0: Terrier (2025) and GLARE (2026) are open, current, backbone-based repeat classifiers already benchmarked honestly on mouse."
+}

@@ -1,0 +1,135 @@
+{
+  "paper_id": "science2026-ady0339",
+  "title": "Extensive and differential platinum chemotherapy mutagenesis in livers of children.",
+  "doi": "10.1126/science.ady0339",
+  "journal": "Science",
+  "data_url": "https://ega-archive.org (EGAD00001016117, EGAD00001016120, EGAD00001016122, EGAD00001016141, EGAD00001016142, EGAD00001016143); ENA studies ERP183275, ERP181225, ERP192212; code at https://github.com/WengerAnna/platinum_liver (Zenodo 10.5281/zenodo.20374075)",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Opened the Zenodo code archive listing (one 20.6 KB zip of eight R scripts, CC-BY-4.0, no data) and the GitHub file tree (eight R/code files only, no data files). Queried the European Nucleotide Archive (ENA) file report for study ERP192212: it returns only raw CRAM read files of 1-6 GB per run (e.g. ERR17174499, 6.0 GB), i.e. raw sequencing, not a feature table. Attempted the Science supplementary files and landing page (HTTP 403, blocked to automated fetching) and the bioRxiv supplementary PDF (HTTP 429, repeatedly). The European Genome-phenome Archive (EGA) metadata endpoints returned 404/DNS failure, but EGAD* identifiers are by definition controlled-access datasets needing a Data Access Committee application. I read the full bioRxiv preprint text (10.1101/2025.10.12.681852) including Methods and the data availability statement.",
+    "what_came_from_paper_text_only": "Every count: 93 normal liver + 6 blood + 19 hepatoblastoma + 4 metastasis samples from 6 children in the discovery set; 251 tissue samples and 33,324 variants by targeted duplex sequencing (table S7); 285 targeted genes (table S6); 2,022 potential driver variants and 21,623 non-driver variants in 192 cancer genes; 1,146 driver single-base substitutions with per-signature probabilities; 1,646 external neoplasms re-analysed. I opened none of these tables, so none of these numbers is verified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL. All primary sequencing sits in EGA (European Genome-phenome Archive) controlled-access datasets (EGAD00001016117/120/122/141/142/143) that require a Data Access Committee application. The processed variant calls exist only as Supplementary Tables of a paywalled Science article: science.org returned HTTP 403 to every supplementary-file and landing-page request, and the bioRxiv mirror of the supplement returned HTTP 429 on four attempts. The only thing I could actually open was the ENA (European Nucleotide Archive) report for ERP192212, which holds raw CRAM read files of 1-6 GB per run - raw sequencing, excluded by project policy and not a feature or label table. I verified no data file."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Probably passes on the paper's description only: platinum-exposed versus platinum-naive, tissue type and agent are stated to be columns of table S1, and per-sample substitution burden a column of tables S4/S7. Unverified - I never opened a table. Note the headline quantity, the contribution of the new mutational signature, is NOT a measured column; it is an output of signature-extraction software."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Paper text only. The 96-channel trinucleotide context (the mutated base plus its two flanking bases) is derivable from the chromosome/position/ref/alt fields the variant tables are said to contain; no external identifier resolution would be needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Paper text only. Burden is consistently reported as substitutions per diploid genome, normalised for trinucleotide composition and duplex coverage, with the method described in Methods."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 251,
+      "note": "FAIL as a second, independent killer. The independent unit is the child, and the study spans only roughly 20-30 children; even counting tissue samples it is 251, and 93 of the discovery liver samples come from a single set of 6 children. The 33,324-row variant table is not 33,324 independent examples - every variant inherits its exposure label from one of 251 samples. Both are far under the ~400 needed even for classification at the level that matters. Counts from the paper text; unverified."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~tens of MB if the supplementary variant tables were obtainable; ~TB for the CRAM files actually in ENA",
+      "note": "The processed tables would be trivially small; the only data I could reach (raw CRAM, 1-6 GB per run across hundreds of runs) is not laptop-scale and is forbidden by project policy."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot be assessed - no download to compare against. The preprint itself quotes 251 samples in the text but '220 samples (including 120 from the discovery cohort)' and '181 samples by platinum exposure' in the Figure 3 legend, so at least three sample counts circulate for the validation cohort and I could not open a file to resolve which is right."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for every label that would give enough rows. The variant-level labels on offer are (i) which mutational signature generated a variant - an output of mSigHdp, SigProfilerExtractor/Assignment and mSigAct, i.e. non-negative matrix factorisation models, so training on it distils those models (circularity); and (ii) 'is this a cancer driver' - assigned by an annotation rule from the gene and consequence, which are themselves the features (leakage by construction). Only sample-level platinum exposure traces to a physical fact (the treatment record), and that gives ~251 rows. From the Methods text."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SigProfilerExtractor / SigProfilerAssignment (matrix-factorisation tools for extracting and assigning mutational signatures)",
+        "open_weights": true,
+        "score_and_split": "Not applicable - these are the tools the paper itself ran to produce its signature calls; no held-out benchmark reported here.",
+        "authors_named_unsolved": "Not retrieved - I only saw the paper's use of the tools, not their own papers.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MuSiCal (mutational signature analysis method, Nature Genetics 2024)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; found only as a search result title claiming 'accurate and sensitive mutational signature analysis'.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "MESiCA (neural embedding model that predicts the dominant mutational signature from few mutations, reported over 60,000 tumours with gene panels)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the search-result claim of predicting dominant signatures across >60,000 panel-sequenced tumours using pentanucleotide context.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate; a 96-channel trinucleotide spectrum is a short fixed vector, not a sequence a pretrained DNA language model would help with",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU, but irrelevant given the row count",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "COSMIC mutational signatures and the Pan-Cancer Analysis of Whole Genomes / Hartwig metastatic cohorts, joinable on genomic coordinates plus genome build",
+    "join_key": "genomic coordinates (GRCh37 for the targeted data, GRCh38 for the whole-genome data - two builds in one paper)",
+    "bigger_question_one_sentence": "Does a tissue-specific platinum imprint seen in children also exist in adult platinum-treated tissues, and is tissue context generally a hidden co-author of mutational signatures?"
+  },
+  "controls": {
+    "positive_control": "The model must recover the known platinum signatures SBS31 and SBS35 in exposed samples - a well-established COSMIC relationship.",
+    "negative_control": "Shuffle exposure labels within donor and confirm collapse to the per-tissue mean.",
+    "external_validation": "The five external mutation catalogues the authors re-analysed (adult normal/cirrhotic liver, three childhood cancer cohorts, 1,646 neoplasms) - but these are other papers' data, not this paper's."
+  },
+  "honest_claim_h3": "At best: 'among 251 tissue samples from roughly two dozen children treated at a small number of UK centres, platinum exposure is detectable from the trinucleotide mutation spectrum' - a claim about a handful of children, not a generalisable predictor.",
+  "plain_idea": {
+    "one_liner": "Use the pattern of DNA letter changes in a tissue sample to predict whether the child received platinum chemotherapy.",
+    "train_on": "Each example would be one tissue sample described by its spectrum of single-letter DNA changes in their three-letter sequence context (96 numbers), plus tissue type and age. The paper reports 251 such samples from roughly 20-30 children; I verified neither number.",
+    "predict": "Whether the child had received cisplatin or carboplatin, and how many mutations per cell. The true answer comes from the clinical treatment record and from duplex sequencing, a method that reads both DNA strands so single-molecule mutations can be called reliably.",
+    "why_worthwhile": "Paediatric oncologists want a mutation-based dosimeter for how much genetic damage a treatment left behind; even a failed model would tell us how many samples such a readout needs."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "251 tissue samples from roughly two dozen children is far smaller than the cohorts existing signature tools were built on (MESiCA's search-result claim alone cites over 60,000 tumours). The data is unusual in kind (single-molecule duplex sequencing of normal paediatric tissue) but tiny in quantity."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Multiple anatomical regions were sampled per liver and targeted and whole-genome duplex sequencing were run on the same stock DNA (reported Pearson correlation 0.95), which would let you estimate measurement noise - but with ~30 donors there is no way to say 'we are unsure for this group'."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The incumbents (SigProfilerExtractor, SigProfilerAssignment, mSigHdp, mSigAct) are open, actively maintained, and the paper's own authors ran two of them in parallel as orthogonal checks. There is no weak published number to beat."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: the existing tools solve a decomposition problem, not a supervised prediction with a held-out split, so they cannot be run as a like-for-like baseline. With ~30 donors no split would be stable anyway."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: classify platinum-chemotherapy exposure, and regress mutations per diploid cell, from the 96-channel trinucleotide mutation spectrum of a normal paediatric tissue sample, with children held out. Dies on sample size (~251 samples, ~20-30 children) and on data access (EGA controlled access; supplementary variant tables unretrievable).",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated: no data file was obtainable, so there is nothing to size. The processed tables would be well under 100 MB if they could be downloaded; the only reachable files are 1-6 GB CRAM reads per run in ENA.",
+    "cheapest_killing_check": "Count the distinct children (PD identifiers) in supplementary table S1. If it is under ~50, the project is dead regardless of the 33,324-variant table - and the paper's own figures imply it is roughly 20-30."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A1 fails as verified: all sequencing is in EGA controlled-access datasets requiring a Data Access Committee application, and the processed variant-call tables exist only as supplementary files of a paywalled Science paper that returned HTTP 403 to every request (bioRxiv mirror returned HTTP 429); I opened no data file. Two further killers back this up: A5, because the independent unit is the child and there are only ~20-30 of them behind 251 samples, and A8, because the only labels that would give thousands of rows are either outputs of signature-extraction software (circular) or annotation rules computed from the features (leakage by construction). Excellent biology - a genuinely new, tissue-specific platinum signature in children's livers - but not an ML dataset."
+}

@@ -1,0 +1,111 @@
+{
+  "paper_id": "nar2026-gkag944",
+  "title": "Type I restriction-modification systems regulate gene expression through DNA topology.",
+  "doi": "10.1093/nar/gkag944",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE293985 ; GSE328962 ; https://doi.org/10.6092/unibo/amsacta/9037",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all four GEO processed tables (GSE293985: 1,987 Streptococcus pneumoniae D39 genes x 13 libraries; GSE328962: 4,357 Escherichia coli MG1655 genes x 6 libraries), the 34 kB AMSActa source-data workbook (27 sheets of figure-level luciferase/qPCR/topology values, CC BY 4.0), and the 24-page supplementary PDF (Table S4 = ~115 intergenic methylation sites, text-extracted with pypdf). Also downloaded both reference genomes (NC_008533.2, U00096.3), cut 300 bp upstream of every gene from the coordinate columns, and counted recognition-site motifs myself: 720 CRAAN8CTG (paper: 717), 1,029 CRAAN9TTC (1,042), 1,028 CRAAN8CTT (1,024). Recomputed differential expression from the deposited RPKM and q-value columns, and measured within-group replicate scatter.",
+    "what_came_from_paper_text_only": "The claim of 455 differentially expressed genes and 148 of them carrying an upstream site; the PacBio methylome fractions; which luciferase construct corresponds to which figure panel (the workbook sheets have no row or column labels beyond the figure name); and the grey shading in Table S4 that marks which rows are methylated, which is lost when the PDF is converted to text."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified: all GEO supplementary tables fetched from the public FTP site (112-263 kB gzipped), AMSActa source workbook fetched under Creative Commons Attribution 4.0, no login anywhere."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Partly: per-strain RPKM (reads per kilobase per million) and false-discovery-rate q-values sit in the same file, so log2 fold change is one line of pandas. But the label we actually want (does methylating this promoter's own site change its output) needs the site's sequence specificity matched to the methylating host, which is derived, not given."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: sequences are absent from the tables but coordinates and strand are present, and the two genomes are single accessions; I downloaded both and extracted 300 bp upstream for all 1,987 + 4,357 genes in seconds."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Verified in the file headers: 'RPKM', 'Raw Counts', 'Normalized Counts', 'pValue', 'qValue' per named library; luciferase sheets are relative light units, stated only in the figure legends."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 115,
+      "note": "FAIL, and this is the killer. The gene table looks big (1,987 genes x 3 phasotype contrasts + 4,357 E. coli genes), but the experiment contains only 4 methylation-state contrasts (3 phase-locked specificities plus 1 hsdM knockout) from 19 libraries in one lab. The rows where a recognition site is actually present and methylated - the thing a model would learn from - are the ~115 rows of Supplementary Table S4 (paper says 148 differentially expressed genes with sites, 87 matching the three tested specificities), and only 6 pneumococcal plus 4 E. coli promoters were measured directly by reporter assay. That is below the ~400-row floor for even a classification task."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~8 MB of tables plus 6.7 MB of genome FASTA",
+      "note": "Verified by doing it: every file parsed and the whole motif scan ran in under a minute on CPU with well under 1 GB of memory."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "FAIL. The paper reports 455 differentially expressed genes at adjusted P < 0.01. Applying the Methods' own thresholds to the deposited table gives 870 genes at q <= 0.01 alone, or 167 genes at q <= 0.01 together with the stated 2-fold cut. I cannot reconcile 455 with either, and Supplementary Table S4's gene list exists only inside a PDF."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels are RNA-seq read counts and luciferase light output - real measurements, not another model's output. One caveat I verified: the differential expression is a whole-cell response, so most of it is indirect (the paper's own mechanism is global supercoiling), not caused by the promoter's own methylated site."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Supercoiling-sensitivity thermodynamic promoter models (Forquet/Meyer and colleagues; spacer-length model, PubMed 35776118, and discriminator-sequence model, mSystems 2021)",
+        "open_weights": true,
+        "score_and_split": "Physics-based, essentially parameter-free with one global fitted constant; reported to predict the direction of promoter response to supercoiling changes in E. coli and other bacteria. Not a machine-learning model and not evaluated on this paper's data.",
+        "authors_named_unsolved": "Which sequence features beyond spacer length and the discriminator set a promoter's supercoiling response, and how topological domains modulate it.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Deep-learning E. coli promoter strength predictors (e.g. convolutional network plus generative design, NAR 2025 gkaf863; Advanced Genetics 2023 promoter design)",
+        "open_weights": null,
+        "score_and_split": "Pearson correlation about 0.84-0.85 between predicted and measured strength on held-out synthetic promoter libraries; these predict absolute strength of designed promoters, not the response to methylation.",
+        "authors_named_unsolved": "Generalisation outside the synthetic library's sequence space.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models) on 300 bp promoter windows",
+    "freeze_and_head_viable": true,
+    "hardware": "Embedding ~6,300 short promoter windows is a few CPU-hours on a laptop",
+    "licence": "Open weights, permissive for the smaller checkpoints"
+  },
+  "integration": {
+    "partner_dataset": "REBASE (restriction-modification enzyme and recognition-sequence database) plus PneumoBrowse/EcoCyc promoter annotation",
+    "join_key": "Genome accession plus coordinates (NC_008533.2, U00096.3) and recognition motif string",
+    "bigger_question_one_sentence": "Across the thousands of type I restriction-modification specificities catalogued in REBASE, can promoter sequence context predict which methylation sites change transcription - a question this paper's 4 contrasts cannot answer alone."
+  },
+  "controls": {
+    "positive_control": "uraA (SPD_1141), the one strong effect: ~8-fold up in the SpnD39IIIB host and up to 10-fold in the reporter assay - any pipeline must recover it.",
+    "negative_control": "Promoters carrying a site that the current host does not methylate (non-cognate specificity); the paper uses exactly this comparison.",
+    "external_validation": "The E. coli EcoKI experiment (GSE328962) is an independent organism and enzyme, so a pneumococcus-trained model could be tested on it - but with only 1 contrast and ~557 site-bearing promoters it cannot carry a real test."
+  },
+  "honest_claim_h3": "At best the model could claim: among pneumococcal and E. coli genes in these 19 RNA-seq libraries from one lab, promoter sequence context predicts the direction of a small (typically under 2-fold) expression shift between four methylation states - and my own check shows carrying a cognate recognition site does not even raise the chance of being differentially expressed (6.9% with a site versus 6.7% without).",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around a bacterial promoter to predict whether methylating it turns the gene up or down.",
+    "train_on": "The 300 base pairs upstream of each gene, with the position of the methylation target site relative to the -35 and -10 promoter elements. I built this table myself: 1,987 pneumococcal and 4,357 E. coli promoters, of which 161/253/259 carry one of the three tested pneumococcal sites and 557 carry the E. coli site.",
+    "predict": "The log2 change in gene expression between a strain that methylates that site and one that does not. The true answer comes from RNA sequencing read counts (3-6 replicates per strain) and, for 10 promoters, from a luciferase light-output assay.",
+    "why_worthwhile": "Bacterial pathogens randomly switch these methyltransferases on and off, changing virulence; a sequence rule for which promoters respond would let microbiologists predict a switch's regulon without running a transcriptome for every variant."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict methylation-dependent transcriptional response from promoter sequence: feed a DNA language model the 300 bp upstream of each gene plus the recognition-site position, and predict the log2 expression change between methylating and non-methylating hosts, training on Streptococcus pneumoniae phase-locked strains and testing transfer to the Escherichia coli EcoKI knockout. Rejected: only 4 methylation-state contrasts exist, the site-linked examples number ~115-148 rows that live inside a PDF, and the cheapest check already failed - promoters carrying a cognate site are no more likely to be differentially expressed (6.9%) than promoters without one (6.7%).",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.015,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 3,
+    "cv_run_minutes": 5,
+    "compute_note": "Measured, not guessed: I downloaded every file, parsed all four expression tables, cut 300 bp upstream windows for 6,344 genes and scanned four bipartite motifs genome-wide in under a minute of CPU time with trivial memory; the embedding figure is an estimate for ~6,300 short windows through a small DNA language model on CPU.",
+    "cheapest_killing_check": "Already done, and it killed the project: compare the differential-expression rate and mean absolute log2 fold change between promoters that do and do not carry a cognate recognition site upstream. With a site, 6.85% differentially expressed and mean |log2FC| 0.572; without, 6.72% and 0.534. No enrichment, so there is no cis-sequence signal for a model to learn."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A7. The data is genuinely open, clean and small (I parsed every file), but the experiment contains only four methylation-state contrasts from 19 libraries in one lab, and the examples that matter - promoters whose own site is methylated - are ~115 rows locked in a supplementary PDF, with 10 promoters measured by reporter assay. The paper's 455 differentially expressed genes cannot be reproduced from the deposited table (I get 870 or 167 depending on which stated threshold is applied). Decisively, my own enrichment test shows carrying a cognate methylation site does not raise a gene's chance of being differentially expressed (6.9% versus 6.7%), consistent with the paper's own conclusion that the mechanism is global DNA supercoiling rather than the local site - so a sequence-to-response model has no signal to learn here."
+}

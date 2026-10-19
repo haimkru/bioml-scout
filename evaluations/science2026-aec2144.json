@@ -1,0 +1,57 @@
+{
+  "paper_id": "science2026-aec2144",
+  "title": "Fossil denticles reveal how ocean productivity shapes shark baselines and recovery potential.",
+  "doi": "10.1126/science.aec2144",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5061/dryad.931zcrjzs (same files mirrored at https://github.com/erinmdillon/cross-isthmian-shark-reconstruction)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Dryad's own download is behind a bot-blocking proof-of-work page and its API needs a bearer token, so I pulled the identical 7 CSVs (same byte sizes) from the authors' public GitHub repo and parsed them all in pandas. Verified: dd_taph.csv = 2,578 individual denticles across 122 sediment samples, with functional morphotype (DR 1,060, RA 585, A 391, UNK 270, GF 252, DEFENSE 11, RAY 6, '.' 3), crown size in micrometres present for only 1,782 of 2,578 rows, and five ordinal preservation scores; cross_isthmus_dd.csv = 200 samples, 4,234 counted denticles; cross_isthmus_dd_func.csv = 112 samples of morphotype counts; dd_pan_age_clean.csv = 157 samples whose counts sum to exactly 3,497, matching the paper; only 7 sites and 17 cores in total. Cross-tab showed is_frag equals frag_crown grade D in 223 of 238 'Y' cases. Column definitions and units came from the Dryad README text embedded in the dataset landing page.",
+    "what_came_from_paper_text_only": "The Science article itself is paywalled with no PubMed Central copy, so the sampling design, denticle identification protocol and the productivity interpretation come from the abstract and press coverage, not from the methods section. No denticle images or shape measurements are in the deposit at all; I only inferred from the files that they were never deposited."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Files are CC0 and I downloaded all 7 CSVs (1.9 MB total) from the authors' GitHub mirror; Dryad's own download returns a proof-of-work bot challenge (401/403 by script) but needs no login in a browser."},
+    "a2_label_is_a_column": {"pass": true, "note": "Candidate labels are real columns: func_morph (denticle functional morphotype) in dd_taph.csv, and dd_kg_yr (denticles per kg per year) in dd_pan_age_clean.csv."},
+    "a3_inputs_present": {"pass": true, "note": "Values, not accessions, so no lookups needed - but the only per-denticle feature is one size number (missing for 796 of 2,578) plus preservation grades; no images, outlines or oceanographic covariates are in the deposit."},
+    "a4_units_stated": {"pass": true, "note": "Dryad README documents every column with units: crown size in micrometres, sediment in kg, depth in cm, ages in years before present."},
+    "a5_enough_rows": {"pass": false, "n_rows": 157, "note": "The analysis unit for the paper's question is the sediment sample: 157 samples, from 17 cores and 7 sites, 2 ocean basins - far under the ~1,500 row bar. The only larger table (2,578 denticles) carries almost no features."},
+    "a6_fits_laptop": {"pass": true, "working_set": "1.9 MB of CSV", "note": "Whole dataset loads in under a second; no GPU needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Denticle counts in the 157-sample analysis file sum to exactly 3,497, the number reported for the study."},
+    "a8_label_provenance": {"pass": false, "note": "Two problems: is_frag is essentially recomputed from the frag_crown preservation grade (223 of 238 'Y' are grade D), and functional morphotype is a human microscope call made from the same view that scores the 'microstructures present' column, so a morphotype classifier would partly be learning the label's own definition."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Deep-learning denticle morphogroup analysis in Nature Communications 2026 ('Diverse mechanical properties, composition, and performance of shark dermal denticles')", "open_weights": null, "score_and_split": "Search result states it used deep learning on scanning electron microscope images to define ten denticle morphogroups across 132 living shark species; I did not retrieve a held-out accuracy number.", "authors_named_unsolved": "Not retrieved (abstract-level search result only).", "runnable_as_baseline": false},
+      {"name": "AI-powered fossil shark tooth identification (arXiv 2405.04189)", "open_weights": null, "score_and_split": "Image classifier for fossil shark teeth, not denticles; performance not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false},
+      {"name": "Inception V3 transfer-learning denticle classifier (jordanmakesmaps blog, not peer-reviewed)", "open_weights": null, "score_and_split": "Blog reports 86.1% accuracy on ~20 shark species, ~200 images each, split not described.", "authors_named_unsolved": "Not stated.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "none applicable", "freeze_and_head_viable": false, "hardware": "CPU only, but nothing to embed", "licence": "n/a - data are CC0, but there are no sequences, molecules or images for a pretrained model to encode"},
+  "integration": {"partner_dataset": "Satellite chlorophyll-a productivity (NASA OceanColor) or the companion fossil otolith dataset from the same cores (Philosophical Transactions B 2026)", "join_key": "site coordinates plus core/sample code", "bigger_question_one_sentence": "Does reef productivity predict predator baseline abundance across many reefs? - but with only 7 sites and 2 basins here, the join adds covariates to a sample size that cannot support them."},
+  "controls": {"positive_control": "Model must recover the known ~20-fold Pacific-over-Caribbean difference in denticle accumulation - which is one contrast, not a test.", "negative_control": "Label shuffling is runnable on the 2,578-denticle table.", "external_validation": "Dillon et al. 2021 Caribbean denticle dataset (separate Dryad deposit) and the otolith companion dataset exist, but share sites and the same lab."},
+  "honest_claim_h3": "Any model here could only claim to describe how 3,497 denticles from 17 cores at 7 Panamanian reef sites, all counted and classified by one research group, vary with burial depth, basin and preservation state - not to predict shark abundance anywhere else.",
+  "plain_idea": {
+    "one_liner": "Use burial setting and scale size to predict which functional type of shark skin scale a fossil fragment is.",
+    "train_on": "Each example is one fossil shark skin scale (dermal denticle) with its ocean basin, site, core depth, estimated age, crown size in micrometres and five preservation grades; 2,578 scales were verified in the file, but only 1,782 have a size.",
+    "predict": "The scale's functional morphotype (drag reduction, abrasion strength, ridged abrasion strength, generalized function, defense), assigned by eye under a microscope by the research team; alternatively the sample-level accumulation rate, denticles per kilogram of sediment per year.",
+    "why_worthwhile": "Paleoecologists reconstructing pre-human predator baselines would gain an automated, repeatable classifier - but this deposit has no images and only 157 samples, so neither version can be built from it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The deep-learning denticle study found in search used scanning electron microscope images of denticles from 132 living shark species; this deposit has no images at all, only 2,578 rows of microscope-derived categories."},
+    "confidence_score": {"answer": "no", "why": "No replicate classifications or repeat counts are in the files, so per-prediction uncertainty cannot be calibrated from this data."},
+    "models_beatable": {"answer": "no", "why": "The existing denticle classifiers work on an input type (images) that this dataset does not contain, so there is nothing to compare on the same footing."},
+    "guaranteed_improvement": {"answer": "no", "why": "The existing image models cannot be run as a baseline on tabular category columns, so the 'sees everything they see plus more' condition fails outright."}
+  },
+  "label_elsewhere": {"score": 0, "sources": "", "approx_items": null, "join_key": "", "why": "Not filled for a reject."},
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: (1) classify a fossil denticle's functional morphotype from its size, preservation grades and burial context - 2,578 rows but one real feature, and the 'microstructures present' column is part of how the morphotype is defined; (2) regress denticle accumulation rate (denticles per kg per year) on ocean productivity joined from satellite or paleo-proxy data - the regression has 157 samples nested in 17 cores, 7 sites and effectively 2 productivity regimes, which is a hierarchical statistics problem the authors already solved in BChron and Bayesian models, not an ML problem.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.002, "needs_gpu": false, "peak_ram_gb": 0.5, "embedding_hours": null, "cv_run_minutes": 1, "compute_note": "Estimated from the actual files: 1.9 MB of CSV parsed in pandas in under a second on this laptop; no embedding step exists because there is no sequence, molecule or image input.", "cheapest_killing_check": "Count the analysis units before anything else: 157 samples, 17 cores, 7 sites, 2 basins - done in one groupby, and it kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Beautiful, perfectly documented 1.9 MB dataset whose counts match the paper exactly (3,497 denticles), but it is far too small and feature-poor for machine learning: the scientific unit is 157 sediment samples from 7 sites and 2 ocean basins (A5 fail), the only larger table is 2,578 denticles with a single size number as a feature (796 of them missing), no denticle images or shape data were deposited, and the two available labels are partly computed from their own candidate features (A8 fail). No pretrained backbone applies to count-and-category paleoecology tables."
+}

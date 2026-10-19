@@ -1,0 +1,202 @@
+{
+  "paper_id": "nar2026-gkag891",
+  "title": "Androgen receptor drives divergent chromatin accessibility programs in benign and malignant prostate epithelial cells.",
+  "doi": "10.1093/nar/gkag891",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/biostudies/arrayexpress/studies/E-MTAB-15731",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the full processed ATAC-seq table bg_cor_signal_rep_peaks_all_samples.tsv (25,172,219 bytes) from the ArrayExpress/BioStudies FTP mirror: exactly 116,712 rows x 35 columns (chromosome, start, end + 32 sample columns), all peaks exactly 501 bp, 24 chromosomes including chrX/chrY, 0 duplicate coordinates, 0 missing values, 5.26% of signal entries exactly zero. Computed replicate agreement (Pearson r on log2 signal between duplicate libraries: 0.86-0.93, median 0.881), library depths (2.5-20.4 million summed signal per sample), and androgen-response labels after counts-per-million normalisation (|log2 fold change| > 1 at 100 nM versus 0 nM dihydrotestosterone: 9,244 up / 7,424 down in benign RWPE-1-AR; 10,208 up / 6,661 down in cancer LNCaP-ARhi; only 343 up / 420 down in the androgen-receptor-negative control line RWPE-1-Ctrl). Checked the KLK3/PSA locus (mean signal 212 and 447 in the two LNCaP lines versus 18 and 9 in the two RWPE lines). Also opened both ArrayExpress sample-metadata files (32 ATAC samples, 48 RNA samples), the supplementary workbook (7 sheets, 6-207 rows each), and the authors' GitHub analysis code including the background-correction script that defines the signal values.",
+    "what_came_from_paper_text_only": "That 116,126 peaks remain after ENCODE-blacklist and mitochondrial-homology filtering and 100,724 after removing low-signal peaks (the deposited table is the unfiltered 116,712-peak set); that trimmed-mean-of-M-values normalisation plus counts-per-million was used downstream in edgeR; the genome build GRCh38_no_alt_plus_hs38d1; the motif-enrichment results (AP-1 in benign, FOXA1 in cancer cells); and the comparison with clinical prostate ATAC-seq cohorts. The 14 MB RNA-seq expression table (length_scaled_TPMs_all_samples.tsv) is listed in ArrayExpress with its size but repeatedly timed out and was not opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open ArrayExpress/BioStudies, no login or application; I downloaded the 25 MB signal table in full. The web file endpoint times out, but the FTP mirror path works (needed chunked ranged requests with retries, ~8 minutes)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Accessibility is literally 32 columns, one per cell line x androgen dose x replicate, one row per 501 bp region. The androgen-response label is a fold change computed between two existing columns, not built by joining across sources."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are GRCh38 coordinates, not sequence. One reference-genome download resolves all 116,712 regions locally in minutes with an indexed FASTA; no per-row database lookups."},
+    "a4_units_stated": {"pass": true, "note": "Doses (0/1/10/100 nM dihydrotestosterone) and replicate number are in the column headers. Signal unit is background-subtracted read coverage in a 501 bp peak, floored at zero - documented in the authors' script rep_peak_bg_correction.py, not in the file itself."},
+    "a5_enough_rows": {"pass": true, "n_rows": 116712, "note": "116,712 regions verified in the file, each with 32 measurements; ~9,200 positive (androgen-opening) regions per androgen-receptor-positive cell line after normalisation."},
+    "a6_fits_laptop": {"pass": true, "working_set": "25 MB table (24 MB in pandas) + 116,712 x 501 bp one-hot sequence (58 MB as uint8); reference genome 3 GB on disk, read through an index", "note": "No GPU needed for k-mer or frozen-embedding baselines; fine-tuning a large DNA model would need one."},
+    "a7_counts_match_paper": {"pass": true, "note": "File has exactly 116,712 rows, matching the paper's stated n = 116,712 reproducible peaks. The paper's later counts (116,126 after blacklist filtering, 100,724 after low-signal filtering) are documented filtering steps, not disagreements."},
+    "a8_label_provenance": {"pass": true, "note": "Label is measured ATAC-seq read coverage, a physical assay, minus a local background window; no model output anywhere. It is not computable from DNA sequence, so no leakage by construction - but the 0 nM column must not be used as a feature when the label is a fold change against it."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One table: 116,712 rows x 35 columns, verified by parsing the whole file."},
+    "B2": {"score": 2, "why": "Clean quoted tab-separated file, parsed first try with pandas; no fixes needed."},
+    "B3": {"score": 1, "why": "Same assay and lab, but file is pre-normalisation; library depths vary 2.5-20.4 million, so counts-per-million step required."},
+    "B4": {"score": 1, "why": "Background correction floors negatives at zero: 5.26% of entries exactly 0, verified; needs a policy."},
+    "B5": {"score": 2, "why": "Zero duplicate chromosome/start/end rows and zero missing values, verified across all 116,712 rows."},
+    "B6": {"score": 1, "why": "Column names self-describing; signal unit documented only in the authors' GitHub script, not in the file."},
+    "C1": {"score": 2, "why": "Asks whether sequence or pre-existing chromatin explains benign-versus-cancer androgen response; informative either way."},
+    "C2": {"score": 1, "why": "ChromBPNet, AlphaGenome, Enformer open and honestly evaluated for steady-state accessibility; none predicts hormone-induced change."},
+    "C3": {"score": 2, "why": "Unique application plus diversity: androgen-receptor-reconstituted benign prostate epithelium, never modelled by any sequence model."},
+    "C4": {"score": 1, "why": "ATAC-seq per condition is costly lab work, but peak calling itself is cheap; prediction would guide, not replace, assays."},
+    "C5": {"score": 2, "why": "Verified prevalence baseline (7.9% opening regions) plus motif-count and published ChromBPNet/AlphaGenome accessibility numbers."},
+    "D1": {"score": 2, "why": "501 bp windows suit DNABERT-2 and Nucleotide Transformer (open weights); AlphaGenome weights released non-commercially."},
+    "D2": {"score": 1, "why": "Frozen embeddings for 116,712 windows are hours of laptop CPU; realistic only with a small checkpoint or a subset."},
+    "D3": {"score": 2, "why": "DNABERT-2/Nucleotide Transformer are permissively licensed; only AlphaGenome carries a non-commercial restriction."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes; ss_chrom column verified present with 24 values."},
+    "E2": {"ok": true, "why": "24 chromosomes verified, largest chr1 with 12,084 peaks; also 4 cell models for transfer splits."},
+    "E3": {"ok": true, "why": "Prevalence/majority baseline computable (7.9% opening in RWPE-1-AR), plus GC-content and mean-accessibility dummies."},
+    "E4": {"ok": true, "why": "Duplicate libraries per condition: Pearson r 0.86-0.93 and median |delta log2| 0.35-0.43, measured by me."},
+    "E5": {"ok": true, "why": "KLK3/PSA peaks verified high only in LNCaP (212/447 versus 18/9); androgen-receptor motif enrichment is the second control."},
+    "E6": {"ok": true, "why": "Label shuffling, dinucleotide-preserving sequence shuffling, and the androgen-receptor-negative line all runnable."},
+    "E7": {"ok": true, "why": "Published clinical prostate ATAC cohorts (TCGA prostate, castration-resistant subtypes) exist; paper itself compares to them."},
+    "E8": {"ok": true, "why": "Reproduced the paper's 116,712 peak count exactly; authors' edgeR differential pipeline is public with rendered outputs."},
+    "G1": {"score": 2, "why": "GRCh38 coordinates in every row (verified); companion RNA table carries Ensembl gene identifiers."},
+    "G2": {"score": 2, "why": "TCGA pan-cancer ATAC prostate samples and fine-mapped prostate cancer risk variants both join on GRCh38 coordinates."},
+    "G3": {"score": 1, "why": "Coordinate overlap joins are one-to-many (peak to variant, peak to gene); needs a stated collapse rule."},
+    "G4": {"score": 2, "why": "Asks whether prostate cancer risk variants sit in regions whose androgen response the benign programme explains better than the tumour one."},
+    "H1": {"score": 2, "why": "Non-responding regions are measured for all 116,712 peaks, so negatives are systematic, not inferred."},
+    "H2": {"score": 0, "why": "One lab, four engineered immortalised cell lines from two parental backgrounds; no primary tissue or donors."},
+    "H3": {"score": 2, "why": "Claim statable precisely in one sentence, restricted to regions accessible in at least one of these lines."},
+    "H4": {"score": 2, "why": "Paper is explicit that these are engineered models and benchmarks them against clinical ATAC cohorts."},
+    "I1": {"score": 2, "why": "Prostate epigenomics groups (Nykter/Visakorpi in Tampere, Pomerantz/Freedman) and regulatory-model benchmarkers (Kundaje lab)."},
+    "I2": {"score": 1, "why": "Would redirect which regions get reporter or CRISPR-interference testing; not a clinical decision."},
+    "I3": {"score": 2, "why": "Precision among the top 100 predicted regions is exactly how someone picks regions to test in the lab."},
+    "I4": {"score": 1, "why": "A motif-count rule (androgen-response element, FOXA1, AP-1) may capture much of the signal; must be tested first."},
+    "J1": {"score": 2, "why": "Grouped chromosome splits, transfer across cell models, frozen-backbone embeddings, calibration - real modelling work."},
+    "J2": {"score": 1, "why": "Built-in sanity checks (KLK3 locus, androgen-receptor-negative line) help, but chromatin intuition is thin."},
+    "J3": {"score": 2, "why": "A cleaned region-by-condition matrix with sequences and response labels is shareable even if the model is mediocre."},
+    "J4": {"score": 2, "why": "Four weeks: one for the feature/label table and baselines, two for backbone embeddings, one for write-up."},
+    "J5": {"score": 1, "why": "Kill condition stated in success_criteria but not yet written into NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ChromBPNet (deep network predicting base-resolution ATAC/DNase accessibility from DNA sequence, Kundaje lab)",
+        "open_weights": true,
+        "score_and_split": "Published variant-effect results on held-out chromosomes; reported Pearson r = 0.56 for effect sizes on GM12878 DNase at 68M reads, beating Enformer (average precision 0.33) on the same task.",
+        "authors_named_unsolved": "Context-specific regulatory syntax and transfer to cell types and conditions outside the training panel.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AlphaGenome (DeepMind sequence model predicting many functional genomic tracks, including accessibility, from 1 Mb of DNA)",
+        "open_weights": true,
+        "score_and_split": "Reported +8% ATAC and +19% DNase improvement in total-count Pearson r over ChromBPNet, and state-of-the-art on fine-mapped expression/accessibility quantitative trait loci; evaluated on held-out genomic regions.",
+        "authors_named_unsolved": "Predicting responses to perturbations and behaviour in cell types or conditions not represented in training.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Enformer / Borzoi (long-context transformer models of regulatory tracks)",
+        "open_weights": true,
+        "score_and_split": "Used as the comparison point in both papers above; evaluated on held-out chromosomes; weaker than ChromBPNet and AlphaGenome for accessibility.",
+        "authors_named_unsolved": "Distal enhancer effects and cell-type-specific resolution.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "gkm-SVM / lsgkm (gapped k-mer support vector machine for regulatory sequence classification)",
+        "open_weights": true,
+        "score_and_split": "Standard CPU baseline; ChromBPNet reports beating it on accessibility effect-size prediction.",
+        "authors_named_unsolved": "Limited context length and no quantitative signal modelling.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 (a DNA language model, 117M parameters, permissive licence) for frozen embeddings of 501 bp windows; AlphaGenome as the stronger non-commercial alternative via its heads-only fine-tuning package",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU for k-mer and DNABERT-2-embedding baselines (embeddings cached once); a GPU only if fine-tuning AlphaGenome or ChromBPNet",
+    "licence": "DNABERT-2 and Nucleotide Transformer permissive; AlphaGenome weights non-commercial only"
+  },
+  "integration": {
+    "partner_dataset": "TCGA pan-cancer ATAC-seq atlas (prostate adenocarcinoma samples) and fine-mapped prostate cancer risk variants from genome-wide association studies",
+    "join_key": "GRCh38 genomic coordinates (chromosome, start, end), present in every row",
+    "bigger_question_one_sentence": "Do inherited prostate cancer risk variants sit in regions whose androgen response is predictable from sequence, and is that response better explained by the benign prostate programme than by the tumour programme?"
+  },
+  "controls": {
+    "positive_control": "KLK3/PSA locus peaks, verified in the file as high only in the two LNCaP cancer lines (mean signal 212 and 447) and near-absent in the two RWPE benign lines (18 and 9); second control is recovery of androgen-receptor and FOXA1 motif enrichment in opening regions.",
+    "negative_control": "The androgen-receptor-negative line RWPE-1-Ctrl shows only 0.7% of regions changing with androgen (343 up, 420 down) versus 14.3% in RWPE-1-AR - verified by me; plus label shuffling and dinucleotide-preserving sequence shuffling.",
+    "external_validation": "Published clinical prostate ATAC-seq cohorts (TCGA prostate tumours, castration-resistant prostate cancer subtypes, benign prostatic hyperplasia samples) that the paper itself compares against on the same GRCh38 coordinates."
+  },
+  "honest_claim_h3": "From 501 bp of DNA sequence alone we can rank regions by how likely they are to gain accessibility within two hours of androgen stimulation, and say whether that ranking differs between benign and malignant prostate cells - but only among regions already accessible in at least one of these four engineered cell lines, in one lab, with two replicates per condition.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence of an accessible region to predict whether it opens up when prostate cells are given androgen hormone.",
+    "train_on": "Each example is one 501 base-pair region of the human genome (sequence pulled from the GRCh38 reference) with its measured openness in 32 samples: four prostate cell lines at four androgen doses, two replicates each. 116,712 regions, verified in the file.",
+    "predict": "Whether, and how much, the region becomes more open after androgen treatment in a given cell line. The true answer comes from ATAC-seq (a sequencing assay that counts how exposed each piece of DNA is), measured by the authors at 0 versus 100 nM dihydrotestosterone.",
+    "why_worthwhile": "Prostate cancer treatment works by shutting off androgen signalling, and the same hormone has opposite effects in benign and cancerous cells; a sequence model would say whether that difference is written in the DNA or imposed by pre-existing chromatin, and would shortlist regions for lab testing either way."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Not bigger - ChromBPNet and AlphaGenome were trained on thousands of accessibility tracks. But they cover hormone-perturbation response in benign androgen-receptor-expressing prostate epithelium badly or not at all, and this dataset has 116,712 regions measured at four androgen doses in both a benign and a cancer background."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Duplicate libraries per condition give a per-region noise estimate (median |delta log2| 0.35-0.43, verified) and the androgen-receptor-negative line gives an empirical false-positive rate of 0.7%, which together support calibrated per-region confidence that ChromBPNet and AlphaGenome do not report - but two replicates is a thin basis."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "ChromBPNet (2025) and AlphaGenome (2025-26) are recent, honestly evaluated on held-out genomic regions, and come with released weights; beating them at steady-state accessibility is unlikely. They simply do not address androgen-induced change, so the project must be the response task, where there is no incumbent."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "No incumbent exists for the response task, so there is nothing our model strictly dominates by construction, and the clinical ATAC cohorts that would join on coordinates come from different labs, assays and sample types."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Chromatin accessibility itself is measured for hundreds of thousands of regions in ENCODE (DNase/ATAC across many cell types) and the TCGA pan-cancer ATAC atlas including prostate tumours, and in published castration-resistant prostate cancer ATAC cohorts - all known public resources, joinable on genome coordinates. Androgen-response accessibility specifically exists only in a handful of LNCaP/VCaP hormone-stimulation studies (searched; none assembled as a benchmark).",
+    "approx_items": null,
+    "join_key": "GRCh38 genomic coordinates (and Ensembl gene identifiers for the expression side)",
+    "why": "Steady-state accessibility elsewhere gives a large external test of whether the model learned general regulatory sequence rules, but the hormone-response label itself is close to unique to this dataset."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Repeat elements and segmental duplications make some peak sequences near-identical, so similar regions could land on both sides of a split.",
+      "The 0 nM accessibility column is the denominator of the response label, so using baseline accessibility as a feature leaks the label by construction.",
+      "Library depth varies eightfold between replicate columns (2.5-20.4 million summed signal, verified); without counts-per-million normalisation the 'response' is partly a depth artefact - raw counts called 45-61% of regions changed versus 14% after normalisation.",
+      "The peak set was called from these same samples, so regions never accessible here are absent rather than labelled negative, and the model is only ever evaluated on pre-selected accessible regions."
+    ],
+    "split": "Hold out whole chromosomes using the ss_chrom column (verified present, 24 values, chr1 = 12,084 peaks), with a second cross-cell-model split (train the response model on the LNCaP cancer lines, test on benign RWPE-1-AR) to measure transfer.",
+    "checks": [
+      "Shuffle the response labels and confirm performance drops to the 7.9% prevalence baseline.",
+      "Replace sequences with dinucleotide-preserving shuffles and confirm collapse, so GC content alone cannot explain the score.",
+      "Compute nearest-neighbour sequence identity between each test region and the training set, and re-score after dropping test regions above 80% identity.",
+      "Run the whole pipeline on the androgen-receptor-negative line RWPE-1-Ctrl, where performance must be near chance (only 0.7% of regions change)."
+    ],
+    "verdict": "Manageable: chromosome holdout plus the normalisation fix handles most of it, and the androgen-receptor-negative cell line is a rare built-in leakage detector."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 100 regions predicted to open on androgen in benign RWPE-1-AR cells on held-out chromosomes, because someone validating this picks roughly 100 regions for reporter or CRISPR-interference assays; area under the precision-recall curve reported alongside for the full task.",
+    "baselines": "Prevalence baseline: 9,244 of 116,712 regions open on androgen in RWPE-1-AR (7.9%), verified, so a random ranker gives precision-recall area 0.079. Then a motif-count logistic regression (androgen-response element, FOXA1, AP-1 from JASPAR), a gapped k-mer support vector machine, and AlphaGenome's predicted prostate accessibility tracks used zero-shot.",
+    "success": "Precision-recall area >= 0.16 (twice prevalence) on held-out chromosomes with precision among the top 100 >= 0.5, and at least 5 precision-recall points above the motif-count baseline.",
+    "noise_ceiling": "Duplicate libraries disagree by a median 0.35-0.43 log2 units while the median androgen response is 0.38-0.46 log2 units (both verified), so per-region continuous regression is near the noise floor; the androgen-receptor-negative line sets an empirical false-positive floor of 0.7%.",
+    "kill": "If after one week the sequence model is less than 0.02 precision-recall area above the motif-count baseline, or dinucleotide-shuffled sequences score as well, stop."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology",
+      "why": "Publishes sequence-to-function modelling with a biological payoff; would need the model to predict benign-versus-cancer androgen response on held-out chromosomes and to hold up on clinical prostate ATAC cohorts."
+    },
+    "realistic": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes careful benchmarks of regulatory sequence models on new data; the likely result - how well ChromBPNet/AlphaGenome-class models predict hormone-induced accessibility change, and how much is sequence versus pre-existing chromatin - fits exactly."
+    },
+    "fallback": {
+      "journal": "Bioinformatics (Application Note) or a bioRxiv preprint plus a machine-learning-in-genomics workshop",
+      "why": "Even a negative result plus the released region-sequence-response table is a usable resource and benchmark note."
+    }
+  },
+  "pitch": {
+    "headline": "116,712 genome regions, each measured for openness in benign and cancerous prostate cells across four androgen doses, with an androgen-receptor-negative control line built in.",
+    "what_makes_the_data_unusual": "One clean 25 MB table: 0 duplicate regions, 0 missing values, every region exactly 501 base pairs, and a benign prostate line engineered to express androgen receptor - a context no public accessibility model covers.",
+    "the_win": "Show a sequence model ranks androgen-opening regions at precision-recall area above 0.16 against a 0.079 prevalence baseline on held-out chromosomes, and that benign and cancer responses need different models (opening-region overlap is only 22%).",
+    "even_if_it_fails": "A failure is the known-interesting answer: that hormone response is set by pre-existing chromatin rather than local sequence, which matches what glucocorticoid-receptor studies found and is worth reporting.",
+    "who_wants_it": "Prostate epigenomics groups (the Tampere authors, Pomerantz/Freedman) deciding which regulatory regions to test in reporter or CRISPR-interference assays, and regulatory-model benchmarkers (Kundaje lab) looking for perturbation-response test sets."
+  },
+  "ml_idea": "Pull the 501 bp GRCh38 sequence for each of the 116,712 reproducible peaks and predict, per cell model, whether the region gains accessibility after two hours of androgen (|log2 fold change| > 1 at 100 versus 0 nM after counts-per-million normalisation; 9,244 positives in benign RWPE-1-AR, 10,208 in cancer LNCaP-ARhi, only 343 in the androgen-receptor-negative control). Baselines: motif counts, gapped k-mer support vector machine, and AlphaGenome's zero-shot prostate accessibility tracks; main model: frozen DNABERT-2 embeddings plus a logistic head. Evaluate on held-out chromosomes and, crucially, train on the cancer lines and test on the benign line to measure whether the androgen-response code transfers across the malignant boundary.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 9,
+    "cv_run_minutes": 10,
+    "compute_note": "Table download and parsing were timed (8 minutes of chunked retries; 24 MB in pandas, seconds to load); the 6-12 hour embedding figure is an estimate for DNABERT-2 on 116,712 x 501 bp at roughly 3-6 sequences per second on laptop CPU, and the cross-validation minutes are an estimate for gradient-boosted trees on 6-mer counts.",
+    "cheapest_killing_check": "Already done: after counts-per-million normalisation the androgen-receptor-negative line changes at only 0.7% of regions versus 14.3% in RWPE-1-AR, so the response label is real and large. Next cheapest: check whether GC content and dinucleotide composition alone match k-mer features - if so, the task is a composition artefact."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer verified in the downloaded file, with the row count matching the paper exactly (116,712), no duplicates, no missing values, and a replicate-based noise estimate. The project is the hormone-response task, not steady-state accessibility, because ChromBPNet and AlphaGenome already own the latter; nobody has modelled androgen-induced accessibility change from sequence, the question is informative whichever way it resolves, and the dataset ships its own positive control (KLK3) and negative control (an androgen-receptor-negative cell line). Main limits: one lab, four engineered cell lines, two replicates, and a per-region effect size close to replicate noise - so classification, not regression, carries the result."
+}

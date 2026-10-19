@@ -1,0 +1,352 @@
+{
+  "paper_id": "nar2026-gkag796",
+  "title": "Chromatin accessibility classification of TAD boundaries discloses new architectural proteins.",
+  "doi": "10.1093/nar/gkag796",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13504289/ (Supplementary Table S3); https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE268108",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the supplement and opened Jacome_Lopez_Supplemental_Tables.xlsx in pandas: Table S3 holds 4,173 boundary windows in four side-by-side blocks (Type I 2,047, II 498, III 542, IV 1,086), every window exactly 20,000 bp wide, 23 chromosomes, 0 duplicate coordinates. Pulled the 296 ENCODE ChIP-seq accessions out of Table S4, downloaded 4 of them (CTCF ENCFF002CEL, REST ENCFF895QLA, ZNF316 ENCFF788EBS, SMC3 ENCFF041YQC; all hg19 'optimal IDR thresholded peaks', ~0.5-1.5 MB each), intersected them with the boundaries and reproduced the paper's trend: CTCF occupies 69.6% of Type I boundaries falling monotonically to 53.1% of Type IV, with the same monotone drop for REST, ZNF316 and SMC3. Ran a leave-one-chromosome-out logistic regression on those 8 occupancy features for Type I vs Type IV (n=3,133): area under the ROC curve 0.634 (random forest 0.607, dummy 0.500). Listed both GEO series: processed Hi-C contact matrices per sample are 25-53 MB (first sequencing run) and 171-426 MB (second run), the series RAW tars are 2.5 GB and 1.3 GB.",
+    "what_came_from_paper_text_only": "That the four classes correspond to HindIII digestion times of 0.25, 1, 3 and 12 hours; that boundaries were called with the TAD-separation score in HiCExplorer v3.7.6 at 20-kb resolution with a false-discovery-rate cutoff of 0.00005 on replicate-merged matrices; that coordinates are hg19 (stated in Methods, not written anywhere in the spreadsheet, though my hg19 ENCODE intersections corroborate it); the ATAC-seq and quantitative-PCR validation of the accessibility ordering; the CRISPR deletion result. I did not download the Hi-C matrices or recompute any insulation score."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Supplementary workbook opened directly from the Europe PMC supplement zip, no login. ENCODE peak files and GEO matrices are public; I downloaded four ENCODE files successfully."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The accessibility class (Type I-IV) is explicit in the file, but as four side-by-side column blocks rather than a label column; one reshape in pandas turns it into a tidy column. No inference across sources needed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Table S3 holds only genomic coordinates - no sequence, no features. Inputs must be fetched: either one hg19 reference genome (a single bulk download) or the 296 ENCODE accessions listed in Table S4 (~300 MB total). 296 bulk file downloads is not 'thousands of lookups'; I verified 4 of them download and intersect cleanly."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Coordinates are base pairs on hg19 (build stated in Methods only, not in the file - a real trap). Label is an ordered category tied to digestion times of 0.25/1/3/12 hours, stated in the paper."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 4173,
+      "note": "4,173 labelled 20-kb windows counted in the file; 3,133 if restricted to the Type I vs Type IV contrast. Above the ~400-row classification floor."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.4 GB of ENCODE peak files plus a 4,173-row table; a 3 GB genome FASTA only if DNA sequence features are used",
+      "note": "Trivially laptop-scale. The 2.5 GB GEO RAW tar is not needed; individual 25-53 MB matrices are separately downloadable if insulation scores are ever recomputed."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The per-class counts are not written in the paper text (Fig. 1C is a bar chart), so they cannot be cross-checked directly; but my CTCF occupancy by class (69.6% -> 53.1%) closely tracks the paper's reported 68% -> 46% at 5-kb resolution, which validates both coordinates and labels."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label is which digestion time a HiCExplorer TAD-separation-score call first appeared at - a deterministic caller run on physically measured Hi-C, not another machine-learning model's output, and not computable from any feature we would use. Two caveats: it is a thresholded call, and Table S2 shows valid-pair depth varies across time points (9.1-13.2 M at early times), so class membership partly encodes library depth."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {
+      "score": 1,
+      "why": "One sheet, but four side-by-side blocks; features live in 296 external ENCODE files. Seen in the file."
+    },
+    "B2": {
+      "score": 1,
+      "why": "xlsx parsed first try in pandas, but needs header skipping and a block reshape; not clean csv."
+    },
+    "B3": {
+      "score": 2,
+      "why": "All four classes from one cell line, one enzyme, one TAD caller - fully comparable. Verified in file."
+    },
+    "B4": {
+      "score": 1,
+      "why": "No censored cells, but the label is interval-censored by design: never-called boundaries are simply absent."
+    },
+    "B5": {
+      "score": 2,
+      "why": "Checked in the file: 0 duplicate chr/start/end across all 4,173 rows, no class overlap."
+    },
+    "B6": {
+      "score": 1,
+      "why": "Methods explain the classes; the sheet itself has no column headers, no README, no genome build."
+    },
+    "C1": {
+      "score": 2,
+      "why": "Framed as 'do published boundary-strength predictors recover this orthogonal accessibility ordering?', either answer informs."
+    },
+    "C2": {
+      "score": 0,
+      "why": "pTADS, preciseTAD, CT-TADB, Akita, Orca, C.Origami all open with cross-cell-line or held-out-chromosome evaluation."
+    },
+    "C3": {
+      "score": 1,
+      "why": "Only the digestion-time label is new; the protein-occupancy-predicts-strength finding is the paper's own result."
+    },
+    "C4": {
+      "score": 2,
+      "why": "Measuring boundary strength needs deep Hi-C plus a digestion time course - slow and costly. From paper Methods."
+    },
+    "C5": {
+      "score": 2,
+      "why": "I computed the dummy (AUC 0.500) and an occupancy baseline (0.634); pTADS and CT-TADB publish numbers."
+    },
+    "D1": {
+      "score": 2,
+      "why": "HyenaDNA and Nucleotide Transformer are open-weight DNA backbones matching 20-kb hg19 windows."
+    },
+    "D2": {
+      "score": 1,
+      "why": "20-kb windows exceed most DNA model contexts; needs tiling and pooling, ~15 CPU hours of embedding (estimated)."
+    },
+    "D3": {
+      "score": 2,
+      "why": "HyenaDNA is Apache-2.0 and DNABERT-2 permissive; no licence blocks this use."
+    },
+    "E1": {
+      "ok": true,
+      "why": "Leave-one-chromosome-out is the natural split; I actually ran it over the 23 chromosomes present."
+    },
+    "E2": {
+      "ok": true,
+      "why": "23 chromosomes with 53-406 boundaries each, counted in the file."
+    },
+    "E3": {
+      "ok": true,
+      "why": "Computed: majority class 65.3% for Type I vs IV, dummy AUC 0.500."
+    },
+    "E4": {
+      "ok": true,
+      "why": "Two Hi-C replicates per time point in GEO, but calls were on merged matrices; re-calling needed."
+    },
+    "E5": {
+      "ok": true,
+      "why": "CTCF occupancy must fall from Type I to Type IV - I verified it does (69.6% to 53.1%)."
+    },
+    "E6": {
+      "ok": true,
+      "why": "Label shuffling and per-protein ablation are one line each on a 4,173-row table."
+    },
+    "E7": {
+      "ok": true,
+      "why": "Rao et al. GSE63525 5-kb K562 boundaries, plus GM12878/HCT116 boundaries and 4D Nucleome Hi-C."
+    },
+    "E8": {
+      "ok": true,
+      "why": "I already approximately reproduced the paper's CTCF occupancy percentages; pTADS code is on GitHub."
+    },
+    "G1": {
+      "score": 2,
+      "why": "hg19 genomic coordinates in the file - a standard identifier for every 3D-genome and epigenome resource."
+    },
+    "G2": {
+      "score": 2,
+      "why": "296 ENCODE K562 accessions already listed in Table S4; 4D Nucleome and AlphaGenome Atlas join on coordinates."
+    },
+    "G3": {
+      "score": 2,
+      "why": "Peaks-within-window is clean one-to-many; collapse rule is peak count or summed signal, which I used."
+    },
+    "G4": {
+      "score": 1,
+      "why": "Combination asks which protein modules beyond CTCF set strength - largely what the paper already did."
+    },
+    "H1": {
+      "score": 1,
+      "why": "Weak boundaries (Type IV, n=1,086) are present, but non-boundary regions are absent from the table."
+    },
+    "H2": {
+      "score": 0,
+      "why": "One cell line (K562), one lab, one enzyme (HindIII), one TAD caller. From paper and file."
+    },
+    "H3": {
+      "score": 2,
+      "why": "The honest claim writes cleanly in one sentence; see honest_claim_h3."
+    },
+    "H4": {
+      "score": 2,
+      "why": "Paper is explicit about 20-kb resolution limits and validates at 5 kb and by quantitative PCR."
+    },
+    "I1": {
+      "score": 2,
+      "why": "3D-genome groups: Furlan-Magaril lab (UNAM), Fudenberg lab, the 4D Nucleome consortium."
+    },
+    "I2": {
+      "score": 1,
+      "why": "Would at best reorder a candidate list for CRISPR deletion tests; the paper already picked ZNF316/EMSY."
+    },
+    "I3": {
+      "score": 1,
+      "why": "A per-boundary class probability only loosely matches the real decision, 'which protein to delete next'."
+    },
+    "I4": {
+      "score": 1,
+      "why": "My 8-feature logistic reached only 0.634; a CTCF-count threshold may capture most of it."
+    },
+    "J1": {
+      "score": 2,
+      "why": "Real grouped splits, negative controls and an optional frozen DNA backbone - the ML skills wanted."
+    },
+    "J2": {
+      "score": 1,
+      "why": "3D-genome biology is specialised, but the CTCF positive control gives a usable sanity check."
+    },
+    "J3": {
+      "score": 2,
+      "why": "A tidy hg19 BED of 4,173 classified boundaries plus a 296-protein occupancy matrix is shareable alone."
+    },
+    "J4": {
+      "score": 1,
+      "why": "No time budget set yet; the feature table is ~8 hours, so a 2-3 week box is plausible but unwritten."
+    },
+    "J5": {
+      "score": 1,
+      "why": "Kill condition is obvious (full 296-protein matrix fails to beat AUC 0.75) but not yet written down."
+    }
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "pTADS (random forest for TAD boundary presence plus a lasso-based boundary strength score, Briefings in Bioinformatics 2021)",
+        "open_weights": true,
+        "score_and_split": "Evaluated across seven cell lines and three TAD-calling methods; R code at github.com/chrom3DEpi/pTADS. Exact numbers not retrieved - I read the abstract and a search summary, not the full paper.",
+        "authors_named_unsolved": "Not retrieved; the abstract emphasises cross-cell-line generalisability as the achievement rather than naming a gap.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CT-TADB (hybrid convolutional-neural-network plus transformer predicting TAD boundaries from DNA sequence and histone marks, npj Systems Biology and Applications 2026)",
+        "open_weights": null,
+        "score_and_split": "Area under the ROC curve 0.932-0.950, trained on six human cell lines, and reported to capture GM12878 vs K562 boundary gain/loss events. From the search summary and abstract, not from running it.",
+        "authors_named_unsolved": "Cell-type transfer without Hi-C; the paper's selling point is avoiding Hi-C entirely.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "preciseTAD (transfer-learning framework for base-pair-resolution domain boundary prediction, Bioinformatics 2022)",
+        "open_weights": true,
+        "score_and_split": "Distributed as a Bioconductor package; reported numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Akita, Orca and C.Origami (deep networks predicting Hi-C contact maps, and hence insulation, from DNA sequence; Nature Methods 2020, Nature Genetics 2022, Nature Biotechnology 2023)",
+        "open_weights": true,
+        "score_and_split": "C.Origami's paper benchmarks all four on insulation-score correlation and distance-stratified contact correlation on held-out chromosomes; weights and code are public for all three.",
+        "authors_named_unsolved": "Cell-type-specific prediction without measured CTCF and accessibility tracks remains the stated frontier.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Integrating heterogeneity into TAD boundary prediction (NAR Genomics and Bioinformatics 2026)",
+        "open_weights": null,
+        "score_and_split": "Concluded that DNA sequence alone is insufficient for human TAD boundary prediction across a range of classical and deep architectures. From the search summary only.",
+        "authors_named_unsolved": "Sequence-only prediction in human; multi-modal epigenetic input is needed.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "HyenaDNA (long-context DNA language model, small checkpoints run on CPU); Nucleotide Transformer v2-50M as an alternative",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only laptop; 20-kb windows tiled into 1-kb chunks and mean-pooled, embeddings cached once",
+    "licence": "HyenaDNA Apache-2.0 (permissive); Nucleotide Transformer v2 is non-commercial, which is acceptable here"
+  },
+  "integration": {
+    "partner_dataset": "ENCODE K562 ChIP-seq (the 296 accessions already listed in the paper's Table S4, all hg19 optimal IDR thresholded peaks) plus Rao et al. GSE63525 Hi-C for 5-kb boundaries and other cell types",
+    "join_key": "hg19 genomic coordinates (overlap of a peak with a 20-kb boundary window)",
+    "bigger_question_one_sentence": "Which combinations of the 296 measured K562 proteins, beyond CTCF, distinguish a strongly insulating boundary from a weak one, and does that rule still hold in a different cell type?"
+  },
+  "controls": {
+    "positive_control": "CTCF occupancy and signal must rank Type I above Type IV - I verified this holds in the actual files (69.6% of Type I boundaries carry a CTCF peak versus 53.1% of Type IV), and any model that does not recover it is broken.",
+    "negative_control": "Shuffle the Type labels within chromosome and confirm the area under the ROC curve collapses to 0.50; ablate CTCF alone and see how much of the 0.634 baseline survives; swap in 4,173 random hg19 20-kb windows, which should be separable from boundaries but not ordered by type.",
+    "external_validation": "The 5-kb K562 boundaries derived from Rao et al. GSE63525, and GM12878/HCT116 boundaries (the paper's own cross-cell-type comparison), give a held-out-cell-type test; 4D Nucleome Hi-C is a second independent source."
+  },
+  "honest_claim_h3": "From protein occupancy and DNA sequence at a 20-kb window, we can predict - in K562 cells only, and only among windows that HiCExplorer called as a boundary at some digestion time - whether that boundary was detected at the earliest (most accessible) or only the latest (least accessible) digestion time, at roughly the accuracy an occupancy-only model already gives.",
+  "plain_idea": {
+    "one_liner": "Use protein binding and DNA sequence at a genome boundary to predict how strongly that boundary blocks contacts between neighbouring chromosome domains.",
+    "train_on": "4,173 windows of 20,000 base pairs each (counted in the file), each described by which of 296 proteins have a binding peak there in K562 leukaemia cells, and optionally by the DNA sequence itself.",
+    "predict": "A four-level accessibility class (Type I most accessible to Type IV least). The true answer comes from Hi-C experiments in which chromatin was cut with the enzyme HindIII for 0.25, 1, 3 or 12 hours: a boundary that shows up after the shortest digestion is the most accessible.",
+    "why_worthwhile": "Groups studying genome folding would get a ranked shortlist of proteins, beyond CTCF, that set how firmly a boundary insulates - the next CRISPR deletion to try. Even a failure tells us the digestion-time ordering is too noisy to model, which is worth knowing before anyone builds on it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Smaller and narrower than the competition - 4,173 boundaries in one cell line versus pTADS's seven cell lines and CT-TADB's six. The only edge is the label type: a digestion-time accessibility ordering measured in the same Hi-C experiment, which no existing model was trained on."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Two Hi-C replicates per digestion time are deposited in GEO, so label reproducibility could be estimated - but the paper called boundaries on replicate-merged matrices, so per-boundary confidence would require re-calling from the 25-53 MB matrices. I did not check whether pTADS or CT-TADB report calibrated confidence."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "CT-TADB (2026) reports area under the ROC curve of 0.932-0.950 with a convolutional-plus-transformer architecture evaluated across six cell lines, and Akita/Orca/C.Origami are benchmarked on held-out chromosomes with open weights. Only pTADS (2021, random forest) looks dated."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on 'same quantity, same way': existing models predict boundary presence or Hi-C-derived insulation, whereas our label is which digestion time a call first appeared at. The evaluation split would also differ, since they train across cell lines and we have one."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "Boundary insulation strength is public for many cell types: Rao et al. GSE63525 (cited by this paper), ENCODE and 4D Nucleome Hi-C, and the 3D Genome Browser / TADKB boundary collections. Known resources, plus GSE63525 confirmed in the paper's Table S4. The specific digestion-time class, however, exists only in this paper.",
+    "approx_items": null,
+    "join_key": "Genomic coordinates plus genome build (hg19 here)",
+    "why": "Insulation scores for tens of thousands of boundaries across many cell types give both extra training data and a ready external test of whether a strength model generalises past K562."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Neighbouring 20-kb boundary windows on the same chromosome share local CTCF clusters and large-scale compartment context, so a random split would put near-duplicate regions in both train and test.",
+      "Sequencing depth differs across digestion time points (9.1-13.2 million valid pairs at early times per Table S2), and more reads means more boundary calls, so the class label partly encodes library depth rather than biology.",
+      "Chromatin accessibility is the basis of the label and is also what makes ChIP-seq peaks callable, so any protein's peak presence is partly a readout of accessibility itself - a soft circularity that inflates occupancy features.",
+      "The paper's own discovery process selected CTCF, REST, ZNF316 and EMSY from the same 296 datasets, so using those four as hand-picked features would be selecting on the test set."
+    ],
+    "split": "Leave-one-chromosome-out using the chr column, which I confirmed is present in Table S3 and holds 23 chromosomes with 53-406 boundaries each; I ran this split already. For external validation, hold out a whole cell type (GM12878 or HCT116 boundaries).",
+    "checks": [
+      "Shuffle the Type labels within chromosome and confirm the area under the ROC curve returns to 0.50.",
+      "Train on CTCF peak count alone and see how much of the 0.634 occupancy baseline it explains - if nearly all, the other 295 proteins are decoration.",
+      "Regress class on a per-window read-depth proxy from the Hi-C matrices and check whether depth alone predicts the label.",
+      "Check nearest-neighbour genomic distance between each test boundary and its closest training boundary, and re-evaluate after excluding pairs within 1 Mb."
+    ],
+    "verdict": "Manageable: the chromosome split is easy and I have already run it, but the depth confound in the label and the accessibility-drives-peak-calling circularity are genuine and need the explicit checks above."
+  },
+  "success_criteria": {
+    "metric": "Area under the ROC curve for Type I versus Type IV under leave-one-chromosome-out, because the decision a 3D-genome lab makes is a ranked shortlist of boundaries and proteins to test; plus Spearman correlation between predicted and measured ordinal class for the ranking use.",
+    "baselines": "Measured by me on the real files: dummy 0.500, majority class 65.3%, logistic regression on CTCF/REST/ZNF316/SMC3 occupancy 0.634, random forest 0.607, all leave-one-chromosome-out. Published comparators are CT-TADB's 0.932-0.950 and pTADS's cross-cell-line numbers, but those are for a different label (boundary presence) and are not directly comparable.",
+    "success": "Area under the ROC curve of at least 0.75 on held-out chromosomes for Type I versus Type IV using the full 296-protein occupancy matrix, with CTCF ablated performance still above 0.65 - i.e. the gain is not all CTCF.",
+    "noise_ceiling": null,
+    "kill": "If the full 296-protein matrix does not beat 0.70 under leave-one-chromosome-out within one week, stop: the digestion-time label is too noisy to carry a model."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology",
+      "why": "Publishes 3D-genome method and benchmark papers; would need the model to identify and functionally validate a protein module that sets boundary strength beyond CTCF, across more than one cell type."
+    },
+    "realistic": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "The likely result - published boundary-strength predictors partly recover an orthogonally measured accessibility ordering, with a modest held-out-chromosome number from one cell line - is exactly the scope of its short method and evaluation papers."
+    },
+    "fallback": {
+      "journal": "Bioinformatics (Application Note) or a bioRxiv preprint",
+      "why": "Even a negative result plus a tidy, documented release of 4,173 accessibility-classified hg19 boundaries joined to a 296-protein occupancy matrix is a usable community resource."
+    }
+  },
+  "pitch": {
+    "headline": "4,173 genome boundaries labelled by how fast an enzyme cuts them - an accessibility ordering no existing boundary predictor was trained on.",
+    "what_makes_the_data_unusual": "The strength label comes from the same Hi-C experiment as the boundary calls, via a 0.25/1/3/12-hour digestion time course, so accessibility and insulation are measured together rather than joined across assays.",
+    "the_win": "Push leave-one-chromosome-out area under the ROC curve for most- versus least-accessible boundaries from the 0.634 I measured with four proteins to above 0.75 with all 296, and name which proteins carry the gain once CTCF is ablated.",
+    "even_if_it_fails": "We learn the digestion-time class is too noisy or too depth-confounded to model, which directly bounds how much weight the paper's accessibility hierarchy can bear.",
+    "who_wants_it": "The Furlan-Magaril lab (UNAM) and sequence-to-contact-map groups such as Fudenberg's; it would reorder which candidate architectural protein gets the next CRISPR deletion."
+  },
+  "ml_idea": "Build a tidy hg19 table of the 4,173 accessibility-classified boundaries joined to binary and signal-weighted occupancy for all 296 ENCODE K562 ChIP-seq datasets listed in Table S4, then predict the Type I-IV class under leave-one-chromosome-out. Two arms: (1) occupancy-only gradient boosting, with CTCF ablation to test whether anything beyond CTCF carries signal; (2) a frozen HyenaDNA embedding of the 20-kb sequence with a linear head, to ask whether sequence alone adds anything over occupancy. The headline experiment is a re-evaluation: score published predictors (pTADS, preciseTAD, and Akita/Orca insulation predictions) against this independently measured accessibility ordering and report whether they recover it.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 15,
+    "cv_run_minutes": 5,
+    "compute_note": "Timed directly: unzipping and parsing Table S3, downloading 4 ENCODE peak files and intersecting them took under three minutes, and the leave-one-chromosome-out logistic regression and random forest ran in seconds on 3,133 rows. The 8-hour and 5-minute figures scale that to 296 files and 296 features; the 15 embedding hours is an unverified estimate for tiling 83 megabases of sequence through a small DNA language model on CPU.",
+    "cheapest_killing_check": "Already done: leave-one-chromosome-out area under the ROC curve for Type I versus Type IV using CTCF, REST, ZNF316 and SMC3 occupancy is only 0.634. The next and decisive check is whether the full 296-protein matrix clears 0.75; if not, stop."
+  },
+  "verdict": "park",
+  "verdict_reason": "Every Part A killer passes and I verified it in the files: 4,173 clean 20-kb hg19 windows, four explicit accessibility classes, zero duplicates, and the paper's CTCF trend reproduced in my own intersections (69.6% of Type I versus 53.1% of Type IV). But the field is saturated with open, honestly evaluated models - pTADS predicts boundary strength, CT-TADB (2026) reports 0.932-0.950 across six cell lines, and Akita/Orca/C.Origami are benchmarked on held-out chromosomes - so C2 scores 0. The data is one cell line, one lab, one enzyme and one TAD caller, the label is a thresholded algorithmic call partly confounded by sequencing depth, and my own leave-one-chromosome-out baseline reached only 0.634, so the likely outcome is a modest number in a crowded area. Keep it as a cheap, publishable re-evaluation project - do published boundary-strength predictors recover this orthogonal accessibility ordering? - rather than a priority."
+}

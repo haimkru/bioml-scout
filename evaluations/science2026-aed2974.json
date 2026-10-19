@@ -1,0 +1,196 @@
+{
+  "paper_id": "science2026-aed2974",
+  "title": "Rising plant extinction rates on European mountain summits.",
+  "doi": "10.1126/science.aed2974",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5061/dryad.vmcvdnd6v",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded all 4 Dryad files (CC0, 2.4 MB total; the site sits behind an Anubis proof-of-work gate, no login or application) and opened them: data_GLORIA_europe.csv = 12,145 rows x 27 columns, 896 plots, 62 summits, 16 regions, 721 species, 0 missing cover values, exactly 1 duplicated plot-species pair. Built the extinction label myself (present at survey t, cover 0 at t+1): 27,208 at-risk records, 3,769 extinctions (13.9%); per-transition rates 11.1 / 15.3 / 15.1%. Verified the climate table joins on region+summit+transition with 0 misses. Read the authors' R script and found their exact model (glmer binomial, ext_end ~ avchange_13 + survey1 + (1|region/summit) + (1|species)) and their pseudo-turnover correction. Ran leave-one-region-out, leave-one-summit-out, a temporal split and a label shuffle on CPU in 97 s. Downloaded the Ellenberg indicator-value table (Zenodo 7427088, 8,908 species) and measured the species-name join: 563/721 species (78.1%), 82.7% of rows.",
+    "what_came_from_paper_text_only": "The Science article itself is paywalled and has no PubMed Central record, so the abstract plus the Dryad README and R script are all I read of the authors' prose. The abstract's '11.1% to 15.7%' range, the thermophilization result and the 'preceding abundance decline as early warning' claim were not reproduced by me in full, only approximated. The size of ReSurveyEurope (79,190 plots) comes from a web search of its 2024 Journal of Vegetation Science paper, not from a file I opened."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Dryad doi:10.5061/dryad.vmcvdnd6v, CC0, no login or access application. I downloaded all four files; the only obstacle was a proof-of-work browser check, which is not an access restriction."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is not literally a column but is a one-line derivation inside the same table: present at survey t (cover > 0) and cover 0 at survey t+1. The authors' own script does exactly this. No join or inference across sources; I built it and counted 3,769 positives."},
+    "a3_inputs_present": {"pass": true, "note": "All predictors are values in the same two files: percent cover at four dates, species elevational rank, plot elevation, latitude, longitude, aspect, survey years and intervals, plus per-summit temperature and precipitation change. No identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "README states units for temperature change (degrees C vs a 1900-1950 baseline), precipitation (mm), elevation (m) and intervals (years). Species cover units are not spelled out but are plainly percent cover; two single-species values exceed 100 (132 and 143) and look like typos."},
+    "a5_enough_rows": {"pass": true, "n_rows": 27208, "note": "27,208 species-in-plot records at risk pooled over three survey transitions, with 3,769 extinction events; 9,121 records for the single most recent transition alone. Counted by me, not read from the paper."},
+    "a6_fits_laptop": {"pass": true, "working_set": "2.2 MB main CSV + 52 KB climate CSV (+ 20 MB optional Ellenberg xlsx)", "note": "A full five-model, 16-fold grouped cross-validation plus a label shuffle and a temporal split ran in 97 seconds on CPU with well under 1 GB of RAM."},
+    "a7_counts_match_paper": {"pass": true, "note": "896 plots, 62 summits, 16 regions and 4 surveys match the abstract exactly. My pooled per-transition extinction rates are 11.1 / 15.3 / 15.1% against the abstract's '11.1% to 15.7%'; averaging per plot instead of pooling gives 10.4 / 15.8 / 15.9%, so the small gap is a definitional choice, not a disagreement."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a human field observation (a botanist not re-finding the species in a marked plot), not any model's output, and the next-survey cover column that defines it is excluded from the features. The real caveat is noise, not circularity: 402/980 and 411/1,412 'extinctions' reappear at a later survey, so 29-41% are temporary absences."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two CSVs; I verified the climate join on region+summit+transition loses 0 of 27,208 rows."},
+    "B2": {"score": 2, "why": "Both files parsed with pandas on the first try, no encoding or delimiter fixes."},
+    "B3": {"score": 1, "why": "Binary non-detection label is consistent, but cover scale and search effort differ by region and observer."},
+    "B4": {"score": 2, "why": "No censored or qualitative entries; all four cover columns 100% complete in the file."},
+    "B5": {"score": 2, "why": "Exactly 1 disagreeing duplicate plot-species pair in 12,145 rows (Carex tristis, CAKCP1W11)."},
+    "B6": {"score": 2, "why": "README documents every one of the 27 columns, including region and summit code meanings."},
+    "C1": {"score": 2, "why": "'How much beyond rarity is predictable, and does it transfer?' is informative either way; I already measured it."},
+    "C2": {"score": 2, "why": "Searched four ways: no model predicts plot-level local extinction from resurvey data with grouped evaluation."},
+    "C3": {"score": 2, "why": "Novel: this measured dataset has never been modelled; authors' own fit was inferential, never tested out-of-sample."},
+    "C4": {"score": 2, "why": "Alternative is botanists re-walking 896 marked plots on 62 summits every 7 years."},
+    "C5": {"score": 2, "why": "Authors' R script runs as baseline; I also measured dummy 13.9% and cover-only ROC-AUC 0.760."},
+    "D1": {"score": 0, "why": "No open-weight pretrained backbone fits plot-by-species tabular ecology; gradient-boosted trees are the honest model."},
+    "D2": {"score": 0, "why": "No backbone, so no freeze-and-head step; coordinates rounded to 0.1 degree rule out location embeddings."},
+    "D3": {"score": 2, "why": "Data CC0, Ellenberg partner table CC-BY; no licence blocks anything, though no backbone is involved."},
+    "E1": {"ok": true, "why": "Leave-one-region-out (16), leave-one-summit-out (62) and a temporal split all exist; I ran all three."},
+    "E2": {"ok": true, "why": "16 regions, 62 summits, 896 plots, 721 species; smallest summit still has 3 plots."},
+    "E3": {"ok": true, "why": "Prevalence dummy 13.9% and cover-only logistic regression, both computed by me."},
+    "E4": {"ok": true, "why": "Label noise measurable: 29-41% of non-detections reappear later; search-effort flag shifts rate 14.6% vs 17.3%."},
+    "E5": {"ok": true, "why": "Rarity must predict loss (verified ROC-AUC 0.760 from cover alone) and the paper's low-elevation-margin effect must reappear."},
+    "E6": {"ok": true, "why": "Label shuffle run: ROC-AUC fell 0.801 to 0.502; dropping cover features fell to 0.696."},
+    "E7": {"ok": true, "why": "Temporal split run (train transitions 1-2 and 2-3, test 3-4): ROC-AUC 0.796; ReSurveyEurope exists as a second source."},
+    "E8": {"ok": true, "why": "Authors' full R script and data are deposited, so their coefficients and R-squared are reproducible on the same rows."},
+    "G1": {"score": 1, "why": "Species are Latin binomials needing taxonomic resolution; coordinates rounded to 0.1 degree; no stable IDs."},
+    "G2": {"score": 2, "why": "Ellenberg indicator values for 8,908 European species (Zenodo 7427088, CC-BY) downloaded and joined by me."},
+    "G3": {"score": 2, "why": "One-to-one on name: 563/721 species and 82.7% of rows matched before any synonym resolution."},
+    "G4": {"score": 2, "why": "Asks whether a species' Europe-wide thermal niche predicts which populations die first, beyond local rarity."},
+    "H1": {"score": 2, "why": "23,439 survivals alongside 3,769 losses, plus 4,120 colonisation events; both outcomes recorded systematically."},
+    "H2": {"score": 1, "why": "16 regions, Crete to Scandinavia to Caucasus, but one continent, one protocol, above treeline only."},
+    "H3": {"score": 2, "why": "Claim written out precisely, including that a third of 'extinctions' are detection failures."},
+    "H4": {"score": 2, "why": "README flags coordinate rounding and the 2022 search-effort subset; the paper models pseudo-turnover explicitly."},
+    "I1": {"score": 2, "why": "GLORIA network coordination (Harald Pauli, Austrian Academy of Sciences) and co-author national-park monitoring teams."},
+    "I2": {"score": 2, "why": "A ranked early-warning list changes which plots and species get scarce resurvey effort next cycle."},
+    "I3": {"score": 1, "why": "Top-k precision fits the monitoring decision, but conservation acts at species-region level, not per plot."},
+    "I4": {"score": 1, "why": "Measured: one-feature cover baseline 0.760 vs full model 0.801 leave-one-region-out, so ML helps only somewhat."},
+    "J1": {"score": 1, "why": "Real grouped splits, calibration and label-noise modelling, but tabular trees only, no transfer learning."},
+    "J2": {"score": 2, "why": "The paper publishes the expected direction of every key predictor, so results can be sanity-checked."},
+    "J3": {"score": 2, "why": "The feature table plus first honest out-of-sample numbers already exist; produced in 97 seconds."},
+    "J4": {"score": 2, "why": "Three weeks: one for labels and noise correction, one for models, one for joins and writing."},
+    "J5": {"score": 1, "why": "Kill condition stated here (no 0.02 PR-AUC gain over cover alone) but not yet written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The paper's own mixed-effects logistic regression (glmer in R: extinction ~ average cover change + starting cover + random effects for region/summit and species)",
+        "open_weights": true,
+        "score_and_split": "No predictive score at all. The deposited R script reports coefficients and a mixed-model R-squared (r.squaredGLMM) over 1,000 data-shuffling replicates; there is no held-out split, no ROC-AUC (area under the receiver operating characteristic curve) and no out-of-sample test anywhere in the code.",
+        "authors_named_unsolved": "The abstract names preceding abundance decline as an 'early warning signal' but never asks whether that signal predicts out-of-sample, nor whether it transfers to a mountain region the model has not seen.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ATI framework (Shabanov et al. 2026, Journal of Ecology): machine learning for mapping shifts in species abundance from long-term monitoring data",
+        "open_weights": true,
+        "score_and_split": "Mean ROC-AUC about 0.62 for real species under four-fold cross-validation (over 0.85 for synthetic single-driver species). Code and trained models are on Zenodo (10.5281/ZENODO.12703232), but the underlying New Zealand National Vegetation Survey data needs a per-project permission request.",
+        "authors_named_unsolved": "They report that real species, driven by several interacting abundance gradients, are much harder than synthetic ones, and that below 0.7 ROC-AUC is considered poor in ecology.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Valavi et al. 2022 (Ecological Monographs): benchmark of presence-only species distribution models",
+        "open_weights": true,
+        "score_and_split": "Fully reproducible benchmark with open code and data and spatially blocked evaluation, but the task is static where-does-a-species-occur, not whether a known population disappears between two surveys of the same marked plot.",
+        "authors_named_unsolved": "Transferability of fitted distribution models to new regions and times is the recurring weak point.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None. No open-weight pretrained backbone matches plot-by-species tabular ecology; gradient-boosted trees (HistGradientBoosting or LightGBM) plus a mixed-effects comparator is the right model class.",
+    "freeze_and_head_viable": false,
+    "hardware": "Laptop CPU. My full grouped cross-validation took 97 seconds.",
+    "licence": "Data CC0 (public domain); Ellenberg partner table CC-BY 4.0. No model licence applies."
+  },
+  "integration": {
+    "partner_dataset": "Ellenberg-type indicator values for European vascular plant species (Tichy et al. 2023, Zenodo 7427088, CC-BY, 8,908 species, 7,402 with a temperature value). Downloaded and joined by me. Secondary partners: GBIF occurrences for a realized thermal niche, and ReSurveyEurope for external validation.",
+    "join_key": "Latin binomial (genus + species) from the Final_Name column. Verified coverage: 563/721 species (78.1%), 82.7% of plot-species rows, 73.6% of rows with a temperature indicator value, before any synonym resolution.",
+    "bigger_question_one_sentence": "Does where a species sits in its own Europe-wide climatic niche predict which of its local populations vanish first on warming summits, over and above how rare that population already is locally?"
+  },
+  "controls": {
+    "positive_control": "Rarity must predict loss: cover at time t alone must give a clearly above-chance ranking (I measured ROC-AUC 0.760 leave-one-region-out). Second, the paper's published result that species near their low-elevation range margin are lost more often must reappear with the right sign on the alti_rank_rel_num column.",
+    "negative_control": "Label shuffle, already run: ROC-AUC falls from 0.801 to 0.502 and precision-recall area under the curve falls to 0.140, exactly the 13.9% prevalence floor. Feature-block ablation also run: removing all cover features drops ROC-AUC to 0.696.",
+    "external_validation": "Temporal split already run (train on transitions 1-to-2 and 2-to-3, test on 3-to-4, n = 9,121): ROC-AUC 0.796. A genuinely independent second dataset exists in ReSurveyEurope (79,190 plots) and BioTIME, but ReSurveyEurope needs a data request to the European Vegetation Archive."
+  },
+  "honest_claim_h3": "Among vascular plant populations recorded in GLORIA permanent plots above the European treeline, a model can rank which ones will not be re-found at the next survey about seven years later with roughly 0.80 ROC-AUC across held-out mountain regions, where 'not re-found' includes the 29-41% of cases that are detection failures or temporary absences rather than true local extinctions.",
+  "plain_idea": {
+    "one_liner": "Use a plant's current cover, its elevation niche and its summit's warming to predict whether it vanishes from the plot.",
+    "train_on": "27,208 records that I built and counted: each is one plant species in one permanent plot at one survey date, carrying its percent cover, its cover trend since the previous survey, the plot's elevation, aspect, latitude and species richness, and that summit's temperature rise since a 1900-1950 baseline. 896 plots on 62 summits in 16 European regions.",
+    "predict": "Whether that species is absent from that same marked plot at the next survey, about seven years later. The truth comes from botanists re-walking the identical marked plots four times between 1998 and 2022 under the standard GLORIA protocol and recording percent cover of every vascular plant.",
+    "why_worthwhile": "Mountain monitoring teams must choose where to spend scarce fieldwork, and a calibrated early-warning ranking tells them which populations to revisit and how often. Even if the model fails, we learn that local plant loss is no more predictable than simple rarity, and we publish the first measurement of how much of the 'extinction' signal is just botanists missing plants."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "27,208 at-risk records with four standardized repeat censuses of the same marked plots across 16 regions, openly licensed CC0. The nearest machine-learning comparator (Shabanov et al. 2026) used New Zealand forest inventory data that needs a per-project permission request, and the Valavi benchmark uses static presence-only records with no repeat visits at all."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "The data measures its own label noise: 402 of 980 and 411 of 1,412 non-detections reverse at a later survey, and plots given a thorough 2022 frequency survey show 14.6% loss against 17.3% elsewhere. That supports a detection-corrected probability per record; neither the paper's model nor the comparators report any per-record calibration."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The direct comparator is a 2026 mixed-effects logistic regression evaluated only by coefficients and a mixed-model R-squared, with no held-out split anywhere in its deposited code. There is no predictive number to beat, which means the win is producing the first honest one, not edging past an existing score."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The baseline is runnable and the split would be identical, but the accessible new data (Ellenberg indicator values, GBIF-derived niches) measures a different quantity from a different source and joins only 78% of species, so it can add noise rather than signal. The 'same quantity, same way' condition fails."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "ReSurveyEurope (Knollova et al. 2024, Journal of Vegetation Science) records repeat observations of the same vegetation plots, so the same present-then-absent label is computable there; found by web search of its publication, not opened by me. BioTIME and ForestREplot hold comparable biodiversity time series. The GLORIA network itself runs summits on other continents, but those data are not in this deposit.",
+    "approx_items": 283135,
+    "join_key": "Species Latin binomial links the species-level features; the plot identity itself is dataset-specific, so cross-dataset validation is at the species and event level, not the plot level.",
+    "why": "A large external set of the very same kind of event exists, so a model trained on alpine summits can be tested on lowland and forest resurveys; the catch is that ReSurveyEurope access runs through a European Vegetation Archive data request rather than a direct download."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Plots on the same summit share observer, date and microclimate, so a random row split would scatter 14 plots from one summit across train and test; I verified 896 plots nest inside 62 summits inside 16 regions.",
+      "The same species occurs in many plots (310 species in 10 or more), so a model can memorise a species' baseline tendency to disappear instead of learning conditions.",
+      "The label is computed from the next survey's cover column, and the ready-made avchange_13 column spans surveys 1 to 3, so using it to predict the 2-to-3 transition would feed the answer straight in; it is legitimate only for the 3-to-4 transition, exactly as the authors use it.",
+      "Search effort differs between plots with and without the 2022 frequency analysis and correlates with the label: 14.6% versus 17.3% apparent extinction rate.",
+      "Climate predictors vary only across 186 summit-by-transition combinations, so they can act as a fingerprint identifying the summit rather than a causal driver."
+    ],
+    "split": "Primary: leave-one-region-out on the `region` column (16 folds), which I saw in the file and already ran. Secondary: leave-one-summit-out on region+summit (62 folds) and a temporal split training on transitions 1-to-2 and 2-to-3 and testing on 3-to-4, built from the survYear columns. Add leave-one-species-out on Final_Name to test memorisation.",
+    "checks": [
+      "Shuffle the labels and confirm collapse to prevalence: already done, ROC-AUC 0.801 to 0.502 and precision-recall area 0.364 to 0.140 against a 0.139 floor.",
+      "Ablate the cover feature block: already done, ROC-AUC 0.696 without it, confirming cover is dominant but not everything.",
+      "Train on the fre2022 search-effort flag alone to measure how much of the signal is a methodological artifact.",
+      "Compare nearest-neighbour similarity of test plots to training plots within and across regions to confirm the grouping actually separates them."
+    ],
+    "verdict": "Manageable. Every grouping column is explicit in the file, the shuffle control already behaves correctly, and the one genuine trap (avchange_13 spanning the predicted interval) is identifiable by reading column names."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 100 ranked at-risk records under leave-one-region-out, because the decision a monitoring team makes is 'which populations do we revisit', with ROC-AUC and precision-recall area under the curve reported alongside for comparability.",
+    "baselines": "Prevalence dummy 13.9% (3,769 of 27,208, counted by me). Cover-only logistic regression: ROC-AUC 0.760, precision-recall area 0.321 under leave-one-region-out (I ran it). Quick full-feature gradient boosting: 0.801 and 0.364. The paper publishes no out-of-sample number at all.",
+    "success": "Precision-recall area under the curve of 0.45 or better under leave-one-region-out, against 0.321 for cover alone, and the temporal split (testing on the 2015-to-2022 transition) staying within 0.03 of that, so the gain is transfer and not fit.",
+    "noise_ceiling": 0.7,
+    "kill": "If after adding trait and niche joins, detection correction and calibration the full model stays within 0.02 precision-recall area of the cover-only baseline on leave-one-region-out, stop: the finding is 'rarity is almost all there is', which is a short note rather than a project."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Global Change Biology",
+      "why": "It publishes climate-driven biodiversity change backed by predictive models; it would take an early-warning score that transfers cleanly to held-out mountain regions and forward in time and clearly beats rarity, plus a defensible correction for detection failures."
+    },
+    "realistic": {
+      "journal": "Methods in Ecology and Evolution",
+      "why": "It publishes evaluations and benchmarks of predictive methods for monitoring data, which is exactly the likely result here: the first honest out-of-sample numbers for local plant extinction, a grouped and temporal evaluation protocol, and a measured estimate of pseudo-turnover label noise."
+    },
+    "fallback": {
+      "journal": "Ecological Informatics (with an EcoEvoRxiv preprint)",
+      "why": "It publishes applied machine learning on ecological monitoring data, so even the negative outcome - that local extinction is barely more predictable than rarity, with 29-41% of events reversing - is publishable there as a cautionary benchmark."
+    }
+  },
+  "pitch": {
+    "headline": "27,208 plant-population records from 62 European summits, four hand-surveys over 21 years, CC0, and nobody has ever fitted a predictive model to them.",
+    "what_makes_the_data_unusual": "Four standardized recensuses of the same marked plots, 1998-2022, from Crete to Scandinavia to the Caucasus. Species that vanish then reappear give a direct measure of label noise: I counted 402 of 980 first-transition losses coming back.",
+    "the_win": "The first honest out-of-sample number for local plant extinction. In 97 seconds I already got ROC-AUC 0.801 across held-out regions and 0.796 on the most recent survey, against 0.760 for abundance alone.",
+    "even_if_it_fails": "We learn that loss on warming summits is no more predictable than rarity, and we still publish the detection-error measurement: 29-41% of recorded extinctions reverse at a later survey.",
+    "who_wants_it": "The GLORIA network (Harald Pauli, Austrian Academy of Sciences) and the national-park monitoring teams among the 47 co-authors; it changes which plots and species get scarce resurvey effort next cycle."
+  },
+  "ml_idea": "Binary prediction of local extinction: for each species present in a GLORIA permanent plot at survey t, predict whether it is absent at survey t+1 about seven years later. Features are the species' percent cover and prior cover trend, its elevational rank absolutely and relative to the plot community, plot elevation, aspect, latitude, longitude and richness, survey interval, and the summit's temperature and precipitation change since 1900-1950, optionally joined to Ellenberg temperature indicator values on species name. Model: gradient-boosted trees against the authors' mixed-effects logistic regression as baseline, evaluated by leave-one-region-out, leave-one-summit-out and a temporal split, with a second run on a 'permanent loss' label (absent at t+1 and t+2) to separate true extinction from detection failure.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.03,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0,
+    "cv_run_minutes": 2,
+    "compute_note": "Timed, not estimated: my script built the 27,208-row feature table and ran five models over 16 leave-one-region-out folds plus 62 leave-one-summit-out folds, a label shuffle and a temporal split in 97 seconds on laptop CPU.",
+    "cheapest_killing_check": "Already done: compare the cover-only baseline (ROC-AUC 0.760, precision-recall area 0.321) with the full-feature model (0.801, 0.364) under leave-one-region-out. Had that gap been near zero, the project would be a one-page note; it is real but modest, which sets the bar for the rest of the work."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Part D fails outright (2/6): no pretrained backbone fits plot-by-species ecology tables, so this teaches grouped evaluation and calibration, not transfer learning. Everything else is unusually strong and already verified in the files: 27,208 labelled records with 3,769 extinctions, one clean CC0 table, three nested grouping levels plus a native temporal split, a measurable label-noise ceiling (29-41% of losses reverse), a runnable published baseline that never reported an out-of-sample number, and a verified 78% join to Ellenberg niche values. Effort is near zero - the feature table and first honest numbers took 97 seconds - so the return per hour is very high even with D failing."
+}

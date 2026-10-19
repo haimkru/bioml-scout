@@ -1,0 +1,111 @@
+{
+  "paper_id": "nar2026-gkag885",
+  "title": "Cryo-EM structure of a 95-base-pair double-stranded DNA minicircle at 5.3 A resolution.",
+  "doi": "10.1093/nar/gkag885",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://files.rcsb.org/download/13gq.cif (PDB 13GQ); https://www.ebi.ac.uk/emdb/EMD-77061",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the deposited coordinate file PDB 13GQ (449 KB mmCIF, a text format for atomic coordinates): it contains exactly 3,895 atoms in 2 chains of 95 residues each. Every residue in chain A is DA (deoxyadenosine) and every residue in chain B is DT (deoxythymidine), i.e. a generic poly(A:T) placeholder rather than the real synthesised sequence; the PDB entry title itself says 'poly(A:T) model'. Also pulled the RCSB entry metadata (5.27 A resolution, 344,629 particles, single class) and the EMDB EMD-77061 entry metadata, and did a HEAD request on the cryo-EM density map (258 MB gzipped, so not downloaded, over the 50 MB cap).",
+    "what_came_from_paper_text_only": "The nine-fold periodicity in helical twist, ~10.56 base pairs per turn, groove-width analysis, ellipticity and out-of-plane displacement numbers, and the actual oligonucleotide sequences (stated to be in Supporting Information section S1.1). The Europe PMC supplementary-file listing timed out twice, so the supplement is not retrievable and I could not confirm whether per-base-pair-step geometry tables are tabulated there."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "PDB 13GQ coordinates and EMDB EMD-77061 map are public with no login. I fetched the mmCIF coordinate file successfully; the 258 MB map was confirmed present by HEAD but left undownloaded."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "There is no label column anywhere. The quantities the paper reports (helical twist per base-pair step, groove widths, ellipticity) exist only as figures in the text; to get them you would have to run a geometry program such as 3DNA or Curves+ over the coordinates yourself, i.e. construct the target."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "The obvious input for any DNA-shape task is the base sequence, and it is absent from the deposited model: all 95 residues of chain A are adenine and all 95 of chain B are thymine, a fabricated placeholder because bases cannot be distinguished at 5.3 A. The real sequence is only in a supplement I could not retrieve."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Coordinates are in Angstroms and B-factors (a per-atom measure of positional uncertainty, range 20.0-433.6) are standard mmCIF fields with defined units. Units are not the problem here."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 95,
+      "note": "One structure. At best 95 base pairs, or 94-95 base-pair steps, all from a single molecule in a single conformational class. The checklist floor is ~1,500 labelled rows; this is two orders of magnitude short, and the rows are not even independent since they come from one fitted model."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.45 MB coordinates; 258 MB gzipped density map if ever needed",
+      "note": "Trivially small. Size is the one thing this candidate has going for it."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Paper says 95 base pairs and 5.3 A; the deposited file has exactly 95 residues per strand and RCSB metadata reports 5.27 A. Counts agree."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Any target (twist, roll, groove width) is computed geometrically from the same atomic coordinates that would serve as the features, which is leakage by construction. Worse, those coordinates are themselves a flexibly fitted model at 5.3 A where individual bases are unresolved, so the per-step geometry is partly an artefact of the fitting restraints, not a direct measurement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Deep DNAshape (Li, Rohs and colleagues; Nature Communications 2024, with a 2024 Nucleic Acids Research webserver paper)",
+        "open_weights": true,
+        "score_and_split": "Predicts 14 DNA shape features from sequence, including helical twist and minor groove width, accounting for flanking regions up to 7 base pairs; trained on Monte Carlo and molecular-dynamics simulation data. I retrieved the papers but did not read out a specific held-out accuracy number, so I am not quoting one.",
+        "authors_named_unsolved": "Their stated gap is that training rests on limited simulation data rather than experimental structures, and that conformational flexibility/fluctuation prediction is the harder, less validated part.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CryoREAD and EM2NA (deep-learning builders of DNA/RNA atomic models from cryo-EM density maps)",
+        "open_weights": true,
+        "score_and_split": "EM2NA reports 83.15% residue coverage, 1.06 A C4' root-mean-square deviation and 46.86% sequence recall on maps better than 5 A; CryoREAD is a published U-Net tool with open code. Numbers are from the retrieved abstracts.",
+        "authors_named_unsolved": "Sequence assignment from density remains poor (under 50% recall), which is exactly why this paper modelled a poly(A:T) placeholder.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable. DNA language models (DNABERT-2, Nucleotide Transformer, HyenaDNA) take sequence, and no usable sequence is in the deposited data.",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "PDB and EMDB depositions are CC0 / public domain, so licence is not the blocker."
+  },
+  "integration": {
+    "partner_dataset": "In principle PDB/NDB (Nucleic Acid Database) DNA structures joinable on PDB ID, or Deep DNAshape's simulation-derived shape tables joinable on sequence k-mer.",
+    "join_key": "PDB ID (for structures) or base sequence (for shape tables) - but the sequence is a fabricated poly(A:T) in this entry, so the sequence join is void.",
+    "bigger_question_one_sentence": "Could not write one that this single structure contributes to: with 95 base-pair steps from one molecule it adds a data point to a comparison, not a training signal to a model."
+  },
+  "controls": {
+    "positive_control": "None possible with n=1 structure; there is no held-out set to recover a known effect in.",
+    "negative_control": "Label shuffling is meaningless on 95 correlated steps from one fitted model.",
+    "external_validation": "Other DNA structures exist (the paper itself compares to PDB 1RVH, 1RVI and 1KX5, the last being the nucleosome), but they would be the dataset, not a validation of anything learned here."
+  },
+  "honest_claim_h3": "No honest model claim is available from this paper's data: a single 95-base-pair cryo-EM structure, deposited as a sequence-free poly(A:T) model at 5.3 A, can support a structural-biology observation about DNA bending under topological constraint but cannot train or test a predictor.",
+  "plain_idea": {
+    "one_liner": "Use DNA base sequence to predict how a closed DNA ring twists and how wide its grooves are.",
+    "train_on": "The project I considered would train on per-base-pair-step geometry from circular DNA structures. This paper supplies exactly one structure, 95 base pairs, 3,895 atoms, with no real sequence attached - a number I verified in the deposited coordinate file.",
+    "predict": "Helical twist angle and major/minor groove width at each base-pair step. The ground truth would come from running a nucleic-acid geometry program over atomic coordinates fitted into a cryo-electron-microscopy density map at 5.3 A resolution.",
+    "why_worthwhile": "Groups designing DNA nanostructures and people studying extrachromosomal circular DNA in cancer would want sequence-level predictions of where a small ring strains or kinks. But that needs hundreds of structures, and this paper is one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and abandoned: predict sequence-dependent helical twist and groove width in topologically constrained (circular) DNA from base sequence, using this minicircle as experimental ground truth to test whether simulation-trained predictors like Deep DNAshape transfer to bent DNA. The idea is reasonable but this paper cannot supply the data - one structure, no sequence in the model, and geometry that must be derived from the same coordinates that would be the features. A viable version would mine the whole Nucleic Acid Database / PDB set of DNA structures, which is a different project with a different source.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.1,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed beyond the actual download and parse: the coordinate file is 449 KB and parsed in under a second with a 40-line Python script. Compute was never the constraint; sample size was.",
+    "cheapest_killing_check": "Count the residues in the deposited coordinate file and look at what bases they are. That took one script: 95 adenines in chain A, 95 thymines in chain B, one structure, no real sequence. Project dead in five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A single cryo-EM structure is not a dataset. Verified in the deposited file (PDB 13GQ): 3,895 atoms, two 95-residue strands, and crucially every base is a placeholder - chain A is all adenine, chain B is all thymine, because at 5.3 A resolution the real sequence cannot be read out. That kills A3 (the natural input, sequence, is absent and fabricated), A5 (95 non-independent base-pair steps against a ~1,500-row floor), A2 (the geometric targets are not a column; they would have to be computed with 3DNA or Curves+) and A8 (those targets would be computed from the same coordinates used as features, and from a flexibly fitted low-resolution model at that). This is a fine structural-biology result with real value as one comparison point for DNA bending, and Deep DNAshape already occupies the sequence-to-shape prediction niche using simulation data. There is no ML project here."
+}

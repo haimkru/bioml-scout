@@ -1,0 +1,196 @@
+{
+  "paper_id": "science2026-aek5696",
+  "title": "Noncoding transcription controls the developmental dynamics of long-range gene regulation.",
+  "doi": "10.1126/science.aek5696",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/21956722",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded all 26 genotype archives (120 MB total) plus the README PDF and the sex-comb count file from Zenodo record 21956722 (CC-BY-4.0), and parsed every file. Counted 26 genotypes, 202 embryos, 41,593 tracked nuclei, 75-244 timepoints per movie (median 170), all six channels present and shape-matched for every single embryo, zero missing values, zero duplicate nucleus identifiers. Confirmed the README documents all six file types and states units (fluorescence units for signal, pixels for coordinates). Computed enhancer-gene correlations per genotype and a crude activation-onset comparison across four genotypes. Opened the authors' published analysis code (Zenodo 5730297) and found the activation-state rule and that seconds-per-frame is a user-supplied parameter, not stored in the data. Confirmed GEO GSE171396 (companion 2022 Micro-C) is public with 16 samples.",
+    "what_came_from_paper_text_only": "Every biological claim (sequential noncoding RNA transcription, optimal gene activation at only moderate enhancer activity, precocious activation when enhancer RNAs are disrupted, effects on long-range interactions) comes from the abstract alone. The paper is paywalled with no PubMed Central record, no full text, no supplement and no accessible Methods, so I never saw its figures, its reported numbers, or its stated frame interval. I could not confirm that the new Micro-C series GSE343884 is public: NCBI returned a bot-check page rather than a record."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified by downloading: Zenodo record 21956722, CC-BY-4.0, 28 files, no login, no application. All 26 genotype zip archives fetched successfully (120 MB total, largest 8.4 MB)."},
+    "a2_label_is_a_column": {"pass": true, "note": "The gene-activity label is literally a measured matrix in the files (GFP_Signal, nuclei x timepoints). Even the binary activation label is a documented within-file threshold rule from the authors' own published code, not a join or inference across sources."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: the enhancer-activity input (RFP_Signal, from the PP7 tag) and the nucleus position inputs (Nucleus_X, Nucleus_Y) are full matrices present in every one of the 202 embryo datasets. No identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "README states signal and background are in fluorescence units and coordinates in pixels. Caveat found in the authors' code, not the data: seconds-per-frame is a command-line parameter, so the time axis is in frames with no calibration constant in the files."},
+    "a5_enough_rows": {"pass": true, "n_rows": 41593, "note": "Counted directly: 41,593 tracked nuclei across 202 embryos and 26 genotypes. Even the unit-of-analysis-is-the-embryo reading gives 202, and the per-genotype nuclei counts run 535 to 2,917."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.4 GB", "note": "Verified: 120 MB compressed on disk; 41,593 nuclei x ~170 timepoints x 6 channels is about 170 MB as float32. Parsed the whole corpus in one pass on this laptop. No GPU needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "No disagreement to resolve: the README's table of 26 genotype directories, the Zenodo file list and the downloaded archives agree exactly. The paper itself is paywalled so its stated counts are not visible to me."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a direct fluorescence microscopy measurement of nascent transcription (MCP-GFP bound to MS2 stem loops), not any model's output and not computed from the enhancer features. The real risk is shared-optics correlation between the two channels, which is a leakage issue handled by the dataset's own trans-genotype controls, not a provenance failure."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "1,212 files across 26 archives, but key (genotype/embryo/channel) is mechanical in filenames; join verified on all 202 embryos."},
+    "B2": {"score": 2, "why": "Clean tab-separated gzipped text; parsed all 202 embryos x 6 channels with zero errors, no ragged rows."},
+    "B3": {"score": 1, "why": "Arbitrary fluorescence units, not cross-embryo normalised; max GFP ranges 1,134-7,152 across genotypes; two microscopes. Needs per-embryo normalisation."},
+    "B4": {"score": 2, "why": "Measured in the files: zero NaN or missing values across every channel of all 202 embryos."},
+    "B5": {"score": 2, "why": "Counted in the files: zero duplicate nucleus identifiers across all 202 embryo datasets."},
+    "B6": {"score": 2, "why": "README PDF documents all six file types, row/column meaning, units and the microscope used per directory."},
+    "C1": {"score": 2, "why": "Cis-versus-trans comparison is informative either way: it either finds same-chromosome coupling or quantifies positional confounding."},
+    "C2": {"score": 2, "why": "Searched: no model predicts gene output from a co-imaged enhancer trace; existing open tools (cpHMM, burstInfer) model single traces only."},
+    "C3": {"score": 2, "why": "Novel plus unique-application: 41,593 paired single-allele enhancer/gene traces I verified have never been used for predictive modelling."},
+    "C4": {"score": 2, "why": "202 CRISPR-engineered embryos imaged live across 26 genotypes represents years of bench work; no cheap substitute exists."},
+    "C5": {"score": 2, "why": "Obvious dummies exist and I computed one: per-embryo mean, plus a position-only baseline from the Nucleus_X/Y columns in the files."},
+    "D1": {"score": 1, "why": "Chronos-2 and MOMENT have open downloadable weights for time series, but neither is biology-pretrained; domain fit is generic."},
+    "D2": {"score": 2, "why": "Series are only 75-244 points; ~83k univariate traces embed once on laptop CPU and cache for reuse."},
+    "D3": {"score": 2, "why": "Chronos is Apache-2.0, MOMENT is MIT; the data itself is CC-BY-4.0 as shown on the Zenodo record."},
+    "E1": {"ok": true, "why": "Embryo, genotype and locus are all explicit in filenames I inspected; hold out whole embryos and whole genotypes."},
+    "E2": {"ok": true, "why": "Counted: 202 embryos, 26 genotypes, 2 loci, 2 microscopes - far more than the five groups needed."},
+    "E3": {"ok": true, "why": "Per-embryo mean output and a position-only model from the Nucleus_X/Y columns; I confirmed both columns exist."},
+    "E4": {"ok": true, "why": "Biological replicates per genotype range 3-13 embryos (11 for wild type), giving a between-embryo noise floor."},
+    "E5": {"ok": true, "why": "Paper's precocious-activation claim for eRNA-TSS deletion, plus a trivially learnable within-file target as a plumbing check."},
+    "E6": {"ok": true, "why": "Label shuffling within embryo, channel ablation, and the dataset's own trans genotypes where cis coupling is impossible."},
+    "E7": {"ok": true, "why": "Antp locus (4,018 nuclei, 20 embryos) never used in training, plus the LSM900-versus-LSM880 microscope split."},
+    "E8": {"ok": false, "why": "Paper paywalled with no supplement, so I could not see any published number to reproduce; my crude onset check did not recover the timing shift."},
+    "G1": {"score": 1, "why": "Imaging files carry no genomic coordinates or gene identifiers; Scr/Antp and element positions must be resolved from the paper."},
+    "G2": {"score": 2, "why": "Micro-C contact maps from this same paper (GSE343884) and the companion GSE171396, which I confirmed public with 16 samples."},
+    "G3": {"score": 1, "why": "Bulk Micro-C joins at genotype level only, so it is one contact map to thousands of nuclei, not per-nucleus."},
+    "G4": {"score": 2, "why": "Asks whether contact-frequency change from deleting a noncoding RNA start site explains the change in measured enhancer-gene coupling."},
+    "H1": {"score": 2, "why": "Verified in files: inactive nuclei are tracked alongside active ones, and 26 genotypes include deletion mutants and trans controls."},
+    "H2": {"score": 1, "why": "One lab, one species, one stage (nuclear cycle 14), two Hox loci, two microscopes - narrow but not single-condition."},
+    "H3": {"score": 2, "why": "Honest claim statable in one sentence, bounded by stage, lab and the two loci actually imaged."},
+    "H4": {"score": 1, "why": "README is explicit about genotypes, units and microscope, but the missing seconds-per-frame constant is undocumented and I found it only in the code."},
+    "I1": {"score": 2, "why": "Named: the Levine lab (Princeton), Batut lab (Columbia), Garcia lab (Berkeley, cpHMM authors), Lagha lab (Montpellier)."},
+    "I2": {"score": 2, "why": "A cis-specific coupling result directly constrains the paper's in-cis model and tells those labs which genotype to image next."},
+    "I3": {"score": 2, "why": "Metric is gain over a position-only baseline compared cis versus trans, which is exactly the decision being made."},
+    "I4": {"score": 1, "why": "Honest risk: a lagged cross-correlation with position regressed out might answer much of this without any model."},
+    "J1": {"score": 2, "why": "Real time-series modelling, grouped splits, transfer across loci and microscopes, frozen-backbone embeddings."},
+    "J2": {"score": 1, "why": "Drosophila live-imaging transcription is specialised; the paper's stated claims give some sanity checks but domain intuition is thin."},
+    "J3": {"score": 2, "why": "A tidy documented 41,593-nucleus paired-trace table is a shareable resource even if the model adds nothing."},
+    "J4": {"score": 1, "why": "No time budget agreed with the user; I can only propose a few weeks, so this is vague rather than stated."},
+    "J5": {"score": 0, "why": "No kill date written down anywhere yet; nothing in NOTES.md for this candidate."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "cpHMM (compound-state hidden Markov model, Lammers et al. 2020 PNAS, GarciaLab/cpHMM on GitHub)",
+        "open_weights": true,
+        "score_and_split": "Not a predictive model with a held-out score; it is an inference method that estimates promoter on/off switching rates and polymerase loading rates from single MS2 fluorescence traces, validated against simulated traces rather than a train/test split.",
+        "authors_named_unsolved": "Its computation scales exponentially with gene length, making it impractical for many eukaryotic genes; it also treats one trace at a time and has no way to use a simultaneously measured enhancer signal.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "burstInfer (Bioinformatics 2022, scalable reimplementation of cpHMM)",
+        "open_weights": true,
+        "score_and_split": "Reported as giving kinetic parameter estimates comparable to cpHMM at far lower computational cost; evaluated on agreement with cpHMM and on simulated data, not on a held-out predictive split.",
+        "authors_named_unsolved": "Scalability was the stated problem it solved; predicting one locus's output from another co-imaged locus is not attempted.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Batut & Levine 2026 (this paper's own analysis, via the authors' published Python pipeline on Zenodo 5730297)",
+        "open_weights": true,
+        "score_and_split": "Descriptive statistics only - percent-active-nuclei curves, activation-time distributions and intensity profiles. No predictive model and no train/test split. I opened the code and confirmed it computes activation states by an FDR threshold on background-subtracted signal.",
+        "authors_named_unsolved": "From the abstract, the proposed mechanism is that noncoding RNAs locally modulate regulatory element activity in cis; how much of a gene's output is actually predictable from its enhancer's noncoding transcription is not quantified.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Chronos-2 (open-weight time-series foundation model from Amazon, Apache-2.0) or MOMENT (open-weight time-series foundation model, MIT), with a frozen encoder and a small head; a plain 1D convolutional network is the honest alternative",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU only (16 GB RAM); roughly 83,000 univariate traces of 75-244 points embedded once and cached",
+    "licence": "Apache-2.0 (Chronos) / MIT (MOMENT), both permissive; the data is CC-BY-4.0 as stated on the Zenodo record I opened"
+  },
+  "integration": {
+    "partner_dataset": "Micro-C chromosome-contact maps: GSE343884 from this paper (Scr-MS2 and eRNA-TSS-deletion embryos; I could not confirm it is yet public) and GSE171396 from the companion 2022 paper (yw embryos, 16 samples, confirmed public, with loop-anchor and boundary BED files as supplementary downloads)",
+    "join_key": "Genotype label plus Scr/Antp locus coordinates in the dm6 genome build; note the coordinates are not in the imaging files and must be taken from the papers",
+    "bigger_question_one_sentence": "Does the change in long-range enhancer-promoter contact frequency caused by deleting a noncoding RNA's start site quantitatively explain the change in how well that enhancer's activity predicts gene output in living nuclei?"
+  },
+  "controls": {
+    "positive_control": "Two. First, the paper's own claim that deleting the enhancer RNA start site causes earlier gene activation: the model's activation-time output must shift earlier in ScrEE-PP7 x Scr-MS2 eRNA-TSS-deletion (2,917 nuclei, 13 embryos, counted) versus wild type (2,120 nuclei, 11 embryos, counted). Second, a plumbing check: predict each nucleus's own GFP_Background trace from its GFP_Signal trace, which must be near-perfect.",
+    "negative_control": "Run the identical model on the trans genotypes, where the enhancer and gene reporters sit on homologous chromosomes so same-chromosome coupling is physically impossible: eRNA-PP7 x Scr-MS2 (1,061 nuclei, 5 embryos) and eRNA-TSS-deletion x Scr-MS2 (2,122 nuclei, 9 embryos), both counted in the files. Plus shuffling gene labels within each embryo.",
+    "external_validation": "The Antp locus, a different Hox gene never seen in training: AntpEE2-PP7 x Antp-MS2 (1,780 nuclei, 9 embryos) and its noncoding-RNA-deletion version (2,238 nuclei, 11 embryos). Also the LSM900-versus-LSM880 microscope split, since the directory suffix records which instrument was used."
+  },
+  "honest_claim_h3": "Among nuclei of Drosophila embryos in nuclear cycle 14, imaged by one lab at two Hox loci, this says how much of a gene's transcriptional output is predictable from the simultaneously measured noncoding transcription of its own enhancer over and above the nucleus's position in the embryo, and whether that predictability requires the two to be on the same chromosome.",
+  "plain_idea": {
+    "one_liner": "Use an enhancer's live-measured noncoding transcription in a single cell to predict when and how strongly its target gene switches on.",
+    "train_on": "For each of 41,593 individual tracked nuclei (counted in the files) across 202 fly embryos: a time series of the enhancer's transcription brightness, the nucleus's position in the embryo, and which of 26 engineered genotypes the embryo is.",
+    "predict": "The target gene's own transcription over time in that same nucleus, and the moment it first switches on. The truth comes from fluorescence microscopy of a tagged gene filmed live in the embryo, with a second colour marking the enhancer.",
+    "why_worthwhile": "Labs studying how distant switches turn genes on would learn how much information an enhancer's own transcription actually carries about its target, and whether it needs to be on the same chromosome. Even a failure quantifies how much apparent enhancer-gene correlation is just shared position in the embryo."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "Existing tools (cpHMM, burstInfer) were demonstrated on single-colour MS2 traces from a handful of embryos at one locus. This is 41,593 nuclei across 202 embryos, 26 genotypes and 2 loci, with two colours recorded simultaneously in the same nucleus - which is the thing those tools cannot use at all."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "Biological replicates range from 3 to 13 embryos per genotype (11 for wild type), counted in the files, so between-embryo spread gives a per-genotype uncertainty. Neither cpHMM nor burstInfer reports calibrated per-nucleus prediction confidence, because neither makes predictions."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "cpHMM is a 2020 hidden Markov model and burstInfer a 2022 speedup of it; both are unsupervised inference on one trace at a time, validated on simulations rather than a held-out split. They are not competitors on this task so much as a floor to clear."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails two conditions. The existing tools cannot be run as a baseline on this task because they do not predict one channel from another, and the Micro-C partner data measures chromosome contacts in bulk rather than the same quantity in the same nuclei. Any gain has to be earned, not guaranteed."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Searched and found: the Garcia Lab cpHMM GitHub repository ships eve stripe 2 MS2 single-embryo trace datasets; Mendeley Data jv9fjpn9cg holds example live-imaging data from the STAR Protocols MS2/MCP paper; the companion Batut 2022 Science paper has its own imaging data. All are small, use different reporter constructs and loci, and share no standard identifier.",
+    "approx_items": null,
+    "join_key": "No standard identifier exists; the only link is gene or locus name (FlyBase) plus developmental stage, and the fluorescence scales are not comparable between labs.",
+    "why": "A handful of other Drosophila MS2 trace sets exist for sanity-checking that a trace model is not learning this lab's optics, but they are too small and too heterogeneous to serve as extra training data or a proper external test set."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The gene channel (green) and enhancer channel (red) are filmed from the same nucleus in the same movie, so colour bleed-through, focus drift and photobleaching could correlate the two with no biology behind it.",
+      "Nuclei within one embryo share a position along the body axis, and that position drives both channels through the same transcription-factor gradient, so splitting nuclei at random would leak both embryo identity and position.",
+      "The background files are computed from the same pixels as the signal files, so using the green background channel as an input when predicting the green signal is leakage by construction.",
+      "The imaging date is embedded in every filename and is not balanced across genotypes (some genotypes are only 2019-2020, others only 2022), so a model could learn date or batch instead of genotype.",
+      "Two microscopes were used and the instrument correlates with which genotypes were filmed, with different intensity scales and movie lengths (75-244 frames)."
+    ],
+    "split": "Hold out whole embryos: 202 of them, with the embryo identifier readable from the filename stem (for example ScrEEPP7_ScrMS2_20191010_E1), which I saw in every file. For the transfer tests, additionally hold out whole genotypes (the archive directory name) and the entire Antp locus, and split by microscope using the _LSM900 suffix. All three grouping columns are derivable from filenames I inspected; none needed to be constructed.",
+    "checks": [
+      "Shuffle the gene-output labels within each embryo and confirm performance collapses to the per-embryo mean.",
+      "Run the identical model on the trans genotypes, where same-chromosome coupling is impossible but bleed-through and shared optics remain - any score above the position-only baseline there is the artifact floor.",
+      "Ablate the enhancer channel and keep only Nucleus_X and Nucleus_Y, to measure how much is pure position.",
+      "Train on the green background channel alone to quantify the shared-optics ceiling directly."
+    ],
+    "verdict": "Manageable, because the dataset ships its own trans-chromosome and background controls, but the position confound is strong enough that a careless random split over nuclei would produce a convincing and meaningless number."
+  },
+  "success_criteria": {
+    "metric": "Gain in leave-one-embryo-out explained variance (R-squared) for a nucleus's total gene output when the enhancer's trace is added to a position-only baseline, compared between same-chromosome and trans genotypes. This matches the decision because the question a user asks is whether enhancer transcription carries information about gene output specifically in cis.",
+    "baselines": "Per-embryo mean output (R-squared of 0 by construction); a position-only model from the Nucleus_X and Nucleus_Y columns; and the naive uncorrected correlations I measured myself on the downloaded files - r = 0.26 in the wild-type same-chromosome genotype ScrEE-PP7 x Scr-MS2 (2,120 nuclei, 11 embryos) and r = 0.30 in the trans genotype eRNA-PP7 x Scr-MS2 (1,061 nuclei, 5 embryos). No published machine-learning number exists on this data.",
+    "success": "Enhancer-trace gain of at least 0.05 R-squared above the position-only baseline in same-chromosome genotypes, held out by embryo, AND at least twice the gain seen in the trans control genotypes.",
+    "noise_ceiling": null,
+    "kill": "Stop if, after two weeks, the gain over the position-only baseline is under 0.02 R-squared in cis, or is no larger in cis than in trans."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning; would take a clear positive result showing that an enhancer's noncoding transcription carries same-chromosome-specific predictive information about gene activation, confirmed on the held-out Antp locus and reversed by the noncoding-RNA deletions."
+    },
+    "realistic": {
+      "journal": "PLOS Computational Biology",
+      "why": "Publishes careful quantitative re-analyses of published imaging data; the likely result - a modest, properly position-controlled estimate of enhancer-to-gene predictability with honest embryo-held-out splits - fits squarely there."
+    },
+    "fallback": {
+      "journal": "GigaScience",
+      "why": "Publishes data notes and benchmarks built on reused data; even the negative outcome, that most of the enhancer-gene correlation is positional, is publishable alongside the tidied 41,593-nucleus paired-trace benchmark table and its baselines."
+    }
+  },
+  "pitch": {
+    "headline": "41,593 single nuclei where an enhancer and its target gene were filmed simultaneously in living embryos, with 26 genotypes including built-in negative controls.",
+    "what_makes_the_data_unusual": "Verified by opening every file: two transcription signals recorded in the same nucleus over time, zero missing values, zero duplicate identifiers, all six channels present for all 202 embryos, 120 MB total, CC-BY-4.0.",
+    "the_win": "Show the enhancer trace adds at least 0.05 explained variance over a position-only baseline in same-chromosome genotypes, and at least twice as much as in the trans controls, held out by embryo.",
+    "even_if_it_fails": "You learn how much of the apparent enhancer-gene correlation is simply shared position in the embryo - a number nobody has reported, and one that constrains how these live-imaging experiments should be read.",
+    "who_wants_it": "The Levine lab (Princeton), Batut lab (Columbia), Garcia lab (Berkeley) and Lagha lab (Montpellier); it would tell them which genotype is worth the months of imaging next."
+  },
+  "ml_idea": "From each tracked nucleus's enhancer transcription time series (PP7/red channel) plus its position in the embryo, predict that same nucleus's gene transcription over time and its first-activation frame (MS2/green channel). Train with whole embryos held out, then ask three transfer questions that cannot produce a useless answer: does the enhancer trace help beyond position only in same-chromosome genotypes but not in the trans controls; does the gain shrink when the enhancer's noncoding RNA start site is deleted; and does a model trained on the Scr locus transfer to the held-out Antp locus. A frozen open-weight time-series encoder (Chronos-2 or MOMENT) supplies trace embeddings cached once on CPU, with a small head on top, benchmarked against a plain 1D convolutional network and gradient boosting on summary features.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.4,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 2,
+    "cv_run_minutes": 15,
+    "compute_note": "Measured rather than guessed for the data side: I downloaded all 120 MB and parsed all 202 embryos x 6 channels in a single call, so the full parse is a couple of minutes. 41,593 nuclei x ~170 timepoints x 6 channels is ~170 MB as float32, hence the 0.4 GB working set and 2 GB peak. The embedding and cross-validation times are estimates, not timed: ~83,000 short univariate traces through a small frozen encoder on Apple Silicon CPU, and grouped 10-fold over 202 embryos for a small head.",
+    "cheapest_killing_check": "In the wild-type same-chromosome genotype, compute the leave-one-embryo-out gain in explained variance for total gene output when the enhancer trace is added to a Nucleus_X/Y-only baseline, then do the identical thing in the trans genotypes. If the cis gain is not clearly larger, there is no same-chromosome signal to model. I partly ran the uncorrected version of this and it was already a warning: pooled correlation was 0.26 in cis-linked wild type versus 0.30 in trans."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "The data is as good as this checklist ever sees: verified downloadable under CC-BY-4.0, 41,593 tracked nuclei across 202 embryos and 26 genotypes, 120 MB, zero missing values, zero duplicate identifiers, every file type documented with units, and built-in negative controls (trans-chromosome genotypes) and an external validation locus (Antp). All eight Part A killers pass on the files, not the paper. But two of my own cheap checks came out wrong and must be settled before committing. First, the naive enhancer-gene correlation was no higher in the same-chromosome genotype (r = 0.26) than in the trans control (r = 0.30), which is the opposite of what a cis-specific mechanism predicts - most likely because both channels are driven by the nucleus's position in the embryo, a confound the Nucleus_X/Y columns let you remove but which I did not remove. Second, my crude onset detector found no precocious activation in the noncoding-RNA deletion, the paper's headline claim; this is probably because movies are not time-aligned and the seconds-per-frame constant lives in the authors' code as a user parameter rather than in the data. Spend two days on the position-controlled, embryo-held-out version of the cis-versus-trans comparison. If the cis gain exceeds the trans gain, this becomes a strong do_it with a clear novelty angle, since no model predicts gene output from a co-imaged enhancer trace. If it does not, the negative result is still worth writing up."
+}

@@ -592,8 +592,11 @@ function timeScale(pts, x0, x1) {
   if (!isFinite(lo)) { lo = DATA.generated - 3600e3; hi = DATA.generated; }
   const pad = Math.max(60e3, (hi - lo) * 0.03); lo -= pad; hi += pad;
   const x = (t) => x0 + (t - lo) / (hi - lo) * (x1 - x0);
-  const span = hi - lo, steps = [5, 10, 15, 30, 60, 120, 180, 360, 720, 1440].map((m) => m * 60e3);
-  const step = steps.find((s) => span / s <= 8) || 1440 * 60e3;
+  // Steps run to a fortnight: a run spanning two weeks was drawing a tick a day, and the
+  // "Oct 7 12:00 AM" labels overlapped each other.
+  const span = hi - lo, steps = [5, 10, 15, 30, 60, 120, 180, 360, 720, 1440, 2880, 4320, 10080, 20160]
+    .map((m) => m * 60e3);
+  const step = steps.find((s) => span / s <= 8) || 20160 * 60e3;
   const ticks = []; const off = new Date().getTimezoneOffset() * 60e3;
   for (let t = Math.ceil((lo - off) / step) * step + off; t <= hi; t += step) ticks.push(t);
   return { x, lo, hi, ticks, step };
@@ -603,7 +606,10 @@ function drawTimeAxis(svg, sc, y, top) {
   for (const t of sc.ticks) {
     const xx = Math.round(sc.x(t)) + 0.5;
     svg.append(sv("line", { class: "gridline", x1: xx, x2: xx, y1: top, y2: y }));
-    const day = fmtDay(t), label = day !== lastDay ? `${day} ${fmtTime(t)}` : fmtTime(t); lastDay = day;
+    // Once the ticks are a day or more apart, the time of day is noise.
+    const day = fmtDay(t);
+    const label = sc.step >= 86400e3 ? day : day !== lastDay ? `${day} ${fmtTime(t)}` : fmtTime(t);
+    lastDay = day;
     const tx = sv("text", { class: "tick", x: xx, y: y + 16, "text-anchor": "middle" }); tx.textContent = label; svg.append(tx);
   }
 }

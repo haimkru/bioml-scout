@@ -1,0 +1,134 @@
+{
+  "paper_id": "science2026-aeh9302",
+  "title": "Parallel independent voltage computing along dendrites of CA3 pyramidal neurons.",
+  "doi": "10.1126/science.aeh9302",
+  "journal": "Science",
+  "data_url": "https://datadryad.org/dataset/doi:10.5061/dryad.hmgqnkb07",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Dryad deposit doi:10.5061/dryad.hmgqnkb07 (CC0, v3, 2026-07-13, 6 files, 104.5 GB total). Scripted downloads are blocked (403 / proof-of-work bot wall); I solved the challenge and pulled README.md (3.2 kB) and preprocessing.zip (4.75 MB), then used HTTP range requests to extract 9 of the 11 real members of analysis.zip (144.8 MB) without downloading it whole. Loaded all 6 small pandas pickles (needed pandas 3.0; local pandas 2.3.3 cannot unpickle them). Main table df_fig1H_L.pkl = 2,748 rows x 28 columns, 134 dendritic regions of interest (ROIs), 19 cells, 11 mice, but only 398 unique (cell, lap) pairs and the somatic label dur_soma is constant inside every one of those 398 groups, so there are 398 distinct label values, not 2,748. I re-ran the authors' own RandomForestRegressor from the notebook: their random 90/10 split gives test R-squared (fraction of variance explained) 0.40 while train is 0.91; 5-fold cross-validation holding out whole cells gives R-squared -0.14 (worse than predicting the mean) and holding out whole dendrites gives 0.19. Other tables: df_fig4_rew 248 rows, df_fig4_glb and df_w_glb 142 rows, df_fig4D 78 rows, df_fig4H 4 rows.",
+    "what_came_from_paper_text_only": "The abstract only (Science paper is paywalled, no PubMed Central copy, Europe PMC reports no full text and no supplementary files). I could not verify df_fig2H_I.pkl (155 MB uncompressed / 143 MB compressed, over the 50 MB download cap): I parsed its first 8.6 MB and confirmed it is a pickle holding a 'driver' DataFrame indexed by ROI names with repeated 979-value float64 blocks, but its row count is unverified. Two files the notebooks load are absent from the deposit (rf_sub2sub.joblib, the trained forest, and summary_model_fig2.pkl, the Keras network summary). No data dictionary exists for any column; the README documents only the raw-imaging preprocessing pipeline."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Public Dryad deposit under CC0, no login and no access application; but every scripted request is refused (403) or met with a proof-of-work bot wall, so a browser or a solved challenge is needed. I downloaded and opened the files."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The somatic-activity label is literally a column (dur_soma and its z-scored twin dur_soma_z) in df_fig1H_L.pkl, alongside the six features the authors used. Verified in the file."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "All six inputs sit in the same table: dendritic activity in five 24-cm track bins from -180 to -60 cm before the place field, plus path distance from the soma. No lookups needed. Verified in the file."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Weak pass: units are implied, never stated. Path distance is micrometres (only known from a notebook plot axis), activity is a normalised area-under-the-curve in arbitrary units, and the modelled label is its z-score. Internally consistent, but no documentation."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 2748,
+      "note": "FAILS. 2,748 rows are (dendrite x lap) pairs, but the somatic label is identical for all sibling dendrites of a cell on a lap: 398 unique (cell, lap) label values, from 19 cells in 11 mice. So the real labelled sample is 398 continuous observations, far under the ~1,500 needed for regression, and the next-largest tables are 248, 142, 78 and 4 rows. Counted directly in the file."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.16 GB processed tables; 104 GB if you want the raw imaging",
+      "note": "The processed tables are trivial on a laptop. The raw route is not: three session archives of 53.4, 31.5 and 19.4 GB, and the README says the denoising step needs a CUDA-capable GPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Nothing to contradict: no full text available to compare against, and the Dryad file list, file sizes and loaded row counts all agreed with each other."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label is a real physical measurement (somatic membrane-voltage events from voltage imaging), not another model's output. Caveat: features and label come from the same imaging and event-detection pipeline, and the label repeats across sibling dendrites, which is what makes a random split leak."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The paper's own RandomForestRegressor (scikit-learn, 2000 trees, depth 30) predicting z-scored somatic activity from five preceding dendritic track bins plus distance from soma, in Noguchi_etal_2026_Fig_1_H_L.ipynb",
+        "open_weights": false,
+        "score_and_split": "Random 90/10 split of rows, random_state=42. Re-running it myself: test R-squared 0.40 vs train 0.91; holding out whole cells drops it to -0.14, holding out whole dendrites to 0.19. The saved model file rf_sub2sub.joblib is referenced by the notebook but is not in the deposit.",
+        "authors_named_unsolved": "Not retrievable: the Science full text is paywalled, so I could not read their discussion.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "The paper's own Keras/TensorFlow dense network for Figure 2 (dendritic event 'driver' / 'follower' / 'sync' analysis), referenced in Noguchi_etal_2026_Fig_2.ipynb",
+        "open_weights": false,
+        "score_and_split": "Unknown. The notebook only plots mean squared error from summary_model_fig2.pkl, which is not included in the deposit, and the architecture is not shown beyond Sequential/Dense imports.",
+        "authors_named_unsolved": "Not retrievable (paywalled full text).",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU laptop would suffice for the tables, but there is no pretrained backbone for six hand-engineered dendritic activity features; voltage-trace foundation models are not an option on 19 cells.",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "No clean partner. The only joinable keys are internal mouse/cell/ROI strings (stan95_1_basal1); there is no gene, protein, compound or genomic coordinate to join on.",
+    "join_key": "none",
+    "bigger_question_one_sentence": "Cannot be written: nothing external joins to these internal ROI identifiers, so any combination would require re-processing raw imaging from another lab."
+  },
+  "controls": {
+    "positive_control": "Available in principle: distance from soma must come out as the strongest single predictor of dendrite-soma coupling, a textbook result that the data reproduces (correlation of path distance with the somatic label -0.35).",
+    "negative_control": "Label shuffling is easy and in fact already instructive: the gap between the random-split R-squared of 0.40 and the leave-cells-out R-squared of -0.14 is itself a leakage demonstration.",
+    "external_validation": "None in the deposit. Related 2026 datasets exist (a Neuron paper on movement-stabilised CA1 dendritic recordings, a Science Advances paper on CA3 dendritic calcium spikes) but neither is a joinable table."
+  },
+  "honest_claim_h3": "At best: 'in 19 CA3 pyramidal cells from 11 mice recorded by one lab, the recent activity of a dendrite and its distance from the soma explain about a fifth of the lap-to-lap variance in that cell's somatic output when unseen dendrites are held out, and none of it when unseen cells are held out.'",
+  "plain_idea": {
+    "one_liner": "Use the recent activity of individual dendrites to predict how strongly their parent neuron's cell body fires on each lap.",
+    "train_on": "One table of 2,748 rows, each a dendritic branch on one lap of a virtual-reality corridor, with its activity in five 24-cm bins of track before the place field and its path distance from the cell body; 134 branches, 19 cells, 11 mice.",
+    "predict": "The parent cell body's voltage-event activity during the place field on that lap, measured by fast voltage imaging of a genetically encoded voltage sensor in the same recording.",
+    "why_worthwhile": "Dendritic neuroscientists argue about whether branch activity predicts somatic output; a grouped-split re-analysis would show how much of the published prediction survives when whole cells are held out. Here it is answered in an afternoon and rests on only 398 independent measurements."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This is the only data for the task, and it is tiny: 398 independent somatic observations from 19 cells. The paper's own forest was trained on exactly these rows, so we would have no data advantage over it at all."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Laps repeat within a cell (9 to 45 per cell), so lap-to-lap spread gives a rough noise estimate, but with 19 cells any per-cell confidence estimate would itself be unstable, and no replicate recordings of the same cell exist."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "A 2026 random forest evaluated on a random 90/10 split that puts the same somatic label value in train and test; I reproduced its 0.40 R-squared and showed it falls to -0.14 under leave-cells-out. Beating it honestly is easy; the problem is that nothing honest works well."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "No accessible new data joins to this deposit: other dendritic recordings come from different labs, sensors and brain regions, and there is no shared identifier, so the 'same quantity, same assay, same split' condition fails outright."
+    }
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "None. Somatic voltage-event activity per lap for an identified CA3 dendrite exists only in this recording; no public resource (searched for dendritic voltage imaging datasets and found only other labs' separate papers, not joinable tables) holds this label for other items.",
+    "approx_items": null,
+    "join_key": "none (internal mouse_cell_ROI strings only)",
+    "why": "With no external labelled set there is neither extra training data nor any way to test whether a model generalises beyond these 19 cells."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Re-evaluate the paper's own random forest (dendritic activity in five preceding track bins + path distance from soma -> z-scored somatic activity) under leave-one-cell-out and leave-one-dendrite-out cross-validation instead of the published random split. I already ran it: 0.40 becomes -0.14 (cells held out) and 0.19 (dendrites held out). The finding is real but it is a one-afternoon comment, not a project, and the 398 independent label values cannot support anything larger.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.16,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": 2,
+    "compute_note": "Measured, not guessed: I downloaded the tables, loaded them and ran both the authors' random-split fit and two grouped 5-fold cross-validations with 300-tree forests in under two minutes on this laptop; the 2 hours covers the bot-wall workaround and the pandas 3.0 environment needed to unpickle the files.",
+    "cheapest_killing_check": "Count unique values of the somatic label per (cell, lap): 398 unique values across 2,748 rows, 19 cells. That one count kills it, and it takes thirty seconds."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5. The 2,748-row table looks adequate but the somatic label is duplicated across every sibling dendrite of a cell on a lap, leaving 398 independent continuous observations from 19 cells in 11 mice; every other table is 4 to 248 rows, and the only large files are 104 GB of raw imaging that needs a GPU to preprocess. The genuinely valuable thing I found is that the paper's published random forest scores R-squared 0.40 on its random split, 0.19 when whole dendrites are held out and -0.14 (worse than the mean) when whole cells are held out, and that its saved model and the Figure 2 network summary are both missing from the deposit."
+}

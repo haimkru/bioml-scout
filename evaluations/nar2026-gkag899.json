@@ -1,0 +1,95 @@
+{
+  "paper_id": "nar2026-gkag899",
+  "title": "CRYSPER and CUREIPES: two new molecular tools enabling analysis of RNA splicing and C-to-U RNA editing-inducible protein expression at single cell resolution.",
+  "doi": "10.1093/nar/gkag899",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://europepmc.org/article/PMC/PMC13601067#supplementary-material (gkag899_supplemental_files.zip, 25.2 MB)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked the 25.2 MB supplement; it holds exactly three files. I opened both Excel workbooks with openpyxl and counted every numeric cell: the summary workbook has 4 sheets (HEK293T 733 rows, neurons 212, glia 134, CUREIPES 328) with 13,807 per-cell fluorescence-ratio values spread over 71 data columns; the Intensity_CUREIPES workbook has 4 raw-intensity sheets (71-342 rows) plus a 15-row summary. I also unpacked the 27.8 MB Word supplement: 0 tables, 14 images, 4,388 characters of figure legends.",
+    "what_came_from_paper_text_only": "The maximum-entropy splice-site scores in Table 1 (7 values, read in the text, not in any data file), the construct cloning details, and the claim of N=3 biological replicates per condition. The data availability statement says only 'All experimental data are available as supplementary Excel files' — I confirmed no GEO, SRA, BioProject, Zenodo, Dryad or GitHub deposit exists for this paper."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Supplement downloads freely with no login; I unpacked it and opened both workbooks. This is the only Part A item that passes cleanly."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The measured outcome (mCherry/EGFP fluorescence ratio, i.e. relative splicing) is a real numeric column. Caveat: the experimental condition lives in merged three-row headers, not in a column, so the table needs reshaping from wide to tidy first."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL. There is no feature column of any kind. The only predictor is a two-letter splice-donor code (GC/GT/GG/GA/AC) in a merged header plus an intron name; the actual sequences are not in any file. The one synthetic intron sequence exists only as coloured text inside a Word figure legend, so every input sequence would have to be reconstructed by hand from the methods and Figure S1."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Intensity_CUREIPES labels its columns ('Mean EGFP', 'EGFP-BG', 'Ratio'), so the dimensionless background-subtracted ratio is traceable. The summary workbook gives bare ratios with no units row, but they are the same dimensionless quantity."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "note": "FAIL, and decisively. 13,807 values look like plenty, but they are replicate cells measured under only 71 condition columns (5 donor dinucleotides x 3 intron contexts x 2 reporter versions x 3 cell types), roughly 23 distinct sequence contexts per cell type. Cells within a condition share identical features, so the effective labelled n is 71 — far under the ~1,500 (or ~400 classification) bar."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.3 MB (two Excel workbooks, 215 KB + 99 KB)",
+      "note": "Trivially fits in memory; I loaded both workbooks in under a second. Size was never the problem here."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot be checked either way. The paper states N=3 biological replicates but never reports how many cells were measured per condition, and the workbooks carry no replicate, date or batch column, so the 73-730 cells per column cannot be reconciled against any number in the text."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The label is a genuine physical measurement — ratiometric fluorescence microscopy of a two-colour reporter — and Intensity_CUREIPES shows the arithmetic (background-subtracted mCherry divided by background-subtracted EGFP). Not a model output, and not computed from any feature."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "",
+    "freeze_and_head_viable": null,
+    "hardware": "",
+    "licence": ""
+  },
+  "integration": {
+    "partner_dataset": "",
+    "join_key": "",
+    "bigger_question_one_sentence": ""
+  },
+  "controls": {
+    "positive_control": "",
+    "negative_control": "",
+    "external_validation": ""
+  },
+  "honest_claim_h3": "No model is possible: with 71 experimental conditions and no sequence features in the files, any claim would rest on fewer design points than a model has parameters.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around a splice site to predict how strongly a cell splices it.",
+    "train_on": "The project I considered would show the model the sequence around each splice donor site and the cell type it was measured in. In practice the files contain only 71 such conditions (about 23 distinct sequence contexts per cell type), not the thousands needed.",
+    "predict": "A number between 0 and 1 for how much splicing happens, taken from the paper's real measurement: the red-to-green fluorescence ratio of a two-colour reporter imaged in single cells, where red protein is made only if the intron is spliced.",
+    "why_worthwhile": "Splicing predictors are trained almost entirely on sequencing of pooled cells, so a single-cell, cell-type-resolved readout would be a genuinely different kind of test for them — but 71 conditions is far too few to train or even meaningfully benchmark one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only coherent idea is sequence-to-splicing-efficiency regression: feed the splice-donor context to a DNA language model and predict the measured fluorescence ratio, with cell type as a covariate. It dies on arithmetic — 71 conditions and 23 sequence contexts. A fallback of using the 13,807 single-cell values to model cell-to-cell variability in cryptic splice-site use is also not viable, because the files carry no per-cell covariates at all (no cell identity, no marker intensity, no batch or replicate label), so there is nothing to predict that heterogeneity from.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.2,
+    "embedding_hours": 0.01,
+    "cv_run_minutes": 1,
+    "compute_note": "Timed: both workbooks load in about a second and total 0.3 MB. The 8 hours is for reshaping merged headers into a tidy table and hand-transcribing construct sequences out of the Word figure legend — effort that buys only 71 rows.",
+    "cheapest_killing_check": "Count the distinct experimental conditions rather than the cells. Reading the three header rows of the summary workbook takes two minutes and returns 71 data columns, which kills the project before anything is downloaded twice."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A3 and A5 in the files. This is a plasmid-engineering paper: its supplement is 13,807 single-cell fluorescence ratios collapsing to just 71 experimental conditions (about 23 sequence contexts), with no sequence, cell-type or batch columns anywhere — the sole synthetic intron sequence appears only as coloured text in a Word figure legend. The measurement itself is clean and honest, and the label is a real physical readout (A8 passes), but a factorial reporter assay with 5 donor dinucleotides across 3 intron contexts and 3 cell types is a figure, not a training set. No sequencing data was deposited, so there is nothing larger behind it."
+}

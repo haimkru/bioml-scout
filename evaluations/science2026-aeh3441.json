@@ -1,0 +1,135 @@
+{
+  "paper_id": "science2026-aeh3441",
+  "title": "Escape of the BC200 gene to a human poxvirus reveals its persistent transposition in primates.",
+  "doi": "10.1126/science.aeh3441",
+  "journal": "Science",
+  "data_url": null,
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "I opened no data files because none are reachable. Checked: Europe PMC record (isOpenAccess=N, hasSuppl=N, no PMCID, no data links); Unpaywall and OpenAlex both report oa_status 'closed' with zero open-access copies anywhere; Crossref gives only a subscription PDF link and no relations; NCBI elink from PubMed ID 42784687 returns no GEO, SRA, BioProject, BioSample or nucleotide records; Zenodo, Dryad and GitHub searches for 'BC200 retrotransposition' and 'molluscum contagiosum BC200' return nothing from this study; three guessed Science supplementary URLs (the article page, the supplementary PDF, a Data S1-S6 zip) all return HTTP 403.",
+    "what_came_from_paper_text_only": "Everything about the data content comes from the abstract and press coverage only: 'two insertions' of BC200 in molluscum contagiosum virus, 'hundreds of lineage-specific insertions' across anthropoid primates, and unspecified human insertion polymorphisms. I never saw a table, a row count, a column name, a coordinate or a genome build."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL. The article and its supplementary materials sit behind the Science paywall (HTTP 403 on every attempt) and the paper is 'closed' in Unpaywall and OpenAlex with no repository copy. No Zenodo, Dryad, GitHub, GEO, SRA or BioProject deposit exists for this study. The insertion coordinate tables exist only as supplementary files I cannot obtain without a subscription."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL (and unverifiable). The natural task is 'does a BC200 copy insert at this genomic position?', which has no label column: you would have to take the paper's positive insertion coordinates and manufacture a negative set of non-inserted positions yourself. That is constructing the target, not reading it."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "Unverifiable. If the supplement lists only genome coordinates (the usual format), the input DNA sequence would have to be pulled from reference genomes for several primate species, each needing the right genome build - an identifier-resolution step, not sequences in hand."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Unverifiable; no file opened. Coordinate data has no units in the usual sense, but genome build and strand conventions are the equivalent and I could not check them."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "Likely FAIL. The abstract's own count is 'hundreds of lineage-specific insertions' spread across many anthropoid species, i.e. roughly a few hundred positive loci, against the checklist's floor of ~400 for classification. The virus part of the story is literally n=2 insertions. No verified row count exists."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "unknown, but a coordinate table plus flanking sequence windows would be well under 1 GB",
+      "note": "Size is not the problem here; a few hundred loci with sequence windows is trivially laptop-sized. Scored pass on reasoning, not on files."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot be checked at all - there is no download to compare against the paper, which is exactly the situation the checklist says is fatal."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Concerning and unverifiable. Ancient insertion loci are called computationally from genome alignments and homology searches, so the 'label' is a bioinformatics inference, not a measurement; and the immediate flanks of an insertion carry target-site duplications and poly-A tails created by the insertion itself, so sequence features taken too close to the site are partly computed from the label."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "MEIsensor (deep-learning method for mobile element insertion discovery, 2026)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - I saw only the title and year in a Europe PMC search result, not the paper or its numbers.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "eXAlu (deep learning model predicting Alu exonization, 2024; Alu is the short repeat family BC200 derives from)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - title only from a Europe PMC search result. Different task (exonization, not insertion site) but the closest published sequence model on this element family.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "TIPseqHunter (machine-learning pipeline calling LINE-1 insertion sites from transposon insertion profiling sequencing, PNAS 2017)",
+        "open_weights": null,
+        "score_and_split": "Reported accuracy 0.90-0.98 on RepeatMasker-trained models, per a search-result summary; I did not read the paper itself, and this is insertion *detection* from reads, not insertion-site prediction from sequence.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or HyenaDNA (open-weight DNA language models) would be the natural fit for flanking-sequence features",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop would suffice for a few hundred to a few thousand short sequence windows",
+    "licence": "Nucleotide Transformer and HyenaDNA weights are openly downloadable; not checked in detail because the project dies at Part A."
+  },
+  "integration": {
+    "partner_dataset": "euL1db / 1000 Genomes and gnomAD mobile-element insertion calls, which hold tens of thousands of human retrotransposon insertion polymorphisms",
+    "join_key": "genomic coordinates plus genome build (GRCh38)",
+    "bigger_question_one_sentence": "Do the sequence features that predict where common human retrotransposon insertions land also predict where a functional, co-opted gene like BC200 re-inserts, or does an actively transcribed gene follow different rules?"
+  },
+  "controls": {
+    "positive_control": "The model should recover the textbook LINE-1 endonuclease cleavage motif (a TTAAAA-like, A/T-rich nicking site) from flanking sequence alone; if it cannot, the pipeline is broken.",
+    "negative_control": "Shuffle the insertion/non-insertion labels and confirm performance collapses to the class-prior baseline; also mask the 10-20 bases immediately flanking each site to test whether target-site duplications and poly-A tails are doing all the work.",
+    "external_validation": "Human polymorphic insertion catalogues (euL1db, 1000 Genomes mobile-element insertion calls) are an independent source, but they would have to supply the data rather than validate it, since this paper's own table is unobtainable."
+  },
+  "honest_claim_h3": "Not writable from obtainable data. The most a model could honestly claim, had the supplement been accessible, is: 'among anthropoid genome positions that a homology-based pipeline was able to call, this model ranks which A/T-rich sites a BC200 copy inserted into' - which is a statement about the calling pipeline's reach as much as about insertion biology.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around a genomic position to predict whether a BC200 copy inserted there during primate evolution.",
+    "train_on": "The sequence window around each insertion position reported in the paper, matched against a manufactured set of non-inserted control positions. Count unknown; the abstract says 'hundreds' of lineage-specific insertions and literally two insertions in the virus, and I verified no number.",
+    "predict": "A yes/no (or a probability) that a BC200 copy landed at that position. The true answer comes from the authors' comparative-genomics calls: they searched primate reference genomes for BC200-like sequences and checked which species carry each copy - a computational inference from alignments, not a lab measurement.",
+    "why_worthwhile": "Groups studying mobile DNA (the Feschotte lab at Cornell, the Pritham lab) would want to know whether an actively transcribed, functional gene re-inserts by the same sequence rules as a dead repeat; even a failed model would show that insertion position is essentially unpredictable from local sequence."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper contributes a few hundred insertion loci at most, against tens of thousands of human mobile-element insertion calls already public in euL1db, 1000 Genomes and gnomAD. It is a small, specific addition, not a bigger training set."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements of an insertion position - a locus either carries a copy or does not, as called once by one pipeline - so there is nothing in this data from which to estimate per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The closest named models (TIPseqHunter, 2017, a five-feature classifier for calling insertions from sequencing reads; eXAlu, 2024, for Alu exonization) solve different tasks, so there is no incumbent to beat on this exact question - but equally no published number to measure against."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: there is no existing model for this task that could be run as our baseline, and the paper's own data cannot be downloaded, so no comparison of any kind is constructible."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict primate-genome positions where the BC200 noncoding RNA gene re-inserted, from flanking DNA sequence embedded with an open DNA language model, using the paper's lineage-specific insertion loci as positives and matched A/T-rich non-inserted sites as negatives. Dead on arrival: the loci live only in a paywalled Science supplement.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "No estimates made, because no data file was obtainable; compute was never the constraint here - a few hundred short sequence windows would embed in minutes on a CPU.",
+    "cheapest_killing_check": "Try to download the supplementary tables. It took four HTTP requests and three minutes to establish that they are paywalled with no repository mirror, which kills the project before any counting is needed."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A1 fails hard: the paper is closed access (Unpaywall and OpenAlex both 'closed', no PMCID, Science.org returns 403) and there is no data deposit in Zenodo, Dryad, GitHub, GEO, SRA or BioProject, so the insertion coordinate tables cannot be obtained at all. A5 would almost certainly fail too - the abstract's own figure is 'hundreds of lineage-specific insertions' and n=2 for the headline viral insertions, against a floor of ~400 for classification - and A2 fails because the negative class would have to be manufactured. A beautiful piece of evolutionary biology, but there is nothing here to model."
+}

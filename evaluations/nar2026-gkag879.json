@@ -1,0 +1,60 @@
+{
+  "paper_id": "nar2026-gkag879",
+  "title": "Enhancing prediction accuracy for enzyme activity engineering through sequence co-evolution and epistatic relationship modeling.",
+  "doi": "10.1093/nar/gkag879",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/khsub87/epiSCANEER (code + 2 alignment files); measured variant tables only inside the open-access supplementary Word file gkag879_supplemental_file.docx; Zenodo mirror 10.5281/zenodo.22092800",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the Europe PMC supplement and parsed every table in the 2.1 MB Word file: 10 data tables holding 243 measured variants in total (20 KGSADH, 20 LdhA ranked-group variants; 23 single-site KGSADH; 21 KGSADH and 20 LdhA double mutants; 39+39 site-saturation variants; 21 random combinations; 20 triple mutants; 20 TetA doubles), each with columns Variation, SCI score, 'Titer fold (mean +/- error)' and p-value, with 36 rows carrying '-' for dead variants. Also listed the whole GitHub repository tree: only Python/Java code plus two alignment files (KGSADH.aln 340 KB, LdhA.aln 171 KB) and three wild-type protein sequences in Supplementary Table S2.",
+    "what_came_from_paper_text_only": "The 76% versus 30%/38% success rates, the ~60% success rate for triple mutants, the assay details (shake-flask product titre in engineered E. coli / Vibrio plus purified-enzyme assays), and the web-server availability. The Zenodo deposit itself would not load from here (repeated TLS/SSL failures), so its contents are assumed to mirror the GitHub repository as the paper states."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement and GitHub code both open, no login; I downloaded and parsed both. Zenodo mirror unreachable from here (TLS error), but not needed."},
+    "a2_label_is_a_column": {"pass": true, "note": "Label is already a column: 'Titer fold (mean +/- error)', a measured fold-change versus wild-type, in every data table I opened."},
+    "a3_inputs_present": {"pass": true, "note": "Full wild-type sequences for all three proteins are in Supplementary Table S2, and variants are plain mutation strings (e.g. M92L/S475A), so sequences are constructible without lookups."},
+    "a4_units_stated": {"pass": true, "note": "Units are stated as fold-change relative to wild-type (product titre, or specific growth rate for TetA), with error and p-value given."},
+    "a5_enough_rows": {"pass": false, "n_rows": 243, "note": "FAILS. I counted 243 measured variants in total across only 3 proteins, with 36 of them recorded as '-' (dead). The checklist needs ~1,500 labelled rows, or ~400 for classification; 243 is under both, and the effective unit is arguably the protein (n=3)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~2.6 MB supplement + 0.5 MB alignments", "note": "Trivially fits in memory; verified file sizes."},
+    "a7_counts_match_paper": {"pass": true, "note": "Minor mismatch only: text and figure captions say '21 KGSADH variants' and '20 LdhA variants' while Tables S3/S4 list 20 ranked groups each, so wild-type appears to be counted as one point."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are wet-lab measurements (product titre or growth rate), not model outputs. The SCI column IS a model score, so it may be used as a feature but must never be the target."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "epiSCANEER (this paper, 2026) and its predecessor SCANEER (Metabolic Engineering 2022)", "open_weights": true, "score_and_split": "76% of predicted double mutants raised product titre above wild-type, versus 30% for single-site and 38% for random combinations; evaluated prospectively on 2 enzymes (KGSADH, LdhA) plus a membrane transporter (TetA), where it dropped to 2 of 20.", "authors_named_unsolved": "Higher-order (triple) mutations work less well (~60%) and the method fails on membrane proteins such as TetA; results are also highly sensitive to the quality and composition of the input alignment.", "runnable_as_baseline": true},
+      {"name": "ECNet, a deep learning model that adds local evolutionary context from homologous sequences to capture residue-residue epistasis", "open_weights": true, "score_and_split": "Reported to generalise from single mutants to higher-order mutants on published deep mutational scanning sets; I read the abstract only, not the numbers.", "authors_named_unsolved": "Extrapolation from low-order to high-order mutants remains the stated hard case.", "runnable_as_baseline": true},
+      {"name": "MULTI-evolve, a protein language model plus epistasis-aware framework for designing multi-mutants", "open_weights": null, "score_and_split": "Benchmarked on published deep mutational scanning datasets; a 2026 preprint argues its multi-mutant predictions are near-perfectly correlated with a simple additive baseline, i.e. no evidence it learns epistasis.", "authors_named_unsolved": "Whether any model genuinely learns epistasis beyond additivity is contested.", "runnable_as_baseline": null},
+      {"name": "EnzyACT, a deep learning predictor of the effect of single and multiple mutations on enzyme activity", "open_weights": null, "score_and_split": "Not retrieved beyond the abstract; no split or score verified.", "authors_named_unsolved": "Not checked.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "ESM-2, a protein language model with small CPU-runnable checkpoints", "freeze_and_head_viable": true, "hardware": "Laptop CPU would suffice for 243 short sequences", "licence": "MIT (permissive)"},
+  "integration": {"partner_dataset": "ProteinGym / MaveDB deep mutational scanning landscapes, joinable on UniProt accession plus residue position (KGSADH is UniProtKB Q1JUP4, TetA is Q79SH9, LdhA has only a UniParc ID)", "join_key": "UniProt accession + position", "bigger_question_one_sentence": "Does an alignment-derived epistasis score such as SCI add anything over a protein language model when predicting which mutation pairs improve activity? — but with 243 variants on 3 proteins there is nowhere near enough data here to answer it."},
+  "controls": {"positive_control": "The reported M92L/S475A (KGSADH) and D56S/S58C (LdhA) pairs, and the site-saturation scans around them, are known activity-enhancing cases a model must recover.", "negative_control": "Shuffle the titre labels and confirm collapse; ablate the SCI feature.", "external_validation": "ProteinGym deep mutational scanning sets exist as an external source, but they measure fitness/binding, not the same whole-cell product titre, so they are not directly comparable."},
+  "honest_claim_h3": "Any model fitted here could only claim to rank mutation pairs within two bacterial metabolic enzymes that one laboratory already expected to be promising, measured as whole-cell product titre in a specific engineered strain — not enzyme activity in general.",
+  "plain_idea": {
+    "one_liner": "Use protein sequence and co-evolution signals to predict which pairs of amino acid changes raise an enzyme's activity.",
+    "train_on": "For each variant: the wild-type protein sequence, the two substituted positions and residues, and the authors' co-evolution score (SCI). I verified 243 such variants in total across three proteins.",
+    "predict": "Fold-change in product titre relative to wild-type (or growth rate for the transporter TetA), measured by the authors in shake-flask cultures of engineered bacteria, with replicates and p-values.",
+    "why_worthwhile": "Enzyme engineers currently build and screen large mutant libraries; a reliable pair-ranking model would cut that cost. Even a negative result would tell us whether alignment co-evolution adds anything to a protein language model."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "243 measured variants on 3 proteins, versus ProteinGym-scale deep mutational scanning sets with hundreds of thousands of variants per protein that ECNet and MULTI-evolve were benchmarked on."},
+    "confidence_score": {"answer": "partly", "why": "Every row has a mean, an error bar from biological replicates and a p-value, which would in principle support a noise estimate — but with 243 rows there is no way to calibrate per-prediction confidence."},
+    "models_beatable": {"answer": "partly", "why": "epiSCANEER itself is a simple alignment statistic with no learned parameters and no pretrained backbone, so a protein language model could plausibly beat it; but its 76% number comes from a prospective wet-lab test, which is a harder bar than any retrospective split."},
+    "guaranteed_improvement": {"answer": "no", "why": "The only new data that joins (ProteinGym, MaveDB) measures a different quantity (fitness or binding) in a different assay from whole-cell product titre, so the same-measurement condition fails outright."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: fit a frozen ESM-2 embedding plus a small regression head to predict titre fold-change for double mutants, using the authors' SCI score as an extra feature, and test whether co-evolution adds signal over the language model alone. Dead on sample size.",
+  "effort": {"hours_to_feature_table": 3, "working_set_gb": 0.003, "needs_gpu": false, "peak_ram_gb": 1,
+             "embedding_hours": 0.05, "cv_run_minutes": 1, "compute_note": "Estimated, not timed: 243 short sequences through a small ESM-2 checkpoint is minutes on a laptop CPU; the only real work is transcribing 10 Word tables into a CSV.",
+             "cheapest_killing_check": "Count the labelled variant rows in the supplementary Word file. I did it: 243, which kills the project in one step."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on sample size: I counted only 243 measured variants, across just three proteins, held in Word tables; no larger measurement set exists in the GitHub repository (code plus two alignment files only). Everything else about the data is clean — the label is a real measured fold-change in stated units with replicates — but 243 rows cannot support a model, and the obvious ML angle is already occupied by ECNet, MULTI-evolve and EnzyACT trained on deep mutational scanning data orders of magnitude larger."
+}

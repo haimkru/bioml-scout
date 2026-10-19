@@ -1,0 +1,203 @@
+{
+  "paper_id": "science2026-aeg6779",
+  "title": "The Virtual Biotech: A multi-agent AI framework for therapeutic discovery and development.",
+  "doi": "10.1126/science.aeg6779",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/22259124",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "The Zenodo deposit is a single 2.9 GB zip, so I read its central directory by ranged HTTP request (3,051 files listed) and pulled out only the tables I needed, decompressing them in memory. I opened and counted: clinical_trial_labels_reconciled.csv (56,707 rows x 25 columns, 0 duplicate NCT trial identifiers; 29,100 trials labelled POSITIVE/NEGATIVE on the primary endpoint, 7,492 UNKNOWN, 11,412 Phase I trials labelled for progression, 12,976 trials with serious adverse-event percentages across 10 organ systems, all values between 0 and 100 with none above 100); chembl_clinical_nct_data.parquet (488,361 rows linking trial identifier to ChEMBL drug, Ensembl gene target, EFO disease code and trial start date spanning 1965-2024); comprehensive_features_aggregated_v2_optimized.parquet (1,511 genes x 127 single-cell expression features); drug_molecule.parquet (18,119 molecules, 15,124 with a SMILES chemical-structure string and InChIKey); the 100-trial human-annotated validation set and three 500-trial comparison sets from rival agent systems; the top-level README and the MIT licence. I verified every join myself: all 29,100 labelled trials link to a drug/target/disease, 23,604 have a drug carrying a SMILES string, and a temporal split at 2014 leaves 16,986 train / 6,428 test.",
+    "what_came_from_paper_text_only": "The label-quality numbers: 89.7% (78/87) agreement between the agent and two human reviewers on primary endpoints, 83.9% on secondary, 92.4% on adverse-event rates, and 85.3% agreement with the independently curated Therapeutics Data Commons trial dataset across 7,278 overlapping trials. Also the agent extraction protocol (a three-step cascade over ClinicalTrials.gov, then PubMed, then press releases) and the reported odds ratios. I did not re-derive any of these."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open Zenodo deposit (DOI 10.5281/zenodo.22259123), CC-BY-4.0, no login. Single 2.9 GB zip, but I extracted the ~26 MB of tables I need directly by ranged request without downloading the whole archive."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the file: primary_endpoint_result and secondary_endpoint_result are literal columns holding POSITIVE/NEGATIVE/UNKNOWN; phase2_progression holds EVER/NEVER; ten ae_serious_*_pct columns hold adverse-event rates. Nothing has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs sit in the same archive: SMILES chemical structures for 15,124 molecules, 127 precomputed single-cell expression features for 1,511 target genes, and disease names. No external identifier lookups needed; 23,604 of 29,100 labelled trials have a drug with a structure."},
+    "a4_units_stated": {"pass": true, "note": "Column names carry the unit (_pct). I checked the distributions: all ten organ columns run 0-100 with medians of 1.2-4.3 and zero values above 100, so no mixed percent/proportion scales. Outcome labels are categorical with explicit value names."},
+    "a5_enough_rows": {"pass": true, "n_rows": 29100, "note": "29,100 trials with a POSITIVE/NEGATIVE primary-endpoint label (counted in the file); 12,976 with organ-level adverse-event rates; 11,412 Phase I trials labelled for progression. Far above the 1,500 threshold."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~26 MB (6.7 MB label CSV + 10.4 MB + 1.2 MB + 2.3 MB parquet)", "note": "Everything loads into pandas in seconds; peak memory under 2 GB. No GPU needed for a gradient-boosting or frozen-embedding baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "Exact reconciliation. The file's phase counts are 14,237 / 22,164 / 14,911 / 4,672, summing to 55,984 — the paper's stated total — plus 723 early-Phase-I ('0.5') trials the paper excluded, giving 56,707 file rows. Phase II + III = 37,075, matching the stated 37,075 curating agents."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are extractions of what trials reported, not predictions of outcome: agents read ClinicalTrials.gov posted results, PubMed papers and press releases, with 89.7% human concordance and 85.3% agreement with the hand-curated Therapeutics Data Commons set. The one genuine back-door is the status and studyStopReason columns, which the agent saw and which must be excluded from features; 21,925 labelled trials are 'Completed' anyway, where status carries no outcome information."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Four files, but keys (trial ID, ChEMBL, Ensembl, EFO) joined 29,100/29,100 on first try, verified."},
+    "B2": {"score": 2, "why": "Clean CSV and parquet; both parsed first try in pandas, no fixing needed."},
+    "B3": {"score": 1, "why": "Authors harmonised outcomes to one vocabulary, but sources differ (posted results vs press release); 85.3% agreement with independent curation."},
+    "B4": {"score": 1, "why": "UNKNOWN is an explicit clean category (7,492 trials); adverse-event columns missing for ~76%, flagged by a boolean column."},
+    "B5": {"score": 2, "why": "Zero duplicate trial identifiers among 56,707 rows, checked directly in the file."},
+    "B6": {"score": 1, "why": "README describes directories and methods give label derivation, but no per-column data dictionary; column names self-describing."},
+    "C1": {"score": 2, "why": "A null result would directly challenge the paper's headline claim that cell-type-specific targets are safer; informative either way."},
+    "C2": {"score": 1, "why": "HINT and TrialBench are open and honestly split, but none use target cell-type expression or organ-resolved adverse-event rates."},
+    "C3": {"score": 2, "why": "Unique application: 29,100 source-tracked labels vs HINT's 17,538, and organ-level adverse-event rates nobody has modelled."},
+    "C4": {"score": 2, "why": "Labels took 37,075 parallel agents (~76.6 days serial); underlying measurement is a clinical trial costing tens of millions."},
+    "C5": {"score": 2, "why": "HINT's published F1 of 0.620/0.847 on Phase II/III, plus per-phase majority baselines of 62%/75% counted in the file."},
+    "D1": {"score": 2, "why": "ChemBERTa and MolFormer, open-weight chemical language models, fit the 2,994 drug SMILES strings present in the files."},
+    "D2": {"score": 2, "why": "Only 2,994 unique molecules to embed once on CPU, then a tabular head; no fine-tuning or GPU needed."},
+    "D3": {"score": 2, "why": "Zenodo deposit CC-BY-4.0 and code MIT (both read in the archive); ChemBERTa weights permissive."},
+    "E1": {"score": 0, "ok": true, "why": "Trial start date present (1965-2024, 0.5% missing) plus held-out drug, target and disease splits, all verified as columns."},
+    "E2": {"score": 0, "ok": true, "why": "1,367 target genes, 2,994 drugs and 1,847 diseases among labelled trials — counted in the merged file."},
+    "E3": {"score": 0, "ok": true, "why": "Per-phase majority class measured in file: 62% positive Phase II, 75% Phase III; per-organ mean adverse-event rate."},
+    "E4": {"score": 0, "ok": true, "why": "Label noise quantified by authors: 89.7% human concordance, 85.3% against independent curation on 7,278 trials."},
+    "E5": {"score": 0, "ok": true, "why": "Must recover the paper's odds ratio of 1.27 for phase progression, and chemotherapy's known blood-toxicity signal."},
+    "E6": {"score": 0, "ok": true, "why": "Label shuffling, feature-block ablation (chemistry vs target expression) and within-area shuffling all runnable on this table."},
+    "E7": {"score": 0, "ok": true, "why": "Therapeutics Data Commons overlaps 7,278 trials with independent manual curation; plus a date column for temporal validation."},
+    "E8": {"score": 0, "ok": true, "why": "HINT's reported F1 on its public benchmark is reproducible from open code; the paper's odds ratios also re-derivable."},
+    "G1": {"score": 2, "why": "Standard identifiers throughout, seen in the files: ChEMBL, InChIKey, Ensembl gene, EFO disease, NCT trial."},
+    "G2": {"score": 2, "why": "Open Targets genetic scores already in the archive; FDA adverse-event reporting system and SIDER join on drug identifier."},
+    "G3": {"score": 1, "why": "Many-to-many: mean 1.7 drugs and 4.6 targets per trial (max 91), so a collapse rule is required."},
+    "G4": {"score": 2, "why": "Asks whether a target's cell-type expression predicts which organ shows toxicity — neither dataset answers that alone."},
+    "H1": {"score": 2, "why": "9,477 negative endpoints, 8,386 non-progressing Phase I trials, 8,251 terminated, plus an explicit UNKNOWN class."},
+    "H2": {"score": 1, "why": "1,847 diseases and six decades of trials, but limited to registry-listed trials of drugs with an annotated target."},
+    "H3": {"score": 2, "why": "Honest claim writable in one sentence; the registry and target-annotation restrictions are explicit and countable."},
+    "H4": {"score": 1, "why": "Paper documents concordance and ambiguous multi-arm cases, but does not quantify the registry-coverage bias."},
+    "I1": {"score": 2, "why": "Open Targets consortium (EMBL-EBI, GSK, Sanofi), the Stanford authors, and the HINT/Therapeutics Data Commons group."},
+    "I2": {"score": 2, "why": "A calibrated organ-specific risk estimate at target-selection time would change which safety studies are commissioned."},
+    "I3": {"score": 2, "why": "Decision is which candidates to flag, so precision among top-ranked N and calibration are the natural metrics and are computable."},
+    "I4": {"score": 1, "why": "Paper's own univariate odds ratios (1.11-1.27) are weak; a simple threshold may do nearly as well for endpoint prediction."},
+    "J1": {"score": 2, "why": "Multi-output regression, grouped and temporal splits, frozen chemical-language-model embeddings, calibration — real modelling."},
+    "J2": {"score": 2, "why": "Trial outcomes are interpretable and sanity-checkable (chemotherapy should show blood toxicity); authors are at the same university."},
+    "J3": {"score": 2, "why": "A cleaned, documented trial-drug-target-toxicity table and a label-quality audit are useful even if the model is mediocre."},
+    "J4": {"score": 1, "why": "No budget committed anywhere yet; I propose three weeks to the first grouped cross-validation result."},
+    "J5": {"score": 1, "why": "Kill condition stated in success_criteria but not yet written into NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The Virtual Biotech clinical-trialist agent plus univariate regression (this paper, Science 2026)",
+        "open_weights": false,
+        "score_and_split": "No predictive model and no held-out split. The paper reports association statistics only: odds ratio 1.27 for Phase I-to-II progression and 1.11 for meeting the primary endpoint per standard deviation of target cell-type specificity, from univariate logistic regression on all trials, with a 1,000-iteration label-permutation test.",
+        "authors_named_unsolved": "They name the intrinsic ambiguity of collapsing multi-arm and marginally significant trials into a success/failure binary, and they frame their own single-cell findings as associations rather than predictions.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "HINT (Hierarchical Interaction Network), a graph neural network for trial outcome prediction, Patterns 2022",
+        "open_weights": true,
+        "score_and_split": "F1 of 0.665, 0.620 and 0.847 on held-out Phase I, II and III test sets (627 / 1,653 / 1,140 trials) of the Trial Outcome Prediction benchmark, which has 17,538 trials split by trial date. Code and data at github.com/futianfan/clinical-trial-outcome-prediction.",
+        "authors_named_unsolved": "Per the retrieved summaries, generalising beyond small-molecule drugs and handling trials with no retrievable reported outcome.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TrialBench, a benchmark suite of 23 trial-prediction datasets, Scientific Data 2025",
+        "open_weights": true,
+        "score_and_split": "Covers eight tasks including trial approval and serious adverse events, with baseline models supplied. I did not retrieve its per-task numbers, and I did not verify whether its adverse-event task is resolved by organ system.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Large-language-model trial outcome predictors (LLM4TOP, medRxiv 2025; Jin et al. evaluation of GPT-4o, GPT-3.5 and Llama3)",
+        "open_weights": false,
+        "score_and_split": "Reported as performing reasonably overall but poorly at identifying negative outcomes; I did not retrieve exact numbers or splits.",
+        "authors_named_unsolved": "Identifying trials that fail, i.e. the negative class.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ChemBERTa-77M (a chemical language model that turns a SMILES structure string into a vector), with MolFormer as an alternative",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU. Only 2,994 unique molecules need embedding, a one-off of a few minutes; the head is gradient boosting or logistic regression on ~150 columns.",
+    "licence": "Permissive (ChemBERTa weights on Hugging Face); data CC-BY-4.0, system code MIT."
+  },
+  "integration": {
+    "partner_dataset": "Open Targets genetic-association evidence (already inside the same archive as 32 MB of parquet parts) and, externally, the FDA Adverse Event Reporting System and SIDER for post-marketing organ-level side effects",
+    "join_key": "Ensembl gene identifier for targets, ChEMBL identifier or InChIKey for drugs, both present and verified in the downloaded files",
+    "bigger_question_one_sentence": "Does the set of human cell types in which a drug's target gene is switched on predict which organ system will show serious side effects, over and above the drug's own chemistry and the genetic evidence for the target?"
+  },
+  "controls": {
+    "positive_control": "Two: (1) recover the paper's own reported association, an odds ratio of 1.27 for Phase I-to-II progression per standard deviation of target cell-type specificity; (2) recover the textbook fact that cytotoxic chemotherapy trials have the highest serious blood and lymphatic adverse-event rates. Also predict molecular weight from the chemical embeddings, which must come out near-perfect.",
+    "negative_control": "Shuffle the outcome labels and confirm performance collapses to the per-phase majority baseline; train on the leaky status column alone to measure the size of that back-door; ablate feature blocks (chemistry only, target expression only, disease only); replace the 127 expression features with same-shaped noise.",
+    "external_validation": "The independently hand-curated Therapeutics Data Commons trial outcome dataset, which overlaps 7,278 of these trials; the 100-trial human-annotated set shipped inside the archive; and a temporal split using the verified trial start date column (16,986 trials before 2014, 6,428 after)."
+  },
+  "honest_claim_h3": "Among clinical trials that were registered on ClinicalTrials.gov, tested a drug with a known molecular target, and had an outcome an automated curator could recover from the registry, a publication or a press release, a drug's chemical structure plus the cell types in which its target gene is expressed predicts the reported serious adverse-event rate per organ system to within X — and the honest ceiling is about 90% label accuracy, because that is how often the curator agreed with human reviewers.",
+  "plain_idea": {
+    "one_liner": "Use a drug's chemical structure and where its target gene is active across human cell types to predict clinical trial side effects and success.",
+    "train_on": "One row per clinical trial: the drug's chemical structure as a SMILES string, 127 numbers describing how specifically the target gene is switched on across human cell types and tissues, the disease, and the trial phase. I counted 23,604 trials with a success/failure label and a drug structure, and 10,145 trials with organ-level side-effect rates.",
+    "predict": "Two outputs: the percentage of participants with a serious side effect in each of ten organ systems (heart, liver, kidney, blood, nervous system and so on), and whether the trial met its main goal. Both come from what the trial actually reported — registry results, publications or press releases — read out by an automated curator that agreed with human reviewers 89.7% of the time.",
+    "why_worthwhile": "Teams choosing which drug target to pursue currently have only weak rules of thumb about which targets are risky; a model that says 'this target's expression pattern points to heart toxicity' would redirect safety studies before a trial starts. If it fails, that itself challenges this paper's headline claim that cell-type-specific targets are safer."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "29,100 trials with a success/failure label here, against 17,538 in the Trial Outcome Prediction benchmark that HINT uses. More importantly, this set adds 12,976 trials with side-effect rates broken down by ten organ systems and target cell-type expression features, neither of which exists in HINT's or TrialBench's inputs."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Every label carries its source (registry results versus press release) and there is an explicit UNKNOWN class of 7,492 trials, so the model can be taught to abstain, and the measured 85.3%/89.7% label-error rates can be propagated. But there are no repeated measurements of the same trial, so this is weaker than true replicate-based uncertainty. HINT does not report calibration."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "HINT is a 2022 graph neural network with no pretrained backbone, scoring F1 0.620 on Phase II — beatable. But its Phase III F1 of 0.847 is high, it uses a date-based rather than random split, and its code is public, so it is a genuine baseline rather than a straw man. For the organ-level side-effect task there is no competitor to beat at all."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The target expression features come from a different source (the Tabula Sapiens cell atlas) than HINT's inputs, and the outcome labels here are defined differently from the Therapeutics Data Commons labels HINT trained on — they agree only 85.3% of the time. So the evaluation split is not identical and our model does not strictly see everything HINT sees plus more."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "The Therapeutics Data Commons Trial Outcome Prediction benchmark and TrialBench (both found by search, both open); ClinicalTrials.gov and its AACT database, the original registry; the FDA Adverse Event Reporting System and SIDER for drug-level side effects (known resources, not re-checked here).",
+    "approx_items": 17538,
+    "join_key": "NCT trial identifier for outcomes; ChEMBL identifier or InChIKey for drug-level side effects",
+    "why": "A ready-made independent test set already exists — 7,278 of these trials are also labelled by hand in the Therapeutics Data Commons set — so the model can be checked against someone else's curation before anyone trusts it."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The status and studyStopReason columns sit in the same file and the curating agent saw them when assigning labels, so using them as features would leak the answer (terminated trials are 1,525 negative versus 574 positive).",
+      "has_results, results_source, ae_source and pubmed_ids are all recorded after the outcome was known — a trial with a PubMed publication is more likely to have succeeded.",
+      "The same drug appears in many trials (2,994 drugs across 29,100 trials) and the same target in many more, so a random split would put sibling trials of the same drug on both sides.",
+      "The target feature table contains agent-derived scores named attrition_risk_phase1/2/3, predicted_dl_risk_score, ae_risk_* and overall_safety_risk; these are somebody's predictions, not measurements, and using them as features would make the model a distillation of a heuristic.",
+      "Trial start year correlates with both outcome and whether a label could be recovered at all — labelled trials thin out sharply after 2020."
+    ],
+    "split": "Primary: temporal, training on trials starting before 2014 and testing on 2014 onwards, which I verified gives 16,986 train and 6,428 test trials using the trial_date column I read in chembl_clinical_nct_data.parquet. Secondary: grouped splits holding out whole drugs (drugId) and whole target genes (targetId), both columns seen in the files.",
+    "checks": [
+      "Shuffle the outcome labels and confirm performance drops to the per-phase majority baseline (62% positive Phase II, 75% Phase III).",
+      "Train on the status column alone to quantify how big that leak channel would have been, then confirm it is excluded by an explicit allow-list of features.",
+      "Drop the agent-derived risk-score columns and check the result is unchanged; if it isn't, they were doing the work.",
+      "Compute chemical fingerprint similarity between each test molecule and its nearest training molecule, and report performance against that distance."
+    ],
+    "verdict": "Manageable. The leak channels are all identifiable columns that can be removed by an allow-list, and restricting to the 21,925 completed trials removes the status channel entirely."
+  },
+  "success_criteria": {
+    "metric": "For the side-effect task, Spearman rank correlation between predicted and reported serious adverse-event rate for each organ system on trials starting 2014 or later, plus precision among the 100 trials predicted riskiest — because the real decision is which handful of candidates gets an extra safety study. For the endpoint task, precision-recall area under the curve on held-out later Phase II trials.",
+    "baselines": "Per-organ global mean adverse-event rate and per-therapeutic-area mean (both computable from the file; median rates run 1.2-4.3%). Per-phase majority class, counted in the file: 62% positive for Phase II, 75% for Phase III. Published comparison: HINT's F1 of 0.620 (Phase II) and 0.847 (Phase III) on the Trial Outcome Prediction benchmark, taken from its paper, not reproduced by me.",
+    "success": "The target cell-type expression features add at least 0.05 Spearman over a chemistry-plus-phase-only model in at least 3 of the 10 organ systems on the post-2014 test set (each organ has 458-1,403 test trials, which I counted), with the gain vanishing under label shuffling. Or, for the endpoint task, precision-recall area under the curve of 0.70 or better on post-2014 Phase II trials against a 0.66 positive rate.",
+    "noise_ceiling": 0.9,
+    "kill": "If after one week the 127 target expression features add less than 0.02 Spearman and less than 0.01 area under the curve over a model using only trial phase, therapeutic area and drug type, stop — the paper's own odds ratios of 1.11-1.27 are then too weak to support a predictor."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning on new large resources; it would take the organ-specific side-effect model clearly beating chemistry alone and holding up on trials from later years and on unseen target genes."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "Publishes careful method and benchmark papers with honest splits; the likely result — first predictive model on this new 29,100-trial resource, a modest but real gain from target expression for side effects, no clear win over HINT for endpoint success — fits its original-paper format."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes negative and partial benchmarking results and resource descriptions, so even 'target expression adds nothing beyond chemistry' plus a cleaned, documented, column-level-audited version of this table would be publishable."
+    }
+  },
+  "pitch": {
+    "headline": "29,100 clinical trials with machine-read success labels, plus side-effect rates across ten organ systems for 12,976 of them — nobody has modelled it.",
+    "what_makes_the_data_unusual": "Verified in the files: 10 organ-system serious side-effect percentages (all 0-100, none above 100) joined to 1,367 target genes with 127 cell-type expression features and 15,124 drug structures. The comparable public benchmark has 17,538 trials and none of this.",
+    "the_win": "Show target cell-type expression adds 0.05 or more Spearman over chemistry alone for heart, liver or blood side-effect rates on trials starting after 2014 — the first prediction, not association, from these features.",
+    "even_if_it_fails": "A null result directly undercuts this Science paper's headline that cell-type-specific targets are safer, showing its odds ratios of 1.11-1.27 carry no predictive signal per trial. That is worth publishing.",
+    "who_wants_it": "The Open Targets consortium (EMBL-EBI, GSK, Sanofi), who built the underlying trial dataset, and the HINT/Therapeutics Data Commons group — it would change which target features enter their prioritisation scores."
+  },
+  "ml_idea": "Build one row per clinical trial from the released tables: frozen ChemBERTa embeddings of the drug's SMILES string, the 127 single-cell expression features of its target gene (cell-type specificity, bimodality, per-cell-type expression across 27 tissues), disease and therapeutic area, and trial phase. Predict two things: (a) the serious adverse-event rate in each of 10 organ systems, as a multi-output regression over 10,145 trials, and (b) whether the trial met its primary endpoint, over 23,604 trials. Evaluate on a temporal split (before/after 2014) and on held-out drugs and held-out target genes, with the per-organ mean and per-phase majority as dummies and HINT as the published comparator. The headline question is whether the organ in which a target gene is expressed predicts the organ in which the drug hurts people.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.03,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 0.2,
+    "cv_run_minutes": 15,
+    "compute_note": "Estimated, not timed end to end, but grounded in measured file sizes I actually loaded: the 6.7 MB label CSV and 10.4 MB link parquet each read into pandas in seconds. Embedding time assumes 2,994 unique molecules through a small chemical language model on CPU at roughly 5 per second.",
+    "cheapest_killing_check": "Already done: count labelled trials surviving every filter and the temporal split. Result — 23,604 trials with both a label and a drug structure (16,986 before 2014 / 6,428 after), and per-organ side-effect test sets of 458-1,403 trials. All large enough, so the project is not killed on counts. The remaining first check is to train on the status column alone to size the leak channel."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer verified by opening the actual files, not the paper, and the counts reconcile exactly with the publication (14,237 + 22,164 + 14,911 + 4,672 = the stated 55,984, with 723 early-Phase-I trials extra). The labels are real columns, the inputs ship in the same archive with standard identifiers, units are consistent, the whole working set is 26 MB, and the licence is CC-BY-4.0. The paper is a computational one, so the default trap would be 'beat their model' — but their model is univariate logistic regression, and the valuable thing is the measured data underneath it: 12,976 trials with serious side-effect rates split by organ system, linked to target genes with single-cell expression features. Nobody has built a predictor on that. The field around trial-outcome prediction is moderately crowded (HINT and TrialBench are open and honestly split, so C2 scores 1), but the organ-level safety task has no competitor, there is a measured label-noise ceiling of about 90%, a date column for a temporal split, an independent 7,278-trial curation for external validation, and a result that is informative whichever way it comes out."
+}

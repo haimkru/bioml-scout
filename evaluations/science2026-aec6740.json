@@ -1,0 +1,66 @@
+{
+  "paper_id": "science2026-aec6740",
+  "title": "Glycan recognition by a plant damage-sensing immune receptor.",
+  "doi": "10.1126/science.aec6740",
+  "journal": "Science",
+  "data_url": "https://www.rcsb.org/structure/9HHU",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both deposited structure files from the Protein Data Bank (PDB, the public archive of 3D protein structures): 9HHU (1.09 MB mmCIF, 'IGP1 in complex with cellotriose', X-ray at 2.16 Angstrom, 593 protein residues, 4,956 atom records, contains BGC = beta-D-glucose units forming the bound sugar, plus NAG/BMA/MAN/FUC N-linked sugars, one calcium ion, sulfate, water) and 9HHX (1.05 MB, apo receptor, 2.62 Angstrom, same 593 residues, no BGC). Confirmed via the RCSB search application programming interface that these two are the only PDB entries for this receptor. Queried NCBI and found BioProject PRJNA1073490 contains exactly 12 SRA (Sequence Read Archive) runs, i.e. 12 raw RNA sequencing samples. Read the full text of the matching bioRxiv preprint (doi 10.1101/2025.09.28.679030) and extracted its verbatim data-availability statement.",
+    "what_came_from_paper_text_only": "The binding-affinity numbers (dissociation constant Kd about 1 micromolar for cellotriose; no detectable binding for cellobiose, maltotriose) come from the preprint text and its figure panels; I could not open a numeric table of them because the Science supplement is paywalled (Europe PMC reports isOpenAccess=N, no PMCID, hasSuppl=N) and the preprint lists only two supplementary tables, both crystallographic data-collection statistics. Counts of mutants (5 point substitutions: D74A, N126A, N126G, D174A, D174S) and of tested sugars (about 5) are from the text, not from a file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "The two structure files download freely from the PDB with no login; I opened both. But the paper's own statement says 'Materials and raw data files are available upon request to the corresponding author', and the Science supplement holding the binding curves is paywalled."},
+    "a2_label_is_a_column": {"pass": false, "note": "There is no label column anywhere. No table of glycan-binding measurements exists in any downloadable file; the affinities live as isothermal titration calorimetry curves in figure panels. Any prediction target would have to be hand-built by reading figures."},
+    "a3_inputs_present": {"pass": true, "note": "Protein coordinates and sequence are present in the mmCIF files, and the bound sugar is modelled as explicit beta-D-glucose (BGC) residues, so inputs are real rather than accession numbers."},
+    "a4_units_stated": {"pass": true, "note": "Structural units are standard (Angstrom), and affinities are quoted in micromolar in the text; units are not the problem here."},
+    "a5_enough_rows": {"pass": false, "n_rows": 2, "note": "KILLER. Verified in the files: 2 crystal structures of one protein, about 5 reported sugar-binding tests, 5 point mutants, and 12 raw RNA sequencing samples. The checklist needs about 1,500 labelled rows (400 for classification); this is two to three orders of magnitude short."},
+    "a6_fits_laptop": {"pass": true, "working_set": "2.1 MB (two mmCIF files)", "note": "Trivially fits; size was never the issue."},
+    "a7_counts_match_paper": {"pass": false, "note": "Minor but real mismatch: the preprint text calls 9HHU the apo structure at 2.16 Angstrom, while the PDB metadata and the file I opened say 9HHU is the cellotriose complex at 2.16 Angstrom and 9HHX is the apo form at 2.62 Angstrom. Probably a typo, but it is the kind of swap that would silently invert a label."},
+    "a8_label_provenance": {"pass": true, "note": "What labels exist are genuine physical measurements (X-ray diffraction, isothermal titration calorimetry), not another model's output. Provenance is clean; there is simply almost nothing of it."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "LectinOracle, a deep-learning model that predicts whether a protein binds a given sugar from sequence", "open_weights": true, "score_and_split": "Trained on 564,647 unique protein-glycan interactions from 3,328 glycan microarray experiments; authors report generalisation to unseen proteins and unseen glycans (Lundstrom et al., Advanced Science 2022).", "authors_named_unsolved": "Coverage beyond well-studied animal and microbial lectins; plant cell-surface receptor kinases are essentially absent from glycan microarray training data.", "runnable_as_baseline": true},
+      {"name": "DeepGlycanSite, a deep-learning predictor of which residues on a protein form a carbohydrate-binding site", "open_weights": true, "score_and_split": "Reported as highly accurate on held-out carbohydrate-binding structures (Nature Communications 2024); evaluated on structure-based splits of PDB entries.", "authors_named_unsolved": "Distinguishing which specific sugar binds, as opposed to where any sugar binds.", "runnable_as_baseline": true},
+      {"name": "CAPSIF (CAPSIF:V voxel 3D-UNet and CAPSIF:G equivariant graph neural network), residue-level carbohydrate-binding predictors", "open_weights": true, "score_and_split": "Residue-level prediction on PDB-derived carbohydrate-binding protein sets; CAPSIF:V reported as the stronger of the two (Frontiers in Bioinformatics 2023).", "authors_named_unsolved": "Specificity for closely related glycans, and performance on proteins unlike the training set.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2, a protein language model (small checkpoints run on a laptop CPU)", "freeze_and_head_viable": false, "hardware": "CPU only would suffice, but with 2 structures and about 5 affinity values there is nothing to fit a head on.", "licence": "ESM-2 is MIT-licensed; PDB coordinates are public domain (CC0). Licence is not the obstacle."},
+  "integration": {"partner_dataset": "UniLectin / glycan microarray data behind LectinOracle, plus the Carbohydrate-Active enZymes database (CAZy)", "join_key": "UniProt accession for the receptor; glycan structure string (IUPAC or GlycoCT) for the sugar", "bigger_question_one_sentence": "Do plant cell-surface receptor kinases use the same sugar-recognition grammar as animal and microbial lectins, or a distinct one? The question is good, but this paper contributes only one receptor and one sugar to answering it, so the join brings no new training data."},
+  "controls": {"positive_control": "A model would have to recover the known contrast that cellotriose binds (about 1 micromolar) while cellobiose and maltotriose do not. That is 3 data points, too few to be a control.", "negative_control": "Label shuffling is meaningless at n=2 structures.", "external_validation": "LectinOracle's glycan microarray corpus would be the external set, but it contains essentially no plant receptor kinases, so it cannot validate this."},
+  "honest_claim_h3": "With this paper's data alone, the only honest claim is a description of how one Arabidopsis receptor ectodomain holds one trisaccharide in one crystal. No predictive claim about glycan recognition is supportable from 2 structures and about 5 binding tests.",
+  "plain_idea": {
+    "one_liner": "Use a plant receptor's protein sequence and structure to predict which cell-wall sugar fragment it binds.",
+    "train_on": "The project I considered would show a model a receptor's extracellular protein sequence (or its 3D binding pocket) paired with a candidate sugar, and ask whether they bind. This paper supplies 2 structures of a single receptor and about 5 sugar-binding tests, verified in the files and text.",
+    "predict": "Binding yes/no, or the dissociation constant Kd in micromolar, with the true answer coming from isothermal titration calorimetry (a calorimetry assay that measures the heat released when a molecule binds a protein, giving the affinity directly).",
+    "why_worthwhile": "Plant pathologists and crop-engineering groups want to know which wall-breakdown sugars each surveillance receptor detects, so they can transfer detection into crops; but answering it needs hundreds of receptor-sugar pairs, and this paper has roughly five."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "LectinOracle was trained on 564,647 protein-glycan interactions; this paper adds about 5 binding tests on 1 receptor. Our data is smaller by five orders of magnitude, and the one genuinely underrepresented area (plant receptor kinases) is represented here by a single protein."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurement table is downloadable, so per-prediction uncertainty cannot be estimated from this data. The affinity values exist only as figure panels in a paywalled supplement."},
+    "models_beatable": {"answer": "no", "why": "LectinOracle (2022), DeepGlycanSite (2024) and CAPSIF (2023) are all open, recent, and evaluated on held-out proteins or structures. Nothing here could be trained, let alone compared against them."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails on the first condition: our model would see strictly less than the baselines, not more. There is no new labelled data to add and no shared evaluation split."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The considered project was to predict glycan-binding specificity of plant leucine-rich-repeat-malectin receptor kinases from sequence or structure, using this paper's IGP1-cellotriose complex as the anchor. It is a real and open question, but this paper supplies 2 crystal structures and about 5 affinity measurements, so it is a test case for someone else's model rather than a dataset. The structures themselves remain useful as a free, well-resolved docking or validation target for carbohydrate-binding-site predictors such as DeepGlycanSite.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.002,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.2,
+    "embedding_hours": 0.01,
+    "cv_run_minutes": null,
+    "compute_note": "Measured file sizes directly (2.1 MB total for both mmCIF files). No cross-validation time is estimable because there is no dataset to cross-validate; ESM-2 embeddings for 2 sequences of 593 residues would take under a minute on a laptop CPU.",
+    "cheapest_killing_check": "Count the rows that carry a measured binding affinity. I did it: about 5 sugars against 1 receptor, with no numeric table in any downloadable file. That killed it in under ten minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A5 decisively and A2 alongside it. Verified by opening the files: the entire deposited dataset is 2 crystal structures of one receptor (PDB 9HHU with cellotriose bound, 9HHX apo, 593 residues each, 2.1 MB total), supported by about 5 isothermal-titration binding tests and 5 point mutants reported only in figure panels of a paywalled supplement, plus 12 raw RNA sequencing runs under BioProject PRJNA1073490 that we would not download. There is no label column and no numeric measurement table anywhere, so any prediction target would have to be read off figures by hand. It is an excellent structural biology paper and a fine single test case for existing open carbohydrate-binding predictors (LectinOracle, DeepGlycanSite, CAPSIF), but it is not a machine-learning dataset."
+}

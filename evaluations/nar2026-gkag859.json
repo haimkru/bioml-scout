@@ -1,0 +1,52 @@
+{
+  "paper_id": "nar2026-gkag859",
+  "title": "Guanosine 10 methylation by TRMT11-TRMT112 optimizes human mitochondrial tRNAs for efficient translation.",
+  "doi": "10.1093/nar/gkag859",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE330705 (CRAC) and GSE330707 (small RNA-seq); supplement via Europe PMC gkag859_supplemental_files.zip",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the 6.6 MB supplement and opened all three Excel files with openpyxl: the only tables are sequencing mapping statistics (12 and 11 non-empty rows), read distribution by RNA biotype (14 and 33 rows), read coverage per mitochondrial tRNA (24 rows each, 22 genes), read coverage per nuclear tRNA gene (297 unique gene IDs, 2 replicate columns), and one mass-spectrometry nucleoside table (27 non-empty rows). I also listed both GEO series over FTP: the only processed files are bigWig coverage tracks (GSE330705_RAW.tar = 0.33 MB, GSE330707_RAW.tar = 19.6 MB); everything else is raw sequencing in SRA.",
+    "what_came_from_paper_text_only": "That m2G at position 10 is installed in 13 of the 22 mitochondrial tRNAs, the DNAzyme cleavage percentages (53-84%), the in vitro methylation results on sequence variants, and the effect of the m1A9 modification. These are reported in figure panels and prose; I did not find any file containing a per-tRNA methylation value."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement zip and both GEO series download without login; I opened them. Processed GEO data is bigWig tracks only."},
+    "a2_label_is_a_column": {"pass": false, "note": "No file contains methylation status or level. The only numeric columns are sequencing read counts per tRNA gene (binding/abundance), so the m2G10 label would have to be constructed by reading figure panels or joining to an outside modification database."},
+    "a3_inputs_present": {"pass": true, "note": "Only gene identifiers (gtRNAdb-style names, GENCODE IDs) are given, not sequences; tRNA sequences are retrievable but ~300 lookups would be needed."},
+    "a4_units_stated": {"pass": true, "note": "Sheet titles state the units (reads per million-style coverage per tRNA; fmol and ratio mX/X in the mass-spectrometry table)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 297, "note": "Largest table is 297 nuclear tRNA genes (read coverage, not methylation); the methylated/unmethylated call covers only 22 mitochondrial tRNAs. Both are far under the ~400-row classification floor."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~27 MB (6.6 MB supplement + 20 MB of bigWig tracks)", "note": "Trivially small; verified file sizes by download and HEAD."},
+    "a7_counts_match_paper": {"pass": true, "note": "22 mitochondrial tRNA rows match the paper's 22 mt-tRNAs; 297 nuclear tRNA rows are not a number the paper states, so nothing to contradict."},
+    "a8_label_provenance": {"pass": true, "note": "Where a label exists it is a real measurement (DNAzyme cleavage read off northern blots, radioactive methyl incorporation), not another model's output - but it lives in figures, not files."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "iRNA-m2G (sequence-feature predictor of N2-methylguanosine sites)", "open_weights": null, "score_and_split": "Reported 94.6% accuracy in human, 100% in mouse, 96.3% in yeast on its own cross-validation; split details not checked (from web search snippets, paper not retrieved).", "authors_named_unsolved": "not checked", "runnable_as_baseline": null},
+      {"name": "RFhy-m2G (random forest on hybrid sequence features)", "open_weights": null, "score_and_split": "Not checked beyond the search snippet.", "authors_named_unsolved": "not checked", "runnable_as_baseline": null},
+      {"name": "YModPred (deep learning, multi-type RNA modification sites in yeast)", "open_weights": null, "score_and_split": "Reported accuracy above 98% with AUC above 0.9 for several modification types including m2G, in Saccharomyces cerevisiae (search snippet only).", "authors_named_unsolved": "not checked", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM or an RNA language model would fit tRNA sequences in principle", "freeze_and_head_viable": true, "hardware": "CPU, minutes for a few hundred short sequences", "licence": "not checked - project rejected before this mattered"},
+  "integration": {"partner_dataset": "MODOMICS / tRNAdb (curated tRNA modification maps) joinable by tRNA isoacceptor name", "join_key": "tRNA gene name / isoacceptor", "bigger_question_one_sentence": "Which sequence and structural features decide whether a tRNA carrying G10 actually gets methylated - but answering it needs MODOMICS as the label source, which means this paper contributes 22 extra examples, not a dataset."},
+  "controls": {"positive_control": "The 13 mitochondrial tRNAs shown here to lose m2G10 on TRMT11 knockout would be the obvious held-out positives.", "negative_control": "mt-tRNA Pro, Cys and Gln, shown here to carry unmethylated G10.", "external_validation": "Earlier mass-spectrometry maps detecting m2G10 in 15 of 22 mitochondrial tRNAs (cited in the paper)."},
+  "honest_claim_h3": "With these files a model could at best claim to rank 297 nuclear tRNA genes by how many TRMT11 crosslinking reads they attracted in two replicates from one cell line - a statement about protein binding in HEK293 cells, not about methylation.",
+  "plain_idea": {
+    "one_liner": "Use a transfer RNA's sequence and folded shape to predict whether an enzyme adds a methyl group at position 10.",
+    "train_on": "Each example would be one transfer RNA (tRNA, the adaptor molecule that brings amino acids to the ribosome) described by its sequence and predicted fold. The paper supplies 22 mitochondrial tRNAs with a methylated/unmethylated call and 297 nuclear tRNA genes with enzyme-binding read counts.",
+    "predict": "Whether position 10 carries N2-methylguanosine (m2G, a methyl group added to the base guanine). The truth here comes from DNAzyme cleavage assays read off northern blots and from radioactive in vitro methylation, both reported only in figure panels.",
+    "why_worthwhile": "Groups studying mitochondrial disease mutations would like to know which patient variants block this modification; but with 22 labelled molecules the question is answered by inspection, not by a model."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only task the files support is ranking tRNA genes by TRMT11 crosslinking read counts, which is a measurement of binding in one cell line rather than a prediction target; the interesting target (does this tRNA get m2G10?) exists for 22 molecules and only inside figure panels.",
+  "effort": {"hours_to_feature_table": 6, "working_set_gb": 0.03, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 0.1, "cv_run_minutes": 1, "compute_note": "Estimated, not timed: the whole dataset is under 30 MB and a few hundred tRNA sequences are ~75 nucleotides each, so any model runs in seconds on a laptop.", "cheapest_killing_check": "Count the rows in the largest supplementary sheet and ask whether any column holds methylation status - 297 rows of read counts, no methylation column, kills it in ten minutes."},
+  "verdict": "reject",
+  "verdict_reason": "Part A2 and A5 both fail, verified in the files. Human cells have only 22 mitochondrial tRNAs, so the paper's central label (m2G10 present or absent, in 13 of them) covers 22 items and is never written down as a column - it is read off northern-blot quantifications in figures. The largest table I opened holds 297 nuclear tRNA genes with TRMT11 crosslinking read counts in two replicates, which measures binding, not methylation, and the paper itself stresses that TRMT11 binds most tRNAs but methylates only a subset, so binding is not a usable proxy. The deposited sequencing data are bigWig coverage tracks plus raw reads in SRA, with no per-site modification table. Excellent molecular biology; there is no feature-and-label table in it."
+}

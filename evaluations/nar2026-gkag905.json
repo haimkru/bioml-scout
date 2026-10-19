@@ -1,0 +1,66 @@
+{
+  "paper_id": "nar2026-gkag905",
+  "title": "pH-dependent allosteric remodeling of a bacterial riboswitch couples alkaline activation to metal sensing.",
+  "doi": "10.1093/nar/gkag905",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.18462847 (molecular dynamics simulations); https://doi.org/10.7302/dpt2-1w98 (single-molecule FRET source data, University of Michigan Deep Blue)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the full Europe PMC supplement (7.5 MB zip): it holds exactly two files, one Excel workbook and one Word document. I opened every sheet of the workbook: Chemicals (35 rows of reagents), Oligos (25 rows), Strains (2 rows), Plasmids (8 rows), 'smFRET Dynamics' (6 experimental conditions x 4 conformational-state percentages), 'smFRET Rate Constants' (4 data rows of docking/undocking rates), and 'L3 Alignment' (36 riboswitch sequences labelled 28 mntP-like, 6 alx-like, 1 false hit, 1 n/a). The Word file is 8,253 characters of figure legends with no data table. I read the Zenodo application programming interface listing for record 18462847: one file, Data-all-sims.zip, 3,868 MB, licence CC-BY-4.0 (not downloaded, over the 50 MB cap). Zenodo 21497710 is a code snapshot only. I confirmed the single-molecule FRET deposit exists via DataCite metadata for 10.7302/dpt2-1w98.",
+    "what_came_from_paper_text_only": "That the Deep Blue deposit contains raw single-molecule FRET traces plus MATLAB analysis code, and the number of molecules behind each condition (the legend says 'N = the number of traces for each condition' but the numbers live only inside figure images). The Deep Blue web page returns HTTP 403 to scripted requests (Cloudflare challenge), so I could not list its files or sizes. Trajectory frame counts (~1,000-2,000 frames per chain and replicate) come from the Zenodo description, not from opening the archive."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo deposits are open CC-BY-4.0 and the publisher supplement downloads freely; no login or application anywhere. Caveat: the Deep Blue single-molecule FRET deposit blocks scripted access with a browser challenge, so I verified only that it exists, not what is in it."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. No file contains a per-item outcome column. The only numeric tables are six summary percentages per condition and four kinetic-rate rows; any machine-learning target (conformational state per molecule, architecture class per sequence) would have to be constructed from raw traces, simulation frames, or a new alignment."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are present as literal strings in the L3 Alignment sheet (36 sequences, 84-194 nucleotides), and simulation structures/topologies are in the Zenodo archive; no accession-to-sequence lookup needed."},
+    "a4_units_stated": {"pass": true, "note": "Units are explicit where numbers exist: rate constants in per-second, manganese concentration in micromolar, state occupancies in percent, reporter activity in Miller units (a standard enzyme-activity unit)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 36, "note": "FAIL. Largest labelled table I opened is 36 aligned sequences (6 of them the class of interest). Other tables are 6 conditions and 4 rate rows. Reporter assays are a handful of mutant constructs in triplicate. All far below the ~1,500-row (or ~400 for classification) bar."},
+    "a6_fits_laptop": {"pass": false, "working_set": "3.87 GB single zip of GROMACS trajectories, plus an unknown-size single-molecule FRET deposit", "note": "The tabular supplement is trivial (7.5 MB), but the only data with any volume is one 3.87 GB molecular-dynamics archive that must be taken whole; it holds a few simulation replicates of one RNA, so the volume buys no extra examples."},
+    "a7_counts_match_paper": {"pass": true, "note": "The supplementary table contents match the paper's descriptions (six conditions, L3 alignment of alx-L3-containing Rfam hits); nothing contradicted."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL for the obvious target. Conformational-state labels (static/dynamic, docked/undocked) are the output of hidden Markov model fitting of the authors' MATLAB pipeline, so training on them distils that fitting procedure rather than measuring biology. The 'alx-like vs mntP-like' architecture label is a sequence annotation assigned by inspecting the same sequence that would be the model input."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Riboflow (deep-learning classifier of riboswitch family from sequence, Frontiers in Bioengineering and Biotechnology 2020)", "open_weights": true, "score_and_split": "Reported >99% accuracy over 32 riboswitch classes trained on Rfam sequences; split details not checked beyond the search summary. RF00080, the manganese yybP-ykoY family in this paper, is one of its 32 classes.", "authors_named_unsolved": "Not retrieved - I read only the search summary and the GitHub/PyPI listings, not the full paper.", "runnable_as_baseline": true},
+      {"name": "DeepFRET (neural network for classifying single-molecule FRET traces, eLife 2020)", "open_weights": true, "score_and_split": "Classifies each frame of a trace into bleached, static, dynamic, aggregate, noisy or scrambled; accuracy figures not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Deep-LASI (deep-learning single-molecule imaging analysis, Nature Communications 2023)", "open_weights": true, "score_and_split": "Sorts traces and assigns states in ~20-100 ms per trajectory for one-, two- and three-colour data; benchmark numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (an RNA language model) or a nucleotide language model such as Nucleotide Transformer", "freeze_and_head_viable": true, "hardware": "Laptop CPU would be enough for 36 sequences, which is exactly the problem", "licence": "RNA-FM is open; irrelevant here because there is nothing to fit a head on"},
+  "integration": {"partner_dataset": "Rfam family RF00080 (the yybP-ykoY manganese riboswitch family) and the Protein Data Bank structures 9JGM and 6N2V", "join_key": "Rfam sequence identifier / genomic coordinate string, and NCBI taxonomy name", "bigger_question_one_sentence": "Which yybP-ykoY riboswitches across bacteria carry the alx-type loop that makes them respond to alkaline pH as well as manganese? - a real question, but the paper supplies only 36 hand-curated examples, so the labels for it would have to be built from scratch rather than taken from this paper."},
+  "controls": {"positive_control": "None available at dataset scale; with 6 alx-like sequences there is nothing to hold out.", "negative_control": "Label shuffling is meaningless at n=36.", "external_validation": "Rfam RF00080 provides more sequences but no pH-responsiveness labels, so it validates nothing without new experiments."},
+  "honest_claim_h3": "Any model built from these files could only claim to reproduce the authors' own hidden Markov state assignments for one riboswitch under six buffer conditions, or to separate 6 alx-like from 28 mntP-like sequences the authors themselves picked by eye - neither is a claim about biology.",
+  "plain_idea": {
+    "one_liner": "Use bacterial riboswitch sequence to predict whether it switches on in response to alkaline pH as well as manganese.",
+    "train_on": "The project I considered would train on riboswitch sequences from the yybP-ykoY family with their loop-3 architecture class. This paper supplies 36 such sequences (verified by opening the Excel sheet), of which only 6 carry the alx-like pH-responsive architecture.",
+    "predict": "Output would be the architecture class (alx-like versus mntP-like), or the degree of pH-dependent gene activation. The true answer in this paper comes from manual inspection of a multiple-sequence alignment, and from beta-galactosidase reporter assays (a colour-change enzyme assay in live E. coli) run on a handful of mutant constructs in triplicate.",
+    "why_worthwhile": "Microbiologists studying how bacteria survive alkaline stress would like to know which of the thousands of known manganese riboswitches double as pH sensors; a sequence-level predictor would turn a one-organism finding into a genome-scale hypothesis. As built here it is not possible: the labels do not exist at scale."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "36 labelled sequences against Riboflow's Rfam-scale training set spanning 32 riboswitch classes; and for trace classification, DeepFRET and Deep-LASI were trained on large simulated and real trace libraries while this paper offers six conditions on one RNA."},
+    "confidence_score": {"answer": "no", "why": "Replicates exist (three per reporter condition, multiple simulation chains), but with six conditions there is no way to estimate per-prediction uncertainty that would mean anything."},
+    "models_beatable": {"answer": "no", "why": "Riboflow (2020) already reports >99% accuracy on the family-level task including RF00080, and Deep-LASI (2023) is recent; there is no quantity of data here to beat them with."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails is the first one: there is no feature/label table in this paper to add to an existing model's training set, so no baseline can be improved by construction."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict alkaline-pH responsiveness (alx-like loop 3 architecture) of yybP-ykoY manganese riboswitches from sequence, using a frozen RNA language model with a small classification head, trained on the paper's alignment table and validated against Rfam RF00080. Dies on sample size (36 labelled sequences, 6 positives) and on the label being a visual annotation of the input sequence itself.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 3.9,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.05,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated, not timed: the entire tabular supplement is 7.5 MB and 36 sequences would embed in seconds on a laptop CPU. The 3.87 GB figure is the Zenodo molecular-dynamics zip, which I read from the Zenodo file listing and did not download.",
+    "cheapest_killing_check": "Open the supplementary Excel workbook and count rows in the largest sheet - it is 36, which kills the project in under five minutes. I did this."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A single-RNA biophysics study, not a dataset. Verified in the files: the largest labelled table is 36 sequences (6 positives), the only numeric results are six summary conditions and four rate rows, and the 3.87 GB Zenodo archive is simulation trajectories of one molecule rather than independent examples. Fails A2 (no outcome column; any target must be constructed), A5 (far under 400 rows) and A8 (candidate labels are hidden-Markov-model fits or annotations read off the input sequence). The science is good; there is no machine-learning project in it."
+}

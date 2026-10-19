@@ -1,0 +1,135 @@
+{
+  "paper_id": "science2026-adw7709",
+  "title": "Neural evidence that dogs segment the speech they hear with a humanlike consonant bias.",
+  "doi": "10.1126/science.adw7709",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.6084/m9.figshare.32051355",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Pulled the full Figshare record (237 files, 16.98 GB, CC BY 4.0) and downloaded 10 files. Opened and counted rows in Participant_info.xlsx (56 rows: 34 dogs + 22 humans; included_in_stat = Y for exactly 20 dogs and 20 humans), CoVo_ITC_dog.xlsx (1,728 rows = 32 dogs x 3 conditions x 3 channels x 6 frequencies), CoVo_ITC_hum.xlsx (1,080 rows = 20 x 3 x 3 x 6), CoVo_zscore_dog.xlsx (37,632 rows, 7 channels, 56 frequency bins), Covo_ERP_dog.csv (432,288 rows) and CoVo_ERP_hum.csv (270,180 rows). Confirmed each ERP (event-related potential, the averaged brain-voltage waveform) row block is exactly 1,501 one-millisecond timepoints per subject x condition x channel, i.e. these are subject-level averages with no single trials. Confirmed the raw EEG is 156 Neuroscan .cdt.cnt files of ~24 MB each (32 dogs and 20 humans x 3 streams). Read the authors' R and MATLAB analysis scripts.",
+    "what_came_from_paper_text_only": "The paper itself is paywalled (not in PubMed Central, no open full text), so the abstract plus the Figshare description is all the narrative I had. The stimulus design (three-syllable nonsense words, consonant- vs vowel-structured vs random streams) and the claim of 20 dogs and 20 humans come from the abstract and press coverage, not from a methods section I read. I did not verify the physical units of the ERP 'data' column (conventionally microvolts) because no README or legend documents the ERP and ITC files."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Figshare DOI 10.6084/m9.figshare.32051355, CC BY 4.0, no login or application. I downloaded 10 files successfully, including the 14 MB dog ERP table."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The prediction target is the stimulus stream and it is a literal column: 'cond' with values cons/vow/rand in the ITC and z-score tables, coded 1/2/3 in the ERP CSVs. No construction needed, though the 1/2/3 mapping is documented only inside the authors' MATLAB scripts, not in the data files."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "EEG (electroencephalography, scalp voltage) values are present as numbers in every table; no accession lookups needed. Raw continuous recordings are also deposited as .cnt files."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Marginal pass. ITC (inter-trial coherence) and z-score are dimensionless by definition and consistent; frequency is in Hz. But the ERP 'data' column has no stated unit anywhere in the deposit, and no README documents any file except Participant_info.xlsx. Implied but internally consistent, so not a killer on its own."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 156,
+      "note": "FAILS. The unit of analysis is the subject, and there are 52 subjects with recordings (32 dogs, 20 humans); only 20 dogs and 20 humans are flagged included_in_stat. With three stimulus conditions each, the whole labelled design is 156 subject-by-condition cells, 120 in the analysed set. The checklist needs ~400 for classification. The big numbers are illusory: the 432,288 rows in the dog ERP file are 1,501 consecutive millisecond timepoints inside each of 288 subject-averaged waveforms, not independent examples. This is the same 'A5 in disguise' failure as the scCT-DB candidate, where 6.19M cells reduced to ~1,142 patients."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "47 MB processed tables, or 16.98 GB raw EEG",
+      "note": "FAILS in the only configuration that could rescue A5. The processed tables are tiny (47 MB) but too few. The single route to thousands of examples is epoching the 156 raw .cdt.cnt files, a 16.98 GB working set that is over the ~5 GB laptop limit and over the project's 50 MB download policy in aggregate, and that means rebuilding the authors' full EEGLAB preprocessing pipeline before a single feature row exists. No subsetting route gets both enough examples and a small working set."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Consistent and well explained. Participant_info.xlsx lists 34 dogs and 22 humans, raw files exist for 32 dogs and 20 humans, and the included_in_stat flag marks exactly 20 of each, matching the paper's reported 20 and 20. The two dogs and two humans with no recordings are the only unexplained gap, and they are outside the analysed set."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Clean. The label is the experimenter-assigned stimulus stream (consonant-structured, vowel-structured, or random nonsense-word audio), a physical manipulation set before recording. It is not another model's output and is not computable from the EEG features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "VLAAI (Very Large Augmented Auditory Inference), a deep network that reconstructs the speech sound envelope from human EEG",
+        "open_weights": true,
+        "score_and_split": "Median Pearson correlation 0.19 reconstructing the speech envelope, reported as subject-independent (held-out listeners), per the Scientific Reports 2023 paper; a ~52% gain over linear decoders.",
+        "authors_named_unsolved": "Generalising to listeners not seen in training remains weak; absolute correlations stay low.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "SDN-Net (Subject Disentanglement Network), a cross-subject EEG speech-envelope reconstruction model",
+        "open_weights": null,
+        "score_and_split": "Reported ~21.4% relative improvement in cross-subject reconstruction over VLAAI; split is cross-subject.",
+        "authors_named_unsolved": "Subject-to-subject variability in EEG still dominates the signal.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Support vector machine classifier on canine EEG (Sci Rep 2020, 'Time-resolved classification of dog brain signals reveals early processing of faces, species and emotion')",
+        "open_weights": null,
+        "score_and_split": "Pairwise image-category decoding from dog EEG, best in the 100-140 ms and 240-280 ms windows after stimulus onset; split details not retrieved.",
+        "authors_named_unsolved": "Not retrieved (I read the search summary, not the full paper).",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate. EEG foundation models (e.g. LaBraM-style encoders) assume dense human montages of 32-128 electrodes; this deposit has 3 usable midline channels, and the dog and human montages use different electrode positions (dog Fz/FCz/Cz vs human Fpz/FCz/CPz), so no pretrained encoder maps onto both.",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "None identified with a usable key. Public human speech-EEG corpora such as the SparrKULee / Auditory EEG Challenge dataset exist, but they share no subject, electrode or stimulus identifier with this deposit, so the 'join' would just be training on one and testing on the other.",
+    "join_key": "none",
+    "bigger_question_one_sentence": "Could not be written as a true join; the only cross-dataset question is transfer, not integration."
+  },
+  "controls": {
+    "positive_control": "Available in principle and genuinely good: the authors report significant 4 Hz syllable-rate entrainment in both species, so any working pipeline must recover a spectral peak at the syllable rate before anything else is believed.",
+    "negative_control": "Shuffling the condition labels within subject is trivially runnable on the 1,728-row ITC table.",
+    "external_validation": "None joinable. No second dog speech-EEG dataset of this design exists that I found."
+  },
+  "honest_claim_h3": "At best: 'in 20 companion dogs and 20 adults from one Budapest laboratory, a classifier can tell consonant-structured from vowel-structured speech streams above chance using 3 midline electrodes' — a claim about 52 individuals from one lab, one recording rig and one language (Hungarian-speaking owners), which is a statistics result, not a model.",
+  "plain_idea": {
+    "one_liner": "Use brain-wave recordings from dogs and people to predict which kind of speech stream they were listening to.",
+    "train_on": "Per-subject electroencephalography summaries from 32 dogs and 20 humans listening to continuous streams of three-syllable nonsense words: inter-trial coherence at 6 frequencies on 3 electrodes, plus 1,501-millisecond averaged waveforms. 156 subject-by-condition examples in total, a count I verified in the files.",
+    "predict": "Which of three audio streams the subject heard - words defined by repeating consonants, by repeating vowels, or random. The truth is the experimenter's stimulus assignment, recorded before the session, so it is exact.",
+    "why_worthwhile": "Comparative cognition labs would want to know whether a machine can read the consonant bias out of single individuals rather than only out of a group average, since that would turn a population effect into a per-animal measure. As built, the sample is far too small to support that."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "The dog recordings are genuinely unique - 32 dogs x 3 speech streams is, as far as I found, the only canine speech-segmentation EEG set in public. But it is 52 subjects against human speech-EEG corpora with far more listeners and 64 electrodes, and it has only 3 usable channels."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no repeated sessions per subject in the deposit, so within-subject measurement noise cannot be estimated, and with 20 analysed animals there are too few examples per group to calibrate anything."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The relevant open model, VLAAI (2023), does a different task (reconstructing the speech envelope from dense human EEG) and cannot be run on 3 dog electrodes, so there is no number here to beat and no fair comparison to make."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on every condition: no existing model runs as a baseline on this montage, no accessible dataset joins to it on any key, and no other lab measures the same quantity the same way in dogs."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was three-class decoding of stimulus type (consonant-structured / vowel-structured / random nonsense-word stream) from EEG, with leave-one-subject-out splits and a cross-species transfer test (train on humans, test on dogs, and the reverse). The science question is excellent and the labels are perfect, but the design yields 156 subject-by-condition examples from 52 individuals; the only way to more examples is epoching 17 GB of raw Neuroscan recordings, which breaks the laptop budget while still leaving 52 independent units. Realistic use of this deposit: cite it as a held-out external test for someone else's speech-tracking model, not as training data.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": 1,
+    "compute_note": "Measured, not estimated: I downloaded the processed tables (47 MB total) and loaded all of them in pandas in seconds. Getting to a feature/label table is genuinely about two hours. The effort is low precisely because the dataset is too small - cheapness is not the problem here.",
+    "cheapest_killing_check": "Count the independent units, which is one line: Participant_info.xlsx has 56 rows and exactly 20 dogs plus 20 humans flagged included_in_stat. 40 subjects x 3 conditions = 120 labelled examples. That kills it in under five minutes, before any download of the 17 GB raw set."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on sample size, and A6 on the only route that could fix it. The deposit is exemplary in every other respect - fully open under CC BY 4.0, raw plus processed data, every analysis script included, a clean included_in_stat flag that reconciles the 34 recorded dogs with the 20 analysed ones, and a label (stimulus condition) that is a real experimental manipulation rather than another model's output. But the experiment has 52 subjects, 40 of them analysed, and three conditions each, giving 156 subject-by-condition examples against a ~400 minimum. The 432,288 rows in the dog ERP file are consecutive millisecond samples inside 288 subject-averaged waveforms, not independent observations; I confirmed each block is exactly 1,501 timepoints. Epoching the raw recordings could manufacture thousands of trials, but they stay nested in 52 individuals and cost a 16.98 GB working set plus a full re-implementation of the authors' EEGLAB pipeline. On top of that, only 3 midline electrodes are usable and the dog and human montages differ, so no pretrained EEG backbone fits and the cross-species transfer experiment - the one genuinely interesting idea here - would rest on 20 animals. This is a beautifully shared psychophysiology study, not a machine learning dataset."
+}

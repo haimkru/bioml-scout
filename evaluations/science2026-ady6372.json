@@ -1,0 +1,197 @@
+{
+  "paper_id": "science2026-ady6372",
+  "title": "Multi-organelle signatures map cell-state diversity and metabolic adaptation in tissues.",
+  "doi": "10.1126/science.ady6372",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.25378/janelia.32717316",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded 8 of the 29 CSV files from the Janelia figshare deposit (CC BY 4.0, no login) and parsed them with pandas. Verified row counts (fig1 liver+pancreas 65,356 cells; Fig2 control hepatocytes 5,557; figS21_S22 10,623; Fig6 10,622; Western-diet time course 18,888), the 109 organelle-feature columns, that ascini_position (acinar position, portal-to-central axis) is a numeric column spanning -1 to +1 with zero missing values, and that group/condition is a column. Parsed animal and acinus identifiers out of the 'labels' strings: 10 livers (4 control, 3 fasted, 3 Western diet) and 28 acini. Ran a real baseline on my laptop: gradient-boosted trees on ~109 organelle features predicting acinar position gave R-squared 0.82 / Spearman 0.90 with acini held out, 0.66 / 0.82 with livers held out, and R-squared 0.52 / Spearman 0.78 leaving out one control liver at a time. Ran both controls: shuffling the labels collapsed performance to R-squared -0.057, and mitochondrial density fell toward the central vein in 27 of 27 acini (peroxisome density likewise 27/27, lipid-droplet area fraction rose in 96%). Read the data dictionary, the GitHub analysis repo README, the fig2/fig6 module READMEs, and the liv_zones pipeline source files that compute acinar position (distance_to_veins.py, ascini.py).",
+    "what_came_from_paper_text_only": "The Science article itself is paywalled with no PubMed Central full text, so I never read its Methods or its reported model accuracies. The experimental design (male mice, 12-hour light/dark cycle, tissue collected around 6 am, portal-to-central imaging) comes from the figshare deposit description. The multilayer-perceptron architecture and its random 20% validation split come from the repo's fig6 README, not from the paper. Units of area and length are not written anywhere in the deposit; I inferred square micrometres from the magnitudes (median cell area 412, median mitochondrial area 1.04)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Janelia figshare deposit 10.25378/janelia.32717316, CC BY 4.0, open API, no login or application. I downloaded and opened 8 files. Code is MIT on GitHub plus Zenodo archives."},
+    "a2_label_is_a_column": {"pass": true, "note": "ascini_position (normalised portal-to-central position) is a numeric column with 0 missing values in both files I checked; 'group' (nutritional condition) is also a column. Only the Western-diet day label needs a one-line substring parse of 'labels'. Nothing has to be inferred across sources."},
+    "a3_inputs_present": {"pass": true, "note": "All ~109 organelle measurements (mitochondria, peroxisomes, lipid droplets; density, area, perimeter, solidity, circularity, aspect ratio, distance from cell edge, plus subtype fractions) are numeric columns in the same row. No accessions or names to resolve."},
+    "a4_units_stated": {"pass": true, "note": "Weakest killer. The data dictionary says outright that units are set in the pipeline and never converted, so no units column exists. But every column's meaning is documented, scales are consistent across all files from one pipeline, the label is explicitly dimensionless (-1 to +1), and magnitudes I measured (cell area 412, mitochondrion 1.04) are consistent with square micrometres. Standardised features make the gap harmless here; comparing absolute areas to another study would not be safe."},
+    "a5_enough_rows": {"pass": true, "n_rows": 10623, "note": "10,623 hepatocytes carry a position label (5,557 in controls alone, 18,888 in the Western-diet course). The real unit matters: position varies WITHIN each acinus (162-1,441 cells each spanning the axis), so cells are informative units for this label, not pseudo-replicates. The animal-level labels are a different story - see a8 note and the leakage plan."},
+    "a6_fits_laptop": {"pass": true, "working_set": "15 MB (one CSV); 120 MB for every cell-level table", "note": "Verified by loading. One cross-validation run of the baseline took 105 seconds on CPU. The raw confocal images (88 GB) and the per-organelle tables (6.4 GB total, single files up to 764 MB) are not needed and were not downloaded."},
+    "a7_counts_match_paper": {"pass": true, "note": "The 10 livers I parsed out of the label strings (4 control, 3 fasted, 3 Western diet) match the deposit's stated design exactly. Minor wrinkles, all resolvable: Fig6 has 10,622 rows and figS21 has 10,623 for the same cohort; 'group' is coded 1/2/3 although the dictionary says CNT/STV/WD; and figshare's flat listing shows three files with the identical name at 365, 463 and 535 MB (a directory tree the API flattened)."},
+    "a8_label_provenance": {"pass": true, "note": "Acinar position is a geometric measurement from the image: the pipeline finds vessel lumens as holes in the cell mask, fits ellipses, and computes each cell's normalised distance between the portal and central vessels. It is not another model's prediction of the label and is not computed from any organelle feature. Two real traps, both avoidable: centroid-0/centroid-1 are the coordinates the label is built from and must be dropped, and the authors' Prediction/CAT/component columns are cluster assignments that were explicitly remapped BY acinar position, so using them as features would leak the label outright."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One 10,623-row CSV carries features, label and grouping keys; verified by loading it."},
+    "B2": {"score": 1, "why": "Clean CSV, but 'labels' is a stringified Python list and group is coded 1/2/3 not CNT/STV/WD."},
+    "B3": {"score": 2, "why": "Label already normalised by authors to -1..+1 by one pipeline for all cells; 0 missing."},
+    "B4": {"score": 1, "why": "No censored values; rare lipid-droplet subtype columns are 96% empty in the control table."},
+    "B5": {"score": 1, "why": "Zero duplicate feature rows found, but two deposited files for one cohort differ by one row."},
+    "B6": {"score": 2, "why": "Dedicated data_dictionary.md documents every column convention; per-figure READMEs list seeds."},
+    "C1": {"score": 2, "why": "Cross-diet transfer question is informative either way; my run already gave a non-trivial answer."},
+    "C2": {"score": 1, "why": "scDVP's random-forest and this paper's own perceptrons exist, both on random cell-level splits."},
+    "C3": {"score": 2, "why": "Nobody has regressed acinar position from organelle shape; grouped splits beat published random ones."},
+    "C4": {"score": 2, "why": "Alternative is laser-capture mass spectrometry or spatial transcriptomics; scDVP managed 408 cells."},
+    "C5": {"score": 2, "why": "I computed global-mean R2 0.000 and per-condition-mean 0.020; scDVP's 0.90 accuracy is published."},
+    "D1": {"score": 2, "why": "TabPFN v2, an open-weight tabular foundation model, fits 10,623 rows x 109 features exactly."},
+    "D2": {"score": 2, "why": "TabPFN is inference-only on CPU; my gradient-boosting baseline already ran in 105 seconds."},
+    "D3": {"score": 1, "why": "Data is CC BY 4.0 and code MIT, but I did not verify TabPFN's Prior Labs licence terms."},
+    "E1": {"ok": true, "why": "Built acinus (28) and liver (10) grouping columns from label strings; both splits ran."},
+    "E2": {"ok": true, "why": "28 acini with 162-1,441 cells each, and 10 livers - comfortably above five groups."},
+    "E3": {"ok": true, "why": "Computed: global mean R2 0.000, per-condition mean 0.020, best single feature rho 0.64."},
+    "E4": {"ok": false, "why": "Per-z-slice replicates are averaged away in the deposited cell tables; noise floor not estimable."},
+    "E5": {"ok": true, "why": "Verified: mitochondrial and peroxisome density fall toward the central vein in 27/27 acini."},
+    "E6": {"ok": true, "why": "Verified: shuffling labels with acini held out collapsed performance to R-squared -0.057."},
+    "E7": {"ok": true, "why": "Separate Western-diet mice, a pancreas arm, plus public GSE218472 and PXD038699 on the same axis."},
+    "E8": {"ok": true, "why": "Paper's perceptron script, exact input CSV and seeds are deposited; its number is behind the paywall."},
+    "G1": {"score": 1, "why": "No database identifiers at all; the join key is a normalised spatial coordinate needing binning."},
+    "G2": {"score": 2, "why": "GEO GSE218472 and PRIDE PXD038699, already harmonised to acinar bins by the authors themselves."},
+    "G3": {"score": 1, "why": "Cell-to-cell join is impossible; bin-to-bin is clean with a stated per-bin averaging rule."},
+    "G4": {"score": 2, "why": "Asks whether organelle shape and transcriptional zonation break down at the same positions."},
+    "H1": {"score": 2, "why": "Every segmented cell in every acinus is present; no selection on outcome, controls and perturbations both."},
+    "H2": {"score": 0, "why": "One lab, one mouse strain, male only, 10 animals, one microscope, one collection time."},
+    "H3": {"score": 2, "why": "Stated precisely in one sentence, with the measured numbers from my own grouped-split run."},
+    "H4": {"score": 2, "why": "Deposit description states animal counts, sex, light cycle and collection time explicitly."},
+    "I1": {"score": 2, "why": "Feliciano lab at Janelia, the Mann lab behind scDVP, and Itzkovitz-style liver zonation groups."},
+    "I2": {"score": 2, "why": "A 4-channel organelle stain could replace spatial proteomics for zonal identity - or be shown not to."},
+    "I3": {"score": 2, "why": "Spearman is exactly the decision (rank a cell along the axis); calibration error covers the quantitative use."},
+    "I4": {"score": 1, "why": "Honest: single features reach rho 0.64 per acinus, so the model adds real but not decisive value."},
+    "J1": {"score": 2, "why": "Grouped splits, cross-condition transfer, calibration, dummy and shuffle controls, optional backbone."},
+    "J2": {"score": 2, "why": "Liver zonation is textbook; I already verified the model must recover a known gradient."},
+    "J3": {"score": 2, "why": "The cleaned, animal- and acinus-annotated feature table plus the label parser is shareable alone."},
+    "J4": {"score": 1, "why": "No budget written down yet; three weeks is the realistic figure from the baseline I timed."},
+    "J5": {"score": 0, "why": "No kill date in NOTES.md yet; the condition to write is in success_criteria.kill."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The paper's own multilayer perceptron classifiers (Fig6_MLP.py and Fig6_Early_MASLD_MLP.py), predicting nutritional condition, hepatocyte category, and days on a Western diet from organelle features",
+        "open_weights": false,
+        "score_and_split": "Code is open under MIT and the exact input CSV is deposited, but no trained weights are released. Validation is a random 20% split of cells (per the repo README), which puts cells from the same mouse and the same image stack on both sides. I could not read the accuracy numbers themselves because the Science paper is paywalled.",
+        "authors_named_unsolved": "The repo states that moving the pipeline to a second tissue required retraining the segmentation models and adding tissue-specific post-processing, and warns that any new tissue should expect comparable hands-on work. They do not claim the classifiers generalise across animals.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "scDVP random-forest image classifier (Rosenberger et al., single-cell Deep Visual Proteomics, Nature Methods 2023) - predicts a hepatocyte's zonal proteome class from image features alone",
+        "open_weights": null,
+        "score_and_split": "Random forest with 200 trees on 17 image features (per-channel intensity statistics plus cell area) from 408 cells, 0.90 test accuracy on a random 20% split of cells from the same section; on an independent liver section, 60 cells gave R = 0.78 between predicted and measured protein intensities. Labels were five k-means clusters of mass-spectrometry proteomes, so the label is itself a clustering output. I read these numbers in the open-access article; I did not check whether their code or model is downloadable.",
+        "authors_named_unsolved": "Their framing is that mass spectrometry is needed to define the proteome classes in the first place and that throughput is the bottleneck - inferring zonal state from images is offered as the cheap substitute.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Bravo Gonzalez-Blas et al. deep-learning enhancer model of liver zonation (Nature Cell Biology 2024)",
+        "open_weights": null,
+        "score_and_split": "Solves a different task - DNA sequence to enhancer activity along the periportal-to-pericentral axis, reporting 8,805 regions and 2,697 zonation-affected genes. Not a morphology-to-position model, so no comparable split or score. Included only to show the liver-zonation modelling field is active.",
+        "authors_named_unsolved": "Not applicable to this task.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "TabPFN v2 (a pretrained transformer for small tabular tables, open weights on Hugging Face) as the backbone; HistGradientBoostingRegressor as the plain baseline I already timed",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU only. TabPFN v2 is inference-only for tables under about 10,000 rows and 500 features, which this data (10,623 x 109) just fits; the gradient-boosting cross-validation took 105 seconds.",
+    "licence": "Data CC BY 4.0, analysis code MIT, pipeline open on GitHub and Zenodo. TabPFN's Prior Labs licence terms were not verified. Note the biology-specific backbones in the checklist (ESM-2, scGPT and so on) do not apply: this is a table of shape measurements, not sequence or expression. A vision backbone would only apply to the 88 GB raw image route, which is a different and much larger project."
+  },
+  "integration": {
+    "partner_dataset": "GEO GSE218472 (spatial transcriptomics of mouse liver) and PRIDE PXD038699 (spatial proteomics), both already reanalysed and harmonised to acinar position bins by these authors in the deposited Fig3_Adapted_Spatial_Proteomic_Data.csv; scDVP's zonated hepatocyte proteome is a third option.",
+    "join_key": "Normalised acinar position binned into the same portal-to-central intervals (no database identifier exists in this data; one feature profile averaged per bin per condition is the collapse rule).",
+    "bigger_question_one_sentence": "Do organelle architecture and transcriptional or protein zonation programmes break down at the same positions along the portal-to-central axis when mice are fasted or fed a Western diet, or does structure reorganise where expression does not?"
+  },
+  "controls": {
+    "positive_control": "Already run and passed: mitochondrial density decreases toward the central vein in 27 of 27 acini (median Spearman -0.64), peroxisome density likewise 27 of 27 (-0.60), and lipid-droplet area fraction increases toward the central vein in 96% of acini (+0.49). This is textbook liver zonation, so the pipeline and the label's sign convention are both sound.",
+    "negative_control": "Already run and passed: shuffling the position labels, with acini held out, drove performance to R-squared -0.057, i.e. the dummy. Next steps are ablating each organelle block in turn and training on the centroid columns alone to measure how big the positional leak would have been.",
+    "external_validation": "Three independent routes, none needing new data: the Western-diet time-course mice (18,888 cells, different animals), the pancreas arm of fig1 (41,759 cells, 3 mice, with insulin and glucagon intensities as an independent cell-identity label), and the public spatial proteomics and transcriptomics the authors harmonised to the same acinar axis."
+  },
+  "honest_claim_h3": "Among hepatocytes segmented from confocal images of 10 male mouse livers from one lab, a cell's organelle architecture predicts its normalised position along the portal-to-central axis with Spearman 0.78 when whole control livers are held out, but a control-trained model's calibration collapses on fasted livers (R-squared -0.03, Spearman 0.70) and largely fails on Western-diet livers (R-squared -0.08, Spearman 0.33).",
+  "plain_idea": {
+    "one_liner": "Use the shapes and amounts of a liver cell's internal compartments to predict where it sits between the two blood vessels.",
+    "train_on": "One row per liver cell, holding about 109 measurements of its mitochondria, peroxisomes and fat droplets - how many, how big, how round, how far from the cell edge. I verified 10,623 labelled cells across 10 mice and 28 repeating liver units, with 5,557 of them from control animals.",
+    "predict": "A single number from -1 to +1 giving the cell's position along the axis between the portal vessel (where blood enters the liver) and the central vessel (where it leaves). The true answer is measured geometrically on the same image: the pipeline locates the two vessel openings and computes the cell's relative distance between them.",
+    "why_worthwhile": "Liver cells do different metabolic jobs depending on where they sit, and today you need expensive spatial proteomics or transcriptomics to read that position off. If four fluorescent stains and a model can do it instead, that is a far cheaper assay; and the finding that a control-trained model fails on diseased livers tells anyone planning such an assay they must re-fit per condition."
+  },
+  "paper_type": "resource",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "10,623 hepatocytes with a continuous position label, and 18,888 more in a Western-diet course, against scDVP's 408 cells with five discrete proteome classes (both numbers verified - mine by loading the files, theirs by reading the article). Our label is continuous rather than binned, and it covers three nutritional states that scDVP never sampled."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "28 acini and 10 livers let you report a per-liver spread and bootstrap an interval, and prediction error can be reported as a function of position, which neither scDVP nor the paper's own perceptrons provide. But the measurement noise floor is not estimable, because the deposited cell tables already average each cell's organelles over z-slices, so a genuinely calibrated per-cell uncertainty is out of reach."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "scDVP's 2023 random forest used 17 intensity features on 408 cells with a random 20% split of cells from one section; the paper's own 2026 perceptrons use a random 20% cell split that puts the same mouse and the same image stack on both sides. Neither was evaluated on held-out animals, which is the honest split, and neither predicts continuous position."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The paper's perceptron is runnable as a baseline on the deposited CSV, but it solves a different task (condition and category classification, not position regression), so a like-for-like comparison does not exist. The public proteomics and transcriptomics join only at the position-bin level, not cell to cell, so they add context rather than more training examples for the same measurement."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Acinar position is assigned to hepatocytes in several public resources: GEO GSE218472 (spatial transcriptomics of mouse liver) and PRIDE PXD038699 (spatial proteomics), both reused by these authors; scDVP's zonated proteome (400 hepatocytes with a 0-to-1 portal-to-central ratio, a number I read in the open-access article); and MERFISH-based human and mouse liver atlases found by searching. All are hard to join: none shares a cell identifier with this imaging data, only a harmonised position coordinate.",
+    "approx_items": null,
+    "join_key": "Normalised portal-to-central position, binned (there is no database identifier such as UniProt or Ensembl anywhere in this data).",
+    "why": "Those resources cannot add training rows cell by cell, but they give an independent check that the organelle-position relationship this model learns lines up with the transcriptional and protein gradients measured by other assays."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The centroid-0 and centroid-1 columns are the image coordinates the position label is computed from, so keeping them would hand the model the answer.",
+      "The authors' Prediction, Prediction_original, CAT, Probability and component_1/component_2 columns are cluster assignments that the data dictionary says were remapped by acinar position - any of them as a feature leaks the label directly.",
+      "Cells in one acinus are physically adjacent and share illumination, staining and segmentation settings, so a random cell split puts near-neighbours on both sides.",
+      "Nutritional condition is perfectly confounded with animal: each of the 10 livers belongs to exactly one condition, so any condition classifier is partly an animal classifier.",
+      "The Western-diet time course has only one or two mice per time point (31 days is a single mouse), so predicting days on diet from a random cell split is mouse identification, not biology."
+    ],
+    "split": "Hold out whole acini for the main number (28 groups) and whole livers for the headline claim (10 groups). Both columns are built from the first element of the 'labels' string with the regex ^([A-Za-z0-9]+)_L(\\d+)L?(\\d*)a(\\d+)s(\\d+), giving condition, liver, lobe, acinus and slice. I built both columns and ran both splits, so I have seen them work. For the transfer claim, train on control livers only and test on fasted and Western-diet livers.",
+    "checks": [
+      "Shuffle the position labels and confirm collapse to the dummy - already done, R-squared -0.057 with acini held out.",
+      "Train on centroid-0 and centroid-1 alone to measure how large the positional leak would have been, as an upper bound on the damage.",
+      "Check that known zonated features keep the same sign in every acinus - already done, 27 of 27 for mitochondrial and peroxisome density.",
+      "Ablate each organelle block (mitochondria only, peroxisomes only, lipid droplets only) to see whether one block does all the work.",
+      "Compare the random cell split against the acinus and liver splits on the same model to quantify how much the published style of split inflates the score (my quick run: 0.82 with acini held out versus 0.66 with livers held out)."
+    ],
+    "verdict": "Manageable. The dangerous columns are named in the data dictionary and trivially dropped, the grouping keys are recoverable from the label strings, and both controls already passed on the first attempt."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured acinar position with whole livers held out - ranking is the decision, since a user wants to assign each cell a zonal identity. R-squared is reported alongside, because the transfer claim is specifically about calibration failing while ranking survives.",
+    "baselines": "Computed by me on the deposited data: predicting the global mean gives R-squared 0.000 and the per-condition mean gives 0.020; the best single feature (mitochondrial density) reaches a median per-acinus Spearman of 0.64. Published comparator: scDVP's random forest scored 0.90 accuracy on a random 20% split of 408 cells and R = 0.78 on 60 cells of an independent section.",
+    "success": "Spearman at or above 0.80 leaving out one control liver at a time (my untuned gradient-boosting run reached 0.777), together with a transfer drop reported with a bootstrap interval across the 10 livers showing the control-to-Western-diet gap is real and not animal noise.",
+    "noise_ceiling": null,
+    "kill": "Stop if, after two weeks, the liver-held-out Spearman is not at least 0.10 above the single-feature baseline of 0.64, or if ablation shows one organelle block reproduces the whole model - in which case the result is a one-page note about three features, not a model."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Cell Systems",
+      "why": "Publishes biology-first quantitative work linking cell structure to cell state; it would take the clear positive - organelle architecture reading out zonal position across diets, with the diet-specific breakdown mapped onto the transcriptional zonation programme."
+    },
+    "realistic": {
+      "journal": "PLOS Computational Biology",
+      "why": "Publishes new predictive tasks on existing measurements with honest evaluation; the likely result - position is strongly predictable within a diet state, a control-trained model mis-calibrates under fasting and fails under Western diet, and grouped splits deflate random-split numbers - fits squarely."
+    },
+    "fallback": {
+      "journal": "Bioinformatics (application note or benchmark note)",
+      "why": "Takes short, careful re-evaluations: even if the only finding is that random cell-level splits inflate accuracy on this data and that a reusable animal- and acinus-annotated feature table plus label parser fixes it, that is publishable there, or as a bioRxiv preprint with a workshop talk."
+    }
+  },
+  "pitch": {
+    "headline": "10,623 liver cells, each with 109 measured organelle features and an exact position between two blood vessels, in one 15 MB table.",
+    "what_makes_the_data_unusual": "Published imaging studies of liver zonation measure hundreds of cells; this one measures 10,623 with a continuous position label, zero missing values, across control, fasted and Western-diet mice, all CC BY 4.0 with MIT code.",
+    "the_win": "Organelle shape alone predicts acinar position at Spearman 0.78 with whole control livers held out, yet that model scores R-squared -0.08 on Western-diet livers - diet rewires the structure-to-position map.",
+    "even_if_it_fails": "Still worth it: both numbers above are already measured, and the comparison of random-cell against held-out-liver splits quantifies how much the published evaluation style inflates accuracy on this kind of imaging data.",
+    "who_wants_it": "The Feliciano lab at Janelia, the Mann lab behind single-cell Deep Visual Proteomics, and liver-zonation groups deciding whether a four-channel organelle stain can replace spatial proteomics for assigning zonal identity."
+  },
+  "ml_idea": "Predict a hepatocyte's normalised position along the portal-to-central axis (ascini_position, -1 to +1) from its ~109 organelle-architecture features, with whole acini and whole livers held out, then test whether a control-trained model transfers to fasted and Western-diet livers. Drop centroid-0/centroid-1 (the label is built from them) and every Prediction/CAT/component column (cluster assignments remapped by position). Baseline: gradient-boosted trees, already run - R-squared 0.82 / Spearman 0.90 with acini held out, 0.52 / 0.78 leaving out one control liver, and R-squared -0.03 / -0.08 transferring to fasted and Western-diet animals. Optional backbone: TabPFN v2, which fits this table's shape on CPU. Second, nearly free result: re-run the paper's own perceptron scripts (open, MIT, on the deposited CSV) with livers held out instead of a random 20% cell split, and report how far the accuracy falls - including that their Western-diet duration model has only one or two mice per time point.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.015,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": 0,
+    "cv_run_minutes": 2,
+    "compute_note": "Timed, not estimated: downloading and loading the 15 MB CSV took seconds, and one 5-fold cross-validation of gradient-boosted trees on 9,182 rows by 109 features took 105 seconds with acini held out and 6 seconds with livers held out. Peak memory never approached 1 GB. The 3 hours covers parsing animal and acinus out of the label strings, dropping the leaky columns, and deciding what to do about the rare lipid-droplet subtype columns.",
+    "cheapest_killing_check": "Count animals per class in the label strings before anything else - already done. The three-condition task has 10 livers (4 control, 3 fasted, 3 Western diet) with condition perfectly confounded with animal, and the Western-diet time course has only one or two mice per time point with 31 days being a single mouse. That kills day-of-diet prediction as a predictive task but leaves position regression intact, because position varies within every animal."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes against the actual files, not the paper: the deposit is open CC BY 4.0, the label is a clean numeric column with zero missing values, 10,623 labelled hepatocytes fit in a 15 MB table, and the animal and acinus grouping keys are recoverable from the label strings. I then ran the project's first hour: gradient-boosted trees reach Spearman 0.78 on held-out control livers, the label-shuffle control collapses to the dummy, and the positive control (mitochondrial density falling toward the central vein) holds in 27 of 27 acini. The result that makes it worth doing is already visible - a control-trained model keeps its ranking under fasting (0.70) but loses it under a Western diet (0.33) and mis-calibrates badly in both, which puts a number on the paper's qualitative claim that nutritional stress reshapes organelle organisation. Nobody has regressed acinar position from organelle architecture; the nearest model (scDVP's random forest, 408 cells, random split) is beatable on data size and on split honesty. The honest limits: 10 male mice from one lab, no database identifiers for joining, no estimable noise floor, and three features already get you most of the way, so the claim must stay modest."
+}

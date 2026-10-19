@@ -1,0 +1,109 @@
+{
+  "paper_id": "science2026-aeh1348",
+  "title": "Manipulation of protein translation and stem cell self-renewal by CRISPR activation of rRNA transcription.",
+  "doi": "10.1126/science.aeh1348",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE324584 ; https://doi.org/10.5281/zenodo.20067612 ; https://github.com/PhysiologicalGenomicBMC/TAPIR_Wiesbeck_et_al",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened every processed file I could find. GEO series GSE324584: GSE324584_RAW.tar (2.7 MB) holds 12 bulk RNA-seq count files, each exactly 57,137 rows of Ensembl mouse gene ID plus a raw read count, 6 TAPIR (guide-RNA) vs 6 control, conditions stated in the GEO sample titles. GSE324584_reads_psite_list_th_all.csv.gz (27 MB) holds 2,859,682 individual ribosome-footprint positions from 4 ribosome-profiling libraries; I counted footprints per library (2,174,905 / 250,755 / 331,338 / 102,683) and per transcript, finding only 1,219 transcripts with 10 or more coding-region footprints in all four libraries and 207 with 32 or more. From the authors' GitHub/Zenodo repository I downloaded the 25.9 MB mass-spectrometry table (50,532 peptides x 71 columns), confirmed 42,717 peptides carry an abundance-ratio value covering 5,370 protein accessions, joined 99.8% of them to UniProt mouse gene names via one bulk UniProt download, and measured the label's reliability myself: between-protein spread 0.120 log2 units versus within-protein technical spread 0.221 log2 units, split-half correlation 0.332 (0.499 after Spearman-Brown correction), 564 peptides capped at ratio 100 and 557 at 0.01. I ran the ribosomal-protein positive control and it failed (ribosomal proteins median -0.111 log2, i.e. slightly down, versus 0.010 for all others). Also checked PRIDE (no deposition) and GEO by author (no other series for this study).",
+    "what_came_from_paper_text_only": "Almost nothing, because the article is paywalled: Europe PMC shows no PubMed Central record, no full text, no supplementary files and no data availability statement, so I could not read the methods, the figure legends or any supplementary table. The abstract and a press release are the only narrative I have, including the claim that protein synthesis rose by roughly 35-60%. I therefore could not confirm what the mass-spectrometry comparison labelled 'VPR / noVPR' corresponds to experimentally, nor which two of the four ribosome-profiling libraries are the TAPIR condition."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All processed data opened without any login or application: GEO GSE324584 over plain HTTPS, and the code plus mass-spectrometry table from GitHub/Zenodo under a CC-BY-4.0 licence. Only the Science article itself is paywalled."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. For the ribosome-profiling task the condition label does not exist in the file: the deposited footprint table names its four libraries extract_B73_1_1 to extract_B73_4_1, while GEO names the same samples 'mNSC, gRNA R1/R2' and 'mNSC, control R1/R2' with sequencing-library names EKDL250034813-16, and no mapping between the two naming schemes appears in GEO, the repository file list or the sample records, so which two libraries received the activating guide RNA would have to be guessed. For the mass-spectrometry task a ratio column does exist, but it compares 'VPR' to 'noVPR' (presence or absence of the dCas9-VPR activator protein) with no documentation of which condition is TAPIR, and its global shift is essentially zero, so the label the paper's question needs - the change caused by raising ribosomal RNA - still has to be inferred rather than read off."},
+    "a3_inputs_present": {"pass": true, "note": "Would pass. No sequences are in any file, only identifiers, but they are standard ones: Ensembl mouse gene IDs in the count tables, Ensembl transcript IDs in the footprint table, UniProt accessions in the mass-spectrometry table. I verified the UniProt join works in one bulk download, mapping 4,862 of 4,876 accessions (99.8% of peptides) to gene names and sequences. One GENCODE transcript file would supply the untranslated-region and coding sequences."},
+    "a4_units_stated": {"pass": false, "note": "Weak fail. The RNA-seq files have no header line at all - just gene ID, an empty column, and an unlabelled integer that is raw read counts only by inference from the repository's htseq script. The mass-spectrometry abundance columns are 'Abundances (Normalized)' in arbitrary instrument intensity units with no statement anywhere in the deposited file of how they were normalised, and the ratio column's direction is only implied by its name."},
+    "a5_enough_rows": {"pass": true, "n_rows": 2908, "note": "Nominally passes on the mass-spectrometry table: 4,876 proteins carry a ratio and 2,908 have at least four uncapped peptides, above the ~1,500 bar. But the biological unit is the experiment, and there is one: a single mouse neural stem cell line, one perturbation, 12 RNA-seq and 12 mass-spectrometry samples and only 4 ribosome-profiling libraries. The ribosome-profiling route fails outright - only 207 transcripts have 32 or more coding-region footprints in all four libraries."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.3 GB (2.7 MB tar of counts, 27 MB compressed footprint table, 26 MB mass-spectrometry CSV, 10 MB UniProt reference)", "note": "Comfortably fits. Everything I opened ran in seconds in pandas on a laptop; peak memory never approached a gigabyte."},
+    "a7_counts_match_paper": {"pass": false, "note": "FAIL, and unresolvable. The article has no PubMed Central record and no accessible supplementary material, so there is no stated protein count, gene count or sample description to compare the files against. Worse, the one cross-check I could do inside the deposited data disagrees: the footprint table's sample identifiers do not correspond to the GEO sample titles or library names, and the mass-spectrometry file compares 'VPR vs noVPR' rather than the guide-RNA vs control contrast that GEO uses for the same study."},
+    "a8_label_provenance": {"pass": true, "note": "Clean on provenance itself. The ratios are measured mass-spectrometry peptide intensities and the counts are sequencing read counts, not another model's predictions, and neither is computed from any feature we would use. The problem is reliability, not circularity."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RiboNN (Sanofi; 'Predicting the translation efficiency of messenger RNA in mammalian cells', Nature Biotechnology 2025) - a multitask convolutional neural network predicting translation efficiency from messenger RNA sequence",
+        "open_weights": true,
+        "score_and_split": "Reported Pearson correlation r=0.79 in human and r=0.78 in mouse for mean translation efficiency across cell types; trained on a transcriptome-wide atlas built from 3,819 ribosome-profiling datasets spanning more than 140 human and mouse cell types. Code is public at github.com/Sanofi-Public/RiboNN. I read the abstract and repository listing, not the paper's full split description.",
+        "authors_named_unsolved": "From the abstract and summaries I retrieved: generalising to chemically modified therapeutic RNA and apportioning information between the 5' untranslated region, coding sequence and 3' untranslated region (reported as roughly 67%/31%/2% per-nucleotide information density). I did not retrieve their discussion section, so I cannot quote an explicit open problem.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Optimus 5-Prime (Sample et al., Nature Biotechnology 2019) - a convolutional network predicting mean ribosome load from 5' untranslated region sequence",
+        "open_weights": true,
+        "score_and_split": "Explains up to 93% of mean ribosome load variance on a held-out test set of 20,000 random 50-nucleotide 5' untranslated regions (from a library of 260,000), and up to 81% on 38,789 truncated human untranslated regions. Random split, fixed 50-nucleotide input.",
+        "authors_named_unsolved": "Follow-up work (FramePool, PLOS Computational Biology 2021) states the named weakness explicitly: performance drops sharply on sequences of varying length because anything longer than 50 nucleotides must be truncated.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "5' untranslated region language models (e.g. UTR-LM, 2024) and UTR-STCNet, transformer models for translation efficiency from untranslated-region sequence",
+        "open_weights": null,
+        "score_and_split": "Reported as beating the best prior benchmark by up to 5% for mean ribosome loading and up to 8% for translation efficiency and messenger RNA expression level. I read abstracts only and did not verify the splits or check weight availability.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Not applicable given the Part A failure. Had the labels held, the natural choices were Nucleotide Transformer or HyenaDNA on the untranslated-region and coding sequences, or RiboNN's published embeddings as features.",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU would suffice for roughly 3,000-5,000 mouse transcripts with a frozen backbone and cached embeddings.",
+    "licence": "Nucleotide Transformer and HyenaDNA weights are openly downloadable; not evaluated further."
+  },
+  "integration": {
+    "partner_dataset": "RiboNN's translation-efficiency atlas (3,819 ribosome-profiling datasets, >140 human and mouse cell types), plus GENCODE mouse transcript sequences and UniProt.",
+    "join_key": "UniProt accession (present and 99.8% joinable, which I verified) and Ensembl gene/transcript ID (present in the count and footprint tables).",
+    "bigger_question_one_sentence": "The join is technically clean - the identifiers really do work - but it answers nothing here, because the partner atlas already contains vastly more and deeper ribosome-profiling data than this study's four libraries, so adding these samples would change no prediction."
+  },
+  "controls": {
+    "positive_control": "Ribosomal protein genes should rise when ribosome-making capacity is raised, since their messenger RNAs carry a 5'-terminal pyrimidine tract that makes them unusually sensitive to translation capacity. I ran this control and it failed: across 73 ribosomal proteins the median change was -0.111 log2 units (slightly down) against 0.010 for the other 3,211 proteins. So the deposited ratio column does not capture the paper's headline effect.",
+    "negative_control": "Label shuffling would be runnable, but it is moot: the label's own split-half reliability is 0.332, so a shuffled label and the real label are barely distinguishable in signal.",
+    "external_validation": "None usable. There is no second study measuring protein abundance change under CRISPR activation of ribosomal DNA, no PRIDE deposition for this dataset, and no year or source column to support a time-based split."
+  },
+  "honest_claim_h3": "The most a model built on these files could honestly claim is: 'given mouse messenger RNA sequence, this predicts a peptide-intensity ratio measured once, in one neural stem cell line, between cells with and without the dCas9-VPR activator protein, whose median change across 2,908 proteins is 0.008 log2 units and whose split-half reliability is 0.33.' That is a claim about measurement noise, not about biology.",
+  "plain_idea": {
+    "one_liner": "Use messenger RNA sequence to predict which proteins rise or fall when a cell is forced to build more ribosomes.",
+    "train_on": "For each mouse protein, its messenger RNA sequence - the untranslated regions at either end and the protein-coding stretch between them. I verified 4,876 proteins carry a measured change value and 2,908 have four or more clean supporting peptides, but sequences themselves are not in the files and would be fetched from GENCODE using the UniProt accessions that are present.",
+    "predict": "A single number per protein: how much its abundance shifted when ribosomal RNA production was raised. The true answer comes from mass spectrometry - peptide intensities measured in six treated and six control cultures and expressed as a ratio.",
+    "why_worthwhile": "Groups designing messenger RNA therapeutics and vaccines want to know which transcripts benefit when ribosomes become more plentiful rather than scarcer, which is the opposite of the starvation conditions most translation data come from. As built, though, the data cannot answer it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This study contributes 4 ribosome-profiling libraries, three of them shallow at 57,000-194,000 coding-region footprints, against RiboNN's training atlas of 3,819 ribosome-profiling datasets across more than 140 cell types. It is four orders of magnitude smaller. The one genuinely distinctive angle - raising rather than lowering ribosome supply - is carried by a mass-spectrometry comparison whose global effect I measured as 0.008 log2 units, i.e. no measurable effect."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The data does support honest uncertainty estimates - there are six replicates per condition and a median of five peptides per protein, which let me compute a split-half reliability of 0.332 - but that same calculation shows the per-protein label is mostly noise, so the confidence estimate would simply say 'we do not know' for almost every protein."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "RiboNN is a 2025 Nature Biotechnology convolutional network with public code reporting r=0.78 in mouse on a multi-cell-type atlas, and Optimus 5-Prime (2019) reports up to 93% of variance explained on 20,000 held-out untranslated regions. These are recent, open and trained on orders of magnitude more data than this paper provides."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Several conditions fail at once: the new measurement is a different quantity (protein abundance ratio by mass spectrometry, not translation efficiency by ribosome profiling), made by a different assay, in a single cell line, and it shows no effect to learn from. Adding it to RiboNN's training set would add noise, not signal."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered and rejected: predict, from mouse messenger RNA sequence features (5' untranslated region, coding sequence, 3' untranslated region, codon usage, 5'-terminal pyrimidine tract), how much each protein's abundance changes when ribosomal RNA transcription is raised by CRISPR activation - a frozen DNA language model plus a regression head on roughly 3,000 proteins. It dies on measurement: the deposited ratio column has a split-half reliability of 0.332, technical spread (0.221 log2) larger than biological spread (0.120 log2), only 3.7% of proteins changing by more than 20%, and a failed ribosomal-protein positive control. The alternative route through the ribosome-profiling data dies on depth (207 transcripts with adequate coverage in all four libraries) and on the fact that nothing in the deposited file says which libraries were treated.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.3,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 3,
+    "cv_run_minutes": 5,
+    "compute_note": "Measured, not guessed, for everything I ran: parsing the 50,532-peptide mass-spectrometry CSV, joining 17,284 UniProt records and computing reliability all completed in seconds at well under 1 GB. The 6-hour feature-table estimate assumes fetching GENCODE mouse transcript sequences and resolving UniProt-to-Ensembl mappings; the 3-hour embedding figure is an estimate for ~3,000 transcripts through a small frozen DNA language model on CPU, which I did not time.",
+    "cheapest_killing_check": "Split the peptides for each protein into two random halves and correlate the two half-medians. I did this: Pearson 0.332, Spearman 0.395, Spearman-Brown corrected 0.499. Forty minutes of work that caps any model's achievable correlation at roughly 0.5 before biology enters, and the ribosomal-protein positive control run alongside it costs another ten minutes and also fails."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A7 on the files, and the label is noise. Three separate verifications killed it. First, the ribosome-profiling route has no usable condition label: the deposited footprint table calls its four libraries extract_B73_1_1 to extract_B73_4_1 while GEO calls the same samples gRNA or control, with no mapping anywhere, so which samples were treated must be guessed - and it would not matter, because only 207 transcripts carry 32 or more coding-region footprints in all four libraries. Second, the only quantitative label that is a real column, the mass-spectrometry abundance ratio over 4,876 proteins, compares 'VPR' to 'noVPR' rather than the paper's guide-RNA contrast, shows a global median shift of 0.008 log2 units, and fails its own positive control (73 ribosomal proteins move slightly down, -0.111 log2, when elevated ribosome capacity predicts up). Third, I measured the label's split-half reliability at 0.332 with technical spread (0.221 log2) exceeding biological spread (0.120 log2), so a perfect model could reach at most about r=0.5 against mostly noise. Separately, the field is well served: RiboNN (Nature Biotechnology 2025, open code) was trained on 3,819 ribosome-profiling datasets across 140-plus cell types at r=0.78 in mouse, against this study's four libraries. The paper is an excellent piece of experimental biology and the authors deposited more than most - open code, a CC-BY proteomics table, plasmid maps - but the article's paywall means no supplementary table or methods section can resolve the sample-naming contradiction, so even the ambiguity is not fixable from outside."
+}

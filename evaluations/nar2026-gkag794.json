@@ -1,0 +1,68 @@
+{
+  "paper_id": "nar2026-gkag794",
+  "title": "Sequential-GAM constructs the single-cell geometric 3D genome structure.",
+  "doi": "10.1093/nar/gkag794",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE193989",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all 20 processed files in GEO (Gene Expression Omnibus) series GSE193989 (9.9 MB gzipped total): each is a 4-column CSV (chr, start_resolution, end_resolution, zaxis) at 10 kb bins, 1,222,168 rows total, 254,937 unique bins, no missing values, no duplicate bins within a file. Confirmed they cover 10 cells x 2 'zlocation' files (named Cell17-Cell39). Opened all 6 supplementary Excel tables (Supp Table 1 = 10 cells with per-slice nuclear sizes; Table 2 = 24 external 4D Nucleome accessions for epigenomic data; Table 4 = 47,943 pairwise locus distances). Pulled all 127 GEO sample records: every one has supplementary_file = NONE and links only to raw SRA (Sequence Read Archive) reads. Fetched the Zenodo/GitHub code record (MIT licence) and its file tree; downloaded the one deposited 3D-coordinate file (chr1, one cell, 9,560 bins with x/y/z). Ran my own split-half reliability test on the z values.",
+    "what_came_from_paper_text_only": "That 'zaxis' is in micrometres and that the nuclear radius is 4.3975 um (both stated in Methods, not in any file header or README). That radial distance to the nuclear centre was computed from full 3D coordinates per locus per cell. All of the paper's biological conclusions (radial gradients of histone marks, q-stable TADs, gene-expression correlations) rest on quantities not present in the deposited files."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All 20 GEO processed CSVs and the 10.3 MB supplement downloaded without login; code is open on GitHub and Zenodo under an MIT licence. Verified by downloading."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. The paper's label - radial distance of a locus to the nuclear centre - is nowhere in the files. GEO contains only a single axial coordinate ('zaxis'); x and y are absent, so radial distance cannot be computed. Full 3D coordinates exist only for one cell and one chromosome (9,560 bins) in the code repository. Reconstructing the label for all 10 cells means re-running the authors' multi-step pipeline from 127 raw sequencing libraries in SRA, which we neither download nor run."},
+    "a3_inputs_present": {"pass": true, "note": "Genomic coordinates are present (mm10 build), so DNA sequence and annotations are obtainable; epigenomic features would need 24 separate external 4D Nucleome downloads listed as accessions in Supplementary Table 2, not shipped files."},
+    "a4_units_stated": {"pass": false, "note": "The 'zaxis' column carries no unit in the header and there is no README; micrometres are only implied by Methods. The two files per cell ('zlocation_0' / 'zlocation_1') are nowhere documented - presumably the two parental haplotypes, but the files disagree in chromosome content (21 vs 64 contigs), so even that is a guess."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1222168, "note": "1,222,168 bin-by-cell rows pass the row-count bar, but the independent unit is 10 single cells from one mouse embryonic stem cell line in one lab; only 13,155 10-kb bins are seen in 5 or more cells."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~10 MB gzipped, ~60 MB in memory", "note": "Verified: the whole deposited dataset loads into a pandas dataframe in seconds on a laptop."},
+    "a7_counts_match_paper": {"pass": false, "note": "The GEO files are labelled Cell17-Cell39 while Supplementary Table 1 and the figures use Cell 1-Cell 10 (e.g. 'Cell 8'), with no mapping given, so the per-cell nuclear sizes needed to interpret z cannot be joined to the deposited coordinates."},
+    "a8_label_provenance": {"pass": false, "note": "The deposited z value is itself the output of the authors' geometric inference (measured slice radii, fed through their own alignment algorithm), and radial distance is a further output of their reconstruction. A model trained on it would be distilling that reconstruction, not a direct physical measurement."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "UNADON (transformer model predicting a locus's distance to nuclear speckles and lamina from sequence plus epigenomics)", "open_weights": true, "score_and_split": "Reported to work across several human cell lines using SON and LMNB TSA-seq as labels; exact numbers and split not retrieved - only the abstract-level description from a search result was read.", "authors_named_unsolved": "Not read in full; the abstract notes sequence alone nearly suffices and epigenomics adds only a small boost.", "runnable_as_baseline": null},
+      {"name": "LADDER (deep model predicting chromatin attachment to the nuclear lamina from DNA sequence, gene density and repeat density; Patterns, 2026)", "open_weights": null, "score_and_split": "Described as making cell-type-independent de novo predictions and applied to the mouse mm10 genome; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "SPIN (Spatial Position Inference of the Nuclear genome; hidden Markov random field integrating TSA-seq, DamID and Hi-C; Genome Biology, 2020)", "open_weights": true, "score_and_split": "Assigns genome-wide spatial localisation states relative to speckles, lamina and nucleoli; no held-out accuracy figure retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "TECSAS (transformer predicting chromatin subcompartment and nuclear-body association from epigenomic tracks; PLOS Computational Biology, 2024)", "open_weights": null, "score_and_split": "Not retrieved beyond the abstract description.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Nucleotide GPT (sequence-only transformer predicting nuclear subcompartment association; bioRxiv preprint, 2024)", "open_weights": null, "score_and_split": "Not retrieved beyond the abstract description.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Nucleotide Transformer or HyenaDNA (DNA language models with open weights); AlphaGenome for long-range DNA context", "freeze_and_head_viable": true, "hardware": "Laptop CPU would suffice for cached embeddings of ~250k 10-kb bins, though a GPU would be far faster", "licence": "Nucleotide Transformer and HyenaDNA weights are open; AlphaGenome is non-commercial"},
+  "integration": {"partner_dataset": "Mouse embryonic stem cell Lamin B1 DamID (DNA adenine methyltransferase identification) maps and GPSeq radial-position maps, plus the 24 4D Nucleome epigenomic tracks the authors themselves list in Supplementary Table 2", "join_key": "mm10 genomic coordinates (10 kb bins)", "bigger_question_one_sentence": "Does a locus's single-cell radial position add anything beyond what population-average lamina-contact maps already say about where a locus sits in the nucleus?"},
+  "controls": {"positive_control": "Late-replicating and H3K9me3-marked regions must come out peripheral, and early-replicating, highly expressed regions internal - the paper itself reports this gradient.", "negative_control": "Shuffle the per-bin label within each cell and confirm performance collapses; also train on sequencing depth and detection frequency alone to see how much of the signal is technical.", "external_validation": "Mouse embryonic stem cell Lamin B1 DamID and GPSeq radial maps, joinable on mm10 coordinates."},
+  "honest_claim_h3": "Using only the deposited data, the strongest honest claim would be 'we can predict which axial slice of one of ten mouse embryonic stem cell nuclei a 10 kb bin was detected in' - a quantity I measured to have essentially no reproducibility between cells (split-half Pearson correlation 0.00-0.04), so no claim about nuclear radial organisation is supportable from these files alone.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and chromatin marks to predict how far a genomic region sits from the centre of a single cell nucleus.",
+    "train_on": "Each example would be a 10 kb stretch of the mouse genome, with its DNA sequence and nearby chromatin marks as features; the deposited files contain 1,222,168 region-by-cell measurements covering 254,937 distinct regions, but from only 10 cells of one cell line.",
+    "predict": "The output would be the region's distance from the nuclear centre, measured by cutting a single fixed nucleus into contiguous ultrathin slices, sequencing the DNA in each slice, and reconstructing geometry from which slice each region appeared in.",
+    "why_worthwhile": "Groups studying how nuclear position controls gene activity would get a single-cell view of radial organisation, which current population-average methods blur; even a failure would quantify how much single-cell positional signal survives at this sequencing depth."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The deposited data is 10 cells from one mouse embryonic stem cell line, while UNADON and SPIN train on genome-wide TSA-seq and DamID maps across several human cell lines, and LADDER already makes de novo mouse mm10 predictions."},
+    "confidence_score": {"answer": "no", "why": "A per-bin confidence would need repeat observations, and I measured that repeat observations across cells disagree almost completely (split-half Pearson 0.00-0.04 at both 10 kb and 1 Mb), so the only honest confidence statement is 'unknown everywhere'."},
+    "models_beatable": {"answer": "no", "why": "LADDER is a 2026 model with a convolutional-transformer architecture already applied to mouse, and UNADON is a 2023 transformer evaluated across cell lines; neither is an old weak baseline, and we have no comparable label to beat them on."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails first is the label: we cannot even construct the target (radial distance) from the deposited files, so there is no evaluation on which an existing model could be run as a baseline."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict a genomic bin's radial position in the nucleus (distance to nuclear centre) from DNA sequence and chromatin marks, with a second task of predicting cell-to-cell variability in that position. Rejected because the radial label is absent from the deposited data and the axial coordinate that is deposited carries no reproducible per-locus signal.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.06,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": null,
+    "cv_run_minutes": 10,
+    "compute_note": "Two hours covers a feature table built on the z-only column, which I effectively built and tested; getting the paper's actual radial label would mean re-running the authors' pipeline over 127 raw sequencing libraries from SRA, which is weeks of work and outside our no-raw-data rule. Timings are from the pandas work I actually ran, not estimates.",
+    "cheapest_killing_check": "Standardise z within each cell file to remove the differing captured slab, then correlate per-bin means between two halves of the 10 cells. I ran it: Pearson 0.001-0.038 at 10 kb (n up to 105,805 bins) and 0.012-0.030 at 1 Mb (n = 2,581 bins). No reproducible per-locus signal exists in the deposited coordinate."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2: the radial position the paper is about is not in the data - GEO holds only a single axial coordinate per 10 kb bin, with x and y missing, and full 3D coordinates are deposited for just one cell and one chromosome. The deposited z column also fails as a stand-in: after removing each cell's differing captured slab, split-half reproducibility across the 10 cells is 0.00-0.04, i.e. no per-locus signal. A4, A7 and A8 also fail (units only implied in Methods, GEO cell names unmappable to Supplementary Table 1, and the value is the output of the authors' own geometric reconstruction). Rebuilding the real label needs the authors' pipeline run over 127 raw SRA libraries."
+}

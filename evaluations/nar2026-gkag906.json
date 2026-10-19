@@ -1,0 +1,90 @@
+{
+  "paper_id": "nar2026-gkag906",
+  "title": "Live-cell DNMT3A 'catalysome' mapping using engineered methyl-transfer pathways.",
+  "doi": "10.1093/nar/gkag906",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE297nnn/GSE297788/suppl/GSE297788_RAW.tar",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the full 1.5 MB GSE297788 archive (the paper's own data), unpacked all 15 per-sample CSVs, read their header (chr;position;coverage) and counted every row: 23,410-62,503 tagged CpG positions in the five engineered-DNMT3A samples, 1,292-7,683 in the controls. Computed replicate agreement myself: in the three metabolic-labelling replicates only 130 of 155,721 pooled positions (0.1%) appear in all three, and pairwise sharing is 0.9-1.6%. Also range-fetched the first 85,006 rows of the companion DNMT1 matrix (GSE182445) and found the same pattern (8-10% pairwise sharing, 6 positions nonzero in all six engineered replicates). Checked the Zenodo code archive (10.5281/zenodo.18959359, CC-BY-4.0, 0.02 MB of R scripts).",
+    "what_came_from_paper_text_only": "Read-level statistics (98-126 million reads per engineered replicate, 2-4 million on-target, mean coverage ~70x, 0.3% of mappable genomic CpGs), the GRCm38 reference build, the read-to-CpG assignment and deduplication rules, and the authors' own statement that 'faithful discrimination at individual sites is only partially achievable at this coverage level'. Supplementary figures S6-S8 (concordance plots) are inside a 3.1 MB PDF I did not parse."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open on the NCBI GEO FTP site with no login; I downloaded and unpacked the 1.5 MB archive for GSE297788 (the paper's own DNMT3A data)."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. The files contain only positions that were detected, with a read count. There is no per-CpG label and no negative class: to predict 'is this CpG a DNMT3A target?' you must enumerate ~21 million CpG sites from the GRCm38 mouse genome and assume every unlisted site is a negative. The replicate data shows that assumption is wrong - an unlisted site is overwhelmingly a site that was not sampled, not a site that was not methylated."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are genome coordinates only; the DNA sequence itself must come from the separately downloaded GRCm38 reference, which is a single standard file (about 800 MB compressed), so this is cheap rather than fatal."},
+    "a4_units_stated": {"pass": true, "note": "The one value column is 'coverage', defined in the methods as the number of deduplicated sequencing reads assigned to that CpG on both strands; consistent across all 15 files."},
+    "a5_enough_rows": {"pass": false, "n_rows": 227586, "note": "FAIL in effect. 227,586 distinct tagged positions pooled across engineered samples looks ample, but only 130 positions are detected in all three replicates of the best condition (0.1%), so the number of reproducibly labelled sites is in the hundreds, not the hundreds of thousands. Same disguise as the scCT-DB case: the apparent row count is not the number of independent observations."},
+    "a6_fits_laptop": {"pass": true, "working_set": "1.5 MB of tagged positions plus a ~2.6 GB uncompressed mouse genome", "note": "Everything fits on a 16 GB laptop; size is not the problem here."},
+    "a7_counts_match_paper": {"pass": true, "note": "My counts are consistent with the paper: 47,078-62,503 unique CpGs per metabolic-labelling replicate against ~21 million mappable genomic CpGs is the ~0.3% the text reports, and engineered samples exceed controls by roughly ten-fold as described."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a direct physical measurement - sequencing read counts at chemically tagged cytosines - not another model's output, and nothing about it is computed from the DNA sequence used as input."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "L-MAP (Language model-based Methyltransferase Activity Predictor), reported as a transformer language model for DNMT3 and TET activity at cytosines",
+        "open_weights": null,
+        "score_and_split": "Not verified - I saw only the title and abstract snippet of the paper (PubMed Central PMC11398415, 'Predicting Differentially Methylated Cytosines in TET and DNMT3 Knockout Mutants via a Large Language Model'); I did not retrieve its numbers or splits.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "GuidingNet, a network-regularised logistic-regression model predicting genome-wide DNA methyltransferase binding from expression, chromatin accessibility and sequence",
+        "open_weights": null,
+        "score_and_split": "Not verified - identified from a search result title and snippet (PubMed Central PMC8293812) only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Nucleotide Transformer or DNABERT-2 (DNA language models with open weights) would have been the obvious fit for sequence around each CpG",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only embedding of a few hundred thousand short windows is feasible over a weekend",
+    "licence": "Open weights; data itself is a public GEO deposit and the code archive is CC-BY-4.0"
+  },
+  "integration": {
+    "partner_dataset": "Whole-genome bisulfite sequencing and TET-oxidation maps for the same mouse embryonic stem cells (for example the TAB-seq data in GEO GSE36173 that this paper reuses), plus ENCODE chromatin tracks",
+    "join_key": "GRCm38 genome coordinates",
+    "bigger_question_one_sentence": "Which parts of the genome does the de novo methylation enzyme DNMT3A act on that the final methylation pattern does not reveal, because demethylation erases them - a real question that this dataset is too thinly sampled to answer per site."
+  },
+  "controls": {
+    "positive_control": "Available in principle: the paper's own strong enrichment at pericentric major satellite repeats and at CpG-island boundaries is a signal any working model must recover.",
+    "negative_control": "Strong and already in the files - wild-type and catalytically impaired cell lines were sequenced in triplicate and contain about ten-fold fewer tagged sites.",
+    "external_validation": "The companion DNMT1 series (GEO GSE182445, GSE267304) and the reused TAB-seq set (GSE36173) are independent datasets on the same cell type, so external validation would have been possible if the per-site signal were reproducible."
+  },
+  "honest_claim_h3": "A model trained on this data could only claim to predict which genomic regions were sampled by a sparse chemical tagging assay in one engineered mouse embryonic stem cell line at one time point - not where DNMT3A acts - because the assay reads out only 0.3% of genomic CpG sites per run and two replicates of the same experiment agree on about 1% of their sites.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and chromatin context to predict where the DNMT3A enzyme chemically marks the mouse genome in living cells.",
+    "train_on": "Short DNA windows centred on each CpG dinucleotide (the two-letter site that gets methylated) in the GRCm38 mouse genome, optionally with chromatin features; the paper supplies 227,586 distinct positions that were tagged across the engineered-enzyme samples and about 23,000 in the controls.",
+    "predict": "Whether, and how strongly, a given CpG is tagged by the engineered DNMT3A enzyme. The truth comes from TOP-seq: the enzyme attaches a chemical azide tag to the cytosine, a primer is tethered to the tag, and the adjoining sequence is read, giving a read count per position.",
+    "why_worthwhile": "Epigenetics labs argue about whether DNMT3A picks its targets by local DNA sequence or by chromatin recruitment, and a model that worked would separate the two; even a failed model would quantify how reproducible this new assay is."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The dataset is 227,586 tagged positions covering 0.3% of mouse CpG sites in one cell line; whole-genome bisulfite sequencing already measures all ~21 million CpG sites in the same cell type, so this is smaller and sparser than what any existing methylation model uses, even though it measures a genuinely different thing (one enzyme's activity)."},
+    "confidence_score": {"answer": "no", "why": "Triplicates exist, which should allow per-site confidence, but I measured their agreement at 0.9-1.6% of shared positions, so the replicate structure reveals the signal is noise-dominated rather than enabling calibration."},
+    "models_beatable": {"answer": "partly", "why": "The two models I found (GuidingNet, a regularised logistic regression; L-MAP, a language model) predict related but different targets and I could not verify their numbers or splits, so beatability is unknown and in any case irrelevant given the Part A failure."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model takes this assay as input, so it cannot be run as our baseline on the same split, and the condition that our model sees everything theirs does plus more fails."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: predict per-CpG DNMT3A catalytic tagging (tagged versus untagged, or read count) from local DNA sequence using a frozen DNA language model such as Nucleotide Transformer plus a small classifier head, with the wild-type and catalytically impaired cell lines as negative controls and pericentric satellite enrichment as the positive control. It fails because the positives cover 0.3% of CpG sites and replicate at about 1%, so the negative class cannot be distinguished from unsampled sites; the only survivable version is a coarse bin-level enrichment model (for example per 100-kb window), where the counts are Poisson-thin, confounded by mappability and CpG density, and the authors have already reported the aggregate enrichments by simple counting.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 3.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: the tagged-position tables are 1.5 MB and parse instantly, but the CpG universe would have to be built from the 2.6 GB uncompressed GRCm38 genome, which dominates memory and time.",
+    "cheapest_killing_check": "Count how many tagged positions are shared between biological replicates. I ran it: 130 of 155,721 positions (0.1%) are present in all three metabolic-labelling replicates and 0.9-1.6% in any pair, which kills the per-site project in one command."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A5. The deposited files list only detected positions with read counts, so the negative class has to be invented by assuming any CpG not listed was not methylated - and the replicates disprove that assumption: I measured 0.9-1.6% pairwise overlap and 130 of 155,721 positions shared across all three replicates, meaning absence means 'not sampled'. The paper itself says faithful discrimination at individual sites is only partially achievable at this coverage, and reports no sequence preference in an eight-base window around target CpGs, so the most natural sequence-to-activity task has both an unusable label and a published null result. The companion DNMT1 matrix (GSE182445), which does include explicit zeros, shows the same problem in the chr1 window I checked (8-10% replicate overlap). Excellent chemistry and genuinely novel biology; not a basis for an ML project."
+}

@@ -1,0 +1,68 @@
+{
+  "paper_id": "nar2026-gkag402",
+  "title": "FoldDelay web server: an online tool to quantify translation-driven delays in protein native contact formation.",
+  "doi": "10.1093/nar/gkag402",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/ramondur/Native-Fold-Delay (precomputed tables in Duran&Houben2025/); code also at https://doi.org/10.5281/zenodo.19594782",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed e_coli_NFD.txt.zip (26.5 MB zip, 101 MB tab-separated text): 1,200,051 rows, one per residue, 3,821 unique UniProt proteins, 13 columns, zero missing values, no duplicate (protein, position) pairs. Confirmed the label 'Native Fold Delay' (in seconds) is exactly an integer number of residues divided by 20 amino acids per second: NFD x 20 is a whole number for 100% of 1.2 million rows, only 1,138 distinct values, maximum 72.15 s. Read the repository README (column definitions and algorithm steps), the Zenodo record (software, CC-BY-4.0 licence, one 82.7 MB zip), and the GitHub file listing.",
+    "what_came_from_paper_text_only": "The web server's interactive features and its example analyses; the claim that high-NFD regions coincide with experimentally reported Ssb (yeast Hsp70 chaperone) interaction sites; the patent application EP 24154112.7 covering the algorithm. I did not download yeast_NFD.txt.zip (56.2 MB zip, over the 50 MB cap) and did not submit a job to the web server."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "No login. I downloaded the 26.5 MB E. coli table directly from GitHub; yeast table is 56.2 MB (recorded, not downloaded); code on Zenodo under CC-BY-4.0."},
+    "a2_label_is_a_column": {"pass": true, "note": "'Native Fold Delay' is literally a column (seconds). But it is an arithmetic transform of the structure, not a measurement; any experimentally measured target (chaperone binding, ubiquitination, aggregation) is absent and would have to be joined in from other papers' supplements."},
+    "a3_inputs_present": {"pass": true, "note": "Per-residue amino-acid identity and position are present, so the sequence is recoverable by concatenation; UniProt accessions let AlphaFold structures be fetched."},
+    "a4_units_stated": {"pass": true, "note": "README states NFD in seconds and in amino acids, distance cutoff 6 angstrom, translation rate in aa/s; file confirms 20 aa/s was used for E. coli."},
+    "a5_enough_rows": {"pass": true, "n_rows": 1200051, "note": "1,200,051 residue rows across 3,821 E. coli proteins, counted in the file; yeast file adds more. Protein is the real unit, and 3,821 still clears the bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.35 GB (101 MB E. coli text + ~250 MB yeast text, both plain tab-separated)", "note": "Loads into pandas in seconds on a 16 GB laptop; no GPU needed for a baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "This web-server paper states no row or protein counts, so nothing contradicts the file; the 3,821 proteins are consistent with an AlphaFold-covered E. coli proteome."},
+    "a8_label_provenance": {"pass": false, "note": "KILLER. The label is computed from the features and from another model's output twice over: Native Fold Delay = (sequence separation of a native contact) / (translation rate), where the contact comes from an AlphaFold-predicted structure, and NFD x 20 is an exact integer in 100% of 1.2M rows. Every other column (pLDDT, contact order, secondary structure, solvent accessibility, TANGO aggregation score, membrane topology) is also algorithm output. There is no physical measurement anywhere in the file, so a model would distil AlphaFold plus a division, not learn biology."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "FoldDelay / Native Fold Delay (NFD) itself — the deterministic algorithm this paper serves (R script plus web server, Duran-Romana et al., Nature Communications 16:1673, 2025)",
+        "open_weights": true,
+        "score_and_split": "Not a learned model, so no split: it is a closed-form calculation (contact sequence separation divided by translation rate) on AlphaFold structures, reported as correlating with Ssb chaperone engagement and co-translational ubiquitination in yeast.",
+        "authors_named_unsolved": "Paper states the method assumes a single global translation rate and is designed for single globular proteins; multi-domain, disordered and complex-forming proteins are outside its scope.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Sequence-only predictor of co-translational chaperone binding in bacteria (Nature Communications 2025, s41467-025-59067-9, 'Proteome-wide determinants of co-translational chaperone binding in bacteria')",
+        "open_weights": null,
+        "score_and_split": "Reported (from the abstract/summary I retrieved, not from running it) to predict Trigger Factor and DnaK binding profiles proteome-wide from sequence via AlphaFold structures plus chaperone binding rules, validated against selective ribosome profiling; I did not see a held-out numeric score.",
+        "authors_named_unsolved": "Not retrieved beyond the abstract-level summary.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {"name": "ESM-2 (a protein language model with CPU-runnable small checkpoints)", "freeze_and_head_viable": true, "hardware": "16 GB laptop CPU would suffice for per-residue embeddings of ~3,800 short bacterial proteins", "licence": "MIT (ESM-2); the FoldDelay data is CC-BY-4.0 but the algorithm is under patent application EP 24154112.7"},
+  "integration": {"partner_dataset": "Selective ribosome profiling of chaperone-nascent chain contacts (Doring et al., Cell 2017, yeast Ssb; Trigger Factor/DnaK profiles in E. coli)", "join_key": "UniProt accession plus residue position", "bigger_question_one_sentence": "Does the timing of native contact formation predict where chaperones actually grab a nascent chain, beyond what hydrophobicity and charge already explain? — but that experimental label lives in other papers, not here, and two 2025 papers have already asked it."},
+  "controls": {"positive_control": "Trivially available but meaningless: predicting NFD from sequence must recover protein length and contact order, which are themselves in the same table.", "negative_control": "Label shuffling would work, but cannot rescue a label that is an exact function of the inputs.", "external_validation": "The yeast table is a second organism; genuine experimental validation would require ribosome profiling data from other papers."},
+  "honest_claim_h3": "A model trained on this table could only claim 'we reproduce, from sequence, the output of an arithmetic rule applied to AlphaFold-predicted contact maps' — not any statement about measured folding, chaperone binding or aggregation.",
+  "plain_idea": {
+    "one_liner": "Use a protein's sequence to predict how long each residue waits before its folding partners are made.",
+    "train_on": "Per-residue rows from precomputed tables: 1,200,051 residues across 3,821 Escherichia coli proteins (counted in the file), each with amino acid, position, protein length and structure-derived features.",
+    "predict": "Native Fold Delay in seconds for each residue. The true answer is not a measurement: it is the sequence distance to the residue's most C-terminal native contact in an AlphaFold-predicted structure, divided by a fixed translation rate of 20 amino acids per second.",
+    "why_worthwhile": "Cell-biologists studying co-translational folding and chaperone recruitment would want a sequence-only shortcut for organisms lacking structures — but since the target is a deterministic transform of an AlphaFold structure, the model would only be a faster copy of an existing calculation, so almost nothing is learned."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The 1.2 million rows are not 1.2 million measurements: they are per-residue outputs of one algorithm on 3,821 AlphaFold models. The groups that would care (Rousseau/Schymkowitz, and the 2025 bacterial chaperone-binding study) already have the same proteome-scale output plus the ribosome profiling measurements we lack."},
+    "confidence_score": {"answer": "no", "why": "There are no replicates and no measurement noise to calibrate against; pLDDT already reports AlphaFold's own confidence, and the arithmetic step adds none."},
+    "models_beatable": {"answer": "no", "why": "There is nothing to beat. FoldDelay is a closed-form calculation, not a fitted model, so a learned approximation can at best tie it while adding error."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: the 'baseline' is an exact formula, so any model that sees the same inputs is bounded above by reproducing it, and the biologically meaningful labels (chaperone binding, ubiquitination) are measured in other papers with different assays and no shared split."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict per-residue Native Fold Delay (seconds until a residue's native contact partners are translated) from sequence alone with a frozen ESM-2 protein language model plus a per-residue regression head, so that co-translational folding delays could be estimated for proteomes without good structures. It dies because the label is exactly (contact sequence separation) / (translation rate) read off an AlphaFold structure — verified as an exact multiple of 1/20 s in 100% of 1,200,051 rows — so the project is distillation of AlphaFold plus a division, with no measurement behind it. The genuinely interesting version (predict experimentally measured chaperone engagement or co-translational ubiquitination from folding-delay features) needs labels that are not in this paper at all, and two 2025 Nature Communications papers have already done it.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.35, "needs_gpu": false, "peak_ram_gb": 3, "embedding_hours": 6, "cv_run_minutes": 30, "compute_note": "Estimated, not timed end to end: I did time the download and the pandas parse of the 101 MB E. coli table (seconds). Embedding hours assume ~3,800 proteins of mean length 314 through a small ESM-2 checkpoint on CPU at roughly 5 proteins per second-equivalent.", "cheapest_killing_check": "Multiply the Native Fold Delay column by the translation rate and test whether it is always a whole number of residues — it is, for all 1,200,051 rows, which proves the label is an arithmetic function of the input structure. Takes one minute."},
+  "verdict": "reject",
+  "verdict_reason": "A8 fails outright: the target is an exact arithmetic transform of AlphaFold-predicted contacts, so any model distils an existing formula rather than learning from a measurement."
+}

@@ -1,0 +1,51 @@
+{
+  "paper_id": "nar2026-gkag876",
+  "title": "Functional impact of Nth like DNA glycosylase 1 on mitochondrial dynamics.",
+  "doi": "10.1093/nar/gkag876",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE291371",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded GSE291371_RAW.tar (5.5 MB) from the NCBI GEO FTP site and unpacked it: exactly 20 gzipped per-sample count files (4 wild-type, and 4 replicates each of knockout clones KO1, KO3, KO15, KO39). Opened two of them: each is a 2-column tab file, Ensembl gene identifier and a raw read count, 62,710 rows, no header, no units column, no sample metadata inside the file. All 20 files total 23.3 MB uncompressed. Also read the GEO series record (20 samples, Homo sapiens, 'Expression profiling by high throughput sequencing') and the filelist.",
+    "what_came_from_paper_text_only": "That the cells are HEK293 NTHL1 knockout clones made with CRISPR/Cas9; that counts came from the reverse-stranded column of STAR output and were analysed with DESeq2 at log2 fold change 0.58 and false discovery rate < 0.05. All the other measurements in the paper (quantitative PCR of mitochondrial DNA copy number, Seahorse oxygen consumption, electron microscopy mitochondrial areas, immunoblots) appear only as figures and in a 6.6 MB supplementary PDF; no numeric tables for them were found in GEO, Zenodo or Dryad."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO series GSE291371 is public and downloaded without login; I unpacked the tar and read the files."},
+    "a2_label_is_a_column": {"pass": false, "note": "No label column exists anywhere. Files hold only gene identifier and read count; genotype is encoded only in the file name, and any modelling target (differential expression, fold change, mitochondrial copy number, respiration rate) would have to be constructed by running DESeq2 on these same counts or digitised from figures."},
+    "a3_inputs_present": {"pass": true, "note": "Ensembl gene identifiers are standard and resolvable; gene sequences would be fetched from Ensembl, which is one bulk lookup, not thousands of manual ones."},
+    "a4_units_stated": {"pass": false, "note": "Files have no header and no units; counts are raw STAR read counts inferred from the methods text, not declared in the data, and library size varies between samples."},
+    "a5_enough_rows": {"pass": false, "n_rows": 20, "note": "The experimental unit is the sample and there are exactly 20 (4 wild-type plus 16 knockout across 4 clones), far below the ~400 minimum. The 62,710 gene rows are not independent examples: they are one condition contrast measured once."},
+    "a6_fits_laptop": {"pass": true, "working_set": "23 MB uncompressed counts", "note": "Trivially small; a 62,710 x 20 count matrix fits in well under 1 GB of memory."},
+    "a7_counts_match_paper": {"pass": true, "note": "20 samples in GEO match the paper's design of wild-type plus four independent HEK293 NTHL1 knockout clones with four replicates each."},
+    "a8_label_provenance": {"pass": false, "note": "Any usable label here (which genes change on NTHL1 loss) is computed from the very counts that would be the features, which is leakage by construction. The physical phenotypes that are not derived from the features — copy number, oxygen consumption — exist only as plotted figure points, roughly 3-6 values per condition."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "GEARS (graph-enhanced gene activation and repression simulator), Nature Biotechnology 2023", "open_weights": true, "score_and_split": "Reported ~40% higher precision than prior methods at predicting genetic interaction subtypes on held-out perturbations in single-cell CRISPR screens; a 2025 Nature Methods benchmark found it and similar models do not beat simple linear baselines.", "authors_named_unsolved": "Predicting responses to perturbations of genes never experimentally perturbed, and in cell contexts unlike training.", "runnable_as_baseline": false},
+      {"name": "scGPT, a single-cell foundation model", "open_weights": true, "score_and_split": "Benchmarked for perturbation-response prediction in Nature Methods 2025 and found not to outperform simple linear baselines on single and double perturbations.", "authors_named_unsolved": "Generalisation to unseen perturbations and cell types.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "none applicable", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "n/a"},
+  "integration": {"partner_dataset": "none viable", "join_key": "Ensembl gene ID", "bigger_question_one_sentence": "Could not write one: a single knockout contrast in one cell line adds no new axis to any large perturbation resource."},
+  "controls": {"positive_control": "NTHL1 itself should be absent or truncated in the knockout counts, and mitochondrial-encoded transcripts should be elevated.", "negative_control": "Shuffle genotype labels across the 20 samples; with n=20 this is a permutation test, not a machine learning control.", "external_validation": "None found: no second NTHL1 knockout transcriptome, no replication cohort, no temporal or source column."},
+  "honest_claim_h3": "At best: 'in one human embryonic kidney cell line, NTHL1 loss shifts expression of mitochondrial and stress-response genes' — a differential-expression statement about 20 samples, not a predictive claim that would transfer to any other gene, cell type or laboratory.",
+  "plain_idea": {
+    "one_liner": "Use gene features to predict which genes change expression when the DNA repair enzyme NTHL1 is deleted.",
+    "train_on": "Per-gene read counts from 20 bulk RNA sequencing samples: 4 wild-type and 16 knockout (4 CRISPR clones x 4 replicates) human embryonic kidney cells, 62,710 Ensembl gene rows per sample (verified by opening the files).",
+    "predict": "Whether a gene is differentially expressed after NTHL1 loss. The 'true answer' would come from DESeq2 run on these same 20 count files, which is the fatal problem: the label is computed from the features.",
+    "why_worthwhile": "It would not be. Mitochondrial DNA repair researchers care about the biology, but a model fitted to one knockout in one cell line tells nobody anything they could not read off the authors' own differential-expression table."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "No viable idea. The only machine-readable data is a 62,710-gene by 20-sample raw count matrix for a single knockout contrast in a single cell line; the phenotypes the paper actually cares about (mitochondrial DNA copy number, oxygen consumption rate, mitochondrial area, protein levels) are figure points, a handful of replicates each, with no deposited numeric table.",
+  "effort": {"hours_to_feature_table": 1, "working_set_gb": 0.03, "needs_gpu": false, "peak_ram_gb": 0.5, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Building the count matrix is minutes of pandas on 23 MB of text; I measured the file sizes and row counts directly. Compute was never the constraint here — sample size is.", "cheapest_killing_check": "Count the samples in the GEO series: 20. Done in one API call, and it ends the evaluation."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5, A2, A4 and A8, all verified in the downloaded files. Twenty bulk RNA sequencing samples from one cell line and one gene knockout is two orders of magnitude below the minimum; the count files contain only an Ensembl gene identifier and an unlabelled raw count, so any prediction target would have to be constructed with DESeq2 from the same counts that would serve as features. The paper's interesting measurements — mitochondrial DNA copy number, respiration, mitochondrial size — were never deposited as numbers. This is a well-executed cell biology paper that simply carries no machine learning dataset."
+}

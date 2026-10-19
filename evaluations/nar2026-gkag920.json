@@ -1,0 +1,135 @@
+{
+  "paper_id": "nar2026-gkag920",
+  "title": "DNA damage induces long range changes to duplex structure-a non-protein start to damage detection?",
+  "doi": "10.1093/nar/gkag920",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.17508550 (plus 17590548, 18164375, 18164520, 18670016, 21396386)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed all six Zenodo deposits via the application programming interface: 162 raw HDF5 files (90 + 72, 5.28 GB total, CC-BY-4.0), 162 analysis notebooks, 6 model PDB structures, 5 movies. Downloaded and opened 5 HDF5 files with h5py; they are standard Photon-HDF5 v0.4, microsecond-ALEX confocal, 2 detectors, ~6.2 million photon timestamps each, 3600 s acquisition. Parsed all 162 filenames and confirmed a perfectly balanced design: 6 damage types x 9 dye positions x 3 replicates, 27 files per damage type, 3 replicates in every one of 54 cells, no duplicate filenames. Ran my own sliding-window burst search (m=10, F=20) and per-burst FRET efficiency calculation: ~820 doubly-labelled bursts per file at the paper's own thresholds (donor-excitation photons >= 50 and acceptor-excitation photons >= 50), ~5,000 at looser single-channel thresholds; 0.3-0.4 s per file on CPU. Reproduced the paper's qualitative result at dye position T7B6: abasic mean FRET efficiency 0.624 versus undamaged control 0.556, i.e. damage raises FRET, matching Figure 3A. Compared internal metadata across the 5 opened files.",
+    "what_came_from_paper_text_only": "The statistical analysis (Kruskal-Wallis plus Dunn's post hoc test), which lesions reached significance at which dye positions, the gamma/leakage correction factors, the multilateration procedure that converts FRET efficiencies into three-dimensional dye coordinates and bend/twist/stretch estimates, and all supplementary tables (the Europe PMC supplementary bundle exceeds the 50 MB cap and was not retrievable)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified: all six Zenodo deposits are public, CC-BY-4.0, no login. I downloaded 5 HDF5 files directly. Zenodo is slow (two downloads hit a 60 s timeout and needed 200 s) but works."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The label (which of six lesions) is not in any table, but it is written in the filename and in the internal sample/sample_name field, so a six-keyword regular expression recovers it. No inference across sources needed. Passes, but note there is no feature/label table at all: every feature row must be computed from raw photon streams."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: the raw inputs are fully present as photon arrival times and detector channels, no external lookups. Converting them to per-molecule features took 0.3 s per file with code I wrote; the authors' FRETBursts notebooks are also deposited."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Verified in the files: timestamps_unit = 1e-8 s, acquisition_duration in seconds, excitation wavelengths in nm, laser powers recorded. FRET efficiency is a unitless ratio. Photon-HDF5 is a self-documenting standard format."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 162,
+      "note": "FAILS. The dataset is 162 measurements of exactly SIX distinct DNA molecules (undamaged, ribonucleotide, 8-oxoguanine, abasic, nick, gap), all in one sequence context, one buffer, one instrument, one lab. The ~133,000 single-molecule bursts I can extract (~820 per file x 162, verified) are repeated observations of those same six tubes, not 133,000 independent items. This is the same trap as the scCT-DB candidate: the apparent row count is large but the experimental unit is the measurement (162, i.e. 27 per class), and the unit that the label actually varies over is 6. A classifier would learn 'which tube did this photon burst come from', and since no second sequence context, lesion or lab exists anywhere in the deposit, no held-out generalisation claim is possible."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "5.28 GB to download in total, but ~35 MB and ~0.2 GB RAM at a time",
+      "note": "Verified by doing it: one file streams in, burst search runs in 0.3-0.4 s, features are kept and the photon array discarded. No GPU. Only the full download is bulky."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The count matches exactly: paper says 162 measurements, Zenodo holds 162 HDF5 files in a complete 6 x 9 x 3 design (verified by parsing every filename). BUT the internal metadata is unreliable: in the 5 files I opened, 1 filename contradicted the internal name (file 'Top -7 Bottom +6 (abasic) T1.hdf5' contains sample_name 'Top -7 Bottom +6 (abasic) T2'), 2 had no replicate index internally, and the free-text 'description' field holds the concentration in 3 files but a repeated sample name in 2. The damage-type label always agreed; the replicate index, which is exactly the grouping variable honest cross-validation would need, did not."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "For the lesion-identity label this is clean: it is what the chemists synthesised into the oligonucleotide, a physical fact, not a model output. Passes. But the paper's OTHER candidate labels - the bend, twist, stretch and three-dimensional dye coordinates in Supplementary Table S14 - are computed from the FRET efficiencies by multilateration, i.e. derived from the very features a model would use. Any project predicting those would be pure leakage by construction and fails A8."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "FENNEC (Fluorescence Event Neural Network for Evaluating and Classifying bursts), a dilated convolutional neural network that reads raw photon arrival times from diffusion-based single-molecule FRET bursts",
+        "open_weights": true,
+        "score_and_split": "Agreed with mpH2MM (multi-parameter photon-by-photon hidden Markov modelling, the established statistical method) on 86.8% of classified bursts; trained largely on simulated bursts. Split not reported in the terms this checklist uses.",
+        "authors_named_unsolved": "Separating genuine conformational exchange within a burst from photophysical artefacts (acceptor photobleaching and blinking), which produce near-identical burst signatures.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepFRET, a convolutional/recurrent neural network for classifying single-molecule FRET time traces",
+        "open_weights": true,
+        "score_and_split": ">95% precision on simulated ground-truth traces, reported as beating human operators; built for surface-immobilised total-internal-reflection traces, not freely diffusing confocal bursts, so it does not directly apply to these files.",
+        "authors_named_unsolved": "Generalising beyond the simulated training distribution to real experimental traces with unusual photophysics.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "No model exists for the task this paper's data would define - identifying which DNA lesion a duplex carries from its single-molecule FRET signal",
+        "open_weights": null,
+        "score_and_split": "Searched; found machine-learning work on DNA damage in adjacent areas (predicting mutational outcomes of adducts, molecular-dynamics plus machine learning on glycosylase recognition of tandem lesions) but nothing predicting lesion identity from FRET data.",
+        "authors_named_unsolved": "n/a",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate. The data is photon arrival times, not sequence; no pretrained backbone from the approved list (ESM-2, DNABERT-2, AlphaGenome, ChemBERTa, etc.) takes this input. FENNEC's dilated convolutional network is the only pretrained thing that reads photon streams.",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU is ample - burst extraction ran at 0.3-0.4 s per one-hour measurement on this laptop.",
+    "licence": "Data CC-BY-4.0 (verified on all six Zenodo records); FENNEC code and example data public on Zenodo."
+  },
+  "integration": {
+    "partner_dataset": "None usable. The deposit carries no standard identifier - no UniProt accession, no Ensembl gene, no genomic coordinate, no chemical identifier. The only keys are six in-house construct names and nine dye positions on a single synthetic 40-ish-base oligonucleotide.",
+    "join_key": "none",
+    "bigger_question_one_sentence": "Cannot be written: there is no identifier in these files that any large public resource shares, so any join would have to be built by hand from six construct names."
+  },
+  "controls": {
+    "positive_control": "Genuinely good and I ran it: the undamaged duplex is measured at all 9 dye positions in triplicate, and at T7B6 I recovered the published direction of effect (abasic FRET 0.624 > control 0.556) from the raw photons in under a second. The paper's reference duplexes are from Hellenkamp et al.'s community FRET benchmark, so absolute values are checkable.",
+    "negative_control": "Label shuffling is trivially runnable, and the undamaged construct is a true experimental negative - this dataset's controls are a real strength.",
+    "external_validation": "None exists. No second lab, no second instrument, no second sequence context, no second concentration series, and no public resource measures FRET efficiency for these constructs. This is the gap that makes the project unfixable rather than merely small."
+  },
+  "honest_claim_h3": "A model trained here could only claim: 'among freely diffusing copies of these six specific DNA duplexes, measured on one home-built confocal microscope in one lab across November-December 2022, a single molecule's photon burst carries enough information to guess which of the six tubes it came from this often' - which is a statement about six tubes, not about DNA damage detection.",
+  "plain_idea": {
+    "one_liner": "Use the photon burst from one freely diffusing DNA molecule to predict which of six lesions that molecule carries.",
+    "train_on": "Per-molecule bursts extracted from raw photon streams: donor and acceptor photon counts, burst duration and brightness, plus the dye-pair position. I verified ~820 usable doubly-labelled bursts per measurement at the paper's own thresholds, so roughly 133,000 bursts across all 162 measurements - but those come from only 6 distinct DNA molecules.",
+    "predict": "Which of six duplexes the molecule is (undamaged, ribonucleotide, 8-oxoguanine, abasic site, nick, or single-base gap). The true answer is simply what the chemists ordered from the oligonucleotide supplier, so the label is a hard physical fact rather than another model's output.",
+    "why_worthwhile": "The idea behind it is appealing - if DNA damage is detectable from duplex flexibility alone, repair proteins might find lesions by feel rather than by sequence. But with only six molecules in the whole dataset, a model can only memorise six tubes, so nothing would be learned about DNA damage in general."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "FENNEC was trained on large simulated burst libraries plus experimental data and is already a photon-level model for exactly this file format. This deposit offers ~133,000 bursts from 6 molecules in 1 lab - fewer distinct entities, not more."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Triplicate measurements in all 54 cells of the design do let you estimate measurement-to-measurement noise honestly, which is a real strength. But three replicates per cell, with the replicate index unreliable in the metadata I checked, is a thin basis for calibrated per-prediction confidence."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "FENNEC (2026) is a current dilated convolutional network, open, cross-checked against mpH2MM at 86.8% agreement, and it solves a different problem (burst photophysics) rather than one we would be competing on. There is no published number for lesion identification from FRET to beat."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on every condition: no existing model performs this task so none can be our baseline, no new data joins to these files on any shared identifier, and no second dataset measures FRET on these constructs."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: classify which of six DNA lesions a freely diffusing duplex carries from its single-molecule photon burst, trained on ~133,000 bursts and evaluated by holding out whole dye positions (9 groups) or whole replicates (3 groups). It fails because the label varies over only six distinct molecules, so there is no held-out lesion, sequence context, lab or instrument to generalise to. Two concrete confounds I verified make it worse: the undamaged control at position T7B6 was measured at 5 pM while the damaged samples were at 2.5 pM, and the control was measured on 2 November 2022 while the abasic and 8-oxoguanine samples were measured 2-6 December 2022. Concentration changes the rate of coincident two-molecule bursts and therefore shifts the stoichiometry and FRET distributions directly, so a classifier separating damaged from undamaged could be reading sample concentration and alignment drift rather than DNA structure - and with one measurement per cell there is no way to disentangle them. The alternative framing, predicting the duplex's bend/twist/stretch, fails A8 outright because those values are computed from the FRET efficiencies by multilateration.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 5.3,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.2,
+    "embedding_hours": null,
+    "cv_run_minutes": 5,
+    "compute_note": "Measured, not guessed: I opened 5 files and timed my own burst search at 0.3-0.4 s per one-hour measurement, so all 162 files process in about a minute once downloaded. Peak RAM is one 6.2-million-photon array (~0.1 GB) plus cumulative-sum arrays. The 6 hours is dominated by downloading 5.28 GB from a slow Zenodo endpoint (two of my seven downloads hit a 60 s timeout and needed 200 s) and by reconciling the inconsistent replicate labels.",
+    "cheapest_killing_check": "Count the distinct biological entities, not the bursts. Parse the 162 filenames: 6 damage types, 9 dye positions, 3 replicates, one DNA sequence. That took one API call and killed the project in under a minute - the ~133,000 bursts are repeat observations of six tubes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on effective sample size. The data is genuinely excellent experimental work - open CC-BY, standard Photon-HDF5, a perfectly balanced 6 x 9 x 3 design with all 162 files present, and I reproduced the paper's headline effect from raw photons on this laptop in under a second (abasic FRET 0.624 vs control 0.556 at T7B6). But the label varies over only six distinct DNA molecules in one sequence context, one buffer, one home-built microscope, one lab; the ~133,000 single-molecule bursts are repeat observations of those six tubes, exactly the scCT-DB trap. Two verified confounds compound it: the undamaged control at T7B6 was run at 5 pM against 2.5 pM for the damaged samples, and control versus damaged measurements are separated by a month, so a burst-level classifier could be reading concentration and alignment drift. The replicate index - the grouping variable honest cross-validation needs - contradicted the filename in 1 of the 5 files I opened and was absent in 2 more. There is no second lab, sequence or resource for external validation, and no standard identifier for any join."
+}

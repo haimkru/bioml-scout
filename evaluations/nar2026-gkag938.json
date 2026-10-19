@@ -1,0 +1,90 @@
+{
+  "paper_id": "nar2026-gkag938",
+  "title": "'Quadrupling' the protein family space with global metagenomics.",
+  "doi": "10.1093/nar/gkag938",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://zenodo.org/records/17225887",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and profiled the only small Zenodo file, NMPFAMSDB2_MODELS_SCORES.txt (2.94 MB): 156,608 rows, columns cluster / pLDDT / pTM, no missing values, no duplicate family IDs, pLDDT 24.7-98.4 and pTM 0.09-0.93; the quality bins reproduce the paper exactly (26,767 with pTM>=0.7, 47,823 between 0.5 and 0.7, 82,018 below 0.5). Read the Zenodo file manifest through the application programming interface: the files holding the actual protein sequences are 12.32 GB and 8.58 GB compressed, structures 2.44 GB, Foldseek search results 2.87 GB (licence CC-BY-4.0, no login). Also downloaded the version-1 NMPFamsDB consensus sequence file (7.6 MB, 106,198 families) and tested the join to this paper's family IDs: all 20,199 apparently matching IDs are simply the IDs numbered below 106,198, i.e. a coincidental collision of two independently numbered family sets, not a real join.",
+    "what_came_from_paper_text_only": "That representative structure models were generated for 156,609 of the 608,258 families (the file has 156,608 rows, an off-by-one against the text); the AlphaFold2 settings; that Foldseek was searched against CATH v4.4, the March 2024 PDB and AlphaFold DB; the habitat, taxonomy and gene-neighbourhood analyses. The 15 MB supplement is a single PDF of figures and tables, not machine-readable, and I did not parse it."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 17225887 is open, CC-BY-4.0, no login; I downloaded one file successfully."},
+    "a2_label_is_a_column": {"pass": true, "note": "pLDDT and pTM are literal columns in the 2.94 MB scores file, one row per family."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are real sequences, not accessions, but they live only inside the 12.32 GB and 8.58 GB compressed tables; the scores file carries no sequence."},
+    "a4_units_stated": {"pass": true, "note": "pLDDT on 0-100 and pTM on 0-1, confirmed from the value ranges; Zenodo's description lists the two columns in the wrong order."},
+    "a5_enough_rows": {"pass": true, "n_rows": 156608, "note": "156,608 families with a confidence score, counted in the downloaded file."},
+    "a6_fits_laptop": {"pass": false, "working_set": "~21 GB compressed sequence tables (tens of GB uncompressed), or a 2.44 GB structure archive", "note": "FAIL: the labels come without features. To pair any sequence with its score you must pull 8.58-12.32 GB bz2 tables (member sequences for millions of families) or the 2.44 GB structure archive, all far over the 50 MB download policy and the ~5 GB working-set limit."},
+    "a7_counts_match_paper": {"pass": true, "note": "Quality bins match the paper exactly; total is 156,608 rows versus 156,609 stated in the text, a one-row discrepancy."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL: pLDDT and pTM are AlphaFold2's own confidence outputs, the exact circularity case the checklist names. No physical measurement exists anywhere in this resource; the Foldseek hit labels are also derived from those same predicted structures."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ESMFold and the ESM Metagenomic Atlas (protein language model that folds single sequences and reports its own confidence)",
+        "open_weights": true,
+        "score_and_split": "Reported in the ESMFold paper (Science 2023) on 1 million randomly sampled metagenomic proteins: good confidence (mean pLDDT > 0.7) for about 29% and high confidence (> 0.9) for about 5.9%; retrieved via search, not re-derived here.",
+        "authors_named_unsolved": "Which high-confidence metagenomic structures are genuinely new folds rather than remote homologues of known ones; about 12% of their high-confidence set had no close PDB match.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "pyHCA / AlphaFold2 foldability assessment (hydrophobic-cluster analysis of foldable segments from single sequences)",
+        "open_weights": null,
+        "score_and_split": "No single headline number retrieved; the study reports that many foldable segments still receive low mean pLDDT, so pLDDT and real foldability disagree.",
+        "authors_named_unsolved": "pLDDT does not separate experimentally foldable from unfoldable sequence permutants, so confidence is not a foldability measurement.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model, small CPU-runnable checkpoints)",
+    "freeze_and_head_viable": true,
+    "hardware": "Would be fine on a laptop CPU for ~150k short consensus sequences if the sequences were obtainable; they are not at this data size.",
+    "licence": "ESM-2 is MIT-licensed; the data is CC-BY-4.0."
+  },
+  "integration": {
+    "partner_dataset": "AlphaFold DB and CATH (already searched by the authors with Foldseek), or Pfam/InterPro",
+    "join_key": "No standard identifier in the scores file — only this resource's own family IDs (F000008 style), which are re-numbered between database versions.",
+    "bigger_question_one_sentence": "Could in principle ask which dark families hide remote homologues of known folds, but with no UniProt, Pfam or taxonomy identifier in any small file the join has to be rebuilt from the multi-gigabyte archives."
+  },
+  "controls": {
+    "positive_control": "Sequence length and amino-acid composition should predict a chunk of pLDDT — which is itself the problem: the control and the signal are the same thing.",
+    "negative_control": "Label shuffling would be easy to run, but there is no honest label to shuffle.",
+    "external_validation": "None with a measured outcome; the nearest comparison is the ESM Metagenomic Atlas, which is also model-generated."
+  },
+  "honest_claim_h3": "A model trained on this resource could only claim: 'given a metagenomic protein family's sequence, this predicts how confident AlphaFold2 was when it folded that family's alignment' — a statement about AlphaFold2, not about the protein.",
+  "plain_idea": {
+    "one_liner": "Use a dark-matter protein family's sequence to predict how confidently AlphaFold2 folded it.",
+    "train_on": "One consensus or representative sequence per protein family discovered in global metagenomes, with 156,608 families carrying a confidence score (count verified in the downloaded file); the sequences themselves are only inside 8.6-12.3 GB compressed tables.",
+    "predict": "Two numbers per family: pLDDT (per-residue confidence, 0-100) and pTM (predicted fold-level accuracy, 0-1). Both are AlphaFold2's own self-assessment, not any laboratory measurement.",
+    "why_worthwhile": "Groups triaging which uncharacterised microbial families are worth expressing would like a cheap foldability score, but the only available target here is another model's confidence, so success would mean imitating AlphaFold2 rather than learning which proteins actually fold."
+  },
+  "paper_type": "resource",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "156,608 scored families here against the ESM Metagenomic Atlas's roughly 600 million folded metagenomic proteins, which are already released with per-protein confidence."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements of anything; one model per family, one confidence value, nothing to estimate noise from."},
+    "models_beatable": {"answer": "no", "why": "The thing to beat would be AlphaFold2 and ESMFold themselves (2021-2023, both open), and the target is literally their output, so the ceiling is their accuracy by construction."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: there is no measured quantity for a baseline and our model to compete on, only a predicted one."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict AlphaFold2 confidence (pLDDT, pTM) for 156,608 newly discovered metagenomic protein families from sequence, as a cheap filter for which dark families are structured. Dies on A8 (the label is AlphaFold2's own output) and A6 (the matching sequences only exist in 8.6-12.3 GB archives). Alternative framings — predicting a Foldseek structural hit to PDB/CATH, or predicting habitat of origin — inherit the same model-derived label or require parsing tens of gigabytes to construct the label.",
+  "effort": {
+    "hours_to_feature_table": 20,
+    "working_set_gb": 21.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4.0,
+    "embedding_hours": 6.0,
+    "cv_run_minutes": 20.0,
+    "compute_note": "Estimated, not timed: streaming the 8.58 GB and 12.32 GB bz2 tables to pull one representative sequence per family is the dominant cost (hours of decompression plus a ~21 GB download); ESM-2 small-checkpoint embeddings for ~150k sequences of median length ~100 residues would be a few hours of laptop CPU. Only the 2.94 MB scores file was actually opened and profiled.",
+    "cheapest_killing_check": "Open the one small file and ask what the label is: it is pLDDT and pTM, AlphaFold2's own confidence, with no sequence column — that took five minutes and killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A8 and A6. The only laptop-sized file (2.94 MB, 156,608 rows, verified) contains nothing but AlphaFold2's own confidence scores per family — predicting them distils AlphaFold2 rather than learning biology, exactly the circularity the checklist names. The sequences needed as features sit in 8.58 GB and 12.32 GB compressed tables, far past the size limit, and the only small sequence source (version-1 NMPFamsDB consensus sequences) does not legitimately join: all 20,199 apparent ID matches are a coincidence of two independently numbered family sets. No measured quantity exists anywhere in the resource, so there is no honest label to predict."
+}

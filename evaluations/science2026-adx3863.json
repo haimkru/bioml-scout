@@ -1,0 +1,210 @@
+{
+  "paper_id": "science2026-adx3863",
+  "title": "Uneven TCR chain pairing constraints govern epitope recognition.",
+  "doi": "10.1126/science.adx3863",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/14885005",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Zenodo record 10.5281/zenodo.14885005 (CC-BY-4.0, no login). Downloaded and fully parsed close_in_seq_pos_neg.zip (145,183 bytes, 4 CSVs, 28,010 rows: GILb 2,394 positive / 7,420 negative, LLWa 8,331 / 9,865; columns cdr3a|cdr3b, va|vb, ja|jb, donor.x, positive, cdr3_len; 0 missing values, 0 duplicate rows). For pos_neg.zip (217,042,189 bytes, over the 50 MB cap) I read the zip directory and 19 individual members by HTTP range request: 37 entries, 2,164.6 MB uncompressed, 18 epitope/chain settings. Parsed all 18 positive tables with pandas: 113,905 positive rows, 94,463 unique CDR3 amino acid sequences, 8 donors (Aph12/13/14/41/44/45/46/47). Also parsed GTSb_true_neg.tsv (110,480 rows) and confirmed negative files have identical columns to positives and zero clonotype-key overlap with the positives (0 of 760 keys). Listed clonotype_tables.zip remotely: 156 entries, 1,237.5 MB uncompressed, 17 epitope_specific folders carrying HLA restriction in the folder names. Measured a baseline myself: V gene + J gene + CDR3 length logistic regression, leave-one-donor-out, average precision 0.330 vs 0.244 class prior (GILb) and 0.492 vs 0.458 (LLWa). Confirmed the positive control is in the data: 21.6% of GILb positive partner alpha chains use TRAV27, 20.6% use TRAJ42, 17.0% contain the textbook public motif GGSQGNLIF.",
+    "what_came_from_paper_text_only": "The paper is paywalled in Science with no PubMed Central copy, so I never read the methods. The physical readout behind the pos/neg label (fluorescent peptide-MHC multimer staining and sorting of cells carrying the introduced exogenous chain) is inferred from the abstract, the Zenodo README wording 'binding (pos) or non-binding (neg) to this epitope', and the pos/neg sort naming in the filenames - not read in a methods section. The total negative row count (~7 million) is my estimate from uncompressed byte sizes divided by the 296 bytes per row I measured in GTSb_true_neg.tsv, not a count. The epitope peptide sequences themselves are not in the files, only 3-letter prefixes (GIL, LLW, EIY, YLQ, LTD, TTD, SFH, FLC, TFE, GTS) plus HLA alleles in folder names; the full 9-10mer peptides would need 10 manual lookups."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 14885005, CC-BY-4.0, three files, no login or application. I downloaded one file whole and read 19 members of another by range request."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is literally a column: 'frac' holds the string pos or neg in every pos_neg table, and 'positive' holds 0 or 1 in the close-in-sequence CSVs. Verified in the files. Combining the 36 per-setting files is a concatenation with the epitope read off the filename - effort, not construction."},
+    "a3_inputs_present": {"pass": true, "note": "CDR3 amino acid and nucleotide sequences are present verbatim, with IMGT V and J gene names (e.g. TRAV27, TRAJ42) and donor IDs. No accession lookups. The only thing absent is the 10 epitope peptide sequences, which is 10 manual lookups, not thousands."},
+    "a4_units_stated": {"pass": true, "note": "The label is categorical so units barely apply. Read.count is UMI (unique molecular identifier) count and Read.proportion is a fraction, both stated in the Zenodo README; 'length' and 'cdr3_len' are in amino acids, which I confirmed by comparing to the sequences."},
+    "a5_enough_rows": {"pass": true, "n_rows": 113905, "note": "113,905 positive rows counted across the 18 positive tables, 94,463 unique CDR3 amino acid sequences, against roughly 7 million negatives (estimated from file sizes). Eight settings have over 1,000 positives from 3-5 donors. The ready-made hard benchmark alone is 28,010 verified rows."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.5 GB", "note": "All 113,905 positives plus a 10:1 negative subsample is well under 1 GB as parquet. The full negative set is 2.06 GB uncompressed but reads file by file; the biggest single file is 325 MB. No GPU needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Abstract claims '>70,000 epitope-specific TCRs across 10 epitopes'. I count 113,905 positive rows total; removing the two non-conventional settings (MAIT 22,512, NKT 3,349) leaves 88,044 rows across exactly the 10 conventional epitopes I see in the folder names, which de-duplicates toward >70,000 (EIYb alone has 2,896 repeated clonotype keys). Reconcilable in the right direction. One minor gap: the GTSb setting exists in pos_neg.zip but has no folder in clonotype_tables.zip."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a physical sort outcome - a partner chain found in the epitope-multimer-positive versus multimer-negative fraction after a known chain is forced into a donor's repertoire - not any model's output, and the features (partner CDR3 sequence, V, J) are not computed from it. Important caveat I verified in the files: Read.count.x/y, Read.proportion.x/y and FC are derived from the same sorted fractions that define the label and must be dropped as features. Caveat on the caveat: I inferred the multimer readout from the abstract and README, since the methods are paywalled."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "36 identically-structured TSVs plus 4 CSVs; epitope and chain live in the filename, so it is a concat, not a join."},
+    "B2": {"score": 2, "why": "Every file I opened parsed first try with pandas read_csv (tab or comma); no fixing needed."},
+    "B3": {"score": 2, "why": "One lab, one assay, one pipeline; authors already applied their high-confidence pos/neg filters before depositing."},
+    "B4": {"score": 2, "why": "Label is clean binary with no censoring; feature columns had 0.0 missing fraction in every positive table I checked."},
+    "B5": {"score": 1, "why": "Verified repeated clonotype keys: 2,896 of 47,127 rows in EIYb, 302 of 4,019 in GILb; one groupby to dedupe."},
+    "B6": {"score": 1, "why": "Zenodo README explains folders, pos/neg and the .x/.y merge suffixes, but VEnd, DStart, Vfam, first are undocumented MiXCR conventions."},
+    "C1": {"score": 2, "why": "Asking whether published predictors survive physically measured negatives is informative either way; no need to beat anyone."},
+    "C2": {"score": 1, "why": "NetTCR-2.2 and ~50 methods are open and honestly benchmarked for TCR-epitope binding, but none fits partner-chain compatibility with measured negatives."},
+    "C3": {"score": 2, "why": "Measured same-donor negatives replace the synthetic negatives that the Nature Methods 2025 benchmark names as the field's biggest confounder."},
+    "C4": {"score": 2, "why": "Required lentiviral exo-chain libraries, multimer sorting and deep sequencing across 8 apheresis donors; months of wet lab."},
+    "C5": {"score": 2, "why": "I measured a V/J/length baseline myself (average precision 0.330 and 0.492, leave-one-donor-out) and NetTCR-2.2 weights are on GitHub."},
+    "D1": {"score": 2, "why": "ESM-2 protein language model, open MIT weights; TCR-BERT also open. Inputs are short amino acid sequences, exactly the right type."},
+    "D2": {"score": 2, "why": "CDR3s are 9-20 amino acids; ESM-2 t12 (35M parameters) embeddings cache once on CPU, then a head trains in minutes."},
+    "D3": {"score": 2, "why": "Data is CC-BY-4.0 (read off the Zenodo record), ESM-2 weights are MIT; nothing blocks commercial or academic use."},
+    "E1": {"ok": true, "why": "donor.x verified present (8 donors) and epitope/chain is in the filename; both give non-random held-out groups."},
+    "E2": {"ok": true, "why": "18 epitope/chain settings over 10 conventional epitopes, 8 donors, 2-5 donors per setting - counted in the files."},
+    "E3": {"ok": true, "why": "Class prior and per-V-gene frequency are trivial; I computed the prior (0.244 GILb, 0.458 LLWa) already."},
+    "E4": {"ok": true, "why": "2-5 donors measured per setting, so cross-donor agreement of pos calls gives a reproducibility ceiling; not yet computed."},
+    "E5": {"ok": true, "why": "Verified in the files: GILb positives are 21.6% TRAV27, 20.6% TRAJ42, 17.0% carry the known public GGSQGNLIF motif."},
+    "E6": {"ok": true, "why": "Label shuffling within donor, and training on the leaky Read.count/FC columns alone, both run in minutes."},
+    "E7": {"ok": true, "why": "VDJdb, IEDB and McPAS-TCR hold independently published TCRs for these same epitopes, joinable on CDR3 plus V/J."},
+    "E8": {"ok": true, "why": "NetTCR-2.2's IMMREP23 number (AUC0.1 = 0.600 on seen epitopes) is reproducible from their public GitHub repository."},
+    "G1": {"score": 2, "why": "IMGT V/J gene names and CDR3 amino acid sequences present verbatim; HLA alleles (A*01, A*02, A*24, A*68, B*08, DPB1) in folder names."},
+    "G2": {"score": 2, "why": "VDJdb and IEDB hold published TCR-epitope pairs for these exact epitopes; join on CDR3 amino acid sequence plus V/J gene."},
+    "G3": {"score": 1, "why": "Near one-to-one on CDR3+V+J+epitope, but allele suffixes (*01) need stripping and VDJdb has several entries per CDR3."},
+    "G4": {"score": 2, "why": "Asks whether public epitope-specific TCRs are a representative sample of recognition-competent chains - neither source answers alone."},
+    "H1": {"score": 2, "why": "Millions of experimentally measured non-binding partner chains from the same donors and same sort - the dataset's whole point."},
+    "H2": {"score": 1, "why": "8 healthy apheresis donors, human only, 10 epitopes, 6 HLA types; both CD4 and CD8 but one lab and one platform."},
+    "H3": {"score": 2, "why": "Written out below in one sentence; the design's scope limits (abundant chains, 18 fixed exo-chains) are explicit."},
+    "H4": {"score": 2, "why": "The paper's whole thesis is that pairing constraints are uneven and single-chain data is limited; README explains the structure."},
+    "I1": {"score": 2, "why": "Minervina/Pogorelyy (St Jude), Mayer-Blackwell/Fiore-Gartland (Fred Hutch, tcrdist3), Morten Nielsen's NetTCR group, IMMREP organisers."},
+    "I2": {"score": 2, "why": "Would change how negatives are built for every TCR specificity model - the exact confounder the 2025 Nature Methods benchmark flagged."},
+    "I3": {"score": 2, "why": "The decision is which partner chains to clone and test, so precision among the top ranked partners is the decision itself."},
+    "I4": {"score": 1, "why": "Measured: V/J/length logistic already reaches AUC 0.657 and 0.594 leave-one-donor-out, so a lookup is a real contender."},
+    "J1": {"score": 2, "why": "Grouped splits, severe class imbalance, frozen-backbone transfer, and re-running a published model as baseline."},
+    "J2": {"score": 1, "why": "TCR immunology is specialised, but the known public GIL motif gives an independent sanity check on any result."},
+    "J3": {"score": 2, "why": "The concatenated, de-leaked pos/neg table with donor, epitope and HLA columns is a usable community benchmark even if no model works."},
+    "J4": {"score": 1, "why": "Four weeks is a sensible budget given the feature table took me under an hour, but nothing is written down yet."},
+    "J5": {"score": 1, "why": "Kill condition stated in success_criteria below, but not yet committed to NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "NetTCR-2.2 (convolutional neural network predicting whether a TCR binds a peptide-MHC)",
+        "open_weights": true,
+        "score_and_split": "AUC0.1 (area under the ROC curve up to 10% false positive rate) = 0.600 on the IMMREP23 'seen epitope' group, the best of that benchmark; close to random on unseen epitopes. Weights and code at github.com/mnielLab/NetTCR-2.2.",
+        "authors_named_unsolved": "Prediction for unseen peptides, especially peptides dissimilar to the training peptides, 'remains challenging' and leave-one-peptide-out performance stays very poor.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Assessment of computational methods in predicting TCR-epitope binding recognition (Nature Methods 2025 benchmark of 50 methods)",
+        "open_weights": null,
+        "score_and_split": "Benchmarked 50 methods on 21 datasets covering 762 epitopes and hundreds of thousands of binding TCRs; all methods struggled to generalise to unseen epitopes. I read the abstract and summary, not the per-method numbers.",
+        "authors_named_unsolved": "The source of negative TCRs substantially affects accuracy and external negatives introduce uncontrolled confounders; generalisation to unseen epitopes is unsolved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ePytope-TCR (benchmarking framework for TCR-epitope predictors, Cell Genomics 2025)",
+        "open_weights": true,
+        "score_and_split": "A unified framework for running and comparing predictors; reported that novel predictors worked on frequently observed epitopes but all methods failed for less frequently observed ones. Abstract-level only.",
+        "authors_named_unsolved": "Failure on infrequently observed epitopes.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TSpred (paired alpha/beta chain TCR-epitope interaction predictor, Bioinformatics 2024)",
+        "open_weights": null,
+        "score_and_split": "Described as a robust framework using paired-chain TCR data; I retrieved only the title and venue, not its numbers or split.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "T-cell receptor alpha to beta chains binding prediction (Briefings in Bioinformatics 2026, bbag358)",
+        "open_weights": null,
+        "score_and_split": "Predicts which alpha chain pairs with which beta chain - the closest published analogue to the chain-pairing half of this paper. Title and venue retrieved only.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model; the small esm2_t12_35M checkpoint runs on CPU, esm2_t33_650M if patience allows), with TCR-BERT as a domain-specific alternative and tcrdist3 nearest-neighbour distance as a non-neural comparator",
+    "freeze_and_head_viable": true,
+    "hardware": "16 GB laptop CPU: embed 9-20 amino acid CDR3 peptides once, cache to parquet, then train gradient boosting or logistic heads in minutes.",
+    "licence": "ESM-2 weights MIT; data CC-BY-4.0. No restriction on either."
+  },
+  "integration": {
+    "partner_dataset": "VDJdb (curated database of published TCR-epitope pairs), with IEDB and McPAS-TCR as further sources; the 10x Genomics dextramer paired-chain dataset as a fourth.",
+    "join_key": "CDR3 amino acid sequence plus IMGT V and J gene names (present verbatim in the files as e.g. TRAV27 / TRAJ42, allele suffix stripped), with the 3-letter epitope prefix mapped by hand to its full peptide and the HLA allele taken from the clonotype_tables folder name.",
+    "bigger_question_one_sentence": "Are the epitope-specific TCRs recorded in public databases a representative sample of the partner chains that can actually support recognition, or a narrow biased slice - and does that bias explain why every benchmarked predictor fails on unseen epitopes?"
+  },
+  "controls": {
+    "positive_control": "Already verified in the files: for the GILb setting (HLA-A*02:01 influenza epitope GILGFVFTL, partner chain is alpha), 21.6% of compatible partner alpha chains use TRAV27, 20.6% use TRAJ42, and 17.0% contain the textbook public motif GGSQGNLIF. Any working model must rank these at the top. Second control: predict CDR3 length from the sequence, which must be near-perfect.",
+    "negative_control": "Shuffle the pos/neg label within donor and confirm average precision collapses to the measured class prior (0.244 for GILb, 0.458 for LLWa). Separately, train on Read.count/Read.proportion/FC alone, which should score near-perfectly and thereby prove those columns are leaks that must be dropped.",
+    "external_validation": "VDJdb, IEDB and McPAS-TCR entries for the same epitopes (GILGFVFTL, YLQPRTFLL, EIYKRWII, LLWNGPMAV and the rest): do independently published epitope-specific TCRs score as compatible? Plus leave-one-epitope-out across the 10 conventional epitopes."
+  },
+  "honest_claim_h3": "Among partner TCR chains abundant enough to be sequenced in eight healthy apheresis donors, and that paired stably with one of 18 fixed exogenous chains, the model ranks which ones preserve recognition of that chain's cognate epitope - it says nothing about epitopes outside the 10 tested, about binding affinity, or about rare partner chains below the sequencing detection limit.",
+  "plain_idea": {
+    "one_liner": "Use a T cell receptor partner chain's sequence to predict whether it preserves recognition of a known target when forced to pair with a fixed chain.",
+    "train_on": "For each example: the partner chain's CDR3 amino acid sequence (the 9-20 residue loop that contacts the target), its V and J gene names, the donor it came from, and which fixed chain and target it was tested against. I counted 113,905 measured compatible partner chains across 18 fixed-chain settings and 8 donors, against roughly 7 million measured incompatible ones.",
+    "predict": "A compatible/incompatible call, or a ranking. The true answer comes from a lab experiment: a known target-specific chain is introduced into a donor's T cells, cells are sorted by whether they stain with a fluorescent target-plus-presenting-molecule reagent, and the partner chains in each sorted fraction are sequenced.",
+    "why_worthwhile": "Every public tool that predicts which T cell receptor recognises which target was trained with made-up negative examples, which a 2025 benchmark of 50 methods named as the field's biggest confounder; this is the first large set of physically measured negatives, so testing those tools against it tells us whether they actually work, whichever way it comes out."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "I counted 113,905 measured compatible partner chains (94,463 unique CDR3 sequences) with roughly 7 million measured same-donor incompatible partners, including a 28,010-row set where every negative has a single-amino-acid-mismatch positive neighbour. Published predictors are trained on database-curated positives with randomly drawn or shuffled negatives - the Nature Methods 2025 benchmark of 50 methods names that negative source as the dominant confounder."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "2-5 donors were measured per setting (verified, 8 donors total), so cross-donor reproducibility of each pos call gives a per-prediction confidence, and UMI counts give sequencing depth. But I did not check whether every one of the 50 benchmarked methods reports calibration, so I cannot claim this is wholly new."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "NetTCR-2.2 is a 2024 convolutional network whose best honest number is AUC0.1 = 0.600 on seen epitopes and near-random on unseen ones - beatable. But the field was audited in a 2025 Nature Methods benchmark of 50 methods on proper splits, so beating it in general is hard. On this specific task - partner-chain compatibility with measured negatives - no model has been fit at all."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "NetTCR-2.2 can be run as our baseline and we would see everything it sees plus more, but the condition 'the new data measures the same quantity the same way' fails: this experiment measures whether a partner chain rescues specificity when forced to pair with a fixed chain, which is related to but not identical with whether a naturally paired TCR binds a peptide-MHC. The evaluation split would also be ours, not theirs."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "VDJdb, IEDB and McPAS-TCR all record 'this TCR recognises this epitope' for published TCRs, and all cover these exact epitopes (influenza GILGFVFTL, SARS-CoV-2 YLQPRTFLL, HIV EIYKRWII and others). The 2025 Nature Methods benchmark I retrieved assembled 21 such datasets covering 762 epitopes and 'hundreds of thousands' of binding TCRs. I know these resources rather than having queried them for this evaluation.",
+    "approx_items": null,
+    "join_key": "CDR3 amino acid sequence plus IMGT V and J gene name, plus the epitope peptide",
+    "why": "It gives both a far larger pool of positive examples to pretrain on and a ready-made independent test: do published epitope-specific TCRs for these epitopes score as compatible partners in our model?"
+  },
+  "leakage_plan": {
+    "risks": [
+      "Read.count.x/y, Read.proportion.x/y and the FC column are computed from the very sorted fractions that define the pos/neg label, so including them would give a near-perfect score that means nothing - I verified these columns are present in every table.",
+      "The same clonotype key repeats within a file (I counted 2,896 of 47,127 rows in EIYb and 302 of 4,019 in GILb), so a random split would put identical rows in both train and test.",
+      "Partner CDR3 sequences differ from each other by single amino acids throughout - which is exactly why the authors supplied a 1-mismatch hard set - so a random split leaks through sequence homology.",
+      "Donor-specific V/J gene usage and HLA background correlate with the label, so a random split rewards memorising donors rather than learning recognition.",
+      "Each epitope has its own exogenous chain and its own sorting batch, so pooling epitopes under a random split lets the model learn 'which file is this row from' instead of recognition."
+    ],
+    "split": "Leave-one-donor-out on donor.x (column verified present, 8 donors: Aph12, Aph13, Aph14, Aph41, Aph44, Aph45, Aph46, Aph47) nested inside leave-one-epitope-out on the epitope/chain setting taken from the filename (18 settings, 10 conventional epitopes). On top of that, cluster partner CDR3 amino acid sequences by tcrdist3 or Levenshtein distance and keep whole clusters on one side. All three grouping variables are present in the files; only the sequence clusters have to be built.",
+    "checks": [
+      "Shuffle the pos/neg label within donor and confirm average precision collapses to the class prior (0.244 for GILb, 0.458 for LLWa - both measured).",
+      "Train on Read.count/Read.proportion/FC alone; near-perfect performance confirms they are the leak and must stay out.",
+      "Report, for every test row, the smallest CDR3 edit distance to any training row, and check performance against that distance.",
+      "Ablate V gene, J gene and CDR3 sequence separately to see which block does the work."
+    ],
+    "verdict": "Manageable - the leaky columns are obvious and named in the Zenodo README, the donor and epitope grouping columns are already in the files, and the authors pre-built a single-mismatch hard set for exactly the homology problem."
+  },
+  "success_criteria": {
+    "metric": "Average precision (area under the precision-recall curve) on the authors' single-amino-acid-mismatch hard set, under leave-one-donor-out, plus precision among the top 100 ranked partner chains per epitope - because the decision this feeds is 'which partner chains do I clone and test in the lab', where only the top of the ranking is ever acted on.",
+    "baselines": "Measured by me on the downloaded files: V gene + J gene + CDR3 length logistic regression, leave-one-donor-out, average precision 0.330 against a 0.244 class prior on GILb (n=9,814) and 0.492 against a 0.458 prior on LLWa (n=18,196); AUC 0.657 and 0.594 respectively. Published comparator: NetTCR-2.2, open weights, AUC0.1 = 0.600 on IMMREP23 seen epitopes, to be run on these same rows.",
+    "success": "Average precision at or above 0.50 on the GILb hard set (against my measured 0.330 V/J baseline) and at or above 0.60 on LLWa (against 0.492), both under leave-one-donor-out, with NetTCR-2.2's average precision on the identical rows reported alongside.",
+    "noise_ceiling": null,
+    "kill": "If after two weeks a frozen ESM-2 embedding plus head does not beat the measured V/J+length baseline by at least 0.05 average precision under leave-one-donor-out on both hard sets, stop and write up the benchmark table and the NetTCR-2.2 re-evaluation instead."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Methods",
+      "why": "They published the 2025 Analysis benchmarking 50 TCR-epitope methods and explicitly flagged negative-TCR source as the dominant confounder; a clean demonstration that published predictors degrade against physically measured negatives, plus a model that holds up, is that journal's Analysis format - it would need a large, unambiguous effect."
+    },
+    "realistic": {
+      "journal": "Cell Genomics",
+      "why": "They took the ePytope-TCR benchmarking paper in 2025, so a re-evaluation of open predictors on the first experimentally-negative benchmark plus a frozen-backbone baseline fits their scope; the likely result - predictors degrade, a simple model wins within epitope but not across epitopes - is exactly this kind of paper."
+    },
+    "fallback": {
+      "journal": "Bioinformatics",
+      "why": "Publishes evaluation and benchmark notes, so even the negative outcome - that no learned model beats V/J gene usage on held-out epitopes - is publishable there as an application note with the cleaned benchmark table released alongside."
+    }
+  },
+  "pitch": {
+    "headline": "The first large set of physically measured negative TCRs: 113,905 compatible partner chains against roughly 7 million measured incompatible ones, from the same donors.",
+    "what_makes_the_data_unusual": "Every published TCR-epitope predictor trains on invented negatives. Here the negatives were sorted and sequenced from the same donors and same experiment as the positives: I counted 113,905 positive rows, 94,463 unique CDR3 sequences, 8 donors, CC-BY-4.0.",
+    "the_win": "Report NetTCR-2.2's average precision on physically measured negatives for the first time, and beat my measured V/J+length baseline of 0.330 (GILb) and 0.492 (LLWa) average precision under leave-one-donor-out.",
+    "even_if_it_fails": "We learn that partner-chain compatibility is not predictable from sequence beyond V/J gene usage - which, given 113,905 measured positives, is itself a hard limit on every single-chain specificity predictor and worth publishing.",
+    "who_wants_it": "Morten Nielsen's NetTCR group, the IMMREP benchmark organisers, and the paper's own authors (Minervina and Pogorelyy at St Jude, Mayer-Blackwell and Fiore-Gartland who wrote tcrdist3). It would change how they construct negative training sets."
+  },
+  "ml_idea": "Two linked tasks on one table. (1) Re-evaluation: run the open TCR-epitope predictors (NetTCR-2.2 first, then whatever ePytope-TCR wraps) on these 113,905 experimentally measured compatible partner chains versus their same-donor measured incompatible partners, and report how much their performance drops relative to the synthetic negatives they were benchmarked on. (2) New model: freeze ESM-2 (a protein language model, MIT-licensed, small CPU checkpoint), embed each partner chain's CDR3 amino acid sequence, concatenate one-hot V and J genes and an embedding of the fixed exogenous chain, and train a head to rank partner chains by compatibility - evaluated leave-one-donor-out and leave-one-epitope-out, with the authors' 28,010-row single-mismatch hard set as the headline benchmark. Features must exclude Read.count, Read.proportion and FC, which are derived from the sort that defines the label.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 2,
+    "cv_run_minutes": 20,
+    "compute_note": "I actually did the positive half of the feature table in under an hour (18 TSVs parsed, 113,905 rows), and timed the leave-one-donor-out V/J logistic regression on 18,196 rows at a few seconds, so cv_run_minutes is anchored on a real measurement scaled up. The 2 embedding hours is an estimate only: roughly 1.2 million short peptides at 10:1 negative subsampling, assuming ESM-2 t12 (35M parameters) manages a couple of hundred 15-mers per second on CPU. Peak RAM is set by the largest single negative file, 325 MB uncompressed, read in chunks.",
+    "cheapest_killing_check": "Already run: count positives per epitope setting after de-duplicating on (CDR3 amino acid sequence, V gene, J gene, donor). The kill condition was 'fewer than five settings with 500+ positives from 2+ donors'; the files give EIYb 47,127/4 donors, LLWa 24,595/4, MAITa 22,512/4, GILb 4,019/4, LTDb 3,549/4, NKTa 3,349/4, SFHb 1,780/4, TFEa 1,185/5 - comfortably alive. Note FLCa has only 65 positives from 1 donor and must be dropped."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "All eight Part A killers verified by opening the files, not by reading the paper: the label is literally a column ('frac' = pos/neg, 'positive' = 0/1), the inputs are verbatim amino acid sequences, and 113,905 positive rows across 8 donors and 10 epitopes were counted rather than quoted. The data is CC-BY-4.0, parses first try, and carries donor and epitope grouping columns for honest splits. Its real value is that the negatives were physically measured in the same experiment as the positives - the exact confounder that the 2025 Nature Methods benchmark of 50 TCR-epitope methods named as the field's biggest problem - so running NetTCR-2.2 against them cannot produce a useless answer. I also verified the positive control is present (21.6% TRAV27 / 20.6% TRAJ42 / 17.0% GGSQGNLIF in GILb positives) and measured the dumb baseline myself (average precision 0.330 and 0.492, leave-one-donor-out), so the project starts with a real number to beat. Two things to watch, both recorded: Read.count/Read.proportion/FC are derived from the label-defining sort and must be dropped, and the methods are paywalled so the multimer readout behind the label is inferred from the abstract and README rather than read."
+}

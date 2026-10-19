@@ -1,0 +1,121 @@
+{
+  "paper_id": "science2026-aeb2344",
+  "title": "Drying of the Aral Sea reshapes the anthropogenic carbon inventory of Central Asia.",
+  "doi": "10.1126/science.aeb2344",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/16809289 (DOI 10.5281/zenodo.16809289, CC-BY-4.0, one 267 MB zip)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the Zenodo deposit (not linked from any index I could reach; found via web search). The single 267 MB zip is over the download cap, so I read its central directory and pulled only the small members with HTTP range requests (1.1 MB total). Listed all 27 entries, read the README, and loaded every CSV in pandas: CO2 flux table 111 rows x 12 cols from 14 sites; elemental-analysis table 558 rows (554 non-null organic carbon %); lab gravimetry 558 rows from 15 cores; 210-Pb dating 542 rows from 15 cores; X-ray diffraction mineralogy 241 rows from 6 cores; surface conductivity 81 rows; Keeling-plot isotope results 25 rows; water-saving scenarios 6 rows; dry-bed area matrices 141x142 and 164x165. Confirmed units are documented for every column in the README, 0 duplicate rows in the flux table, and that the elemental and lab tables are row-aligned 1:1 (558 = 558).",
+    "what_came_from_paper_text_only": "Everything in the abstract (204 +/- 53 Tg C released, 165 +/- 13 Tg C avoidable by reflooding, vegetation offsetting under 1%). Science is paywalled, there is no PubMed Central copy, and science.org returns HTTP 403, so I never read the methods, the data availability statement, or any supplementary table, and could not cross-check row counts against the paper's own stated sample sizes."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo record 16809289, CC-BY-4.0 data plus MIT code, no login. Verified by actually reading bytes out of the archive."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Both candidate targets are literal columns: umolCO2_s_m2 (carbon dioxide emission rate) in the flux table, EA_Organic_Carbon (organic carbon percent) in the elemental table. Seen in the files."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Predictors are present as values, not references: sediment temperature, air temperature, humidity, pressure, time of day, site and transect codes; mineral abundances in the X-ray diffraction table. No identifier lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The README documents every column with its unit (micromol CO2 per square metre per second, percent dry weight, g per cubic cm, Bq per kg, mS per cm, km2). Unusually good."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 558,
+      "note": "FAIL, and it is not close. The largest single labelled table is 558 sediment slices (554 with an organic carbon value); the carbon dioxide flux target has only 111 measurements. The checklist needs about 1,500 labelled rows for regression. Worse, the independent unit is the core or site, and there are only 15 cores and 14 flux sites, all sampled by one expedition in September 2022, so grouped cross-validation would have about 14 groups of roughly 8-37 correlated depth slices each. Counted in the files."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~2.5 MB of CSVs (the only large item is a 478 MB drone-derived elevation raster for one site, which the task does not need)",
+      "note": "Everything loads in under a second on a laptop. Verified."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No disagreement observable, but only partly verifiable: the paper is paywalled with no PubMed Central copy, so I could compare the files only against the README, which they match (15 cores, sites S1-S15 with S6 absent)."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Both labels are physical measurements, not model outputs: flux from an infrared gas analyser chamber, organic carbon from elemental analysis corrected for mass lost during acidification. One caution: that correction uses fraction_mass_after_acidification, which is also in the table, so it would have to be excluded from the features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Random forest model for carbon dioxide flux from global dryland lakes (code deposited at Zenodo 10.5281/zenodo.23268014, October 2026, MIT licence)",
+        "open_weights": true,
+        "score_and_split": "Not retrieved: I read the Zenodo code record, which documents 5-fold cross-validation over number of trees and maximum depth with a selected model of 200 trees and depth 13, but I did not read the paper, so I have no performance number or split description.",
+        "authors_named_unsolved": "Unknown; I did not retrieve the paper.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU only; the data is small tabular geochemistry, so gradient boosting or a linear mixed model is the right tool, not a pretrained network",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "NASA POWER / MERRA-2 reanalysis weather (already bundled here as an hourly 2016-2024 series for one grid point) and SoilGrids for soil carbon covariates",
+    "join_key": "latitude/longitude plus date",
+    "bigger_question_one_sentence": "Could be written (do climate drivers explain carbon dioxide release from newly exposed lakebed across many drying lakes?), but it cannot be answered from 14 sites measured in one week, so the join does not rescue the sample size."
+  },
+  "controls": {
+    "positive_control": "Available in principle: sediment temperature should raise respiration, and dark chambers should emit more than clear ones, both visible in the 111-row flux table.",
+    "negative_control": "Label shuffling is trivial to run, but with 111 rows and 14 groups the confidence intervals would swamp any effect.",
+    "external_validation": "No second independent dataset of dry-lakebed chamber fluxes is included; everything here is one expedition, September 2022."
+  },
+  "honest_claim_h3": "Any model fitted here could claim at most: among 111 chamber measurements taken over eight days in September 2022 at 14 sites on the exposed Aral Sea bed, carbon dioxide emission rate is predictable from sediment temperature and time of day - a statement about one week at one lake, not about drying lakebeds in general.",
+  "plain_idea": {
+    "one_liner": "Use sediment temperature, weather and mineral content to predict how fast dried-out lakebed releases carbon dioxide.",
+    "train_on": "Each example is one chamber placement on the exposed Aral Sea bed, described by sediment and air temperature, humidity, pressure, time of day, and site. There are 111 such measurements, verified by counting rows.",
+    "predict": "Carbon dioxide emission rate in micromol per square metre per second. The true answer comes from a closed chamber connected to an infrared gas analyser, placed on the sediment in the field in September 2022.",
+    "why_worthwhile": "Carbon accountants and the restoration groups negotiating Aral Sea carbon credits would use a transferable emissions model, since drying lakes worldwide are an unquantified carbon source. But that payoff needs many lakes, and this paper supplies one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "111 flux measurements from 14 sites at one lake in one week is far smaller than the global dryland-lake compilations behind the published random forest model. The genuine novelty is the setting (exposed lakebed rather than lake water), not the volume."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Paired clear and dark chamber runs at the same spot (62 clear, 49 dark) give some repeat structure, but 14 sites is nowhere near enough to calibrate per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The only named comparator is a 2026 random forest with open MIT-licensed code and 5-fold cross-validation, but it predicts fluxes from lake water, not from dry sediment, so it is not really a competitor on this task at all."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: the existing model measures a different quantity (water-surface flux from pCO2) by a different method, so it cannot be run as a baseline on these 111 dry-sediment chamber measurements."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict carbon dioxide emission rate (micromol per square metre per second) from exposed Aral Sea lakebed using sediment temperature, air temperature, humidity, pressure, time of day and mineralogy, with leave-one-site-out cross-validation; alternatively predict sediment organic carbon percent from mineral abundances and bulk density down 15 cores. Both are clean, well-documented, honestly measured tables - and both are an order of magnitude too small, at 111 and 558 rows with 14-15 independent groups.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.003,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": 1,
+    "compute_note": "Measured, not guessed: I loaded every CSV in pandas in under a second, total 2.5 MB. The 478 MB elevation raster is the only heavy item and is irrelevant to any tabular task.",
+    "cheapest_killing_check": "Count the rows of Data/Results_all_join_crust.csv and Data/EA_data_cores.csv, and count unique Site/Core values. Answer: 111 and 558 rows over 14 sites and 15 cores. That single count kills it, and it costs one minute via a range-read of the zip's directory."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on sample size: 111 carbon dioxide flux measurements and 558 sediment slices, from only 14 sites and 15 cores sampled in one week by one expedition, against a threshold of roughly 1,500 labelled rows. Everything else about this deposit is exemplary - CC-BY-4.0, one zip, every column documented with units, labels that are real physical measurements, no duplicates, parses on the first try - which is exactly why the row count is the whole story. The science is a headline result (204 Tg C from a drying lake, flipping a regional carbon budget from sink to source), but the published numbers come from process models and spatial integration over a chronosequence, not from a feature/label table anyone could learn from. Revisit only if someone assembles dry-lakebed chamber fluxes across many lakes; this would then be 111 valuable rows in it."
+}

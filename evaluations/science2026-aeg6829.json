@@ -1,0 +1,204 @@
+{
+  "paper_id": "science2026-aeg6829",
+  "title": "De novo design of RNA pseudoknots with deep learning.",
+  "doi": "10.1126/science.aeg6829",
+  "journal": "Science",
+  "data_url": "https://github.com/eternagame/OpenKnotAIDesignData (Zenodo DOI 10.5281/zenodo.20101887); raw profiles at RMDB https://rmdb.stanford.edu accessions OK45LIB_2A3_0000, OK6LIB_2A3_0000, OK7ALIB_2A3_0000, OK7BLIB_2A3_0000/0001",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Streamed the whole 139.7 MB main table (Data/OpenKnotBench_data.v4.5.3.csv) through a parser: 36,761 data rows, 0 malformed, 637 columns, zero missing values in all 20 analysis columns. Confirmed the label column 'target_openknot_score' is present for 36,761/36,761 rows (0-100, median 85.07, 30.2% at or above the paper's success cutoff of 90), and that inputs 'design_sequence' (48-240 nt) and 'target_structure' (dot-bracket with pseudoknot brackets) sit in the same row. Counted 57 unique puzzle (target) labels, 63 unique target structures, 74 round-puzzle groups, 13 design methods. Found 573 design sequences measured twice (replicate Pearson r = 0.756, mean absolute difference 4.57 score points). Computed the in-file baseline myself: Spearman 0.431 between the paper's RNet_F1 column and the measured score. Re-derived the label from the raw reactivity columns on 81 fully-read rows (Spearman 0.707 between the measured score and a crude paired-vs-unpaired reactivity separation statistic), confirming it comes from the chemical probing measurement and not from a model. Downloaded the three small target tables, opened the Zenodo archive, read the four RMDB entry pages (construct counts, normalisation value 0.0659, reagent 2A3, 24 C buffer), and listed the DasLab/rnet-inference repository (RibonanzaNet weights, 45.4 MB, MIT licence).",
+    "what_came_from_paper_text_only": "The definition of the OpenKnot score as the percentage of nucleotides whose SHAPE reactivity matches expectation, the 90 cutoff being set from a roughly 10% SHAPE error rate, the cryo-electron microscopy results for four designs, the M2R-seq stem-recovery numbers, and the statement that about 50,000 sequences were tested overall. I did not download the 139.7 MB file to disk (it exceeds the 50 MB cap) nor the 30 MB / 26.5 MB mutant tables; I read their headers only."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "No login anywhere. Measurements are CC0 at RMDB, the design tables are Apache-2.0 on GitHub/Zenodo, model weights MIT. Trap I hit and solved: the Zenodo archive stores the CSVs as git-lfs pointer stubs (133 bytes); the real files come from media.githubusercontent.com."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the file: 'target_openknot_score' is a literal column, filled for all 36,761 rows. Nothing has to be constructed or joined."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: 'design_sequence' holds the actual RNA letters and 'target_structure' the dot-bracket target in the same row; the full 177-307 nt construct is in 'sequence' with sub_start/sub_end offsets. No accession lookups."},
+    "a4_units_stated": {"pass": true, "note": "Score is a stated 0-100 percentage; reactivity columns are author-normalised 2A3 mutational-profiling units with 307 matching per-nucleotide error columns, and the RMDB header records reagent, normalisation value 0.0659, buffer and 24 C."},
+    "a5_enough_rows": {"pass": true, "n_rows": 36761, "note": "36,761 labelled designs counted in the file (34,750 pass the provided signal-to-noise flag; 35,208 unique sequences), spread over 57 targets."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.15 GB", "note": "139.7 MB CSV; dropping the 614 reactivity columns leaves a 29.6 MB metadata slice that I actually wrote out. No GPU needed for a frozen-backbone baseline."},
+    "a7_counts_match_paper": {"pass": true, "note": "57 unique puzzle labels exactly matches the paper's '57 pseudoknots' (17+20+20 targets over four rounds). Caveat recorded: per-round row counts (8,595/8,711/9,118/10,337) do not equal the RMDB per-library construct counts (9,143/9,510/7,808/4,933+1,069) because the benchmark table is a filtered, re-merged subset; the paper's own ~50,000-sequence figure covers the mutant tables too."},
+    "a8_label_provenance": {"pass": true, "note": "Label traces to a physical measurement (2A3 SHAPE probing read out by sequencing), not to a model. I re-derived it from the raw reactivity columns (Spearman 0.707 on 81 rows). Important: those reactivity columns nearly determine the label and must be excluded from the features - the legitimate inputs are design sequence and target structure only."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One CSV carries label, both inputs and all grouping columns; verified in the file."},
+    "B2": {"score": 2, "why": "36,761 rows parsed on the first try, 0 malformed; only wrinkle is the git-lfs pointer stubs in the Zenodo zip."},
+    "B3": {"score": 2, "why": "All 36,761 rows are one assay type (2A3_MaP), one pipeline, author-normalised; checked the column."},
+    "B4": {"score": 2, "why": "No censored or qualitative values; zero missing in 20 analysis columns; SN_filter flags 2,011 weak rows."},
+    "B5": {"score": 1, "why": "573 design sequences appear twice with differing scores (mean gap 4.57 points); easy to dedupe or treat as replicates."},
+    "B6": {"score": 1, "why": "Column names self-explanatory and RMDB documents the chemistry, but no data dictionary for all 637 columns."},
+    "C1": {"score": 2, "why": "Asks how well a reactivity model transfers to unseen design targets; informative either way, not a leaderboard chase."},
+    "C2": {"score": 1, "why": "No model predicts this label, but RibonanzaNet/RNet is open, honestly blind-tested here, and is the natural backbone."},
+    "C3": {"score": 2, "why": "36,761 measured design-success scores have never been used as ML labels; RNet only proxies them at Spearman 0.43."},
+    "C4": {"score": 2, "why": "Current method is synthesising a library and sequencing a SHAPE readout per design round: months and real money."},
+    "C5": {"score": 2, "why": "Two baselines sit in the file: RNet_F1 (I measured Spearman 0.431) and per-target mean; plus published per-method success rates."},
+    "D1": {"score": 2, "why": "RibonanzaNet (RNet) weights, 45.4 MB .pt, downloadable from DasLab/rnet-inference; listed the repository tree."},
+    "D2": {"score": 2, "why": "Embeddings for 35,208 sequences up to 307 nt can be cached once on CPU, then a cheap head; no fine-tuning needed."},
+    "D3": {"score": 2, "why": "Weights and code MIT (verified via GitHub API), measurements CC0, design tables Apache-2.0."},
+    "E1": {"ok": true, "why": "Hold out whole targets (57 puzzle labels, seen in the file) or whole rounds; prevents same-target memorisation."},
+    "E2": {"ok": true, "why": "57 targets / 74 round-target groups, median about 500 designs each; counted in the file."},
+    "E3": {"ok": true, "why": "Per-target mean and global mean (83.15) computable directly; method-identity-only is another dummy."},
+    "E4": {"ok": true, "why": "573 replicate sequences give r = 0.756 and mean gap 4.57 points; 307 per-nucleotide error columns too."},
+    "E5": {"ok": true, "why": "Known method ordering must be recovered: 3DRNA median 56.9 versus Struct2SeQ-SHAPE 89.6, measured by me."},
+    "E6": {"ok": true, "why": "Shuffle scores within target; train on reactivity columns alone as a deliberate leakage detector; random features."},
+    "E7": {"ok": true, "why": "Rounds 1-2 to rounds 3-4 is a target-plus-time split; independent M2R rescue-factor table is a second assay."},
+    "E8": {"ok": true, "why": "RNet_structure and RNet_F1 columns let the paper's own filter be reproduced; scoring code published separately."},
+    "G1": {"score": 1, "why": "Target sources carry PDB and Pseudobase names as free text; RMDB and Eterna IDs present, no UniProt-grade key."},
+    "G2": {"score": 2, "why": "Ribonanza (about 2M chemical-mapping profiles, same lab, same assay family) joins on the raw sequence string."},
+    "G3": {"score": 1, "why": "Sequence join to Ribonanza is clean but coverage is partial since these are new designs; PDB join needs text parsing."},
+    "G4": {"score": 2, "why": "Asks whether 2M generic reactivity profiles contain design-success signal, or whether success is a separate property."},
+    "H1": {"score": 2, "why": "Failures are systematically present: median 85, only 30.2% above the success cutoff, minimum 0, weak methods included."},
+    "H2": {"score": 1, "why": "One lab, one reagent, one buffer, 24 C; breadth comes from 57 targets and 13 designer types, not from sources."},
+    "H3": {"score": 2, "why": "Honest claim writes in one sentence; see honest_claim_h3."},
+    "H4": {"score": 2, "why": "Paper states the SHAPE caveats, the arbitrary 90 cutoff and the roughly 10% assay error rate explicitly."},
+    "I1": {"score": 2, "why": "Das lab / Eterna OpenKnot organisers and the gRNAde group (Joshi, Holliger) run exactly these design rounds."},
+    "I2": {"score": 2, "why": "A pre-screen changes which designs get ordered next round; library synthesis plus sequencing is the cost avoided."},
+    "I3": {"score": 2, "why": "Precision among the top N designs per target is literally the ordering decision, so the metric is the decision."},
+    "I4": {"score": 1, "why": "Method identity, length and GC content may already carry much of the signal; must be beaten before ML is justified."},
+    "J1": {"score": 2, "why": "Frozen backbone plus head, grouped splits, calibration and leakage controls: the skills on the list."},
+    "J2": {"score": 2, "why": "Data has built-in sanity anchors (known good/bad methods, four cryo-EM-verified designs) to judge plausibility."},
+    "J3": {"score": 2, "why": "Even a mediocre model leaves a cleaned 36,761-row design-success benchmark plus an honest RNet baseline."},
+    "J4": {"score": 2, "why": "Three weeks: one for table and dummy baselines, two for cached embeddings and the head."},
+    "J5": {"score": 1, "why": "Kill condition stated here (no 0.05 Spearman gain over simple features in week one) but not yet in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RNet / RibonanzaNet (Das lab; He et al., the paper's own guiding model, trained on about 1-2 million chemical-mapping profiles)",
+        "open_weights": true,
+        "score_and_split": "Predicts per-nucleotide reactivity and secondary structure, not design success. Used here as a prospective blind filter. Its in-file proxy for the label, RNet_F1 (agreement of its predicted structure with the target), reaches Spearman 0.431 against the measured OpenKnot score across all 36,761 designs - a number I computed from the file, not from the paper.",
+        "authors_named_unsolved": "The paper states that reliable RNA 3D structure prediction remains unavailable, that one target (P16) was undesignable by any method, and that the noncanonical tertiary interactions seen by cryo-electron microscopy were not modelled during design.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "gRNAde (Joshi et al., ICLR 2025; geometric deep learning for 3D RNA inverse design)",
+        "open_weights": true,
+        "score_and_split": "A generator, not a success predictor: 56% native sequence recovery on 14 structures versus Rosetta's 45%, and reported about 50% pseudoknot design success versus Rosetta's 35%. In this file its 1,424 designs have median measured score 84.3.",
+        "authors_named_unsolved": "Authors frame prospective wet-lab validation and generalisation beyond known backbones as the open part; their follow-up preprint is about exactly that.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "MPNN-fixbb (NA-MPNN), Struct2SeQ (deep Q-learning inverse folding), codesign-RFdiff, 3DRNA, Rosetta - all code on Zenodo 10.5281/zenodo.20649966",
+        "open_weights": true,
+        "score_and_split": "All are designers scored by this very dataset; measured median scores I computed range from 56.9 (3DRNA) to 89.6 (Struct2SeQ-SHAPE). None predicts the success of a design it did not generate.",
+        "authors_named_unsolved": "Differences between the leading deep-learning methods were mostly not statistically significant, i.e. nobody knows which design features actually drive success.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Anderson-Lee et al. 2016, Principles for Predicting RNA Secondary Structure Design Difficulty (J Mol Biol, Eterna)",
+        "open_weights": false,
+        "score_and_split": "Predicts design difficulty for simple (non-pseudoknotted) secondary structures from Eterna play data; no reported number on pseudoknots and no released model.",
+        "authors_named_unsolved": "Extension beyond simple secondary structures.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RibonanzaNet (RNet), checkpoint RibonanzaNet.pt (45.4 MB) from DasLab/rnet-inference; RibonanzaNet-SS.pt as an alternative, RNA-FM as a second opinion",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop: cache one embedding per unique design sequence (35,208 sequences, 48-307 nt) once, then fit ridge or gradient boosting heads in minutes",
+    "licence": "MIT for weights and inference code (verified on GitHub); data CC0 (RMDB) and Apache-2.0 (design tables)"
+  },
+  "integration": {
+    "partner_dataset": "Ribonanza chemical-mapping corpus (about 2 million sequences, Kaggle release plus RMDB), the same assay family from the same lab",
+    "join_key": "raw RNA sequence string (and RMDB accession for library provenance)",
+    "bigger_question_one_sentence": "Does a reactivity model trained on two million mostly natural and random RNAs already contain the information needed to rank de novo pseudoknot designs it has never seen, or is design success a distinct property that only design-specific labels can teach?"
+  },
+  "controls": {
+    "positive_control": "The model must reproduce the measured method ordering (3DRNA median 56.9 at the bottom, Struct2SeQ-SHAPE 89.6 at the top) and must nail a trivially learnable swapped target such as design length from sequence.",
+    "negative_control": "Shuffle scores within each target and confirm collapse to the per-target mean; separately train on the 614 reactivity columns alone, which should score near-perfectly and thereby prove the leakage detector works; replace features with random noise of the same shape.",
+    "external_validation": "Train on rounds 1-2 (17 repeated targets, 17,306 rows) and test on rounds 3-4 (40 new targets, 19,455 rows) - a combined new-target and later-experiment split; the independent M2R rescue-factor table and the four cryo-electron-microscopy structures give an orthogonal assay check."
+  },
+  "honest_claim_h3": "Among RNA sequences that experienced Eterna players or one of thirteen design algorithms proposed for 57 specific pseudoknot targets, and measured by 2A3 SHAPE chemical probing in one laboratory under one buffer at 24 C, the model ranks which designs will show a reactivity pattern matching the intended secondary structure; it says nothing about three-dimensional structure, function, or behaviour inside cells.",
+  "plain_idea": {
+    "one_liner": "Use a designed RNA sequence and its intended folding pattern to predict how well the molecule actually folds that way in the tube.",
+    "train_on": "36,761 designed RNA molecules (verified row count), each a row with its sequence (48-240 letters), the intended base-pairing pattern written in bracket notation, and which human or algorithm designed it.",
+    "predict": "A 0-100 score for how closely the molecule's measured chemical-reactivity fingerprint matches the intended pattern. The truth comes from SHAPE probing, a chemical that marks flexible, unpaired nucleotides, read out by sequencing.",
+    "why_worthwhile": "Groups running RNA design rounds currently learn which designs worked only after synthesising and sequencing a whole library; a reliable pre-screen would let them order the promising tenth. Even a failure tells us whether existing RNA foundation models carry design-success information at all."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "RibonanzaNet saw about 2 million reactivity profiles, far more rows than our 36,761. But none of those carries a design-success label against an intended pseudoknot, and synthetic non-natural pseudoknots are exactly the area it covers badly: here 57 targets, 13 designer types and 20,444 human designs."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "The file gives per-row reads and signal-to-noise, 307 per-nucleotide error columns, 573 replicate sequences (r = 0.756, mean gap 4.57 points) and roughly 500 designs per target, so a calibrated per-design success probability and per-target uncertainty are both estimable. RNet as used in the paper emits a hard structure filter, not a calibrated probability."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The closest existing proxy, the paper's RNet_F1 column, reaches only Spearman 0.431 against the measured score over all 36,761 designs (my computation), and it was never trained on this label. The replicate ceiling is around r = 0.76, so there is real room between 0.43 and 0.76."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "RNet can be run as our baseline on the identical held-out-target split and our model would see its input plus the target structure and the measured labels, but RNet predicts per-nucleotide reactivity rather than the same quantity our label measures, so the same-quantity-same-assay condition fails."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "RNA Mapping Database (RMDB) holds the earlier OpenKnot rounds 1-3 with the same scoring, and the Ribonanza corpus holds the underlying per-nucleotide reactivity for about 2 million sequences (both checked: I read four RMDB entry pages; Ribonanza size is from its own Kaggle/paper description). No resource outside Eterna reports a design-success score.",
+    "approx_items": 2000000,
+    "join_key": "raw RNA sequence string, plus RMDB accession for provenance",
+    "why": "Earlier pre-AI OpenKnot rounds give extra training rows and an independent test of whether the model also ranks human-only designs, while the much larger reactivity corpus supplies the pretrained backbone."
+  },
+  "leakage_plan": {
+    "risks": [
+      "The 614 reactivity and reactivity-error columns sit in the same CSV and almost determine the label - I confirmed a crude statistic built from them correlates with the score at Spearman 0.707, so including any of them would produce a meaningless near-perfect model.",
+      "The same target structure is reused by hundreds of designs, so a random split lets the model memorise per-target difficulty instead of learning design quality.",
+      "Rounds 1 and 2 reuse the same 17 targets and many near-identical sequences (573 exact duplicate design sequences found), so duplicates would straddle a random split.",
+      "Designs from one method or one Eterna author cluster in both sequence space and score, so method identity can stand in for the label.",
+      "Each round is a separate synthesis and sequencing batch, and round correlates with both target set and typical score, so batch effects track the label."
+    ],
+    "split": "Group by the 'puzzle' column (57 target labels, seen and counted in the file) and hold out whole targets; report the primary metric as within-target rank correlation so per-target difficulty cannot be exploited. Secondary split: train on rounds 1-2, test on rounds 3-4 using the 'round' column, which is also a time split. Deduplicate exact design sequences first and keep near-duplicates (high sequence identity to a training design) in the same fold.",
+    "checks": [
+      "Shuffle scores within each target and confirm performance collapses to the per-target mean.",
+      "Deliberately train on the reactivity columns alone; it should score near-perfectly, proving the detector works and that they are excluded elsewhere.",
+      "Measure each test design's maximum sequence identity to the training set and plot accuracy against it.",
+      "Train on method identity plus length plus GC content alone and report that number as the bar the embedding model must clear."
+    ],
+    "verdict": "Manageable: the grouping columns needed (puzzle, round, method, design_sequence) are all present and verified, and the one serious trap - the reactivity columns - is obvious once named."
+  },
+  "success_criteria": {
+    "metric": "Mean within-target Spearman correlation between predicted and measured OpenKnot score on held-out targets, plus precision among the top 10 predicted designs per held-out target, because the real decision is which handful of designs per target to synthesise next round.",
+    "baselines": "Per-target mean (within-target Spearman 0 by construction); method identity plus length plus GC content; and the paper's own RNet_F1 proxy at Spearman 0.431 across all 36,761 designs, which I computed from the file. The overall rate of designs scoring at or above 90 is 30.2%, which is the top-10 precision to beat.",
+    "success": "Mean within-target Spearman of at least 0.45 on held-out targets and top-10 precision for score at or above 90 of at least 1.5 times each target's own base rate, while beating the simple method-plus-length-plus-GC baseline by at least 0.10 Spearman.",
+    "noise_ceiling": 0.756,
+    "kill": "If after one week of work the frozen-embedding head does not beat the method-identity-plus-length-plus-GC baseline by at least 0.05 Spearman on held-out targets, stop."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Methods",
+      "why": "Publishes design-and-screening methods that change practice, but would require the predictor to prospectively enrich successful designs in a new wet-lab OpenKnot round, which needs the Das lab's collaboration."
+    },
+    "realistic": {
+      "journal": "Nucleic Acids Research",
+      "why": "Publishes RNA structure and design methods with solid benchmarks; a first public design-success benchmark of 36,761 measured designs plus a model beating the 0.431 RNet proxy on held-out targets is squarely in scope."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics (or Bioinformatics)",
+      "why": "Takes honest negative or partial results, so even the finding that RNA foundation-model embeddings do not beat method identity plus sequence composition is publishable as a benchmark note."
+    }
+  },
+  "pitch": {
+    "headline": "36,761 designed RNAs, each with a measured 0-100 fold-success score in one column, and nobody has trained a model on it.",
+    "what_makes_the_data_unusual": "One 139.7 MB CSV: label complete for all 36,761 rows, one assay (2A3 SHAPE probing), 57 targets, 13 designers including 20,444 human designs, 573 replicate sequences, CC0/Apache-2.0, and an MIT-licensed 45 MB backbone trained by the same lab.",
+    "the_win": "Beat the paper's own RNet proxy, which I measured at Spearman 0.431 against the real score, reaching at least 0.45 within held-out targets against a replicate ceiling near 0.76.",
+    "even_if_it_fails": "We learn whether a reactivity foundation model's embeddings carry design-success signal at all, and whether design identity plus length plus composition already explains success - both publishable, and both change how design rounds are filtered.",
+    "who_wants_it": "The Das lab and Eterna OpenKnot organisers, and the gRNAde group, who each pick which designs to synthesise in the next library and currently learn the answer only after sequencing."
+  },
+  "ml_idea": "Predict the measured OpenKnot score (0-100 agreement between a design's SHAPE reactivity profile and its intended pseudoknot secondary structure) from design sequence plus target dot-bracket structure only. Baseline: frozen RibonanzaNet embeddings pooled over the design window, concatenated with structure features (stem count, crossed-pair count, loop lengths, length, GC), fed to ridge and gradient-boosting heads; evaluated with leave-one-target-out cross-validation over 57 targets and a rounds-1-2 to rounds-3-4 temporal split. Secondary task: per-stem formation probability using the independent M2R rescue-factor table. Strictly excludes all 614 reactivity columns from the features.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.15,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 15,
+    "cv_run_minutes": 10,
+    "compute_note": "Estimated, not timed: streaming the 139.7 MB file and writing the 29.6 MB metadata slice took under two minutes and negligible memory, so peak RAM is set by loading selected columns with pandas (well under 3 GB). Embedding time assumes roughly 1.5 seconds per sequence on CPU for an 11M-parameter model with pairwise updates over 35,208 unique sequences of 48-307 nt; the head itself fits in minutes.",
+    "cheapest_killing_check": "Already done: count labelled designs per target that pass the signal-to-noise flag and check that scores vary enough within a target to be worth ranking. Result: 34,750 of 36,761 rows pass, about 500 designs per target, and the within-target spread is wide (overall quartiles 77.7 / 85.1 / 91.1), so the project is not killed on counts."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer was checked against the actual file, not the paper, and all pass: 36,761 rows with the label already in a column, both inputs in the same row, one assay, zero missing values, and 57 target labels matching the paper's headline count exactly. The project asks a transfer question that is informative either way, has two baselines sitting in the file (the paper's own RNet proxy at Spearman 0.431, which I measured), a replicate-derived ceiling near 0.76, an MIT-licensed CPU-friendly backbone from the same lab, and a clean leave-one-target-out split. The one real trap, the 614 reactivity columns that nearly determine the label, is named and has a detector. Main reservations: a simple method-identity baseline may already explain much of the signal (so run it first), and everything comes from one lab, one reagent and one buffer."
+}

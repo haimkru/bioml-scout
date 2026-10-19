@@ -1,0 +1,58 @@
+{
+  "paper_id": "science2026-aec0002",
+  "title": "Chronic type II interferon promotes tumor growth through mitochondrial RNA-induced type I interferon and prostaglandin synthesis.",
+  "doi": "10.1126/science.aec0002",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE330381",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both processed count matrices from the GEO (Gene Expression Omnibus) FTP site: GSE330381 (human A375 melanoma, 27,234 gene rows x 21 sample columns, raw integer counts, library sizes 39-56 million reads) and GSE307168 (mouse YUMM1.7 melanoma, 24,537 gene rows x 24 columns, 18-47 million reads); zero duplicate gene symbols in either. Read both series_matrix metadata files, confirming the full design (control, acute 24 h and chronic 28 d exposure to interferon alpha, beta or gamma, 3 replicates each, one cell line per species). Listed the FTP supplementary directories of all four linked series and read the file list for the chromatin series.",
+    "what_came_from_paper_text_only": "The paper itself is paywalled (Europe PMC: isOpenAccess N; author manuscript PMC13634221 not retrievable as full text), so the biology - double-stranded mitochondrial RNA release, prostaglandin E2 (PGE2) synthesis, restored anti-PD1 response - comes from the abstract and GEO series summaries only. I did not open the 2.3 GB CUT&RUN (a method for mapping where a protein binds DNA) tar or the 1.8 GB ATAC-seq (a method for mapping open chromatin) tar; their contents are known only from the GEO file list, which shows bigWig coverage tracks, not peak tables."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both RNA-seq count matrices download openly from GEO FTP without login (856 KB and 789 KB gzipped); verified by downloading and parsing them."},
+    "a2_label_is_a_column": {"pass": true, "note": "For a sample-level task the labels (treatment: control/alpha/beta/gamma; time: acute/chronic) are explicit columns in the GEO series_matrix metadata I read. For a gene-level task the label would be a fold change I would have to compute myself."},
+    "a3_inputs_present": {"pass": true, "note": "Gene-by-sample raw integer counts with gene symbols are present in the files; no accession lookups needed for a sample-level task."},
+    "a4_units_stated": {"pass": true, "note": "Units are raw sequencing read counts per gene, stated in the file names (Raw_Counts, RawCounts) and confirmed as integers on inspection; normalization would be mine to choose."},
+    "a5_enough_rows": {"pass": false, "n_rows": 45, "note": "FAIL. The independent unit is the sample: 21 human + 24 mouse bulk RNA-seq libraries, just 3 replicates per condition, from one cell line per species. That is far under the ~400 rows needed even for a classification task. Counting 27,234 genes as rows is the same trap as the rejected scCT-DB candidate: gene rows are not independent and all derive from 3 replicates per group."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.02 GB for both count matrices; 4.1 GB if the CUT&RUN and ATAC-seq bigWig archives were added", "note": "The tabular part is trivially small; the chromatin archives (2.3 GB + 1.8 GB) exceed the 50 MB download rule and were recorded by metadata only."},
+    "a7_counts_match_paper": {"pass": true, "note": "Sample counts in the files match the GEO records exactly (21, 24, 37, 10); the paper's own text was not retrievable to cross-check, so this rests on GEO alone."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are experimenter-assigned treatment conditions, not another model's output, and are not computable from the count features except in the sense the experiment intends."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Enformer (a deep neural network predicting gene expression from DNA sequence, Avsec et al., Nature Methods 2021)", "open_weights": true, "score_and_split": "Reported strong across-gene correlation on held-out human genomic regions; authors and later reviewers note it predicts differences between genes far better than differences between conditions or individuals.", "authors_named_unsolved": "Transfer to unseen cell types and condition-specific responses; distal enhancer effects beyond ~10 kb.", "runnable_as_baseline": true},
+      {"name": "Borzoi (a successor model predicting RNA-seq coverage from sequence, Linder et al., Nature Genetics 2025)", "open_weights": true, "score_and_split": "Published as accurate for RNA-seq coverage and variant effects on held-out sequence; not evaluated on chronic-cytokine response in a single cell line.", "authors_named_unsolved": "Adapting to unseen cell types and conditions without retraining.", "runnable_as_baseline": true},
+      {"name": "Interferon-stimulated gene (ISG) signature classifiers separating type I from type II interferon response (e.g. J Transl Med 2025 network meta-analysis signatures; ISG risk-score classifiers in cancer cohorts)", "open_weights": false, "score_and_split": "Signature-based scores validated in bulk and single-cell datasets and in The Cancer Genome Atlas cohorts; typically simple gene-set scores rather than released model weights.", "authors_named_unsolved": "Distinguishing acute from chronic interferon states robustly across tissues.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "Enformer / Borzoi / AlphaGenome (DNA sequence backbones) for a gene-level reframe; none needed for the sample-level task", "freeze_and_head_viable": false, "hardware": "Running a DNA backbone over ~24,000 promoters is a GPU job; on a 16 GB CPU laptop it would take days", "licence": "Enformer and Borzoi weights are open; AlphaGenome weights are non-commercial"},
+  "integration": {"partner_dataset": "The Cancer Genome Atlas (TCGA) melanoma bulk RNA-seq, or the Library of Integrated Network-based Cellular Signatures (LINCS) L1000 perturbation profiles", "join_key": "Gene symbol / Ensembl gene ID", "bigger_question_one_sentence": "Does the chronic-interferon transcriptional state defined in these two cell lines mark the tumours in patient cohorts that fail anti-PD1 therapy? - a real question, but one answered with a gene signature score, not with a model trained on these 45 samples."},
+  "controls": {"positive_control": "Classic interferon-stimulated genes (STAT1, IRF1, CXCL10, GBP2) must rise under all interferon treatments; a pipeline that misses this is broken.", "negative_control": "Shuffle treatment labels across the 45 samples and confirm any classifier collapses to chance - but with 3 replicates per group this test has almost no power.", "external_validation": "Public interferon-stimulation RNA-seq in other melanoma lines, or TCGA melanoma ISG scores; the mouse series can also check whether a human-trained signature transfers across species."},
+  "honest_claim_h3": "Any model trained here could only claim: in one human melanoma line (A375) and one mouse melanoma line (YUMM1.7), with three replicates per condition, these genes separate 28-day from 24-hour interferon exposure - a description of 45 libraries from one laboratory, not a predictive claim about tumours or patients.",
+  "plain_idea": {
+    "one_liner": "Use a tumour cell's gene activity profile to predict whether it has had brief or long-term interferon exposure.",
+    "train_on": "Gene-by-sample read-count tables from two melanoma cell lines: 21 human A375 libraries and 24 mouse YUMM1.7 libraries, each a control or a 24-hour or 28-day treatment with interferon alpha, beta or gamma, three replicates per condition (verified by opening the files).",
+    "predict": "The exposure label (none / acute / chronic, and which interferon), which comes from the experimenters' own treatment schedule recorded in the GEO metadata, not from a separate measurement.",
+    "why_worthwhile": "If a chronic-interferon fingerprint could be read off a tumour's transcriptome, oncologists might flag patients whose melanoma will resist anti-PD1 immunotherapy - but with only 45 libraries from two cell lines this dataset can at best suggest the genes, not fit such a model."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "45 bulk RNA-seq libraries from two cell lines is tiny against the thousands of profiles behind existing interferon-signature work and the genome-wide training sets behind Enformer and Borzoi."},
+    "confidence_score": {"answer": "no", "why": "Three replicates per condition allow a crude noise estimate but nowhere near enough groups to calibrate per-prediction confidence."},
+    "models_beatable": {"answer": "partly", "why": "Sequence-to-expression models (Enformer 2021, Borzoi 2025) are known to predict condition-specific changes poorly, and a 2025 Nature Methods benchmark found deep perturbation models do not beat linear baselines - but beating them needs far more data than 45 libraries."},
+    "guaranteed_improvement": {"answer": "no", "why": "No new data joins to this on a shared key that measures the same quantity the same way; other interferon studies use different cell lines, doses and platforms, so adding them changes the experiment rather than extending it."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a classifier on bulk RNA-seq profiles to call acute versus chronic interferon exposure and the interferon type, then score public melanoma cohorts for a chronic-interferon state. Also considered a gene-level reframe - predict each gene's chronic-interferon fold change from its promoter sequence with a DNA backbone - which fails on effective sample size (3 replicates, one cell line per species), needs a GPU, and lands in the crowded, benchmark-beaten sequence-to-expression field.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.02, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": null, "cv_run_minutes": 2, "compute_note": "Estimated from the files I actually parsed: two gzipped matrices totalling 1.6 MB, loaded in seconds; any model on 45 samples trains instantly. The GPU estimate applies only to the rejected sequence-backbone reframe over ~24,000 promoters.",
+    "cheapest_killing_check": "Count the sample columns in the GEO count matrices - 21 and 24, with 3 replicates per condition. That takes one minute and kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Part A5 fails decisively: the data is a well-executed mechanistic experiment - 21 human A375 and 24 mouse YUMM1.7 bulk RNA-seq libraries, three replicates per condition, one cell line per species, plus 37 CUT&RUN and 10 ATAC-seq libraries supplied only as multi-gigabyte coverage tracks. Everything downloads cleanly and the labels are honest experimenter-assigned conditions, but 45 independent units is an order of magnitude below the threshold for any supervised model, and treating the 27,234 gene rows as samples would repeat the scCT-DB mistake of counting the wrong unit. The only defensible use is as a gene list or a validation set for work grounded in a larger resource."
+}

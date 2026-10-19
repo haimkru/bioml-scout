@@ -1,0 +1,57 @@
+{
+  "paper_id": "nature2026-11098-y",
+  "title": "A two-hit mechanism triggers autoimmune hair loss.",
+  "doi": "10.1038/s41586-026-11098-y",
+  "journal": "Nature",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE343613",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the only processed table, GSE343613_Bulk_seq_ERV_TPM.xlsx (6.3 MB): 61,184 endogenous retrovirus (ERV, ancient virus sequences embedded in the genome) loci x 22 mouse samples, no missing values, no duplicate IDs. Verified units by arithmetic (every sample column sums to exactly 1,000,000, so values are TPM renormalised within the ERV set only). Computed sparsity (93.3% zeros; 19,449 loci non-zero in >=1 sample, 9,417 in >=3, 430 in all 22), replicate agreement, variance decomposition, per-contrast differential tests, and a principal component analysis. Confirmed the 22 columns match the 22 sample titles listed in GEO exactly. Listed the single-cell series GSE343853 by file (4 .h5 matrices, 34-45 MB each, 154 MB tar) without downloading. Read the Data Availability statement from the publisher page.",
+    "what_came_from_paper_text_only": "The biology (regulatory T cell depletion, sympathetic nerve activity, ADRB2, AIM2) comes from the abstract and data availability statement only; Nature full text and methods are paywalled, so I could not see how ERV expression was quantified, which software was used, or what locus counts the figures report. The 18 'Source Data' spreadsheets attached to the figures were not downloaded (publisher-hosted, and they are per-mouse figure quantifications of a handful of animals per group)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Both GEO series are public with no login: I downloaded the 6.3 MB ERV table from the NCBI FTP site directly. The GEO web pages are captcha-blocked but the FTP listing and E-utilities work fine."},
+    "a2_label_is_a_column": {"pass": true, "note": "Expression (TPM) is a column per sample and the experimental condition is encoded in each column header, so a group-mean fold change is ordinary arithmetic within one table, not a cross-source construction. Passing this, but note the target of interest ('is this locus nerve-responsive') still has to be defined by a statistical test rather than read off."},
+    "a3_inputs_present": {"pass": true, "note": "Model inputs would be DNA sequence, which is NOT in the file: only mm10 genome coordinates (chromosome, start, end, strand, parsed cleanly from the ID column). That is one bulk extraction from a mouse genome FASTA plus one coordinate overlap against RepeatMasker for the repeat-family label, not thousands of individual lookups, so it passes."},
+    "a4_units_stated": {"pass": true, "note": "'TPM' (transcripts per million) appears only in the file name, with no units column or README. I verified by arithmetic that each column sums to exactly 1,000,000, which means the values were renormalised across the ERV subset alone, not the whole transcriptome. That rescaling is documented nowhere and makes the values compositional: any global change in ERV output is mathematically invisible (group mean TPM is 105.0 for anagen-PBS and 105.0 for telogen-PBS by construction). Passes on consistency, but flagged."},
+    "a5_enough_rows": {"pass": false, "n_rows": 61184, "note": "FAILS. The 61,184 rows are mostly empty: 93.3% of values are zero and only 2,529 loci are detected in at least half the samples. More importantly, the only label this experiment defines is the response to a condition, and that label has almost no positives: at 5% false discovery rate I found 49 differential loci for anagen vs telogen, 36 for nerve ablation (6OHDA), 72 for Adrb2 knockout, 18 for regulatory T cell depletion, and 17 for the optogenetic experiment. The optogenetic contrast had 112 loci at raw p<0.05 against 126 expected by chance, i.e. no detectable locus-level signal at all. The underlying experimental unit is 22 bulk samples in 8 groups of 2-3 mice, plus 4 mice of single-cell data. That is far under the ~1,500-row (or ~400 for classification) bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "6.3 MB table; +~2.7 GB one-off mm10 genome FASTA for sequence extraction; single-cell series 154 MB", "note": "Comfortably laptop-sized; this is not where the project dies."},
+    "a7_counts_match_paper": {"pass": true, "note": "Internally consistent: the 22 table columns map one-to-one onto the 22 sample titles in GEO, with matching group names (Tel_PBS, Ana_PBS, Ana_6OHDA, Ana_cKO, BlueLight_Ai32, BlueLight_Ctrl, Tel_DT, Tel_DT_6OHDA). I could not check the 61,184-locus count against the paper because the full text is paywalled."},
+    "a8_label_provenance": {"pass": false, "note": "ALSO FAILS, and this is the subtler problem. Two routes. (1) Circularity: expression of a near-identical repeat family can only be assigned to individual loci by a probabilistic read-reassignment step (tools such as Telescope use an expectation-maximisation model), so the per-locus value is partly an algorithm's inference, not a direct measurement. (2) Leakage by construction: whether a locus is detected at all is strongly predicted by its length, a pure function of the candidate input sequence (Spearman 0.49 between locus length and number of samples detected; median length 476 bp for never-detected loci versus 921 bp for loci detected in all 22). A sequence model predicting 'is this ERV expressed' would substantially be learning mappability and length, and would look good while learning nothing biological."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "No honest claim is available: for the label this experiment defines, 17-72 loci reach significance per contrast and replicate noise exceeds the condition effect (median within-group variance 1.39 versus between-group 0.76), so any model would be describing noise.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence of each dormant viral element in the mouse genome to predict which ones wake up under nerve signalling.",
+    "train_on": "One ERV (endogenous retrovirus, an ancient virus sequence embedded in the genome) locus per row, with its mm10 genome sequence as input. 61,184 loci in the file, but only 2,529 are reliably detected and only 17-72 per experiment show a real response, all verified by me in the file.",
+    "predict": "Whether a locus is switched on by sympathetic nerve signalling, with the truth coming from bulk RNA sequencing of sorted hair follicle stem cells in mice that were nerve-ablated, Adrb2-knockout, or optogenetically stimulated.",
+    "why_worthwhile": "If it worked, skin and autoimmunity labs could predict which repeat elements become visible to the immune system under stress, which is the paper's proposed trigger for hair loss. As verified, the data cannot support it."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict from mm10 DNA sequence which ERV loci are reactivated by sympathetic noradrenaline signalling through ADRB2 in hair follicle stem cells, using a DNA language model (Nucleotide Transformer or HyenaDNA) frozen with a classification head, with the label taken from the anagen-versus-telogen and nerve-ablation contrasts. The table is genuinely clean and the coordinates make sequence extraction trivial, but the positive class is a few dozen loci, replicate reproducibility (Spearman 0.64 on well-detected loci) is barely above the between-condition value (0.55), and locus length alone predicts detection at Spearman 0.49, so the attainable score would reflect mappability rather than nerve biology.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 2.8,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 20,
+    "cv_run_minutes": 10,
+    "compute_note": "Measured: the 6.3 MB table parses in seconds and all my statistics ran in under a minute on CPU. Embedding hours is an estimate for ~19,000 loci of median 593 bp through a small DNA language model on CPU; the mm10 FASTA download dominates the working set. None of this was the binding constraint.",
+    "cheapest_killing_check": "Count the loci that are reproducibly differential: a t-test between the 3 anagen-PBS and 3 telogen-PBS columns with Benjamini-Hochberg correction. I ran it in one minute and got 49 of 2,529, which kills the project outright."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A8 on the files, not on the abstract. The single processed table (61,184 ERV loci x 22 samples) is clean and laptop-sized, but 93.3% of it is zero, the condition label has only 17-72 significant loci per contrast (and none above chance for the key optogenetic experiment), replicate noise exceeds the between-condition effect, the dominant axis of variation is a batch split between the blue-light experiment and the rest, and the values are silently renormalised within the ERV set so global ERV changes are invisible. Separately, locus length predicts detection at Spearman 0.49, so a sequence model would be learning mappability. This is a well-powered mouse genetics paper whose transcriptomics is supporting evidence for 8 groups of 2-3 animals, not a modelling substrate."
+}

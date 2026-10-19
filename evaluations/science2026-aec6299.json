@@ -1,0 +1,134 @@
+{
+  "paper_id": "science2026-aec6299",
+  "title": "Virome-wide ubiquitin ligase discovery reveals diverse mechanisms of immune evasion.",
+  "doi": "10.1126/science.aec6299",
+  "journal": "Science",
+  "data_url": "https://datadryad.org/dataset/doi:10.5061/dryad.pzgmsbd3d",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Dryad deposit doi:10.5061/dryad.pzgmsbd3d via its API: exactly 4 files, CC0 licence, total 59,400,676,413 bytes - DataS1_aGFPnb_Raw_DNAseq.zip (15.33 GB), DataS2_UbCRISPR_Raw_DNAseq.zip (44.07 GB), DataS3_AlphaFold3-requests.zip (166,680 bytes), README.md (3,118 bytes). Every download endpoint I tried returned HTTP 401 (API: 'must have current bearer token') or an anti-bot challenge page, so I opened no file; I read the README content through the rendered Dryad landing page. science.org article page and two supplementary-file URL patterns all returned HTTP 403; Unpaywall reports is_oa=false with zero open-access locations; Europe PMC has no PMCID and no supplementary files. PRIDE and MassIVE searches for this study returned nothing; GitHub and Zenodo searches returned zero repositories.",
+    "what_came_from_paper_text_only": "Everything about the experiments: the ~10,000 viral open reading frame (ORF) library, the GFP-nanobody degradation screen, the ubiquitin-focused CRISPR screens, the proteomics, the three mechanistic classes (canonical ligases, hijackers, non-canonical ligases) and the JAK1 / CUL1-beta-TrCP substrates. All of that comes from the abstract and the Dryad README; I saw none of the underlying numbers."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified. The processed screen tables that hold the labels live only in Science's paywalled supplementary materials: the article page and both supplementary URL patterns return HTTP 403, there is no PubMed Central copy, and Unpaywall lists zero open-access locations. The one open deposit (Dryad, CC0) holds only raw sequencing plus AlphaFold 3 input files, and even its 167 KB file returned HTTP 401 from the API and an anti-bot challenge from the web download path."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. From the open data alone the label does not exist as a column anywhere. A per-ORF degradation score would have to be rebuilt from raw FASTQ (raw DNA sequencing read files) by demultiplexing, aligning to the ORF reference and computing sorted-bin enrichment - i.e. re-running the authors' whole analysis pipeline. That is construction, not a column."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Probably fine but unverified: the viral ORF amino-acid sequences exist in the companion viral ORFeome paper (Cell, PMC13429030, open access) and the Dryad bundle is said to include reference FASTA files. I could not open either to confirm sequence coverage of all ~10,000 ORFs."
+    },
+    "a4_units_stated": {
+      "pass": false,
+      "note": "Cannot verify. No table was reachable, so no units column was seen. The README describes the readout qualitatively ('loss of GFP fluorescence intensity relative to a DsRed control') with no stated scale or normalisation."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": null,
+      "note": "The paper claims a library of ~10,000 viral ORFs and the companion Cell paper says 513 viral species, which would be plenty. I verified no row count: n_rows is null because I opened no table."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "FAIL, verified from the Dryad file listing. The only open data is 59.4 GB of raw FASTQ, over ten times the ~5 GB working-set limit, and this project's rules forbid downloading raw sequencing at all. There is no processed small-table route available."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "Cannot check. No file, API record or download gives a row count to compare against the paper's '~10,000 ORFs'."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Provenance looks clean in principle: the label would be a physical measurement (fluorescence-activated cell sorting of GFP signal, read out by sequencing barcode counts), not another model's output. Judged from the README description only, since no label table was reachable."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SIEVE-Ub (support-vector-machine classifier for pathogen E3 ubiquitin ligase effectors, PeerJ 2019)",
+        "open_weights": null,
+        "score_and_split": "Reported area under the receiver-operating-characteristic curve of 0.90 overall and 0.82 for effectors outside known sequence families; split details not inspected (read from the search abstract, not the full paper).",
+        "authors_named_unsolved": "Detecting ligases with no homology to known sequence families, which is where their score drops.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Degpred (BERT-style protein language model predicting degrons and E3 ligase binding, BMC Biology 2022)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; abstract reports experimental validation of a predicted SPOP-binding degron on CBX6 but I did not see the held-out metric.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepESI / DeepDSI (deep-learning predictors of human E3 ligase-substrate and deubiquitinase-substrate interactions, CSBJ 2023)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; predicts interactions across the human proteome, trained on curated interaction databases such as UbiNet 2.0 (3,332 verified E3-substrate pairs, 54 organisms).",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model, small CPU-runnable checkpoints)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU would be enough for ~10,000 short viral proteins if the label table existed.",
+    "licence": "MIT, permissive."
+  },
+  "integration": {
+    "partner_dataset": "UniProt viral proteomes plus AlphaFold DB predicted structures; UbiNet 2.0 for known E3-substrate pairs.",
+    "join_key": "UniProt accession / NCBI protein accession for each viral ORF.",
+    "bigger_question_one_sentence": "Do viral proteins that hijack the host ubiquitin system share a sequence or structural signature that a protein language model can detect across virus families, so that new ligases can be flagged in newly sequenced viromes without a screen?"
+  },
+  "controls": {
+    "positive_control": "The screen should rank the textbook viral ligases (for example papillomavirus E6 with E6AP, and other known viral RING/U-box mimics) among its top hits; a model must recover them.",
+    "negative_control": "Shuffle the per-ORF degradation scores and confirm performance collapses to the per-virus-family mean.",
+    "external_validation": "Hold out whole virus families, and test against UbiNet 2.0 / literature-curated viral ligases that were not in the screen."
+  },
+  "honest_claim_h3": "Not writable from available data: with no reachable label table, any claim would rest entirely on the paper's prose rather than on measurements I could see.",
+  "plain_idea": {
+    "one_liner": "Use a viral protein's amino-acid sequence to predict whether it destroys a host protein it is tethered to.",
+    "train_on": "One row per viral open reading frame (the paper says about 10,000, from roughly 513 virus species in the companion library), with the protein sequence as the input. I verified no count myself.",
+    "predict": "A continuous degradation score: how much green fluorescent protein (GFP) signal is lost when the viral protein is fused to a GFP-binding nanobody, measured by cell sorting and barcode sequencing. The scores exist only in the paywalled supplementary tables.",
+    "why_worthwhile": "Virologists and targeted-protein-degradation chemists would get a way to flag candidate ubiquitin ligases in a newly sequenced virus without running a screen, and new degrader scaffolds come from exactly this class of protein."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "A uniform ~10,000-ORF screen across ~513 virus species in one assay would dwarf UbiNet 2.0's 3,332 curated E3-substrate pairs and SIEVE-Ub's small bacterial-effector training set, and it would contain measured negatives rather than only literature positives. This rests on the paper's description; I could not open the table."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Pooled sorting screens normally have replicate samples, which would let a model report per-ORF measurement noise, but I could not confirm replicates exist because no data file was reachable."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The named comparators are a 2019 support-vector machine on peptide fingerprints and 2022-2023 models trained on curated interaction databases, none evaluated on a virus-family-held-out split of a uniform screen."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The first condition fails outright: we cannot obtain the labels, so there is no baseline to run and nothing to add data to."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Freeze ESM-2 (a protein language model), embed each viral open reading frame, and fit a small head to predict the GFP-nanobody degradation score, evaluated with whole virus families held out. Attractive on paper; impossible here because the score column is paywalled and the only open data is 59 GB of raw sequencing.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 59.4,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working set taken from the Dryad API file listing (59,400,676,413 bytes across 4 files). No other estimate is possible because no processed table exists to size; nothing was timed.",
+    "cheapest_killing_check": "Try to download the per-ORF screen score table. I did: the Science article and supplement return HTTP 403, Unpaywall shows zero open-access copies, and Dryad holds only raw FASTQ. That check killed it in under ten minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A1, A2 and A6 fail together. The labels - per-ORF degradation scores and CRISPR screen scores - exist only in Science's paywalled supplementary tables (article and supplement both HTTP 403; Unpaywall lists no open-access copy; no PubMed Central record). The sole open deposit is a CC0 Dryad bundle of 59.4 GB of raw sequencing plus a 167 KB AlphaFold 3 input zip, and even that returned HTTP 401 from Dryad's API. Building the label would mean re-running the authors' read-counting pipeline on 59 GB of FASTQ, which breaks both the laptop limit and this project's no-raw-sequencing rule. The underlying idea is genuinely good, so it is worth re-checking in 6-12 months if an author manuscript appears in PubMed Central or the companion viral ORFeome paper's tables are extended; for now there is nothing to model."
+}

@@ -1,0 +1,135 @@
+{
+  "paper_id": "nar2026-gkag917",
+  "title": "MERGE-RNA: a physics-based model to predict RNA secondary structure ensembles with chemical probing.",
+  "doi": "10.1093/nar/gkag917",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/giusSacco/MERGE-RNA (archived at https://doi.org/10.5281/zenodo.20059549); raw reads at ENA PRJEB113043",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the whole 16.8 MB code+data repository and parsed every chemical-probing file in it with my own reader of the RNAFramework .rc binary format. Counted exactly 8 distinct RNA molecules: 5 'structured RNAs' (HCV IRES 370 nucleotides, Vibrio cholerae glycine riboswitch 256, bacterial RNase P type A 363, hc16 ligase 363, Tetrahymena ribozyme 413) each measured at 6 DMS (dimethyl sulfate, a chemical that marks unpaired nucleotides) concentrations x 2 replicates, plus cspA 5' untranslated region (170 nucleotides, 6 runs), the Vibrio vulnificus adenine riboswitch (176 nucleotides, 9 runs, in a 1,050-row comma-separated file with a mut_rate column) and one newly measured designed construct (148 nucleotides, 12 runs). Total distinct nucleotides = 2,259; nucleotide x condition rows = 25,560. Confirmed reference secondary structures exist as dot-bracket strings for only 4 of the 5 structured RNAs (none for RNase P), and read mean sequencing coverage per run (1,365-828,683 reads). Also listed the ENA deposit: 12 nanopore amplicon runs of the single designed construct, 2-66 MB each.",
+    "what_came_from_paper_text_only": "That the reference structures for hc16, Tetrahymena ribozyme and the glycine riboswitch came from cryo-EM-guided modelling and were annotated with Barnaba, that the HCV IRES reference was manually transcribed from a figure in another paper, and the reported accuracy comparisons against pseudo-free-energy methods."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified: the GitHub/Zenodo repository is public, MIT-licensed, 16.8 MB, and downloads without login; it contains the processed per-nucleotide mutation-rate files, not just code."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Partly: per-nucleotide DMS mutation rate is a literal column (mut_rate) in the adenine-riboswitch file and is two divisions away in the binary .rc files (mutation counts / coverage, both of which I read). The paper's real output - ensemble populations - is not a measured column anywhere."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: full RNA sequences are embedded in every .rc file and in reference.fa, so no accession lookups are needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Verified: mutation rate is a dimensionless fraction of reads, coverage is in reads, DMS concentration is in millimolar in the directory names (0-100 mM), adenine ligand in micromolar, temperature in degrees Celsius."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 8,
+      "note": "FAIL. The unit of learning is the RNA molecule and I counted exactly 8 of them in the files (2,259 distinct nucleotides, reference structures for only 4). The 25,560 nucleotide x condition rows are the same 8 molecules remeasured at 6 probe concentrations x 2 replicates, so effective sample size is 8, far under the ~1,500-row bar; held-out evaluation would have at most 5-8 groups."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.024 GB",
+      "note": "Verified: the entire dataset is 24 MB of text, binary count files and four PDB structures."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Verified: the paper says five systems of ~100-400 nucleotides probed at multiple DMS concentrations with replicates; the files show exactly 5 systems, 256-413 nucleotides, 6 concentrations x 2 replicates."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Reactivity labels are real sequencing measurements. But the structural reference labels are not measurements: three came from cryo-EM-guided computational modelling, one was hand-transcribed from a published figure, and the ensemble populations the paper reports are MERGE-RNA's own output - using those as labels would be distilling a model."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "MERGE-RNA (this paper's own physics-based model)",
+        "open_weights": true,
+        "score_and_split": "Reports better base-pair accuracy than pseudo-free-energy methods on the five structured RNAs and recovers NMR-resolved adenine-riboswitch conformations; parameters are fitted jointly on those same few systems, with a leave-one-system-out style demo in the code (3 sequences, 1 held out).",
+        "authors_named_unsolved": "Transferability of the fitted physical parameters to sequences outside the training systems, and the lack of reference structures for ensembles (single reference structures are used to score inherently multi-state RNAs).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RibonanzaNet / RibonanzaNet2 (deep neural networks predicting DMS and 2A3 chemical reactivity from sequence, Das lab)",
+        "open_weights": true,
+        "score_and_split": "Trained on 1.1 million crowdsourced sequences (RibonanzaNet2 reportedly on ~40 million) with held-out prospective test sequences from the Kaggle challenge; state-of-the-art on reactivity and fine-tuned secondary-structure tasks.",
+        "authors_named_unsolved": "Generalisation to long natural RNAs and to structural ensembles rather than single averaged reactivity profiles.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DREEM, DRACO and DANCE-MaP (read-clustering methods that deconvolve probing data into several conformations and their populations)",
+        "open_weights": true,
+        "score_and_split": "Validated on in-silico mixtures and on bacterial riboswitches and SARS-CoV-2 elements; no standard held-out benchmark split.",
+        "authors_named_unsolved": "Resolving more than a few conformations, and low-coverage or short-read regimes.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM or RibonanzaNet (RNA language models with open weights)",
+    "freeze_and_head_viable": true,
+    "hardware": "Embedding 8 sequences of under 500 nucleotides takes seconds on a laptop CPU - which is exactly the problem: there is almost nothing to embed.",
+    "licence": "Repository is MIT; RNA-FM and RibonanzaNet weights are openly downloadable."
+  },
+  "integration": {
+    "partner_dataset": "Stanford Ribonanza / RNA Mapping Database (RMDB): ~1.1 million sequences with DMS and 2A3 reactivity profiles",
+    "join_key": "RNA sequence string (no stable identifier is shared; matching would be by sequence)",
+    "bigger_question_one_sentence": "Do sequence-to-reactivity models trained on a million short designed RNAs transfer to long natural structured RNAs measured at several probe concentrations? - a real question, but it would be a project about the Ribonanza data using these 8 molecules only as a thin test set."
+  },
+  "controls": {
+    "positive_control": "DMS reacts almost only with A and C nucleotides - I confirmed in the files that G/U positions carry near-zero mutation rates, so any pipeline must recover the A/C-versus-G/U contrast.",
+    "negative_control": "Shuffle reactivity values within each molecule and confirm structure scores collapse; the repository's own demo already holds one of three sequences out.",
+    "external_validation": "RMDB / Ribonanza reactivity profiles, and the NMR-derived dissociation constant for the adenine riboswitch cited in the paper."
+  },
+  "honest_claim_h3": "Any model trained on this data could only claim: across eight RNA molecules probed in two or three laboratories, these fitted physical parameters reproduce measured DMS reactivity and the single published reference structure - with no basis for claiming the parameters hold for unseen RNAs.",
+  "plain_idea": {
+    "one_liner": "Use RNA sequence and chemical-probing signal to predict which structures the RNA folds into and in what proportions.",
+    "train_on": "Per-nucleotide chemical-probing mutation rates measured at six probe concentrations in two replicates, for eight RNA molecules totalling 2,259 nucleotides (counted in the files).",
+    "predict": "The population (fraction of molecules) of each candidate secondary structure; truth comes from cryo-EM-guided or nuclear magnetic resonance structures for a handful of these RNAs, which do not themselves report populations.",
+    "why_worthwhile": "Labs doing chemical probing would get structure ensembles instead of single averaged profiles; even a failure would quantify how far physics-based parameters transfer between RNAs."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This repository holds 8 RNA molecules and 2,259 distinct nucleotides, which I counted in the files; RibonanzaNet was trained on roughly 1.1 million sequences with the same kind of DMS reactivity measurement. The only genuinely new data is 12 nanopore runs of one 148-nucleotide designed construct."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Two replicates at each of six probe concentrations do let you estimate measurement noise per nucleotide, which reactivity predictors generally do not report - but with 8 molecules there is no way to calibrate confidence across sequence space."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "MERGE-RNA (2026) is open, MIT-licensed and reproducible with scripts; RibonanzaNet2 is a 2025 open-weight model trained on millions of profiles; DREEM/DRACO/DANCE-MaP cover ensemble deconvolution. Several open, reproducible models already serve this task."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first and third conditions: our model would not see everything MERGE-RNA sees plus more (the extra data, Ribonanza, is a different assay protocol on different molecules), and there is no shared evaluation split - 8 molecules cannot support one."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: learn the mapping from chemical-probing reactivity to secondary-structure ensemble populations with a neural model instead of MERGE-RNA's handful of physical parameters, trained on the probing data in this repository. It dies on sample size - 8 RNA molecules. The viable version of this question belongs to a different dataset: take the ~1.1 million Ribonanza reactivity profiles as training data and use these 8 long natural RNAs purely as an out-of-distribution test set.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.024,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0.01,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated from files I actually parsed: the whole dataset is 24 MB and the eight sequences are under 500 nucleotides each, so everything fits in memory; the 3 hours is the time to write a reader for the RNAFramework .rc binary format (I wrote a working one in one pass using the loader in merge_rna/experiment.py as the spec).",
+    "cheapest_killing_check": "Count the distinct RNA molecules with both probing data and a reference structure. I did it: 8 molecules with probing, 4 with a reference secondary structure, 5 systems in the paper's training set. That count kills the project in ten minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on verified counts: the repository contains chemical-probing data for exactly 8 RNA molecules (2,259 distinct nucleotides, reference structures for only 4), and the 25,560 nucleotide-by-condition rows are those same 8 molecules remeasured at six probe concentrations in two replicates. The paper is a well-engineered, openly licensed physics model, not a dataset - its value is as a baseline or a test case, and the new experimental deposit is 12 nanopore runs of a single designed construct. The field also already has several open, reproducible models (MERGE-RNA itself, RibonanzaNet/RibonanzaNet2, DREEM/DRACO/DANCE-MaP), so there is no crowded-field edge to offset the sample size."
+}

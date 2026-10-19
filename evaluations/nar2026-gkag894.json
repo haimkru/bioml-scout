@@ -1,0 +1,58 @@
+{
+  "paper_id": "nar2026-gkag894",
+  "title": "A Zur-dependent regulatory RNA involved in maintaining zinc homeostasis in Staphylococcus aureus.",
+  "doi": "10.1093/nar/gkag894",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE296223 (small-RNA sequencing), GSE296224 (MAPS pull-down sequencing), PRIDE PXD065909 (mass spectrometry), figshare 10.6084/m9.figshare.33338670 (evolution scripts), plus the journal supplement Tables S1-S7",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both GEO processed tables and all 7 supplementary Excel tables. Counts I measured: GSE296223 = 538 small-RNA features x 6 samples with DESeq2 log2FoldChange/padj; GSE296224 = 117 RNAs with fold change; Table S2 = ~86 differentially expressed small RNAs; Table S4 proteomics = 1,516 proteins x 24 label-free log2 intensity columns (8 strain/zinc groups x 3 replicates) plus 11 unlabelled LogFC/adjp blocks, 19.5% missing values; Table S4 sub-sheets = 110 and 96 differentially abundant proteins; Table S6 = 118 MAPS-enriched RNAs; Tables S3 and S7 = 200 and 202 CopraRNA computational target predictions; Table S5 = ~26 Zur-regulated genes. Checked figshare metadata: 66.7 MB, GPL-3.0, phylogenetics software/alignments.",
+    "what_came_from_paper_text_only": "That 69 proteins increased and 38 decreased in zinc-free versus zinc-replete wild type, that 40 small RNAs were activated and 42 repressed by metal starvation, and the growth-medium metal concentrations. I did not download the PRIDE raw mass-spectrometry files (raw data, excluded by policy) or the figshare archive contents."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All processed tables download without login: I fetched both GEO supplementary xlsx files and unzipped the journal supplement (10.8 MB) myself."},
+    "a2_label_is_a_column": {"pass": true, "note": "Measured outcomes are real columns: log2FoldChange/padj for small RNAs, LogFC/adjp for proteins, FoldChange/P-value for MAPS enrichment. Verified in the files."},
+    "a3_inputs_present": {"pass": true, "note": "Only locus tags (HG001_xxxxx) and gene names, no sequences; but one genome FASTA (NZ_CP018205) resolves all of them, so this is effort, not a killer."},
+    "a4_units_stated": {"pass": true, "note": "Proteomics columns are log2 label-free XIC intensities (Prostar-normalised), RNA columns are DESeq2 log2 fold changes with normalised counts. Seen in the sheet headers."},
+    "a5_enough_rows": {"pass": false, "n_rows": 1516, "note": "Every label set is tiny: 86 small RNAs, 118 MAPS-enriched RNAs, 110/96 differentially abundant proteins, 26 Zur-regulated genes. The only >1,500-row table is the 1,516-protein quantification, but that is one strain background, one lab, 2 zinc conditions x 3 replicates, so rows are co-regulated genes rather than independent examples. The small-RNA-target task has n = 1 small RNA."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~13 MB of Excel tables total", "note": "Trivially laptop-sized; checked file sizes after download."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper's 69 up + 38 down proteins matches the 110-row sheet A roughly (sheet stacks both lists); 40 + 42 small RNAs matches ~86 rows in Table S2. Minor ambiguity, not a contradiction."},
+    "a8_label_provenance": {"pass": true, "note": "Measured labels (mass spectrometry intensities, sequencing counts) are fine, but Tables S3 and S7 are CopraRNA predictions - using those 200/202 rows as labels would be distilling another model."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "sRNARFTarget (random-forest predictor of bacterial small-RNA to messenger-RNA targets)", "open_weights": true, "score_and_split": "Search snippet reports it outperforms the thermodynamic tool IntaRNA on accuracy and ranking of true interacting pairs; split details not retrieved.", "authors_named_unsolved": "Not retrieved (abstract-level search only).", "runnable_as_baseline": true},
+      {"name": "TargetRNA3 (machine-learning predictor of prokaryotic RNA regulatory targets, Genome Biology 2023)", "open_weights": true, "score_and_split": "Not retrieved beyond the title; published as an open tool.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "GraphRNA / kGraphRNA (graph neural networks for small-RNA to messenger-RNA interactions, BMC Bioinformatics 2025)", "open_weights": null, "score_and_split": "Search snippet says they improve prediction of new interactions 'in unseen conditions'; numbers not retrieved.", "authors_named_unsolved": "Generalising to unseen conditions is the stated focus, implying it is not solved.", "runnable_as_baseline": null},
+      {"name": "Expression-informed small-RNA target prediction (NAR Genomics and Bioinformatics 2025)", "open_weights": null, "score_and_split": "Snippet: gradient boosting with majority-class undersampling was best, and adding expression data significantly improved accuracy; numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "RNA-FM (RNA language model) or ESM-2 (protein language model) would fit the data types", "freeze_and_head_viable": true, "hardware": "CPU laptop, since any table here has at most ~1,500 items", "licence": "Both permissive; not pursued because there is nothing to train on."},
+  "integration": {"partner_dataset": "UniProt / InterPro zinc-binding annotation for S. aureus HG001, joinable from locus tags", "join_key": "locus tag HG001_xxxxx -> UniProt accession", "bigger_question_one_sentence": "Does a protein's annotated zinc-binding capacity explain which S. aureus proteins change abundance under zinc starvation - a question a simple annotation lookup answers as well as any model, which is part of why this is a reject."},
+  "controls": {"positive_control": "The model would have to recover the known zinc-sparing switch: paralogous ribosomal proteins up, zinc-dependent alcohol dehydrogenase Adh down.", "negative_control": "Label shuffling across the 1,516 proteins.", "external_validation": "None joinable: no second zinc-starvation proteomics dataset in the same strain, and cross-species comparison would be a project in itself."},
+  "honest_claim_h3": "A model trained here could only claim to rank which of ~1,500 S. aureus HG001 proteins change abundance in one laboratory's zinc-depleted medium, in one strain background, measured once.",
+  "plain_idea": {
+    "one_liner": "Use gene and protein sequence to predict which bacterial proteins rise or fall when zinc is taken away.",
+    "train_on": "The project considered: 1,516 S. aureus proteins, each with 24 measured abundance values (four genotypes, with and without zinc, three replicates each), input being the protein sequence pulled from the HG001 genome.",
+    "predict": "The log2 change in protein abundance between zinc-free and zinc-replete growth, measured by label-free mass spectrometry in this one study.",
+    "why_worthwhile": "Microbiologists studying how pathogens survive the host's zinc withholding would like to predict zinc-sparing responses in new species; but with ~1,500 co-regulated genes from one experiment, the model would mostly rediscover 'this protein binds zinc', which is already an annotation lookup."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The only small-RNA target data here is 118 enriched RNAs for a single small RNA (ZinS); published predictors such as sRNARFTarget and TargetRNA3 are trained on interaction sets spanning many small RNAs across species."},
+    "confidence_score": {"answer": "partly", "why": "Three biological replicates per group do allow a noise estimate for the proteomics, but with one condition contrast there is nothing to calibrate a per-prediction confidence against."},
+    "models_beatable": {"answer": "no", "why": "Two of the four named tools are from 2023 and 2025 and explicitly target generalisation to unseen conditions; nothing in this paper's 118-row single-small-RNA table could beat them."},
+    "guaranteed_improvement": {"answer": "no", "why": "This dataset covers one small RNA in one strain, so it cannot be added to an existing model's training set as more of the same measurement; the join and the split would both differ."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict per-protein zinc-starvation response (log2 fold change from label-free mass spectrometry) from protein sequence using a frozen protein language model, with zinc-binding annotation as the dumb baseline. Also considered predicting ZinS small-RNA targets from the MAPS pull-down, which has n = 1 small RNA.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.02, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 2, "cv_run_minutes": 5, "compute_note": "Estimated from the measured file sizes (13 MB of Excel) and 1,516 protein sequences at roughly 0.2-1 sequences/second for a small ESM-2 checkpoint on CPU; nothing timed.", "cheapest_killing_check": "Count the labelled rows in each supplementary table - done, and it killed the project: 26 to 118 rows for every task except the single-experiment 1,516-protein contrast."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5. This is a well-executed single-mechanism microbiology paper whose data are small differential-expression tables: 86 small RNAs, 118 RNAs enriched by one small RNA, 110 and 96 differentially abundant proteins, 26 Zur-regulated genes. The one table over 1,500 rows (1,516 proteins) is a single strain, single lab, two-zinc-condition proteome contrast, so its rows are co-regulated genes rather than independent examples, and the only external label - zinc binding - is an annotation lookup that would beat any model. The 200 and 202 row CopraRNA tables are another model's predictions, so they cannot serve as labels either (A8)."
+}

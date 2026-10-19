@@ -1,0 +1,63 @@
+{
+  "paper_id": "nar2026-gkag877",
+  "title": "Zinc-dependent turnover of ZIP3 transporter mRNA by trypanosome ZNK1.",
+  "doi": "10.1093/nar/gkag877",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1405336 (raw reads); supplement: gkag877_supplemental_files.zip -> 'Supplementary Data 1.xlsx'",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the supplement and opened 'Supplementary Data 1.xlsx' (3.5 MB, 7 sheets) in pandas: 4 gene-level RNA-seq tables (8,186 / 8,186 / 8,013 / 8,217 rows) with columns Gene_id, logFC, log_AveExpr, FDR (actually -log10 p-value) and 6 per-replicate count columns; plus a 27-row RNA interference screen sheet, a 12-row ZIP3 orthologue list and a 36-row primer list. I computed the label distribution (logFC standard deviation 0.27-0.31), counted genes passing |logFC|>1 with -log10 p>2 (24-77 per comparison; only 14 shared by both TREU927 knockout clones), and confirmed that the control count columns (CAS_1-3 in the 927 sheets, WT_1-3 in the 427 sheets) are byte-identical between the two 'independent' clone comparisons.",
+    "what_came_from_paper_text_only": "The GU-repeat motif claim, the zinc-sensing mechanism, the RNA interference library screen design, and the fact that the Sequence Read Archive deposit PRJNA1405336 holds RIT-seq, whole-genome and RNA-seq reads. I did not download the raw reads (project rules forbid fastq) and did not retrieve 3'-untranslated region sequences from TriTrypDB."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement zip downloaded without login and the Excel file opened on the first try; raw reads are in the public Sequence Read Archive (PRJNA1405336). Verified in the files."},
+    "a2_label_is_a_column": {"pass": true, "note": "logFC (log2 fold change, knockout versus control) and its -log10 p-value are literal columns in four sheets; no construction needed. Verified in the files."},
+    "a3_inputs_present": {"pass": true, "note": "Only gene IDs and read counts are shipped; any sequence features (3'-untranslated region) would come from one bulk TriTrypDB genome + annotation download, which is not thousands of lookups, but T. brucei 3'-UTR boundaries are largely unannotated so the input would be an inferred inter-coding-region proxy."},
+    "a4_units_stated": {"pass": true, "note": "Columns are log2 fold change, log average expression and -log10 p-value; sheets 4-5 spell the p-value transform out in the header, sheets 2-3 label it only 'FDR'. Verified in the files."},
+    "a5_enough_rows": {"pass": false, "n_rows": 8186, "note": "8,186 genes per table, but the thing worth predicting - ZNK1-dependent mRNA degradation - has essentially one independent positive locus: the tandem ZIP3 cation-transporter cluster (Tb927.11.9000/9010/9020/9030; 13 near-identical paralogues in the Lister 427 annotation). Only 14 genes are significant in both knockout clones, and they include ZNK1 itself (the deleted gene) plus variant surface glycoprotein and procyclin genes that vary between trypanosome clones routinely. Far under the ~400 classification floor. Verified by counting in the files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "3.5 MB Excel; <0.1 GB with a T. brucei genome added", "note": "Trivially laptop-sized. Verified."},
+    "a7_counts_match_paper": {"pass": true, "note": "ZIP3 accumulation in znk1 null cells (logFC ~2.8-3.4, -log10 p ~10-12) matches the paper's claim of specific ZIP3 transcript accumulation. Verified in the files."},
+    "a8_label_provenance": {"pass": true, "note": "logFC derives from measured RNA-seq counts via a standard differential-expression fit, not from another model's output; the per-replicate counts are shipped so it is recomputable. One caveat seen in the files: both clone comparisons share the same control samples, so the two logFC columns are not independent measurements."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Tinti & Horn machine-learning models of trypanosomatid post-transcriptional control (Wellcome Open Research 2025; same Dundee group as this paper) - gradient-boosting/regression on 3'-untranslated-region features and codon usage",
+        "open_weights": null,
+        "score_and_split": "Reported as Spearman rank correlations between predicted and observed messenger RNA abundance over 100 resampling iterations across three trypanosomatid species; exact numbers not retrieved, abstract read via search result only.",
+        "authors_named_unsolved": "Search snippet indicates they attribute abundance largely to codon usage and propose untranslated regions act on translation initiation; the specific RNA-binding-protein-to-target mapping remains unassigned.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "3UTRBERT, a transformer language model pretrained on human 3'-untranslated regions for RNA-binding-protein site prediction",
+        "open_weights": null,
+        "score_and_split": "Human CLIP-seq benchmarks; not retrieved in detail and not trained on any trypanosomatid data.",
+        "authors_named_unsolved": "Transfer to non-human, AT-rich protozoan untranslated regions is untested.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {"name": "RNA-FM or Nucleotide Transformer on inferred 3'-untranslated regions", "freeze_and_head_viable": true, "hardware": "CPU laptop, ~8k sequences", "licence": "varies; not pursued because the label has one positive locus"},
+  "integration": {"partner_dataset": "TriTrypDB T. brucei genome/annotation plus published polyadenylation-site maps (Siegel et al., NAR 2010)", "join_key": "Tb927 / Tb427 gene identifier", "bigger_question_one_sentence": "Which 3'-untranslated-region sequence features drive transcript turnover in trypanosomes - a question the same group already attacked with machine learning in 2025, and which this single-gene knockout cannot answer."},
+  "controls": {"positive_control": "The ZIP3 cluster must come out top - but it is also the only positive, so recovering it proves nothing beyond the paper.", "negative_control": "Label shuffling is runnable but meaningless with ~1 positive locus.", "external_validation": "The second knockout clone shares its control samples with the first, so it is not independent."},
+  "honest_claim_h3": "With this data a model could only claim 'the four adjacent ZIP3 paralogues behave differently from the other 8,182 genes in a znk1 knockout' - a one-locus observation the paper already reports, not a learnable sequence rule.",
+  "plain_idea": {
+    "one_liner": "Use 3'-untranslated-region sequence to predict which trypanosome messenger RNAs a zinc-sensing nuclease destroys.",
+    "train_on": "One row per gene from the knockout RNA-seq tables: 8,186 genes (TREU927 annotation) or ~8,000-8,200 (Lister 427), with an inferred 3'-untranslated region sequence pulled from the TriTrypDB genome as the input.",
+    "predict": "The log2 fold change in transcript level when ZNK1 is deleted, measured by RNA-seq of three knockout and three control cultures and already supplied as a column.",
+    "why_worthwhile": "If a sequence model could flag ZNK1 targets, parasitology labs could find other zinc- or metal-responsive messenger RNAs without doing a knockout for each one; as built, however, there is only one real positive example to learn from."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict ZNK1-dependent messenger RNA turnover (log2 fold change in znk1 null cells) from inferred 3'-untranslated-region sequence across ~8,000 Trypanosoma brucei genes, testing the paper's GU-repeat motif claim genome-wide. Dead on arrival: the response is confined to one tandem ZIP3 locus.",
+  "effort": {"hours_to_feature_table": 8, "working_set_gb": 0.1, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 1, "cv_run_minutes": 5, "compute_note": "Estimated, not timed beyond the Excel read (seconds): 8k short sequences through a small nucleotide backbone on CPU is about an hour; the 8 hours is for deriving inter-coding-region 3'-untranslated-region proxies from the TriTrypDB genome and annotation.", "cheapest_killing_check": "Count genes with |log2 fold change| > 1 and -log10 p > 2 in BOTH knockout clones: the answer is 14, of which 4 are adjacent ZIP3 paralogues, 1 is the deleted ZNK1 gene itself, and several are variant surface glycoprotein/procyclin genes that drift between clones. Done - it kills the project in one command."},
+  "verdict": "reject",
+  "verdict_reason": "A5 fails on the unit that matters. The supplement is clean and the label (log2 fold change) is a real column for 8,186 genes, but ZNK1's effect is confined to a single tandem ZIP3 transporter cluster - 14 genes significant in both knockout clones, of which the independent positives number about one locus - so there is nothing for a sequence model to learn. The two 'independent' clone comparisons also share identical control samples, so even the noise floor cannot be estimated honestly, and the nearest sensible project (predicting transcript abundance from trypanosomatid untranslated regions with machine learning) was already published in 2025 by this paper's own group."
+}

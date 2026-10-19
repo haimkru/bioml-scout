@@ -1,0 +1,205 @@
+{
+  "paper_id": "science2026-aef4184",
+  "title": "Adaptive modulation of theta sweeps in the brain's navigation circuit.",
+  "doi": "10.1126/science.aef4184",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.25493/916J-DB7 (EBRAINS instance 804f848e-0408-4e02-a363-687f37655a41)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the deposit via DataCite (EBRAINS DOI 10.25493/916J-DB7, CC BY-SA 4.0, 'free access'), listed all 32 objects with sizes through the EBRAINS data-proxy API (4.37 GB; 29 MATLAB .mat session files: 10 open-field, 7 pursuit, 5 backward, 7 sleep), and downloaded 3 files with no login: the 8.5 KB field-by-field documentation, the 81 KB data descriptor PDF, and two session files (pursuit 27764_18.mat, 43.8 MB; sleep 28304_3.mat, 4.7 MB). Opened both .mat files in Python with scipy.io.loadmat: 0.1 s load, 0.12 GB peak memory. Confirmed in the pursuit file: 40,200 time bins of 10 ms (402 s), 3,081 theta cycles at 8.0 Hz, 413 single units, zero missing values in position/heading/speed/theta-phase, bait position present for 61.4% of time bins and 63.8% of theta cycles. Built the theta-cycle x unit spike-count matrix myself (3,081 x 413, 5.1 MB, 17.8% nonzero, under 0.1 s) and ran ridge regression on a time-blocked 70/30 split: head direction decoded to 17.9 degrees median error (dummy 59.9), position to 0.304 m (dummy 0.373), bait direction to 49.4 degrees (dummy 66.1). Also found that the brain-region labels and unit-ID strings are MATLAB 'string' objects that scipy cannot decode; I confirmed the underlying text is UTF-16 inside the file's subsystem block and that counts match exactly (310 'mec' + 103 'pas' = 413 units).",
+    "what_came_from_paper_text_only": "Session durations (pursuit 6-51 min, sleep 2-3 h), rat counts and sexes (10 Long-Evans, 3 female), surgery/probe placements, spike-sorting criteria (Kilosort 2.5, firing rate 0.1-10 Hz), the claim that duplicate units were merged with 'a small number possibly remaining', and the statement that 8 of the 10 rats also appear in two earlier papers. All of this comes from the EBRAINS data-descriptor PDF. The Science paper itself is paywalled and has no PubMed Central record; I read its abstract plus the full text of the matching bioRxiv preprint (PPR1227369), whose data-availability line only said data 'will be available before publication'."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Downloaded two .mat files and the documentation directly over HTTP with no login or application; EBRAINS marks the deposit 'free access' under CC BY-SA 4.0."},
+    "a2_label_is_a_column": {"pass": true, "note": "Checked in the files: bait direction, head direction, x, y and speed are each stored as a plain array; the per-theta-cycle table carries its own hd/x/y/speed plus an index into the 10 ms arrays, so joining is one array lookup."},
+    "a3_inputs_present": {"pass": true, "note": "Spike times for all 413 units are inside the file itself, plus per-unit tuning maps; nothing has to be fetched from another database."},
+    "a4_units_stated": {"pass": true, "note": "The 8.5 KB mat_files.md gives units for every field: metres, metres per second, radians, seconds, spikes per second, micrometres. Values I read fall in those ranges."},
+    "a5_enough_rows": {"pass": true, "n_rows": 3081, "note": "3,081 theta cycles is the verified count for ONE of 29 session files (the smallest pursuit file, 6.7 min). The same file has 40,200 10 ms bins. With pursuit sessions running 6-51 min per the descriptor, the dataset-wide cycle count is very likely tens of thousands, but I did not count the other 28 files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.0 GB for the 7 pursuit sessions; 4.37 GB for everything", "note": "Measured 0.21 GB peak memory for a 43.8 MB file, so the largest file (380 MB) should need roughly 2 GB; files load one at a time, and the baseline runs on CPU in seconds."},
+    "a7_counts_match_paper": {"pass": true, "note": "10 distinct rat IDs in the file listing matches the stated 10 subjects. One mismatch to note: the descriptor's methods describe a linear-track task, but no linear-track folder exists in the deposit."},
+    "a8_label_provenance": {"pass": true, "note": "Position, heading, speed and bait position come from an OptiTrack motion-capture system (infrared markers), i.e. a physical measurement independent of the neurons. Two caveats I verified: the field named 'id' (internal direction) is itself decoded from the same spikes, so it must never be used as a label; and for 2 of 7 pursuit sessions the bait was tracked with DeepLabCut, a pose-estimation model, which the tracking_method field lets you exclude."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "29 separate .mat files, one per rat per task; clean index join inside each file, no cross-file key needed."},
+    "B2": {"score": 1, "why": "scipy loads numeric fields in 0.1 s, but MATLAB string fields (brain region, unit ID) come back undecodable."},
+    "B3": {"score": 2, "why": "All tracking from one OptiTrack system in metres/radians, already aligned by the authors; two sessions use video tracking."},
+    "B4": {"score": 1, "why": "Verified 38.6% of bait-position bins are missing (NaN); not censored, just absent, so easy to drop."},
+    "B5": {"score": 1, "why": "Descriptor says duplicate units were merged but 'a small number may remain'; I did not check for them."},
+    "B6": {"score": 2, "why": "mat_files.md documents every field with its unit and meaning; I read it and it matched the files."},
+    "C1": {"score": 2, "why": "Framed as how well one decoder transfers across foraging, pursuit, backward walking and sleep, any answer is informative."},
+    "C2": {"score": 1, "why": "Open neural decoders exist (CEBRA, POYO) but none fitted to this data or to target-direction decoding."},
+    "C3": {"score": 2, "why": "Dataset released May 2026, never modelled; decoding an external target's direction is a new application."},
+    "C4": {"score": 1, "why": "The labels need chronic probe surgery and motion capture, but a model does not replace that measurement."},
+    "C5": {"score": 2, "why": "I computed dummy baselines myself (59.9 deg heading, 66.1 deg bait direction) and CEBRA publishes numbers on similar data."},
+    "D1": {"score": 2, "why": "POYO-MP spike-transformer checkpoint is downloadable from the torch_brain model zoo; CEBRA is open source."},
+    "D2": {"score": 1, "why": "New units need their embeddings learned by gradient descent, so no pure cache-embeddings-once route; GPU likely."},
+    "D3": {"score": 1, "why": "Backbone code is open source but licence unverified; the data itself is CC BY-SA 4.0, requiring share-alike on derivatives."},
+    "E1": {"ok": true, "why": "Rat ID is the file-name prefix; hold out whole animals and whole sessions, verified 10 distinct IDs."},
+    "E2": {"ok": true, "why": "10 rats and 29 sessions, with 5-10 rats per behavioural condition, seen in the file listing."},
+    "E3": {"ok": true, "why": "I already computed the circular-mean dummy: 59.9 deg for heading, 66.1 deg for bait direction."},
+    "E4": {"ok": false, "why": "No repeat measurement of the same theta cycle; only tracking jitter gives a partial noise estimate."},
+    "E5": {"ok": true, "why": "Decoding the rat's own head direction already works (17.9 deg vs 59.9 deg dummy) as a plumbing check."},
+    "E6": {"ok": true, "why": "Label shuffling, circular time-shift of the bait track, and dropping whole brain regions are all trivial here."},
+    "E7": {"ok": true, "why": "Sibling EBRAINS deposit 10.25493/R5FR-EDG has 19 rats in identical format; public rodent archives add independent labs."},
+    "E8": {"ok": true, "why": "Paper's own statistics are computable from these files; sibling paper's MATLAB code is on Zenodo (record 14548054, not opened)."},
+    "G1": {"score": 1, "why": "No standard bioinformatics identifiers; keys are rat ID, unit ID and region labels mappable to a rat brain atlas."},
+    "G2": {"score": 2, "why": "Sibling EBRAINS dataset 10.25493/R5FR-EDG, 19 rats, same lab, same file format, confirmed via DataCite."},
+    "G3": {"score": 2, "why": "Join is by rat ID and region label, one-to-one; but 8 of 10 rats overlap between the two deposits."},
+    "G4": {"score": 2, "why": "Combined, they ask whether one direction decoder reads out across tasks, brain regions and animals."},
+    "H1": {"score": 2, "why": "Recording is continuous, so non-pursuit, immobile and sleep periods are all present, not just successes."},
+    "H2": {"score": 1, "why": "One lab, one species, one strain, one recording room; but 10 rats, 4 tasks, 6 brain regions."},
+    "H3": {"score": 2, "why": "The honest claim can be stated in one sentence with the exact population and coverage caveats; written out below."},
+    "H4": {"score": 2, "why": "Descriptor is explicit about inclusion criteria, duplicate units and that region labels are only indicative."},
+    "I1": {"score": 2, "why": "Named users: the Moser lab at NTNU, the attractor-model groups behind the sweep models, neural-decoding groups."},
+    "I2": {"score": 2, "why": "A single-theta-cycle readout number decides whether closed-loop, sweep-triggered experiments are worth attempting."},
+    "I3": {"score": 2, "why": "Median angular error in degrees, and the gain over a heading-only model, is exactly the quantity at issue."},
+    "I4": {"score": 1, "why": "Ridge regression already reaches 17.9 deg on heading; the hard part is the comparison, not model capacity."},
+    "J1": {"score": 2, "why": "Grouped cross-validation, transfer across behavioural regimes, optional spike-transformer fine-tuning: real modelling work."},
+    "J2": {"score": 1, "why": "Heading decoding gives an interpretable sanity anchor, but judging sweep biology needs domain help."},
+    "J3": {"score": 2, "why": "A Python loader plus tidy per-theta-cycle tables for a MATLAB-only deposit is useful on its own."},
+    "J4": {"score": 2, "why": "Three weeks: one week to the feature table, one to baselines, one to transfer evaluation."},
+    "J5": {"score": 2, "why": "Kill condition stated: no 5 degree gain over the heading-and-speed model on held-out rats after week one."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "CEBRA (self-supervised embedding model for neural and behavioural data, Schneider, Lee & Mathis, Nature 2023)",
+        "open_weights": true,
+        "score_and_split": "Reported ~5 cm median position error on a public rat hippocampus linear-track recording, versus ~12 cm for earlier methods; trained per dataset rather than pretrained, and evaluated within the same recording session.",
+        "authors_named_unsolved": "Generalising a learned embedding to new animals and new recording sessions whose neurons are different; the published benchmark is a single linear track with roughly a hundred CA1 cells.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "POYO-1 / POYO-MP (spike-token transformer for neural population decoding, Azabou et al., NeurIPS 2023)",
+        "open_weights": true,
+        "score_and_split": "Pretrained on 158 sessions from 7 monkeys, 27,373 units; best reported result R-squared 0.948 on the Neural Latents Benchmark maze task after fine-tuning. Monkey motor cortex, not rodent navigation.",
+        "authors_named_unsolved": "Mapping previously unseen neurons into the model's embedding space still needs gradient-descent fitting per session; transfer across species and brain areas is untested.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "The paper's own decoder of 'internal direction' (a Bayesian/population read-out run per theta cycle by the authors)",
+        "open_weights": null,
+        "score_and_split": "No accuracy number against an external ground truth is reported; its output is shipped in the data as the field 'id'. I measured that it agrees with the rat's measured head direction with circular resultant length 0.753 and a -5.8 degree mean offset.",
+        "authors_named_unsolved": "Whether sweeps can be flexibly tuned to moment-to-moment demands was the open question the paper set out to answer; it does not quantify single-cycle readout of the target's direction.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Continuous attractor network model of alternating theta sweeps (firing-rate-adaptation systems model, Current Biology 2024, and the 2026 goal-directed extension)",
+        "open_weights": null,
+        "score_and_split": "A mechanistic simulation, not a fitted predictor; it reproduces sweep statistics qualitatively without task-specific training, so no held-out accuracy exists.",
+        "authors_named_unsolved": "How a goal- or target-directed input is injected into the direction ring attractor, and whether real data show that input, is explicitly left open.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "POYO-MP (spike-token transformer, checkpoint published in the torch_brain model zoo) as the optional deep baseline; CEBRA (open-source embedding model, Apache 2.0) as the realistic comparator; ridge regression on square-root spike counts as the first baseline",
+    "freeze_and_head_viable": false,
+    "hardware": "Ridge and gradient-boosting baselines run on a laptop CPU: I timed one session end to end (load, matrix build, fit, evaluate) at 1.5 s. CEBRA on these sizes is CPU-feasible but slow. POYO fine-tuning realistically wants a GPU because new units need their embeddings learned.",
+    "licence": "Backbone code is open source (CEBRA is Apache 2.0; torch_brain licence not verified). The data is CC BY-SA 4.0, so any derived dataset released must carry the same share-alike licence."
+  },
+  "integration": {
+    "partner_dataset": "The sibling EBRAINS deposit 'Left-right-alternating theta sweeps in the entorhinal-hippocampal spatial map' (DOI 10.25493/R5FR-EDG, 19 rats, 235-1,522 simultaneous units, identical .mat layout), confirmed through DataCite and the EBRAINS knowledge-graph record.",
+    "join_key": "Rat subject ID (the file-name prefix, e.g. 27764) plus the per-unit brain-region label.",
+    "bigger_question_one_sentence": "Is the direction signal carried by the entorhinal-parasubicular population a single, general-purpose pointer that one decoder can read out across foraging, pursuit, backward walking and rapid-eye-movement sleep and across different animals, or does each behavioural regime use a different code?"
+  },
+  "controls": {
+    "positive_control": "Decode the rat's own head direction from the same per-theta-cycle spike counts; I already measured 17.9 degrees median error against a 59.9 degree circular-mean dummy in one session, so a broken pipeline is immediately visible. Second control: units recorded in the anterodorsal thalamus should be the most strongly head-direction tuned, and the per-unit tuning-strength field in the file lets this be checked in advance.",
+    "negative_control": "Shuffle the direction labels across theta cycles (performance must fall to the circular-mean dummy); circularly time-shift the bait trajectory by several minutes so its statistics are preserved but its alignment is destroyed; replace spike counts with random numbers of the same shape; drop all medial entorhinal units and keep only hippocampal ones.",
+    "external_validation": "Partly compromised: the sibling EBRAINS deposit (10.25493/R5FR-EDG) shares 8 of the same 10 rats, so it is not independent. Genuinely independent options are public rodent hippocampal recordings with motion tracking in the CRCNS and DANDI archives, and the 2026 goal-direction theta-sweep dataset from a different group."
+  },
+  "honest_claim_h3": "In 10 Long-Evans rats from a single laboratory, performing familiar tasks in one 150 x 150 cm arena, a decoder reading a single 125 ms theta cycle of spiking from the medial entorhinal cortex and parasubiculum predicts the allocentric direction of a moving food target better than a model that knows only the rat's own heading and speed, for the 62% of time bins in which the target was successfully tracked.",
+  "plain_idea": {
+    "one_liner": "Use one 125-millisecond burst of brain activity from a navigating rat to predict where a moving food target is.",
+    "train_on": "For each theta cycle (the ~8 per second rhythm that paces the navigation circuit), the spike count of every simultaneously recorded neuron, plus the rat's tracked position, heading and speed. I verified 3,081 cycles and 413 neurons in one 6.7-minute pursuit session; the deposit holds 29 such session files from 10 rats.",
+    "predict": "The compass direction from the rat's head to the moving bait, in radians. The true answer comes from an OptiTrack infrared motion-capture system tracking reflective markers on the bait (in 2 of 7 pursuit sessions, from DeepLabCut video pose tracking instead), which is independent of the neural recording.",
+    "why_worthwhile": "Groups that build attractor-network models of navigation (and the Moser lab itself) currently argue about whether a goal- or target-direction input exists in this circuit; a single number saying how much target information one theta cycle carries beyond the animal's own heading either supports or constrains that input term. Even a null result tells those groups the signal is not readable at single-cycle resolution."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "This deposit has 10 rats with 413 or more simultaneous neurons each in the medial entorhinal cortex and parasubiculum during pursuit, backward walking and rapid-eye-movement sleep; CEBRA's headline rodent benchmark is one hippocampal linear-track recording with roughly a hundred cells, and POYO was pretrained on monkey motor cortex. Nothing existing covers target pursuit in this circuit."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Spike counts per cycle naturally give a posterior width, and cycles can be grouped by how many neurons fired to say where the readout is unreliable; but there is no replicate measurement of the same theta cycle, so the confidence cannot be calibrated against a true repeat."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "CEBRA (2023) and POYO (2023) are recent, open and honestly evaluated, so beating them head to head is not realistic; however neither has been fitted to this dataset or to target-direction decoding, so the comparison is a first application rather than a contest."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "CEBRA can be run as our baseline, but no accessible new data measures the same quantity (bait direction during pursuit from entorhinal spikes) with the same assay on the same split; the sibling deposit shares 8 of the same 10 rats, so it adds no independent measurement."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "The sibling EBRAINS deposit 10.25493/R5FR-EDG (19 rats, same format, verified through DataCite and the EBRAINS record); the CRCNS archive's rodent hippocampal recordings with position tracking and the DANDI archive's Neurodata Without Borders datasets (known resources, named not opened). These carry the generic labels (position, head direction), not bait direction, which exists only here.",
+    "approx_items": null,
+    "join_key": "No standard identifier. The nearest common schema is the Neurodata Without Borders file format, with rat subject ID and session ID inside each archive.",
+    "why": "The head-direction and position part of the task has plenty of public labelled recordings to pretrain on and to test cross-laboratory transfer, even though the target-direction label is unique to this deposit."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Theta cycles 125 ms apart are almost identical in heading and position, so a random split puts near-duplicate rows in train and test and inflates every number.",
+      "Neurons are specific to one recording session, so any within-session split measures memorisation of that session rather than a transferable code.",
+      "The field named 'id' (internal direction) in the per-cycle table is itself decoded from the same spikes, so using it as a label or feature is pure circularity.",
+      "The bait's direction correlates with the rat's own head direction (I measured circular resultant length 0.36), so a model can beat chance by decoding heading alone and appear to read the target.",
+      "The sibling EBRAINS deposit reuses 8 of these same 10 rats, so treating it as external validation would leak.",
+      "In 2 of 7 pursuit sessions the bait position is the output of DeepLabCut, a pose-estimation model, rather than motion capture; mixing them makes part of the label a model prediction."
+    ],
+    "split": "Leave-one-rat-out, built from the subject ID in the file name (I verified 10 distinct IDs in the file listing), with contiguous time blocks of at least 60 s inside each session for any inner tuning split. Never split theta cycles at random.",
+    "checks": [
+      "Shuffle the direction labels across cycles and confirm performance collapses exactly to the circular-mean dummy (59.9 and 66.1 degrees in the session I measured).",
+      "Fit a control model that sees only heading and speed, and report the neural model's gain over it rather than its raw error.",
+      "Circularly time-shift the bait trajectory by several minutes and confirm the apparent accuracy drops to the heading-only level.",
+      "Train on random features of the same shape and confirm it matches the dummy.",
+      "Report results separately for OptiTrack-tracked and DeepLabCut-tracked sessions."
+    ],
+    "verdict": "Manageable: the dominant risk is the heading confound, and the fix (always reporting the gain over a heading-and-speed-only model, on leave-one-rat-out splits) costs almost nothing."
+  },
+  "success_criteria": {
+    "metric": "Median absolute angular error, in degrees, for predicting the allocentric direction of the bait from a single theta cycle of spiking, on held-out rats; reported as the reduction relative to a control model that sees only the rat's heading and speed. Degrees of error is the quantity an experimenter deciding whether to trigger a closed-loop stimulation on sweep direction would act on.",
+    "baselines": "Measured by me in one 6.7-minute pursuit session (time-blocked 70/30 split, ridge regression on square-root spike counts): bait direction 49.4 degrees versus a 66.1 degree circular-mean dummy; head direction 17.9 degrees versus a 59.9 degree dummy; position 0.304 m versus a 0.373 m dummy. No published number exists for target-direction decoding in this circuit.",
+    "success": "At least 10 degrees lower median error than the heading-and-speed-only control, on leave-one-rat-out splits, with the gain holding in at least 5 of the 7 rats that have pursuit sessions.",
+    "noise_ceiling": null,
+    "kill": "If after one week the neural model is not at least 5 degrees better than the heading-and-speed-only control on held-out rats, stop."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning; it would take a clear positive, that single-cycle population activity carries target direction beyond the animal's own heading and that one decoder transfers across pursuit, backward walking and sleep in held-out animals."
+    },
+    "realistic": {
+      "journal": "eLife",
+      "why": "Publishes careful computational re-analyses of published electrophysiology with honest held-out-animal evaluation; the likely outcome, a quantified single-cycle readout with a modest gain over heading and a clean transfer profile, fits there."
+    },
+    "fallback": {
+      "journal": "PLOS Computational Biology",
+      "why": "Takes negative and partial decoding results with good controls, so even 'the target direction is not readable from one theta cycle once heading is accounted for', plus the open Python loader for a MATLAB-only deposit, is publishable."
+    }
+  },
+  "pitch": {
+    "headline": "Ten rats, 413-plus simultaneous neurons per session, chasing a moving target: brain data nobody has run a decoder on yet.",
+    "what_makes_the_data_unusual": "Verified: 29 open .mat files, 4.37 GB, CC BY-SA 4.0, no login. Every field documented with units. Pursuit of a moving bait plus backward walking plus rapid-eye-movement sleep, all with motion-capture ground truth.",
+    "the_win": "A number like 'single-theta-cycle decoding of the target's direction beats a heading-and-speed-only model by 15 degrees on held-out rats', which no published model reports for this circuit.",
+    "even_if_it_fails": "You learn that target direction is not readable at single-cycle resolution once the animal's own heading is accounted for, which directly constrains the goal-direction input term that attractor-network modellers are currently adding by hand.",
+    "who_wants_it": "The Moser lab at NTNU, the attractor-model groups behind the alternating-sweep models, and neural-decoding groups (CEBRA, POYO), who would gain a rodent navigation benchmark their models have never been tested on."
+  },
+  "ml_idea": "Build a per-theta-cycle table (rows = theta cycles, features = spike counts for each simultaneously recorded unit plus the rat's measured heading and speed) and train a decoder of allocentric direction. Three nested questions. (1) Positive control: decode the rat's own head direction, which already works at 17.9 degrees median error with plain ridge regression. (2) The new task: during bait pursuit, decode the direction from the rat's head to the moving target, and measure the gain over a control model that sees only heading and speed. (3) The transfer question that cannot produce a useless answer: train the direction decoder on free foraging and test it on pursuit, on backward locomotion (where the paper reports the internal direction signal reverses) and on rapid-eye-movement sleep, on held-out rats. A fourth, sharper variant: during periods of immobility, predict the direction of the animal's next head turn from the preceding theta cycles, before the turn happens, which is a genuine forecast with a purely motion-capture label.",
+  "effort": {
+    "hours_to_feature_table": 10,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 0,
+    "cv_run_minutes": 15,
+    "compute_note": "Timed on this laptop: a 43.8 MB session file loads in 0.1 s at 0.12 GB peak memory, and the full load, spike-count matrix build, ridge fit and evaluation takes 1.5 s. Peak RAM is extrapolated from the measured 5x expansion to the largest file (380 MB). The 15 minute cross-validation figure is an estimate for leave-one-rat-out across roughly 22 awake sessions including disk reads, not timed.",
+    "cheapest_killing_check": "Count, across all 7 pursuit session files, the theta cycles that have valid bait tracking AND the rat actually moving. One file gave 1,967 such cycles from 3,081; if the seven-file total is under about 5,000, the pursuit-specific question is too thin and only the cross-regime transfer question survives."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "Part A passes on files I actually opened: a 4.37 GB open EBRAINS deposit (CC BY-SA 4.0, no login), 29 MATLAB session files that load in scipy in 0.1 s, every field documented with units, labels that are motion-capture measurements rather than model outputs, and a working decoder baseline I ran in 1.5 s (head direction to 17.9 degrees against a 59.9 degree dummy). The angle is strong: data released May 2026 that no machine-learning work has touched, with a question (how far does one direction decoder transfer across foraging, pursuit, backward walking and sleep?) that is informative either way. Two cheap things must be checked before committing. First, count the usable pursuit theta cycles across all seven pursuit files; only one file (1,967 usable cycles) is verified. Second, confirm the workaround for the brain-region labels, which are MATLAB string objects that scipy returns as undecodable blobs, though I verified the text sits as UTF-16 in the file subsystem with counts matching the unit count exactly. Weak spots: no clean freeze-a-backbone-and-add-a-head route (new neurons need their embeddings learned), a single laboratory and species, and a heading confound that must be controlled for in every reported number."
+}

@@ -1,0 +1,121 @@
+{
+  "paper_id": "science2026-aei0062",
+  "title": "Fibroblasts restrain gut inflammation by IGF1-dependent regulation of innate lymphocytes.",
+  "doi": "10.1126/science.aei0062",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE328564",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the paper's own deposit GSE328564 (contributor list matches the author list exactly) via a GEO text search, since the paper has no PMCID and NCBI's PubMed-to-GEO link is empty. Downloaded and parsed GSE328564_raw_count_matrix.txt.gz (306 KB): 33,157 gene rows x 6 count columns named ILC3_Ctrl_Rep1-3 and ILC3_Igf1_Rep1-3, 88 duplicated gene symbols, 9,897 all-zero genes, library sizes 32.6-39.2 million reads; Cxcl10 counts fall and Rorc rises with IGF1, matching the abstract's claim. Also parsed its series matrix (6 samples, Mus musculus, GRCm39, featureCounts, BioProject PRJNA1455655). Separately found the likely companion deposit GSE312380 (contributors Lan Kang and Gregory Sonnenberg, both co-authors): downloaded its feature reference, features file (32,285 gene features + 12 oligo-tag features), barcode file (2,522,560 raw barcodes), and the 4.5 MB cell-multiplexing assignment spreadsheet, which gives 29,598 barcodes with a per-cell treatment call (DMSO 3,142; IL-1b 4,075; IL-23 2,136; PGE2 3,618; IGF1 2,316; IGF1+IGF1R-inhibitor 2,570; Unassigned 8,452; Multiplet 2,604; Blanks 685). Read the 254 MB count matrix's header by ranged request: 32,297 features x 2,522,560 barcodes, 63,772,482 non-zero entries.",
+    "what_came_from_paper_text_only": "Only the abstract. The paper is paywalled in Science, has no PubMed Central ID and no Europe PMC full text, so I never saw the data availability statement, the methods, the figures or any supplementary table. Whether GSE312380 belongs to this paper is an inference from its co-author contributor list and its treatment list (which includes IGF1 and an IGF1 receptor inhibitor); GEO records no PubMed link for it."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "GEO is fully open with no login: I downloaded the bulk count matrix, the series matrix and four companion files over plain FTP/HTTPS. (The GEO web viewer pages are captcha-blocked, but the FTP mirror works.)"
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "For the companion single-cell deposit the treatment is a real column ('Assignment', plus a probability) in the supplied spreadsheet, so no construction needed. For the paper's own bulk deposit the treatment (control vs IGF1) is encoded in the six column headers - trivially parsed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Gene-level counts are present as actual numbers keyed by gene symbol; no accession lookups required. Verified by reading both matrices."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "GEO's processing field states 'raw gene-level read counts', genome build GRCm39, featureCounts v1.5.3. The single-cell matrix is integer UMI (unique molecular identifier) counts from Cell Ranger 4. Units are explicit and consistent."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 6,
+      "note": "FAILS. The paper's own deposit is 6 bulk RNA-seq samples (3 control, 3 IGF1) - two orders of magnitude under the ~1,500-row bar. The companion single-cell deposit looks bigger (17,857 confidently labelled cells) but is one 10x Genomics channel with exactly one culture well per treatment and one pooled mouse source, so the number of independent units is 6, not 17,857. This is the 'big cell count, tiny unit count' failure the checklist names in the scCT-DB example; treatment is perfectly confounded with well and batch, so there is nothing to hold out and the cell count is pseudo-replication."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.3 MB bulk matrix; ~250 MB compressed single-cell matrix, reducible to roughly 1-2 GB in memory after streaming out the 17,857 labelled barcodes",
+      "note": "Not the blocker. The 254 MB MatrixMarket file can be streamed line-by-line and subset to labelled cells without ever loading all 63.8 million entries."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Not the blocker, but only partly checkable: the paper is paywalled with no full text anywhere, so I could not compare against its figures. Within GEO everything is internally consistent (6 series samples = 6 matrix columns; 32,297 features = features file length; 2,522,560 barcodes = barcode file length = matrix header)."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Not the blocker. The single-cell treatment label comes from cell-multiplexing oligo tags - a physically separate measurement channel from the gene counts - assigned by Cell Ranger's probabilistic classifier, so it is not another predictor's output and not computed from the gene features, provided the 12 oligo-tag rows are dropped from the feature matrix."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Single-cell perturbation-response prediction methods (scGen, CPA, GEARS and single-cell foundation models scGPT/Geneformer/scFoundation), as surveyed in recent benchmarks",
+        "open_weights": true,
+        "score_and_split": "Not scored on this data. Published benchmarks (a 2025 Nature Methods analysis and the scPerturBench study, both found by web search, abstracts only) report that these deep models do not beat simple linear or train-mean baselines on held-out perturbations.",
+        "authors_named_unsolved": "Generalising to genuinely unseen perturbations and unseen cell contexts; the benchmark authors advise always comparing against a linear baseline.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (single-cell transcriptome foundation models)",
+    "freeze_and_head_viable": true,
+    "hardware": "Embeddings for ~18,000 cells are feasible on a CPU laptop in a few hours; a logistic-regression head is seconds.",
+    "licence": "scGPT and Geneformer weights are openly downloadable; licences permit research use."
+  },
+  "integration": {
+    "partner_dataset": "Public human inflammatory bowel disease single-cell atlases (for example the Smillie and Martin colon/ileum datasets) and mouse intestinal immune references",
+    "join_key": "Gene symbol / Ensembl gene ID, with mouse-human orthology mapping",
+    "bigger_question_one_sentence": "Does the IGF1-driven transcriptional programme measured in mouse innate lymphoid cells appear in human gut lymphocytes and track with disease state? - a good question, but one that would be answered almost entirely with other people's data, not this paper's six samples."
+  },
+  "controls": {
+    "positive_control": "Available and already confirmed by me: Cxcl10 counts drop in all three IGF1-treated bulk samples (6,885/11,749/9,854 down to 5,844/5,957/5,141), exactly the paper's claimed effect - so the data is real and self-consistent, it is just far too small.",
+    "negative_control": "Label shuffling is trivially runnable but meaningless with 3 samples per group.",
+    "external_validation": "No second batch, no second lab, no second time point in either deposit; external validation would have to come entirely from unrelated public datasets."
+  },
+  "honest_claim_h3": "Any model fitted here could only claim 'the transcriptomes of mouse small-intestine innate lymphoid cells from one culture experiment separate by treatment', which is confounded with the culture well and cannot be distinguished from a batch effect.",
+  "plain_idea": {
+    "one_liner": "Use a single cell's gene-expression profile to predict which signalling molecule that cell was treated with.",
+    "train_on": "Each example is one immune cell's gene-count vector (32,285 mouse genes). I verified 17,857 cells carry a confident treatment call across six conditions in the companion deposit; the paper's own deposit has only 6 bulk samples.",
+    "predict": "One of six treatments (vehicle, IL-1beta, IL-23, PGE2, IGF1, IGF1 plus an IGF1-receptor inhibitor). The true answer comes from short DNA barcode tags added to each culture well before pooling, read out as a separate channel in the same sequencing run.",
+    "why_worthwhile": "Immunologists would learn whether a pretrained single-cell model can read off which cytokine a cell has just seen; but with one well per treatment, a good score here would prove nothing beyond batch separation."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "6 bulk samples, or 17,857 cells from a single 10x run, against perturbation benchmarks assembled from 29 datasets. This is smaller than what existing models already train and test on."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are three bulk replicates per condition and zero replicate wells per single-cell condition, so measurement noise cannot be separated from well-to-well variation and no calibrated per-prediction confidence is supportable."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The relevant comparison is a 2025 Nature Methods benchmark showing simple linear and train-mean baselines already match deep perturbation models; there is no weak published number on this data to beat, because nobody has modelled it."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: there is no existing model trained on this experiment to run as a baseline, and any new data would come from other labs, other mice and other 10x runs, so it would not measure the same quantity the same way."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was a six-way classification of mouse intestinal innate lymphoid cells by the cytokine they were exposed to, using frozen single-cell foundation-model embeddings plus a linear head, with the IGF1 versus IGF1-plus-receptor-inhibitor pair as a built-in specificity control. It dies on design, not on plumbing: one culture well per treatment in one sequencing run means the treatment label and the batch label are the same variable, so there is no honest held-out group and any accuracy number would be uninterpretable.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 4,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, not timed end to end. I did time the small downloads and the bulk matrix parse (seconds). The single-cell step is a one-pass stream of 63.8 million MatrixMarket entries to pull out 17,857 labelled columns, which is a few minutes of CPU; foundation-model embeddings for ~18,000 cells on a CPU are the only multi-hour step.",
+    "cheapest_killing_check": "Count the independent experimental units, not the cells. I did this: the paper's own GEO deposit has 6 bulk samples, and the companion single-cell deposit has one culture well per treatment in one 10x run. Twenty minutes of reading the series matrix and the multiplexing spreadsheet killed it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on effective sample size. The paper's own deposited data, GSE328564, is six bulk RNA-sequencing samples (3 control versus 3 IGF1-treated innate lymphoid cells) - clean, well documented, units stated, and the Cxcl10 effect is visibly there, but n=6. The only larger resource I could tie to the authors, GSE312380, has 17,857 confidently labelled cells, yet they come from a single 10x Genomics channel with exactly one culture well per treatment and one pooled mouse source, so the treatment label is perfectly confounded with batch and the independent-unit count is 6, not 17,857 - the same 'cells are not replicates' trap recorded in the checklist's scCT-DB example. There is no group to hold out, no second batch, no replicate well, and no way to tell a learned biological response from a well artifact. Compounding this, the paper is paywalled with no full text or PMCID, so its data availability statement was never visible and the GSE312380 attribution rests on a matching co-author list rather than a stated link. This is a mechanistic immunology paper whose conclusions rest on mouse genetics and flow cytometry, not on a modellable table."
+}

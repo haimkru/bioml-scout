@@ -1,0 +1,143 @@
+{
+  "paper_id": "nar2026-gkag729",
+  "title": "GapR stiffens AT-rich and overtwisted DNA leading to differential effects on transcription based on gene context.",
+  "doi": "10.1093/nar/gkag729",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/lucykwi/GapR_ATvsSC (code + processed annotation tables, DOI 10.5281/zenodo.21224551); labels from GEO GSE100657 (https://ftp.ncbi.nlm.nih.gov/geo/series/GSE100nnn/GSE100657/suppl/)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the three per-base-pair GapR ChIP tracks from GEO GSE100657 (GSM2690549 untagged control, GSM2690550 GapR, GSM2690551 GapR + rifampicin; 13-14 MB each gzipped): each holds 4,043,079 contiguous positions, every track sums to ~2.0e9 pileup counts, so depth is already matched. Downloaded the Caulobacter NA1000 genome FASTA from the authors' GitHub repo (4,042,929 bp, 67.2% GC) and reproduced the paper's core claim myself: Pearson correlation between 300-bp AT content and control-subtracted GapR signal = 0.544 untreated, 0.670 rifampicin-treated. Counted enrichment windows on the unsmoothed signal: 1,514 at the top-5% threshold, 6,703 at top-20%. Listed the GitHub repo (3 notebooks + 6 data files: transcription start sites, MicrobesOnline operons, per-gene RNA-seq RPKM table) and opened supplementary Table S1.xlsx (248 rows, unnamed columns, source values for the biophysics figures only). Also listed GEO GSE152880 (GapR-seq in E. coli and yeast): normalized per-bp tracks, ~52 MB each, downloadable without login.",
+    "what_came_from_paper_text_only": "The peak-classification rules that split GapR sites into AT-dependent vs positive-supercoiling-dependent (the <5% signal drop on rifampicin rule), the transcription-unit orientation analysis, the gene-level log2 fold changes on GapR depletion, and all single-molecule magnetic-tweezers and biolayer-interferometry numbers (dissociation constants, persistence lengths). I did not re-run the authors' notebooks, so their per-class peak counts are unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified: GEO FTP tracks and GitHub/Zenodo code+tables fetched with no login. The paper's own new biophysics data is only in a figure-source spreadsheet."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label (ChIP read pileup per base pair) is literally the second column of each wig file; control subtraction is one array operation I performed. The binding-mode class (AT- vs supercoiling-driven) is NOT a column and needs the authors' peak-calling notebook."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: the full 4,042,929 bp genome sequence sits in the authors' repo, so sequence features need no identifier lookups."},
+    "a4_units_stated": {"pass": true, "note": "Wig header states 'Extended tag pileup from MACS 1.4.2 for every 1 bp'; coordinates in bp, RNA-seq in RPKM, binding constants in nM. Control-subtracted signal is arbitrary units but all three tracks share one scale (each sums to ~2.0e9), which I checked."},
+    "a5_enough_rows": {"pass": true, "n_rows": 4043079, "note": "Verified 4,043,079 per-bp values per track = 13,476 non-overlapping 300-bp windows or 40,429 100-bp windows; 1,514 top-5% enrichment windows. Caveat: all from one genome, so independent information is far less than the row count suggests."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.2 GB (3 gzipped tracks 41 MB + 4 MB genome; ~48 MB per float32 array in memory)", "note": "Verified by loading all three tracks plus the genome at once on this laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "Track length 4,043,079 vs genome 4,042,929 bp: a 150-bp overhang from MACS tag extension, explainable. The paper gives thresholds (top 5%/20%) not peak counts, so there is no published count to contradict."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are sequencing read pileups from a real chromatin immunoprecipitation experiment, not any model's output, and sequence features are independent of them. Warning: the 'AT-dependent' class label is defined partly from AT content, which is also the main feature, so that sub-task leaks by construction and must be avoided."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Four files (genome + 3 tracks) joined on base-pair coordinate; I did the join in ten lines."},
+    "B2": {"score": 1, "why": "Wig format needed a small custom reader, not pandas; parsed correctly first attempt."},
+    "B3": {"score": 2, "why": "Verified all three tracks sum to ~2.0e9 counts, i.e. already depth-normalized by the depositors."},
+    "B4": {"score": 2, "why": "Continuous pileup values, no censored or qualitative entries anywhere in the tracks."},
+    "B5": {"score": 1, "why": "Repetitive ribosomal DNA loci must be masked (paper does this); otherwise no duplicate rows."},
+    "B6": {"score": 1, "why": "Wig header and GEO metadata explain the tracks; repo annotation tables (operons, RPKM) have no column dictionary."},
+    "C1": {"score": 2, "why": "'How much of GapR occupancy is sequence-encoded' is informative whichever number comes out."},
+    "C2": {"score": 1, "why": "No model for GapR, but open bacterial sequence-to-binding models (BoltzNet, DNABERT-2) and SIDD exist."},
+    "C3": {"score": 2, "why": "Unique application: no ML has been run on GapR data; cross-species transfer across 67%-to-38% GC untested."},
+    "C4": {"score": 1, "why": "Mapping supercoiling needs a tagged strain and ChIP-seq per organism, but that assay is routine."},
+    "C5": {"score": 2, "why": "I computed the dummy baseline myself: 300-bp AT content gives Pearson 0.544; SIDD profiles also available."},
+    "D1": {"score": 2, "why": "DNABERT-2 and Nucleotide Transformer multispecies have open downloadable weights for bacterial DNA."},
+    "D2": {"score": 2, "why": "300-bp windows, ~40k of them: embeddings cacheable once on CPU, then a ridge or boosted-tree head."},
+    "D3": {"score": 2, "why": "DNABERT-2 permissive; GEO tracks public domain; repo carries an open LICENSE file I saw listed."},
+    "E1": {"score": 0, "ok": true, "why": "Held-out contiguous genome blocks prevent spatial leakage; whole-organism holdout available externally."},
+    "E2": {"score": 0, "ok": true, "why": "Genome splits cleanly into 10+ blocks of ~400 kb; plus three organisms across GapR datasets."},
+    "E3": {"score": 0, "ok": true, "why": "Global mean and AT-content regression both computable; I already ran the AT-content one."},
+    "E4": {"score": 0, "ok": false, "why": "GSE100657 has one GapR ChIP track, no replicate; replicates exist only in the E. coli series."},
+    "E5": {"score": 0, "ok": true, "why": "Model must recover the AT preference (r=0.544, verified) and twin-domain peaks between convergent genes."},
+    "E6": {"score": 0, "ok": true, "why": "Label shuffling across windows and dinucleotide-shuffled sequence controls are both trivial here."},
+    "E7": {"score": 0, "ok": true, "why": "GapR-seq in E. coli and yeast (GSE152880) has per-bp tracks I confirmed are downloadable."},
+    "E8": {"score": 0, "ok": true, "why": "I already reproduced the paper's AT-content versus ChIP correlation; their notebooks are public."},
+    "G1": {"score": 2, "why": "Genome build NC_011916.1 coordinates plus CCNA_ gene identifiers, both seen in the files."},
+    "G2": {"score": 2, "why": "GSE152880 GapR-seq (E. coli, yeast), SIDDBASE supercoiling profiles, MicrobesOnline operons all named and reachable."},
+    "G3": {"score": 1, "why": "Within-genome joins are one-to-one by coordinate; cross-species needs feature-level, not coordinate, matching."},
+    "G4": {"score": 2, "why": "Combined question: is a genome's positive-supercoiling map written in its sequence, and does the rule cross species?"},
+    "H1": {"score": 2, "why": "Whole genome covered, including depleted valleys (bottom 5%/20%), so non-binding is recorded."},
+    "H2": {"score": 1, "why": "Training data is one strain, one lab, one growth condition; two extra species exist but from the same lab."},
+    "H3": {"score": 2, "why": "Claim statable precisely as a variance-explained number on held-out genome blocks."},
+    "H4": {"score": 2, "why": "Paper is explicit about rDNA removal, thresholds, and the two competing binding models."},
+    "I1": {"score": 2, "why": "Laub lab (MIT), Marko lab (Northwestern) and anyone interpreting GapR-seq supercoiling maps."},
+    "I2": {"score": 2, "why": "If sequence alone explains much of the signal, published GapR-seq maps partly report base composition."},
+    "I3": {"score": 1, "why": "Correlation per window is only roughly the decision; users want 'is this peak supercoiling-driven?'."},
+    "I4": {"score": 1, "why": "One feature (AT content) already reaches r=0.544, and the residual is by definition not sequence."},
+    "J1": {"score": 2, "why": "Frozen DNA language model, grouped splits, cross-species transfer: exactly the ML worth practising."},
+    "J2": {"score": 1, "why": "DNA topology is subtle; positive controls (twin-domain, AT preference) give some grip."},
+    "J3": {"score": 2, "why": "An aligned sequence-plus-signal table and the sequence/transcription decomposition are useful even if the model is mediocre."},
+    "J4": {"score": 2, "why": "Three weeks proposed, with the feature table achievable in under a day (I built most of it)."},
+    "J5": {"score": 1, "why": "Kill condition stated in success_criteria here, not yet written into NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "BoltzNet (neural network predicting bacterial transcription-factor binding energy from DNA sequence, Nature Communications 2025)", "open_weights": true, "score_and_split": "Trained on in vivo ChIP-seq for 139 Escherichia coli transcription factors; reported as predicting binding energy genome-wide, split details not retrieved", "authors_named_unsolved": "Not retrieved (abstract only)", "runnable_as_baseline": false},
+      {"name": "SIDD / SIDDBASE (stress-induced DNA duplex destabilization, Benham; biophysical sequence model, profiles precomputed for 42+ bacterial genomes)", "open_weights": true, "score_and_split": "Not a trained model; a statistical-mechanics calculation. Published result: predicted destabilized sites are enriched in promoters across bacterial genomes", "authors_named_unsolved": "Not retrieved", "runnable_as_baseline": true},
+      {"name": "DeepBind / DNABERT-2 / Nucleotide Transformer (generic sequence-to-binding deep models)", "open_weights": true, "score_and_split": "Benchmarked on eukaryotic ChIP-seq and regulatory-element tasks, not on bacterial nucleoid-associated proteins", "authors_named_unsolved": "Generalization to unseen genomes and non-model organisms", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 (DNA language model, byte-pair tokenizer) or Nucleotide Transformer multispecies-50M, frozen, with a ridge or gradient-boosting head", "freeze_and_head_viable": true, "hardware": "16 GB laptop CPU; ~40k windows of 300 bp embedded once and cached", "licence": "DNABERT-2 permissive; Nucleotide Transformer checkpoints partly non-commercial; GEO data public domain"},
+  "integration": {"partner_dataset": "GEO GSE152880 - GapR-seq positive-supercoiling maps in Escherichia coli and Saccharomyces cerevisiae (eLife 2021), per-base normalized tracks ~52 MB each", "join_key": "genomic coordinates plus genome build (NC_011916.1, U00096.3, sacCer3); cross-species comparison at feature level (gene orientation, transcription-unit boundaries)", "bigger_question_one_sentence": "Is the positive-supercoiling landscape of a chromosome written in its DNA sequence, and does a rule learnt in a 67%-GC bacterium still hold in a 51%-GC bacterium and a 38%-GC yeast?"},
+  "controls": {"positive_control": "The model must recover the AT-richness preference I measured (Pearson 0.544 between 300-bp AT content and control-subtracted signal) and must put high predicted signal between convergently transcribed genes, the textbook twin-domain prediction.", "negative_control": "Shuffle signal across windows and confirm collapse to the global mean; replace sequence with dinucleotide-shuffled sequence; train on AT content alone to measure how much the language model adds.", "external_validation": "GapR-seq tracks in E. coli and yeast (GSE152880) - a genuine held-out-organism test across a 30-point swing in GC content."},
+  "honest_claim_h3": "Using only 300 bp of local DNA sequence, we can explain a stated fraction of the variance in GapR occupancy on held-out blocks of the Caulobacter crescentus NA1000 chromosome measured in one 2017 chromatin immunoprecipitation experiment; the part we cannot explain tracks transcription-generated supercoiling, and we report whether the learnt rule transfers to E. coli and yeast.",
+  "plain_idea": {
+    "one_liner": "Use short stretches of DNA sequence to predict how strongly a supercoiling-sensing protein sticks to each spot on a bacterial chromosome.",
+    "train_on": "Windows of the Caulobacter crescentus genome (4,042,929 base pairs, verified) - about 13,476 non-overlapping 300-base windows or 40,429 100-base windows - each represented by its raw DNA letters.",
+    "predict": "The control-subtracted GapR chromatin immunoprecipitation sequencing signal for that window: how many sequencing reads from DNA pulled down with the GapR protein pile up there, measured once in 2017 (GEO GSE100657) and verified by me as 4,043,079 per-base values.",
+    "why_worthwhile": "GapR pull-down is now the standard way to map positively supercoiled (overtwisted) DNA in bacteria and yeast, so knowing how much of that map is just base composition tells those labs how to read their own data; the sequence-unexplained residual is a clean readout of transcription-driven twisting."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The modellable data is a single 4-megabase genome with one GapR track from 2017, reused from another group's paper; BoltzNet was trained on ChIP-seq for 139 E. coli transcription factors, far more binding data than this."},
+    "confidence_score": {"answer": "no", "why": "GSE100657 contains one GapR ChIP track with no replicate, so per-window measurement noise cannot be estimated from this dataset; only the E. coli GapR-seq series has replicate tracks."},
+    "models_beatable": {"answer": "partly", "why": "No model targets GapR at all, so there is nothing to beat on this task; the real competitor is a one-line AT-content regression that already reaches Pearson 0.544, which I computed, and the sequence-independent part of the signal caps any sequence model."},
+    "guaranteed_improvement": {"answer": "no", "why": "No existing model can be run as our baseline on GapR data, and the extra data (E. coli and yeast GapR-seq) comes from a different genome and normalization, so it fails the same-quantity-same-split condition."}
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "GapR occupancy measured the same way in Escherichia coli and Saccharomyces cerevisiae (GapR-seq, eLife 2021, GEO GSE152880) - I confirmed the per-base normalized tracks are listed and downloadable. SIDDBASE holds a related computed quantity (predicted supercoiling-induced destabilization) for 42+ bacterial genomes; known resource, not opened.",
+    "approx_items": null,
+    "join_key": "genomic coordinates plus genome build; cross-species linkage only at the feature level (genes, transcription units)",
+    "why": "Two extra genomes with the same assay give a true held-out-organism test, but they are genomes rather than thousands of joinable items, so they add validation, not much training data."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Neighbouring windows in one genome overlap in sequence and in smoothed signal, so a random split puts near-identical windows in both train and test.",
+      "The paper's 'AT-dependent' peak class is defined using AT content, which is also the main input feature, so predicting that class is leakage by construction.",
+      "Repetitive ribosomal DNA loci appear several times in the genome with inflated read pileup and would be split across train and test.",
+      "Coding versus intergenic composition is strongly non-random in a 67%-GC genome, so a model can score well by learning 'this is a gene body' rather than anything about protein binding."
+    ],
+    "split": "Hold out contiguous genome blocks of ~400 kb (10 blocks), built from the base-pair coordinate column that is the first field of every wig file (seen in the files), with a buffer of at least one window width either side of each boundary; the strongest split is whole-organism holdout using GSE152880.",
+    "checks": [
+      "Shuffle the signal across windows and confirm performance collapses to the global mean.",
+      "Train on 300-bp AT content alone and report the gap to the sequence model, so any claimed gain is explicitly beyond base composition.",
+      "Measure nearest-neighbour sequence identity between test and training windows and confirm no near-duplicates survive the block buffer.",
+      "Re-run with rDNA loci masked and confirm nothing material changes."
+    ],
+    "verdict": "Manageable: block splits and rDNA masking are easy, but the single-genome setting means even a clean split tests generalization only weakly, which is why the cross-species test matters."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured control-subtracted GapR signal on held-out contiguous genome blocks, reported alongside precision among the top 100 predicted peaks, because a user would go look at the strongest predicted sites.",
+    "baselines": "Global mean (Spearman 0); 300-bp AT content, Pearson 0.544 untreated and 0.670 rifampicin-treated, which I computed from the downloaded tracks; optionally SIDD profiles from SIDDBASE as a biophysical baseline.",
+    "success": "Spearman >= 0.65 on held-out 400-kb blocks against the AT-content baseline's ~0.54, AND non-trivial transfer (Spearman >= 0.3) to the E. coli GapR-seq track without retraining.",
+    "noise_ceiling": null,
+    "kill": "If after one week a frozen DNA-language-model head is less than 0.05 Spearman above the 300-bp AT-content regression on held-out blocks, stop - the signal is base composition plus transcription, not sequence grammar."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Nucleic Acids Research", "why": "Publishes DNA-topology and genome-analysis work; would need the sequence model to transfer across E. coli and yeast and reveal a reproducible sequence determinant of positive supercoiling beyond AT content."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes careful reanalyses and benchmark notes; a clean decomposition of GapR maps into a sequence-predictable part and a transcription-dependent residual, with honest block splits, fits exactly."},
+    "fallback": {"journal": "bioRxiv preprint plus a machine-learning-for-genomics workshop", "why": "Even the likely negative result - a DNA language model barely beats AT content, so GapR maps are largely composition plus transcription - is worth posting but too thin for a journal on its own."}
+  },
+  "pitch": {
+    "headline": "Three per-base-pair tracks over a 4,042,929 bp genome, downloaded and parsed, where AT content alone already explains a 0.544 correlation with protein binding.",
+    "what_makes_the_data_unusual": "Base-pair resolution across a whole 67%-GC chromosome with a matched untagged control and a rifampicin-treated track, so the transcription-driven part of binding can be subtracted rather than guessed; I verified all three tracks share one depth scale.",
+    "the_win": "Spearman 0.65 on held-out 400-kb genome blocks against the 0.544 AT-content baseline I measured, plus transfer to the E. coli GapR-seq map with no retraining.",
+    "even_if_it_fails": "A failure says the published positive-supercoiling maps are mostly base composition plus transcription, which is directly useful to every lab using GapR pull-down as a supercoiling assay.",
+    "who_wants_it": "The Laub lab (MIT) and Marko lab (Northwestern) and the bacterial DNA-topology community, who would learn how much of a GapR-seq track to attribute to sequence before interpreting it as supercoiling."
+  },
+  "ml_idea": "Predict control-subtracted GapR chromatin-immunoprecipitation signal per 300-bp genome window from DNA sequence alone, using frozen DNABERT-2 embeddings plus a ridge or gradient-boosting head, with held-out contiguous 400-kb blocks. Compare against the AT-content-only regression (Pearson 0.544, measured here), then use the rifampicin-treated track to split the signal into a sequence-predictable component and a transcription-dependent residual, and test transfer to GapR-seq maps in E. coli and yeast (GSE152880).",
+  "effort": {
+    "hours_to_feature_table": 5,
+    "working_set_gb": 0.3,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 6,
+    "cv_run_minutes": 10,
+    "compute_note": "I timed the real steps: three gzipped tracks plus the genome downloaded in under a minute, and a single script loaded all of them, aligned them to the genome and computed the AT-content correlation in roughly a minute at about 2 GB peak RAM. Embedding hours are an estimate (40k windows of 300 bp through a small DNA language model on CPU), not timed.",
+    "cheapest_killing_check": "Already done: a 300-bp AT-content regression reaches Pearson 0.544 against the measured signal, so the project only exists if a sequence model clearly beats that number on held-out genome blocks."
+  },
+  "verdict": "park",
+  "verdict_reason": "Everything in Part A verifies in the actual files - I downloaded the three base-pair-resolution GapR tracks, the genome, and reproduced the paper's central AT-content correlation (0.544) in one script - and the whole thing runs on a laptop in an afternoon. But the modellable data is a single 4-megabase genome from someone else's 2017 experiment (this paper's own new measurements are a handful of single-molecule and biolayer-interferometry curves), a one-feature baseline already explains most of what sequence can explain, and the interesting part of the signal is transcription-generated supercoiling that is by definition not in the sequence. Park it: the attractive version of this project is the multi-genome one built on GSE152880 (GapR-seq in E. coli and yeast), which should be evaluated as the primary candidate instead."
+}

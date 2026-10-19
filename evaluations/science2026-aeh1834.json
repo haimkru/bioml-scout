@@ -1,0 +1,57 @@
+{
+  "paper_id": "science2026-aeh1834",
+  "title": "A CDK1 phospho-switch reprograms TRAIP to unload replisomes in mitosis.",
+  "doi": "10.1126/science.aeh1834",
+  "journal": "Science",
+  "data_url": "https://www.biorxiv.org/content/10.1101/2024.11.30.626186v2.supplementary-material (Tables S1-S3); PRIDE PXD055299; GEO GSE324588; SRA PRJNA1403625",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all three supplementary Excel tables from the matching bioRxiv preprint: Table S1 chromatin proteomics = 932 rows x 122 columns (one row per protein, no duplicate protein IDs, 22% missing cells, log2 LFQ (label-free quantification) intensities in 7 conditions x 3 replicates plus t-test columns); Table S2 = 13 AlphaFold-Multimer interface-confidence rows; Table S3 = 14 cell lines. Listed PRIDE PXD055299: 23 files, 21 raw mass-spectrometry .raw files of ~1.3-1.6 GB each plus txt.zip 758 MB and andromeda.zip 2.0 GB. NCBI search for GEO series GSE324588 returned 0 hits (not public or not indexed).",
+    "what_came_from_paper_text_only": "The Science version of the supplement was not retrievable (paper is paywalled, not in PMC), so I assumed the bioRxiv Tables S1-S3 match the published ones. The contents of END-seq (GEO GSE324588) and svCapture (SRA PRJNA1403625) are known only from the data-availability statement; both are raw sequencing, which project policy excludes."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Three supplementary .xlsx files download freely from bioRxiv and parse; PRIDE PXD055299 is public. No login needed."},
+    "a2_label_is_a_column": {"pass": false, "note": "There is no prediction target. The table holds protein abundance on chromatin in 7 experimental conditions plus the authors' own t-test statistics; any ML label (e.g. 'mitosis-specific chromatin recruitment') would have to be constructed by thresholding fold-change columns the authors computed for a mechanistic argument, not measured as an outcome."},
+    "a3_inputs_present": {"pass": false, "note": "Inputs are a short gene symbol ('rev1', 'mukb') plus a free-text description and an EggNOG orthology score. No protein sequences and no UniProt accessions, so every Xenopus laevis protein would need resolving in a second database."},
+    "a4_units_stated": {"pass": true, "note": "Columns are explicitly log2 label-free quantification (LFQ) intensity, imputed and z-scored variants named separately, with a Legend sheet; units are clear."},
+    "a5_enough_rows": {"pass": false, "n_rows": 932, "note": "932 proteins total, the only quantitative table. Under the ~1,500-row bar for regression; the strongest candidate classification label (significant in mitosis+p97-inhibitor vs mitosis) has 141 positives against 791 others, from a single experiment in a single species."},
+    "a6_fits_laptop": {"pass": true, "working_set": "1.2 MB Excel table", "note": "The tabular data is trivial on a laptop; the raw mass-spectrometry files (~30 GB total in PRIDE) would not be touched."},
+    "a7_counts_match_paper": {"pass": true, "note": "Table S1's 932 rows are internally consistent (932 unique protein IDs, no duplicates); the paper gives no competing protein count to contradict it."},
+    "a8_label_provenance": {"pass": false, "note": "Two label routes both fail provenance: the t-test significance and difference columns are computed from the same LFQ intensities that would be the features (leakage by construction), and Table S2's pDOCKQ/ipTM/pLDDT values are AlphaFold-Multimer outputs, i.e. another model's predictions."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "ESM-2 (a protein language model) would be the natural backbone for protein-sequence features", "freeze_and_head_viable": true, "hardware": "CPU, but moot given only 932 proteins and no label", "licence": "MIT"},
+  "integration": {"partner_dataset": "UniProt / AlphaFold DB, reachable only after mapping Xenopus laevis gene symbols to accessions", "join_key": "gene symbol -> UniProt accession (not present in the file)", "bigger_question_one_sentence": "Could not be written: with 932 proteins from one chromatin pull-down and no measured outcome, a join adds identifiers but no new question."},
+  "controls": {"positive_control": "Replisome subunits (CMG helicase, polymerase epsilon) and TTF2 must come out as mitosis-enriched; they do, by the paper's own design, so the control is already consumed.", "negative_control": "Geminin-treated extract (no DNA replication) is present as 3 replicates and is a genuine negative condition for chromatin loading.", "external_validation": "Other Xenopus CHROMASS chromatin-proteomics datasets exist (Raeschle/Walter lab), but cross-experiment LFQ comparison would need renormalisation and no shared label exists."},
+  "honest_claim_h3": "At best the model could claim: 'among 932 proteins detected on replicating chromatin in one Xenopus egg-extract experiment, sequence features partly predict which the authors' t-tests flagged as mitosis-enriched' — a restatement of one experiment, not a transferable claim.",
+  "plain_idea": {
+    "one_liner": "Use protein sequence to predict which proteins get recruited to chromatin when a cell enters mitosis with unfinished DNA copying.",
+    "train_on": "One supplementary table I opened: 932 proteins, each with log2 abundance on chromatin across 7 conditions x 3 replicates (mitotic, interphase, with/without a p97 inhibitor, and a no-replication control).",
+    "predict": "Whether a protein is enriched on mitotic chromatin. The true answer comes from label-free quantitative mass spectrometry of chromatin pulled out of frog (Xenopus laevis) egg extract, in a single experiment by one lab.",
+    "why_worthwhile": "DNA-replication and genome-stability labs would like a way to guess new replisome-associated factors without running mass spectrometry; but with 932 proteins and no independent outcome measurement, nothing here could support that."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only tabular asset is a 932-protein chromatin-proteomics table. The conceivable task — predict mitosis-specific chromatin enrichment from protein sequence (ESM-2 embeddings plus a logistic head) — has no measured label, too few rows, no sequences in the file, and a label computed from the same intensities that would be the features. The mechanistically interesting outputs (the CDK1 phosphosite switch on TRAIP, the TTF2 zinc-finger-to-POLE2 interface) are single findings, not datasets.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.002,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 1,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, not timed: the whole quantitative table is a 1.2 MB Excel file with 932 rows, and ESM-2 small-checkpoint embeddings for 932 proteins would take about an hour on CPU. Most of the 8 hours would be mapping Xenopus gene symbols to sequences.",
+    "cheapest_killing_check": "Count the rows in Table S1 — 932, which I did in the first ten minutes, and that alone ends it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A mechanistic cell-biology paper, not a dataset. Its only quantitative table has 932 proteins from one frog-egg-extract chromatin pull-down, with no outcome column to predict, no sequences present (just gene symbols), and the only label-like columns computed from the same abundance values that would be the features. The other deposits are raw mass spectrometry (~30 GB in PRIDE), raw END-seq (GEO GSE324588, not yet retrievable) and raw svCapture sequencing (SRA PRJNA1403625) — all excluded by project policy. Fails A2, A3, A5 and A8."
+}

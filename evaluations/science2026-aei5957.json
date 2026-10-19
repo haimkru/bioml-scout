@@ -1,0 +1,110 @@
+{
+  "paper_id": "science2026-aei5957",
+  "title": "In situ structure of the human ciliary transition zone links linker defects to primary ciliary dyskinesia.",
+  "doi": "10.1126/science.aei5957",
+  "journal": "Science",
+  "data_url": "https://www.ebi.ac.uk/emdb/EMD-76188",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Pulled the full text from PMC13650764 and read its data availability statement. Queried the EMDB application programming interface for EMD-76188: a real 3D density map, 348x288x240 voxels, 96 MB gzipped, 1.924 Angstrom pixel. Queried the Protein Data Bank for model 11YJ: exists, cites this paper. Tried to download supplement Data S3 (a spreadsheet) from PMC and got the 1.8 kB block page instead of the file.",
+    "what_came_from_paper_text_only": "The contents of supplement spreadsheets Data S1-S8 (I only have their captions and byte sizes: 13-643 kB each plus one 4 MB file), the 489-person suspected-primary-ciliary-dyskinesia exome cohort (nowhere stated as deposited; analysed in the in-house Varbank system), and that only one representative tomogram (EMD-76272) was deposited while the rest of the raw tomography is not mentioned as public."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The structural deposits are genuinely public and I confirmed two of them by application programming interface: 13 EMDB density maps and 2 Protein Data Bank models. But the parts an ML project would need are not: the 489-person exome cohort is not deposited, cell lines and raw material are 'available from the authors upon reasonable request', and the supplement spreadsheets are currently blocked at PMC."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. Nothing in this release is a feature/label table. Any target one could imagine (which protein occupies a given blob of density, or whether a variant causes disease) would have to be constructed from scratch by segmenting maps or re-deriving genetics; there is no label column anywhere in the deposited files."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Protein sequences are reachable from the UniProt accessions given in the methods (for example Q008S8 for ECT2L, Q9NVP4 for DZANK1), and the density maps themselves are downloadable, so inputs exist even though labels do not."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Map units are explicit and I read them from the EMDB record: Angstrom cell dimensions, 1.924 Angstrom voxel spacing, floating-point density values. Not the problem here."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "note": "FAIL. The whole study's countable units are 13 density maps, 2 atomic models, 9 identified proteins and 4 affected individuals (3 with ECT2L variants, 1 with DZANK1), from a 489-person screen that is itself not public. Two to three orders of magnitude below the ~1,500-row bar."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.5-1 GB for all 13 maps",
+      "note": "Size is fine: the largest composite map is 96 MB gzipped and the spreadsheets are kilobytes. Laptop feasibility was never the issue."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Every accession listed in the data availability statement that I spot-checked (EMD-76188, PDB 11YJ) resolves and matches the paper; no conflicting counts seen."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL in spirit. The paper's protein assignments are themselves computational: densities were identified with DomainSeeker fitting AlphaFold2 domain models, and the atomic coordinates come from AlphaFold3 and Boltz-2 predictions fitted into density. Training on those assignments would distil the structure predictors, not learn biology."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DomainSeeker (the tool this paper used to name the proteins in its own density maps)",
+        "open_weights": true,
+        "score_and_split": "Not evaluated by me; its own publication reports higher domain-recognition accuracy than earlier methods on mouse sperm microtubule doublets and yeast nuclear pore densities. No split relevant to this paper's data.",
+        "authors_named_unsolved": "Not retrieved in full; not needed once Part A failed.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DomainFit (fits AlphaFold2-predicted domains into medium-resolution cryo-electron microscopy maps)",
+        "open_weights": true,
+        "score_and_split": "Not retrieved; search only surfaced the publication, I did not read its benchmark numbers.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model) would fit the sequences, but there is no label to attach a head to",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU laptop would suffice for the data volume",
+    "licence": "ESM-2 is MIT-licensed; EMDB/PDB deposits are public domain"
+  },
+  "integration": {
+    "partner_dataset": "AlphaFold DB and UniProt, joinable on the accessions in the methods",
+    "join_key": "UniProt accession",
+    "bigger_question_one_sentence": "No sentence survives the row count: with 9 proteins and 4 patients, joining to a large resource adds partners but no training examples."
+  },
+  "controls": {
+    "positive_control": "Not applicable: no model task defined.",
+    "negative_control": "Not applicable.",
+    "external_validation": "Not applicable."
+  },
+  "honest_claim_h3": "No honest model claim is available from this release; the paper's own claim (that loss of ECT2L or DZANK1 disrupts the ciliary transition zone and causes primary ciliary dyskinesia) rests on 4 individuals and structural work, not on anything a model could be trained on.",
+  "plain_idea": {
+    "one_liner": "Use cryo-electron tomography density blobs to predict which protein sits in each blob of the ciliary gatekeeping zone.",
+    "train_on": "Would see 3D density sub-volumes cut from the deposited maps paired with the protein assigned there. Verified count of available maps: 13, covering 9 proteins.",
+    "predict": "The identity of the protein in a density region. The 'true answer' in this paper comes from DomainSeeker fitting AlphaFold2 domain models into the density, i.e. another program's output, not a direct measurement.",
+    "why_worthwhile": "Automatic protein identification in in-situ tomograms would genuinely help structural biologists, but it needs hundreds of independently solved maps and this paper supplies thirteen."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: (a) learn protein identity from in-situ cryo-electron tomography density, which dies on 13 maps and on labels that are themselves AlphaFold/DomainSeeker fits; (b) predict primary ciliary dyskinesia from exome variants, which dies because the 489-person cohort is not deposited and only 4 carriers were found.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 1.0,
+    "needs_gpu": null,
+    "peak_ram_gb": 2.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes read from the EMDB record (96 MB gzipped for the largest map) and the PMC supplement listing (kilobyte spreadsheets); nothing was timed because no modelling task survived Part A.",
+    "cheapest_killing_check": "Count the deposited units: 13 EMDB maps, 2 Protein Data Bank models, 9 proteins, 4 affected individuals. One minute on the data availability statement kills it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "A beautiful structural-biology paper with no feature/label table. It fails A5 (13 density maps, 9 proteins, 4 patients versus the ~1,500-row bar), A2 (no label column exists anywhere; any target would have to be built from segmentation or re-derived genetics) and A8 (the protein assignments are DomainSeeker/AlphaFold outputs, so a model would be distilling other models). The 489-person exome cohort that might have had enough rows was never deposited, and the supplement spreadsheets are additionally blocked at PMC right now."
+}

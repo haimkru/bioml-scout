@@ -1,0 +1,151 @@
+{
+  "paper_id": "nar2026-gkag408",
+  "title": "PythiaStudio: a one-stop protein engineering platform powered by Pythia model suite.",
+  "doi": "10.1093/nar/gkag408",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/Wublab/pythia (archived as https://doi.org/10.5281/zenodo.19589355); https://doi.org/10.5281/zenodo.19589367",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed all three labelled tables shipped in the Pythia repository the paper points to: s669_data.csv (669 rows, 94 PDB entries, 10 columns, 0 nulls, 0 duplicates), s2648_data.csv (2,630 rows, 129 PDB entries), megascale_data.csv (177,315 rows, 181 proteins, 448-1,356 mutations each, 0 duplicates). Reproduced the paper's Table 1 number: Spearman correlation between the experimental ddG column and Pythia's direct prediction on S669 = 0.464 (paper reports 0.46 for 'Direct'). Checked both structure archives: s669_AF_PDBs.tar.gz holds exactly the 94 S669 structures, AlphaFold_model_PDBs.tar.gz holds 862 structures covering all 181 megascale proteins but only 6 of 129 S2648 proteins. Confirmed model weights are tiny and CPU-sized (pythia-c.pt and pythia-p.pt, 5.2 MB each; pocket model 7.2 MB). Read Zenodo metadata: both deposits are source-code snapshots (36.0 MB, Apache-2.0; 17.5 MB, CC-BY-4.0). Extracted and read the 2.3 MB supplementary Word file in full.",
+    "what_came_from_paper_text_only": "That the stability values in these tables are experimental measurements (cDNA display proteolysis for the megascale set; thermal/chemical denaturation for S669 and S2648) - the files carry no units column, no assay column for megascale, and no README. Pythia-PPI's SKEMPI v2 performance (Pearson 0.79) and Pythia-Pocket's LIGYSIS performance (precision 0.408, recall 0.462, AUROC 0.809); neither of those benchmark datasets is shipped with the paper. The enzyme case-study results (cellulase delta-Tm 3.9 C, beta-glucanase delta-Tm 8.4 C) are summarised from previously published campaigns, with no variant table deposited."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified by downloading: Zenodo code snapshots are open (Apache-2.0 / CC-BY-4.0), the GitHub raw CSVs and structure archives all fetched without login, and the web server needs no registration."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the files: the measured stability change is a literal column ('ddg' in S669, 'ddG' in S2648, 'labels' in megascale). Nothing has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: structures ship alongside. All 94 S669 proteins and all 181 megascale proteins have a PDB-format structure in the archives; mutations are given as plain strings (e.g. 'K1Q'). S2648 is the exception - only 6 of its 129 proteins have a structure here, so it would need separate downloads."},
+    "a4_units_stated": {"pass": true, "note": "Marginal pass with a loud caveat. No units column anywhere; the quantity is folding free energy change in kcal/mol by convention in all three source datasets. Worse, the sign flips between files: S669 and S2648 mark destabilising as negative (only 21-25% of values positive), megascale marks destabilising as positive (63% positive). I had to recover this from correlation signs, not documentation."},
+    "a5_enough_rows": {"pass": true, "n_rows": 177315, "note": "Verified row counts: 177,315 megascale measurements across 181 proteins, plus 2,630 and 669 in the two literature benchmarks. Far above the 1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.05 GB", "note": "Verified sizes: 8.6 MB + 0.1 MB + 0.06 MB of tables, 15.4 MB of structure archives, 10.5 MB of model weights. Runs on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Mostly. S669 is exactly 669 rows and reproduces the paper's reported direct Spearman of 0.46 (I computed 0.464). But the file named s2648 has 2,630 rows, 18 short of its name, and the megascale file is a 177,315-row subset of the ~776,000-measurement original release, with no note saying how it was filtered."},
+    "a8_label_provenance": {"pass": true, "note": "Labels trace to physical measurements (proteolysis-based and denaturation-based stability assays), not to a model. The trap is that every file also carries a Pythia prediction column sitting next to the label ('Pythia_dir', 'score', 'predictions'); training on those instead of the measured column would be pure circularity."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Three CSVs plus two structure archives; the protein-ID join works for megascale (181/181 verified)."},
+    "B2": {"score": 2, "why": "All three CSVs loaded in pandas first try, zero nulls, correct dtypes - verified."},
+    "B3": {"score": 1, "why": "Two different assay families mixed across files and the sign convention flips between them; fixable but needed."},
+    "B4": {"score": 2, "why": "Verified: no censored, qualitative or missing values in any of the three tables."},
+    "B5": {"score": 2, "why": "Verified: zero duplicate protein-position-mutation rows in all three tables."},
+    "B6": {"score": 0, "why": "No README, no data dictionary, no units; I recovered the sign convention from correlation signs."},
+    "C1": {"score": 1, "why": "Cross-assay transfer question is informative either way, but ThermoMPNN's paper already reports that comparison."},
+    "C2": {"score": 0, "why": "Several open, reproducible, honestly-split models on exactly this data: ThermoMPNN, Stability Oracle, SPURS, Prostata."},
+    "C3": {"score": 0, "why": "No angle: zero new measurements here, and every shipped table is already a standard public benchmark."},
+    "C4": {"score": 1, "why": "Lab stability measurement is costly, but the computational task is already fast and well served."},
+    "C5": {"score": 2, "why": "I reproduced the paper's own published S669 number (0.464 vs 0.46) from the shipped file."},
+    "D1": {"score": 2, "why": "ESM-2 and ProteinMPNN open weights fit protein data; Pythia's own 5.2 MB weights ship in the repo."},
+    "D2": {"score": 2, "why": "Verified weight sizes of 5.2 MB; embeddings for 181 small domains cache once on CPU."},
+    "D3": {"score": 2, "why": "Verified in Zenodo metadata: Apache-2.0 for Pythia, CC-BY-4.0 for Pythia-PPI; both permissive."},
+    "E1": {"ok": true, "why": "Hold out whole proteins; structures ship so sequence-identity clustering is possible."},
+    "E2": {"ok": true, "why": "Verified: 181 megascale proteins, 94 S669 proteins, 129 S2648 proteins to hold out."},
+    "E3": {"ok": true, "why": "Per-position mean and amino-acid-substitution-type averages are computable directly from the shipped columns."},
+    "E4": {"ok": false, "why": "No replicates or confidence intervals in these files; megascale table has only four columns."},
+    "E5": {"ok": true, "why": "Known effects recoverable: proline substitutions and buried-polar swaps must come out destabilising."},
+    "E6": {"ok": true, "why": "Label shuffling and feature ablation are trivial on a 177,315-row table."},
+    "E7": {"ok": true, "why": "Verified near-zero protein overlap: 3 of 94 S669 and 2 of 129 S2648 proteins appear in megascale."},
+    "E8": {"ok": true, "why": "Already done: recomputed the paper's S669 direct Spearman of 0.46 as 0.464."},
+    "G1": {"score": 2, "why": "Verified columns: PDB entry code, chain, residue number, wild-type and mutant amino acid."},
+    "G2": {"score": 2, "why": "ProteinGym, MaveDB, FireProtDB and Meltome Atlas all key on protein accession plus position."},
+    "G3": {"score": 1, "why": "PDB-to-UniProt mapping is one-to-many and residue numbering offsets are a known, real cost."},
+    "G4": {"score": 1, "why": "'Does stability explain variant fitness?' is a real question but a well-worked one already."},
+    "H1": {"score": 2, "why": "Verified: both stabilising and destabilising outcomes reported, near-saturation scans of 448-1,356 mutations per protein."},
+    "H2": {"score": 1, "why": "Megascale is 181 small domains of 60-80 residues; no membrane proteins, no large multi-domain proteins."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 1, "why": "Gaps are documented in the original source papers, not anywhere in this paper or these files."},
+    "I1": {"score": 2, "why": "Enzyme engineering groups (the Wu lab itself, Loschmidt/FireProt) rank mutations with exactly these tools."},
+    "I2": {"score": 1, "why": "A marginally better ranker changes which handful of variants get cloned; they already have good tools."},
+    "I3": {"score": 1, "why": "Field reports correlation; the real decision is 'which top 20 to clone', i.e. precision at 20."},
+    "I4": {"score": 1, "why": "Machine learning clearly beats simple substitution-matrix rules here, but the problem is already solved to this level."},
+    "J1": {"score": 2, "why": "Grouped splits, frozen backbone plus head, cross-assay transfer - the modelling skills I want."},
+    "J2": {"score": 2, "why": "Stability values in kcal/mol are easy to sanity-check against known destabilising mutation classes."},
+    "J3": {"score": 2, "why": "A harmonised, sign-corrected benchmark table is useful output even if the model is mediocre."},
+    "J4": {"score": 1, "why": "No time budget stated anywhere; would need to be set."},
+    "J5": {"score": 0, "why": "No kill date written down."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Pythia (the paper's own model; self-supervised graph neural network on protein structures)",
+        "open_weights": true,
+        "score_and_split": "Spearman 0.66 total / 0.46 on direct mutations for the S669 benchmark of 669 measured stability changes; I reproduced 0.464 from the shipped file. Per-protein median Spearman 0.649 on the 177,315-row megascale set (I computed this).",
+        "authors_named_unsolved": "Prediction quality degrades badly when the input structure is low-confidence; the supplement shows per-protein accuracy tracking AlphaFold confidence, and two named failure cases (PDB 2MC5, 6OBK).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ThermoMPNN (graph neural network reusing ProteinMPNN embeddings, PNAS 2024, Kuhlman lab)",
+        "open_weights": true,
+        "score_and_split": "Pearson correlation about 0.75 on held-out megascale proteins and about 0.65 on the independent FireProt high-quality set; positive predictive value for stabilising variants about 46-56%.",
+        "authors_named_unsolved": "Interactions between two mutations (epistasis) are not captured; their follow-up paper is titled around stability models failing on double mutants.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Stability Oracle (structure-based graph transformer, Nature Communications 2024)",
+        "open_weights": true,
+        "score_and_split": "Reports competitive precision for stabilising mutations on ProTherm-derived benchmarks; exact split numbers taken from the search summary, not from my own run.",
+        "authors_named_unsolved": "Scarcity of stabilising-mutation examples and data imbalance in the training sets.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SPURS (rewired protein generative model, Nature Communications 2025)",
+        "open_weights": true,
+        "score_and_split": "Reported to outperform DDGun and MutateEverything on the double-mutation portion of the megascale test set.",
+        "authors_named_unsolved": "Generalisation beyond small domains and to higher-order mutation combinations.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SaProt-deltaG / ESM3-deltaG (2026 preprint, trained on 1.8 million newly measured domain stabilities)",
+        "open_weights": null,
+        "score_and_split": "Root-mean-square error about 0.8 kcal/mol for absolute folding stability of small domains; from the search summary only, I did not retrieve the full paper.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Pythia's own shipped weights (pythia-c.pt / pythia-p.pt, 5.2 MB each), with ESM-2 or ProteinMPNN as alternative frozen encoders",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; the whole working set is under 60 MB and the weights are 5 MB",
+    "licence": "Apache-2.0 for the Pythia repository, CC-BY-4.0 for Pythia-PPI (both read from Zenodo metadata)"
+  },
+  "integration": {
+    "partner_dataset": "ProteinGym / MaveDB variant-effect landscapes, and the full 776,000-measurement Tsuboyama release",
+    "join_key": "Protein accession plus residue position, reached from the shipped PDB entry code and residue number via the standard PDB-to-UniProt residue mapping",
+    "bigger_question_one_sentence": "How much of a protein variant's measured functional effect is explained by folding stability alone, and in which protein families does that explanation break down?"
+  },
+  "controls": {
+    "positive_control": "Proline substitutions inside helices and buried-hydrophobic-to-charged swaps must come out destabilising; and the published Pythia S669 correlation of 0.46 must reproduce (it does - I got 0.464).",
+    "negative_control": "Shuffle the stability labels within each protein and confirm performance collapses to the per-protein mean; also train on the Pythia prediction column alone to measure how much is distillation.",
+    "external_validation": "S669 (669 measurements, 94 proteins) and S2648 (2,630 measurements, 129 proteins), which share only 3 and 2 proteins respectively with the megascale training proteins - verified by set intersection."
+  },
+  "honest_claim_h3": "Among single amino-acid substitutions in small, well-folded protein domains of 60-80 residues that somebody chose to measure, a model can rank destabilising mutations with roughly 0.6-0.75 correlation against measured folding free energy change; it says nothing about large multi-domain or membrane proteins, nothing about combinations of mutations, and nothing about catalytic activity.",
+  "plain_idea": {
+    "one_liner": "Use a protein's 3D structure and a single amino-acid change to predict how much that change weakens the protein's folding.",
+    "train_on": "Each example is one point mutation in one protein: its 3D structure, the position, the original and the replacement amino acid. I verified 177,315 such examples across 181 proteins in the shipped megascale table, plus 2,630 and 669 in two literature benchmarks.",
+    "predict": "A single number, the change in folding free energy in kilocalories per mole. The true values come from measured stability experiments - proteolysis-resistance assays for the large set, classical heat or chemical unfolding for the two smaller ones.",
+    "why_worthwhile": "Enzyme engineering groups use these rankings to decide which handful of mutants to build in the lab; but the result would be worthwhile only if the field were not already served, and it is."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The shipped megascale table is 177,315 rows, a subset of the ~776,000-measurement public release that ThermoMPNN and SPURS already train on; a 2026 release measures 1.8 million domains. We would see less data than the competition, not more."},
+    "confidence_score": {"answer": "no", "why": "The shipped megascale file has exactly four columns - label, prediction, protein name, mutation - with no replicates and no confidence intervals, so per-prediction uncertainty cannot be estimated from what is here."},
+    "models_beatable": {"answer": "no", "why": "ThermoMPNN (2024, ProteinMPNN backbone, held-out-protein evaluation plus an independent FireProt test set), Stability Oracle (2024), SPURS (2025) and SaProt-deltaG (2026) are all recent, open and honestly split. This is not a 2019-random-split situation."},
+    "guaranteed_improvement": {"answer": "no", "why": "The baseline is runnable and the join key is clean, but the condition that fails is 'our model sees everything theirs sees plus more': the extra data that would help is the full Tsuboyama release, which the existing models were already trained on."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a small supervised head on frozen Pythia or ProteinMPNN embeddings using the 177,315 shipped megascale stability measurements, then test transfer to the independently measured S669 and S2648 benchmarks (verified to share only 3 and 2 proteins with the training set), asking whether a model trained on one stability assay ranks mutations correctly under a different one. The question is sound and the data is clean, but ThermoMPNN already reports exactly this comparison (0.75 within megascale versus 0.65 on the independent FireProt set), so the result is known before we start.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 1,
+    "cv_run_minutes": 20,
+    "compute_note": "Measured, not guessed, for the data side: I downloaded all tables and archives (under 60 MB total) and parsed them in seconds on this laptop. The embedding estimate assumes ESM-2 650M over 181 domains of 60-80 residues on CPU; I did not time that.",
+    "cheapest_killing_check": "Count how many of the 181 megascale proteins are already in the training sets of ThermoMPNN and SPURS. Nearly all are, which means there is no protein left in this package that the field has not already fitted and reported on."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The files are genuinely clean and everything in Part A passes - 177,315 measured stability changes, structures included, 5 MB CPU-runnable weights, permissive licence, and I reproduced the paper's own published correlation (0.464 versus the reported 0.46) in one line. But the paper is a web interface, not a dataset: it contributes zero new measurements, and every table it ships is a standard public benchmark (S669, S2648, a subset of the Tsuboyama megascale release) on which several open, reproducible, honestly-split models already exist - ThermoMPNN (2024), Stability Oracle (2024), SPURS (2025), and a 2026 model trained on 1.8 million domains. Part C scores 4 out of 10 against a threshold of 6: no angle, a saturated field, and a smaller slice of the data than the competition trains on. Worth keeping as a teaching sandbox, not as a project."
+}

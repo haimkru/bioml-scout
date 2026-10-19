@@ -1,0 +1,142 @@
+{
+  "paper_id": "science2026-ady1678",
+  "title": "Dendritic cells control tertiary lymphoid structure development and maintenance in cancer.",
+  "doi": "10.1126/science.ady1678",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE327192 (MERFISH, 15 human tumour sections) and https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE322553 (Visium spatial transcriptomics, 7 human tumour sections)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened GSM9651110_1041_region_0_cell_metadata.csv.gz from the MERFISH series (180,506 cells, 23 columns: segmentation geometry and stain intensities only, no cell type and no tertiary-lymphoid-structure (TLS) label); confirmed by a ranged read that a second sample (GSM9651117) has the identical 23 columns. Opened a Visium matrix GSM9554206 with h5py: 17,943 genes x 2,599 spots under tissue, and its tissue_positions_list.csv.gz (4,992 rows, no header, barcode + in_tissue + array row/col + pixel row/col). Read both GEO series records and both full file lists (sizes, formats).",
+    "what_came_from_paper_text_only": "The paper itself is paywalled (Science, not in PubMed Central, no open full text in Europe PMC), so the sample composition (8 hepatocellular carcinoma + 7 non-small-cell lung cancer MERFISH sections; 4 colorectal + 1 liver + 2 lung Visium sections), the mouse experiments, the multiplex imaging and all figure-level TLS annotations are known only from the abstract and the GEO 'overall design' and 'data processing' fields. I did not see the Science supplementary materials."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Both GEO series are public with no login: GSE327192 (13.5 GB RAW tar) and GSE322553 (200 MB RAW tar). I downloaded individual sample files directly over HTTPS from the NCBI FTP mirror."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "KILLER. The thing the paper is about - which tissue region is a tertiary lymphoid structure (TLS), and whether it is mature - is not a column in any deposited file. MERFISH cell metadata has only segmentation geometry and stain intensities (23 columns, verified in two samples); Visium ships only raw Space Ranger output (counts, spot coordinates, images). The label would have to be constructed by hand-annotating images or by inferring it from marker genes."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "For Visium the inputs are present (gene x spot counts, verified). For MERFISH no cell-by-gene matrix was deposited at all: only cell_metadata and detected_transcripts (individual transcript coordinates, 11.5 GB gzipped across 15 samples), so the expression features would have to be rebuilt from raw detections before anything can be modelled."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are implicit but standard and unambiguous: unique molecular identifier counts per spot/gene for Visium, transcript counts and micron coordinates plus arbitrary-unit stain intensities for MERFISH. The tissue_positions_list.csv.gz has no header row, which is normal Space Ranger format."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 2599,
+      "note": "Verified 2,599 on-tissue spots in one Visium sample and 180,506 segmented cells in one MERFISH sample, so cells/spots are plentiful. But the independent unit for any TLS question is the tissue section or patient: 15 MERFISH + 7 Visium = 22 sections from roughly 22 patients, and probably a few dozen TLS regions in total. That is far under the ~400 needed for classification at the right unit."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~0.2 GB for all 7 Visium samples; ~13 GB for the full MERFISH series, reducible to ~1-2 GB of cell-by-gene matrices if you stream the transcript files once.",
+      "note": "Visium fits trivially on a 16 GB laptop. MERFISH needs a one-off streaming pass over 11.5 GB of gzipped transcript coordinates, which is feasible but is hours of work before any modelling."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO sample counts match the GEO 'overall design' statements exactly (15 MERFISH = 8 hepatocellular + 7 lung; 7 Visium = 4 colorectal + 1 liver + 2 lung). I could not compare against the Science text because the paper is paywalled."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "KILLER in disguise. The only way to get a TLS label from these files without new manual annotation is to score the same transcriptomes for B-cell/follicle markers (CXCL13, CCL19, CR2, MS4A1). That label is computed from the features, so a model predicting it would score well and mean nothing - textbook leakage by construction."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "HookNet-TLS (multi-resolution convolutional network that outlines tertiary lymphoid structures and germinal centres in routine stained tissue slides)",
+        "open_weights": true,
+        "score_and_split": "Trained on 1,019 manually annotated Cancer Genome Atlas slides across kidney, bladder and lung cancer; reported to beat a Faster-RCNN object detector on independent slide sets. I did not verify a specific Dice or F1 number myself.",
+        "authors_named_unsolved": "Generalisation across tumour types and staining protocols, and distinguishing mature (germinal-centre-containing) from immature structures.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TLS-predictive-model-2.0 (support vector classifier that labels spatial transcriptomics spots as tertiary lymphoid structure or not)",
+        "open_weights": true,
+        "score_and_split": "Built on 24 clear-cell renal carcinoma spatial samples (about 11,788 and 4,571 spots in its two arms); roughly 0.90-0.94 accuracy and 0.80-0.94 area under the receiver-operating curve on held-out samples, per the paper's own tables.",
+        "authors_named_unsolved": "Small sample numbers and the time course of structure development; they say experimental validation of their immunoglobulin-gene markers is still needed.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Pan-cancer spatial atlas of tertiary lymphoid structures (Science 2026, doi 10.1126/science.adz2742), including an image model that predicts maturation state from stained slides",
+        "open_weights": null,
+        "score_and_split": "Spatial transcriptomics across 12 cancer types; the authors report evaluating the image model on Cancer Genome Atlas and independent therapy cohorts. I read only the abstract-level description, not the numbers.",
+        "authors_named_unsolved": "Not verified - I did not retrieve the full text.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "TLSFinder (pipeline fusing stained-image morphology features with 10x Visium spatial transcriptomics to find tertiary lymphoid structures)",
+        "open_weights": null,
+        "score_and_split": "Conference paper (2026 symposium proceedings); no numbers verified by me.",
+        "authors_named_unsolved": "Not verified.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Not applicable at reject stage; the natural candidates would be a pathology image foundation model (e.g. UNI or Virchow) on the Visium slide images, or scGPT/Geneformer on spot expression.",
+    "freeze_and_head_viable": null,
+    "hardware": "16 GB laptop CPU would handle the 7 Visium samples; MERFISH transcript aggregation is CPU-bound but slow.",
+    "licence": "GEO data are public with no stated restriction; pathology foundation models are mostly non-commercial and gated."
+  },
+  "integration": {
+    "partner_dataset": "HEST-1k (1,229 paired spatial transcriptomics + stained-image samples) or the Cancer Genome Atlas slides used by HookNet-TLS",
+    "join_key": "Ensembl/HGNC gene symbol for expression; no patient or slide identifier links these 22 sections to any external cohort.",
+    "bigger_question_one_sentence": "Could be: do lymphoid-structure signatures learned on one tumour type transfer to another? But with 22 unlabelled sections this paper contributes almost nothing to that question that HEST-1k does not already contribute better."
+  },
+  "controls": {
+    "positive_control": "Would exist in principle - B-cell marker genes (MS4A1, CR2) must light up in any region a model calls a lymphoid structure - but that same signal is what would define the label, so it is not an independent control here.",
+    "negative_control": "Label shuffling is runnable, but there is no trustworthy label to shuffle.",
+    "external_validation": "Other public Visium/MERFISH tumour datasets exist (e.g. GSE175540 used by the support-vector model), so cross-dataset testing would be possible if a label existed."
+  },
+  "honest_claim_h3": "With the deposited files, the most a model could honestly claim is 'reproduces, on 22 tumour sections from one institution, the marker-gene definition of a lymphoid aggregate that was used to create its own training labels' - which is a tautology, not a finding.",
+  "plain_idea": {
+    "one_liner": "Use spatial gene-expression maps of human tumours to predict where immune cell clusters called tertiary lymphoid structures form.",
+    "train_on": "Spatially resolved gene expression from 22 human tumour sections: 7 Visium slides (about 2,600 on-tissue spots each, 17,943 genes, verified in one file) and 15 MERFISH sections (about 180,000 segmented cells each, verified in one file).",
+    "predict": "Whether a spot or small tissue neighbourhood belongs to a tertiary lymphoid structure, and whether that structure is mature. The ground truth would have to come from a pathologist outlining structures on the stained image - which is not in the deposited data.",
+    "why_worthwhile": "These structures predict who responds to cancer immunotherapy, so an automated detector would help oncologists and trial designers triage patients. Even a failed model would show how far marker-based definitions diverge from pathologist annotation."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "22 tumour sections here versus 1,019 annotated slides behind HookNet-TLS and 12 cancer types in the Science pan-cancer lymphoid-structure atlas; and ours carry no annotations at all."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No replicate sections of the same tumour and no repeated annotation, so there is nothing from which to estimate measurement noise or calibrate per-prediction confidence."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The 2024 support-vector model was trained on 3 samples and tested on 7, which is weak; but HookNet-TLS (2024, open weights, 1,019 annotated slides) and the 2026 Science atlas are not beatable with 22 unlabelled sections."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: we have no labels on the same quantity, so the existing models cannot be run as a baseline on a shared split, and there is no join key linking these sections to any annotated cohort."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: predict tertiary-lymphoid-structure regions (and their maturity) from spatial transcriptomics, then transfer the detector to stained images. Dead on arrival because no region annotations were deposited, and the only label derivable from the files is a marker-gene score computed from the very features the model would use.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 13.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: the 7 Visium matrices load in seconds (I opened one), but turning 15 MERFISH detected_transcripts files (11.5 GB gzipped) into cell-by-gene matrices is a long streaming pass, and the 40 hours is dominated by manually annotating lymphoid structures on the slide images, which is the step that makes the project a non-starter.",
+    "cheapest_killing_check": "Open one cell_metadata.csv.gz and one Visium .h5 and look for an annotation column. I did this in under ten minutes: there is none, in either modality."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A2 and A8, verified in the files. The paper's subject - which tissue region is a tertiary lymphoid structure - exists only in the authors' figures, not in the deposited data: MERFISH cell metadata carries 23 columns of segmentation geometry and stain intensity with no cell type or region label (checked in two samples), and the Visium series is raw Space Ranger output. The only label obtainable without new manual annotation is a B-cell marker score computed from the same expression used as features, which is leakage by construction. Compounding this, MERFISH expression matrices were not deposited at all (A3), the unit of analysis is only 22 tissue sections (A5), and the field already has open, honestly evaluated models (HookNet-TLS trained on 1,019 annotated slides; an open support-vector model for spatial spots; a 2026 Science pan-cancer lymphoid-structure atlas)."
+}

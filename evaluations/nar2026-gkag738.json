@@ -1,0 +1,105 @@
+{
+  "paper_id": "nar2026-gkag738",
+  "title": "Metal-triggered topology switching in bipyridine-modified DNA G-quadruplexes.",
+  "doi": "10.1093/nar/gkag738",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.17877/RESOLV-2025-MHT5G3K3",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Queried the TU Dortmund Dataverse API for the deposit: 1,252 files, 19.5 GB total, 515 flagged restricted, terms of access read 'Data is available upon request. Please message us directly'. I then tried to download files: the circular dichroism (CD, a spectroscopy method that reports DNA fold shape) melting table htel22_L2a_melting.csv and even the README both returned HTTP 403 Forbidden. Two open files did download and parse: Kinetics 298K.csv (time in seconds versus CD signal at 260 nm in millidegrees, for Cu, Ni and Zn) and a cell-count CSV from the transfection microscopy.",
+    "what_came_from_paper_text_only": "The identity of the six modified oligonucleotides (htel22, ttel24 and pu22 backgrounds, each with bipyridine at loop position L2a or L2b), the five metals tested (Cu2+, Ni2+, Zn2+, Co2+, Cd2+), the melting-temperature increases, and the in-cellulo folding claim. I never saw a melting-temperature table or a topology assignment table, because those files are the restricted ones."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified by download attempt. The deposit's terms of access state 'Data is available upon request. Please message us directly', fileAccessRequest is true, and 515 of 1,252 files are restricted. Every circular dichroism file (the spectra and melting curves), the FRET melting table, the cell-viability tables and even the README return HTTP 403 Forbidden. Only 706 GROMACS molecular-dynamics simulation files, 4 kinetics CSVs and 3 cell-count CSVs are public."
+    },
+    "a2_label_is_a_column": {"pass": false, "note": "Not reached in detail, but noted: no topology or melting-temperature column exists in any public file. The label would have to be read off CD spectra that are behind the 403, or hand-transcribed from figures."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are given in the paper text, not as accessions; only six of them though."},
+    "a4_units_stated": {"pass": true, "note": "The public kinetics CSV does state units in a header row (seconds, millidegrees); temperature in Kelvin is in the file name."},
+    "a5_enough_rows": {"pass": false, "n_rows": 6, "note": "FAIL independently of A1. The experimental unit is the modified oligonucleotide: six of them (three G-quadruplex backgrounds x two bipyridine loop positions), times five metals, so at most ~30 measured conditions. The checklist needs ~1,500 labelled rows, or ~400 for classification. Spectral wavelength points are not independent examples."},
+    "a6_fits_laptop": {"pass": false, "working_set": "19.5 GB deposit; ~1.5 GB of it is public molecular-dynamics trajectories", "note": "The whole deposit exceeds the 5 GB working-set limit, and the only large public part is simulation output rather than measurement."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked: the tables that would carry the paper's numbers are the 403 files. The deposit has no manifest I could read, since the README is restricted too."},
+    "a8_label_provenance": {"pass": false, "note": "Mixed and partly circular. Topology would come from CD spectral shape (a human interpretation, not a number in a column), and the largest public data block is molecular-dynamics simulation output, which is a force field's prediction rather than a measurement."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "G4ShapePredictor (G4SP), a set of gradient-boosted tree classifiers that predict G-quadruplex fold shape from sequence, Scientific Reports 2024",
+        "open_weights": true,
+        "score_and_split": "Average multi-class accuracy 0.75 +/- 0.02 on a held-out test set across six tree models (ExtraTrees best at 0.76 +/- 0.01), trained on 1,005 sequence-topology pairs from the Protein Data Bank, in-house circular dichroism and the literature. Split described as a test set, not a sequence-similarity-clustered one.",
+        "authors_named_unsolved": "Accuracy caps around 0.76, with hybrid folds the hardest class; from the search summary rather than a retrieved full text, so treat as indicative.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "G4STAB, a multi-input neural network predicting G-quadruplex melting temperature from sequence plus salt concentration and pH, Bioinformatics 2025",
+        "open_weights": true,
+        "score_and_split": "R-squared about 0.8, trained on 2,382 literature-collated melting-temperature points spanning UV melting, CD melting, differential scanning calorimetry and FRET melting; code at github.com/donn-liew/G4STAB plus a public web database.",
+        "authors_named_unsolved": "Pooling melting temperatures across different assay types, and extension to non-canonical or chemically modified G-quadruplexes; indicative, from search summaries.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 or Nucleotide Transformer (DNA language models) would be the natural backbone for sequence-to-topology, but neither has seen a bipyridine-metal modification in pretraining",
+    "freeze_and_head_viable": false,
+    "hardware": "Laptop CPU would suffice for six sequences, which is exactly the problem",
+    "licence": "Deposit metadata says CC BY 4.0, but the licence file itself is one of the restricted 403 files, which is self-contradictory"
+  },
+  "integration": {
+    "partner_dataset": "G4STAB's 2,382-point melting-temperature compilation and G4ShapePredictor's 1,005 sequence-topology pairs",
+    "join_key": "DNA sequence string",
+    "bigger_question_one_sentence": "Could not be written usefully: this paper would add six chemically modified sequences that no public model's sequence vocabulary represents, so the join adds rows a model cannot featurize rather than rows it can learn from."
+  },
+  "controls": {
+    "positive_control": "Would have been recovering the textbook result that human telomeric htel22 is a hybrid fold in potassium and antiparallel in sodium, but the CD spectra that show this are not downloadable.",
+    "negative_control": "Label shuffling is meaningless at n=6.",
+    "external_validation": "G4STAB and G4ShapePredictor training sets exist as independent sources, but only for unmodified sequences."
+  },
+  "honest_claim_h3": "With the measurement files unavailable and six modified oligonucleotides in total, no model trained on this paper could claim anything beyond a description of these six molecules.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and bound metal ion to predict which three-dimensional fold a G-quadruplex adopts.",
+    "train_on": "The project considered would show the model a short DNA sequence, the position of a bipyridine chemical handle in its loop, and which metal ion is present. This paper supplies six modified sequences across five metals, roughly 30 conditions.",
+    "predict": "Which of three fold shapes the four-stranded DNA adopts (parallel, antiparallel or hybrid) and how hot it must get to unfold. The true answer comes from circular dichroism spectra and melting curves measured in the lab.",
+    "why_worthwhile": "Groups designing G-quadruplex probes and decoys would like to choose a fold on purpose rather than discover it after synthesis; but that question is already addressed by G4ShapePredictor and G4STAB on far more data."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This paper contributes six modified sequences and roughly 30 metal conditions, against G4ShapePredictor's 1,005 sequence-topology pairs and G4STAB's 2,382 melting-temperature points. The only novel axis, bipyridine-metal chelation inside a loop, is represented by two loop positions."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Replicate structure cannot be assessed because the circular dichroism and melting files return HTTP 403, and six sequences cannot support per-group uncertainty estimates in any case."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "G4STAB is a 2025 neural network with open code reaching R-squared about 0.8 on 2,382 points, and G4ShapePredictor is a 2024 ensemble at 0.76 accuracy. Both already cover unmodified sequences better than anything six molecules could support."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on every condition: the new data is not downloadable, it measures chemically modified quadruplexes that the baselines' sequence encodings cannot represent, and there is no shared evaluation split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The idea considered was sequence-plus-metal to G-quadruplex topology and melting temperature, extending existing predictors to chemically modified loops. It dies twice over: the measurement files are access-controlled, and six modified oligonucleotides is two to three orders of magnitude short of a training set. The useful salvage is purely descriptive: the public GROMACS molecular-dynamics trajectories of copper-bound htel22 could feed a structural analysis, but those are simulation output, not measurement.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 19.5,
+    "needs_gpu": null,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "No estimate attempted past the Part A failure. The 19.5 GB figure is the deposit total reported by the Dataverse application programming interface; about 1.5 GB of that is the public molecular-dynamics portion.",
+    "cheapest_killing_check": "Call the Dataverse API for the file list and read 'termsOfAccess' plus the 'restricted' flag, then try one download. Two minutes, and it returned 403 on every circular dichroism file."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A1 fails, verified rather than inferred: the deposit's terms of access read 'Data is available upon request', 515 of 1,252 files are restricted, and every circular dichroism spectrum, melting curve and even the README returned HTTP 403 Forbidden. Only GROMACS simulation files and seven small CSVs are public, and none of them contains a topology or melting-temperature label. A5 fails independently and fatally: the experimental unit is the modified oligonucleotide and there are six of them across five metals, roughly 30 conditions, against a floor of ~400 for classification. The field is also already served by G4ShapePredictor (1,005 pairs, 0.76 accuracy) and G4STAB (2,382 melting points, R-squared ~0.8), both with open code. This is an excellent synthetic chemistry paper and not an ML dataset."
+}

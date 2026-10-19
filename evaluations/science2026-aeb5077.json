@@ -1,0 +1,118 @@
+{
+  "paper_id": "science2026-aeb5077",
+  "title": "Modality-specific neurovascular coupling via layer-segregated arteriole networks.",
+  "doi": "10.1126/science.aeb5077",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5061/dryad.n5tb2rcb8",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the Dryad README and the 13-page Labeled_data.pdf data dictionary, then pulled 10 of the 17 .mat files (17.6 MB) out of the 346 MB Data.zip with HTTP range requests and parsed them with scipy. Counted rows myself: Vessel_Dilation 753 arteriole segments / 20 mice / 76 animal-by-tree groups (614 after the authors' keep=1 and noise=0 filters); Blood_Flow 579 capillary segments / 20 mice; Awake_ETA 68 arteriole recordings / 5 mice holding 904 paired calcium-event-and-dilation traces; Bulk_Neuronal_Ca 76; Surface_Vessel 27; Figure1 widefield 13 mice. Checked label provenance arithmetically: Dilation_Optopain is the 4.8-10.4 s mean of the Optopain_dFdF0 trace stored in the same record (correlation 0.9996), and SI (selectivity index) equals (tactile - nociceptive)/(|tactile| + |nociceptive|) (correlation 0.9992). Checked internal consistency: keep==1 is exactly Tactile_resp==1 (614), and no vessel is nociception-responsive without also being touch-responsive. Ran the cheap predictability checks: cortical depth versus SI Spearman -0.047 (p=0.25, i.e. no relationship), depth versus tactile dilation -0.22, neuronal calcium event size versus following dilation 0.235 across the 904 events.",
+    "what_came_from_paper_text_only": "Nothing from the paper body: the Science article is paywalled, has no PubMed Central record and no Europe PMC full text, so I could not compare any count to a number printed in the paper. Neurons.mat (203.7 MB) and Monitoring_Station.mat (120.9 MB) exceed the 50 MB download cap; by range-reading only their headers I confirmed Neurons.mat is a MATLAB v7 file holding a 1-by-25 struct array (25 imaging sessions), but the number of individual neurons inside it is unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Dryad, CC0-1.0, no login and no access application. The site sits behind an Anubis proof-of-work bot check, which is a computational puzzle rather than a credential; I solved it and extracted real files, so the data genuinely downloads."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified in the files: Dilation_Optopain, Dilation_Tactile, Undershoot_*, SI, Optopain_resp and Tactile_resp are stored fields of every one of the 753 vessel records, and Avg_vaso is a stored field for each of the 904 calcium events. Nothing needs constructing."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified: Depth (micrometres), Order (branch order 1-8 or P for penetrating), Tree, P_size (feeding penetrating-arteriole diameter), Terminaison (depth where the arteriole ends), Sex and animal tag sit in the same record as the labels. No external lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Every field has a unit in Labeled_data.pdf (micrometres, micromolar, mm/s, red blood cells per second). Flag: the PDF calls dFdF0 a percentage but the stored values are fractions (range -0.18 to 0.26), while Avg_vaso in Awake_ETA runs to 8.8 and so is evidently already a percentage. Same quantity, two scales, in two files."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 753,
+      "note": "FAILS. The largest labelled table I could open is 753 arterioles (614 after the authors' own quality filters), from only 20 mice. Next largest are 579 capillary segments (20 mice) and 904 calcium events from just 5 mice. The checklist bar is ~1,500 rows for regression; every verified table is under half that. A reframing as classification (753 rows beats the 400 bar) only survives on a technicality: the interesting minority class, vessels that respond to touch but not to nociception, has 102 members, and each mouse contributes 10 to 111 correlated vessels, so the effective sample is nearer 20. The one file that could conceivably clear the bar, Neurons.mat, is 203.7 MB (over the download cap) and holds 25 imaging sessions whose neuron count I could not verify."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~18 MB for every table needed; 346 MB for the whole archive",
+      "note": "Verified by loading the files; a 753-row table of 6 features is trivial for a 16 GB laptop and needs no GPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Cannot be checked against the paper, which is paywalled with no open full text. Internal consistency is good: all struct lengths are self-consistent and the keep flag exactly equals the union of the two responsivity flags (614). Recorded as unverifiable against the publication, not as a mismatch."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Labels are physical measurements, not another model's output: vessel diameter from two-photon full-width-half-maximum, calcium as fluorescence change over baseline, red-cell speed from line-scan kymographs. Flag for leakage by construction, which I measured: the scalar dilation label is the time-window average of the diameter trace sitting in the same record (correlation 0.9996) and SI is algebra on the two dilation scalars (correlation 0.9992), so those traces can never be used as features."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Deep learning pipeline for network-level neurovascular coupling in multi-photon microscopy (eLife, PMID 41873945)",
+        "open_weights": null,
+        "score_and_split": "Not comparable: it segments and reconstructs vessel geometry from microscope images and reports dilation/constriction distances (16.1 +/- 14.3 micrometres for dilations), not a predictive score on a held-out split.",
+        "authors_named_unsolved": "That the blood-flow response to targeted neuronal activation is not spread evenly over the vascular network, so coupling has to be assessed network-wide rather than vessel-by-vessel.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Sten et al. quantitative mechanistic model of neurovascular coupling (PLOS Computational Biology 2023)",
+        "open_weights": null,
+        "score_and_split": "A system of differential equations fitted to pooled mouse, monkey and human data; reports fit quality, not held-out prediction, and operates on regional blood-flow signals rather than individual arterioles.",
+        "authors_named_unsolved": "Carrying mechanisms measured in animals across to human imaging signals.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Arteriolar diameter and hemodynamic regulation model using experiment-based machine learning (Function, 2026)",
+        "open_weights": null,
+        "score_and_split": "Reports R-squared above 0.9 for predicting individual vessel diameter adaptation, but in rat skeletal muscle, not brain, and I found no evidence of a grouped or held-out-animal split.",
+        "authors_named_unsolved": "Not retrievable from the abstract I saw.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None of the checklist backbones apply; the closest option would be a generic time-series foundation model such as Chronos-T5 on the 100-point diameter traces",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU is ample, but that is beside the point",
+    "licence": "Chronos-T5 is Apache-2.0; irrelevant here because there is no sequence, molecule, genome or single-cell data for ESM-2, ChemBERTa, AlphaGenome, scGPT or RNA-FM to act on"
+  },
+  "integration": {
+    "partner_dataset": "None available. The only identifiers in the files are internal mouse tags such as '#2286' and per-animal tree letters A to K that the data dictionary explicitly says are not unique across animals.",
+    "join_key": "none",
+    "bigger_question_one_sentence": "Cannot be written: with no standard identifier (no UniProt, Ensembl, genomic coordinate, compound key or even a shared vascular atlas index) there is nothing to join to, so any integration would be decoration."
+  },
+  "controls": {
+    "positive_control": "Available and good: a working model must recover the paper's headline effect, that touch produces larger arteriole dilation than nociception, and must recover that deep arterioles respond across input types. Depth versus tactile dilation (Spearman -0.22) is a real, pre-stated signal to rediscover.",
+    "negative_control": "Runnable: shuffle the dilation labels within animal and confirm collapse to the per-animal mean. Essential here, because the scalar label is a window mean of a trace in the same record.",
+    "external_validation": "None exists. No second dataset measures per-arteriole, modality-specific dilation in mouse cortex. Franca Schmid's Zenodo microvascular flow simulations are simulated, not measured, and share no vessel identifiers with this data."
+  },
+  "honest_claim_h3": "Given cortical depth, branch order, feeding-arteriole diameter and termination depth, a model could predict how much a single cortical arteriole dilates to touch versus to nociception, among 753 vessels that five experimenters in one Montreal lab chose to image through a cranial window in 20 anaesthetised and awake mice, excluding vessels the authors flagged as noisy.",
+  "plain_idea": {
+    "one_liner": "Use a brain blood vessel's depth and branching position to predict how much it widens to touch versus pain.",
+    "train_on": "One row per arteriole segment: cortical depth in micrometres, branch order, the diameter of the penetrating arteriole feeding it, the depth where it terminates, its vascular tree tag, and the mouse's sex. I verified 753 such rows (614 passing the authors' quality flags) from 20 mice.",
+    "predict": "The percentage widening of that vessel during touch stimulation and during nociceptive stimulation, and the resulting preference score between them. The true answer comes from two-photon microscopy: vessel diameter measured frame by frame as the full width at half maximum of the fluorescent lumen, averaged over 4.8-10.4 seconds after the stimulus.",
+    "why_worthwhile": "Brain imaging in humans assumes blood flow is a faithful proxy for neural activity; this data shows it is not, because pain and touch drive near-identical neural activity but very different flow. A model saying which vessels break the assumption would matter to anyone interpreting functional MRI pain studies."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict single-arteriole dilation amplitude and touch-versus-nociception preference from vascular anatomy (depth, branch order, feeding penetrating-arteriole diameter, termination depth), with leave-one-mouse-out splits over 20 animals; secondary idea, predict the vascular dilation waveform that follows a spontaneous neuronal calcium event from the event's size and the arteriole's anatomy, over 904 events in 5 mice. Both are real questions, but both are small-n statistics problems rather than machine-learning problems.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.02,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": null,
+    "cv_run_minutes": 1,
+    "compute_note": "Measured, not guessed: I extracted and parsed the files in this session. The 10 needed .mat files are 17.6 MB, scipy.io.loadmat reads each in under a second, and a leave-one-mouse-out gradient-boosted tree on 753 rows by 6 features finishes in well under a minute on CPU.",
+    "cheapest_killing_check": "Count the labelled rows and the number of mice. Already done: 753 vessels (614 usable) from 20 mice, 904 events from 5 mice. That is the killing check and it kills it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on verified counts. Every labelled table I opened is far under the 1,500-row bar: 753 arterioles (614 after quality filters) from 20 mice, 579 capillary segments, 904 calcium events from only 5 mice, and vessels within a mouse are correlated so the effective sample is nearer 20. Three further problems compound it rather than being separate quibbles. First, the feature space is about six low-dimensional anatomical variables, so the honest tool is a mixed-effects regression, which the paper already ran; no checklist backbone (ESM-2, ChemBERTa, AlphaGenome, scGPT, RNA-FM) touches vessel anatomy, so Part D collapses. Second, Part G is zero: the only identifiers are internal mouse tags and non-unique tree letters, so there is nothing to join to and no external validation set, because no other dataset measures per-arteriole modality-specific dilation. Third, my own cheap checks show the single-vessel signal is weak (depth versus selectivity index Spearman -0.047, p=0.25; calcium event size versus following dilation 0.235), so a model would land near the noise floor with no second dataset to tell the difference. The data itself is exemplary - CC0, a 13-page per-field data dictionary, units given, 0 of 753 records with a missing dilation value, authors' own quality flags included, and labels that are genuine physical measurements - and the one file that could change the arithmetic, Neurons.mat at 203.7 MB with 25 imaging sessions of unverified neuron count, is the only thing worth revisiting if the cap were raised."
+}

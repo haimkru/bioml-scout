@@ -6,53 +6,157 @@
   "data_url": "https://doi.org/10.6084/m9.figshare.32916761",
   "verified": {
     "opened_data_files": true,
-    "what_i_actually_checked": "Opened the supplementary workbook (41588_2026_2735_MOESM4_ESM.xlsx, 56 sheets) and read its table of contents plus Supplementary Tables 1, 14, 15 and 17: 24 input disease GWAS (genome-wide association studies) with download links, and 172/537/170/140 independent risk loci for the cardiovascular-, metabolic-, gastrointestinal- and immune-MDD (major depressive disorder) factors. Fetched the figshare readme.txt (615 bytes): columns are CHR, BP, A1, A2, beta, SE, MAF, P, SNP, Z, genome build GRCh37. Pulled the first 400 KB of two of the eight .tsv.gz summary-statistic files by byte-range request and decompressed the first gzip block: the header line is identical (CHR/BP/A1/A2/beta/SE/MAF/P/SNP/Z) in both the Q-SNP-removed and the non-removed versions, so no heterogeneity (Q) statistic is shipped as a column. Confirmed the figshare record is CC BY 4.0 and downloads with no login. Checked the Zenodo record 21711189: it holds only scripts.zip (33 KB), no data.",
-    "what_came_from_paper_text_only": "Per-factor SNP (single nucleotide polymorphism) totals (6.47M-6.91M), effective sample sizes (826k-926k), the 47% of MDD SNP-heritability figure and the gut-brain conclusion all come from the text and Supplementary Table 14; I did not download whole files to count rows because each is 227-318 MB, over the 50 MB cap. That the multiple sclerosis GWAS is available only on request, and that the MDD GWAS comes from a separate iPSYCH download page, also comes from the data-availability statement only."
+    "what_i_actually_checked": "Opened all 7 supplementary Excel workbooks from the Europe PMC supplement zip (5.24 MB): workbook MOESM4 holds 52 sheets (ST1-ST52); I counted non-empty rows and confirmed the independent-locus tables ST15-ST18 contain exactly 172, 537, 170 and 140 rows, matching the totals in ST14 and in the Figure-4b source data (1,019 loci total). I queried the figshare API for the deposit (CC BY 4.0, 8 gzipped tab-separated files, 226.96-318.47 MB each), downloaded and read its readme.txt, ran a HEAD on MDD_Gastro_Factor.tsv.gz (HTTP 200, 274,007,460 bytes, application/gzip), and did a ranged GET of the first 300 KB and decompressed the header line: CHR, BP, A1, A2, beta, SE, MAF, P, SNP, Z. I also checked the Zenodo record (code only, CC BY 4.0, R, github.com/damain-wo/MDD-pleio).",
+    "what_came_from_paper_text_only": "The per-factor total SNP counts (6,808,623 cardiovascular; 6,862,196 metabolic; 6,747,542 gastrointestinal; 6,470,160 immune) come from supplementary table ST14 and were NOT verified against the downloaded files, because each file is 227-318 MB and exceeds this project's 50 MB download cap. Missingness, duplicate rsID counts and allele-frequency ranges inside the genome-wide files are therefore unchecked. The claim that the Multiple Sclerosis GWAS is 'available on request' and that the Open Targets data came via Google BigQuery is from the data availability statement only."
   },
   "part_a_killers": {
-    "a1_downloadable": {"pass": true, "note": "Verified: figshare 32916761 is CC BY 4.0, open, no login; a byte-range request returned valid gzip data. Eight files, 227-318 MB each."},
-    "a2_label_is_a_column": {"pass": true, "note": "For the obvious framing the label (beta, SE, Z, P per SNP for each depression-disease latent factor) is a column, verified in the file header. For the more interesting 'shared versus disease-specific variant' framing it is not: that label only exists as the set difference between the Q-SNP-removed and non-removed files."},
-    "a3_inputs_present": {"pass": true, "note": "Weak pass: the files carry no predictive features at all, only chromosome, position, alleles and rsID. Features would have to come from a reference genome and annotation databases, but GRCh37 coordinates resolve deterministically from one FASTA download, not thousands of lookups."},
-    "a4_units_stated": {"pass": true, "note": "Verified in readme.txt: beta, standard error, minor allele frequency, P-value, Z, genome build GRCh37. Standard GWAS units, consistent across all eight files."},
-    "a5_enough_rows": {"pass": true, "n_rows": 6470160, "note": "Rows pass on paper (6.47M-6.91M SNPs per factor, from Supplementary Table 14) but the independent unit is the LD (linkage disequilibrium) block: 1,019 genome-wide-significant independent loci across all four factors, and ~1,700 LD blocks genome-wide. Pass numerically, with that caveat."},
-    "a6_fits_laptop": {"pass": true, "working_set": "~1.2 GB gzipped for the four Q-SNP-removed factor files, roughly 3-4 GB uncompressed; subsettable by chromosome or to HapMap3 SNPs", "note": "Fits a 16 GB laptop if read per chromosome; no GPU needed for a gradient-boosting baseline on annotations."},
-    "a7_counts_match_paper": {"pass": true, "note": "Could not verify by download (files exceed the 50 MB cap). Supplementary Table 14's internal numbers are self-consistent (e.g. immune factor 6,501,113 SNPs without Q-SNP removal minus 6,470,160 with = 30,953 removed) and nothing contradicts them."},
-    "a8_label_provenance": {"pass": false, "note": "FAILS. The per-SNP beta/Z for each depression-disease factor is not a measurement: it is the output of genomic structural equation modelling (a statistical model) fitted to 24 public GWAS whose download links are given in Supplementary Table 1. The common-factor Z is close to a weighted linear combination of those input Z-scores, so the natural feature set reconstructs the label by construction. Every other candidate label in the paper is likewise a model output (TWAS/FUSION gene hits, MAGMA and GSA-MiXeR enrichments, gsMAP cell-type scores), and the Q-SNP class label is a power-dependent significance threshold, not a measured quantity."
+    "a1_downloadable": {"pass": true, "note": "figshare deposit 10.6084/m9.figshare.32916761 is open, CC BY 4.0, no login; HEAD on one file returned HTTP 200 and 274 MB of application/gzip. One upstream input (Multiple Sclerosis GWAS) is request-only, but the four derived factor files we would model are fully open."},
+    "a2_label_is_a_column": {"pass": true, "note": "The target is already a column: beta, SE, P and Z per variant, confirmed in the decompressed header line and in the readme. No construction needed."},
+    "a3_inputs_present": {"pass": true, "note": "Borderline pass. The files contain only chromosome, base position, alleles and minor allele frequency: no predictive features at all. Features must be built in bulk from external genome-scale resources (GRCh37 reference sequence, functional annotation sets, a linkage-disequilibrium reference panel). That is bulk extraction, not thousands of per-item lookups, so it passes, but it is the single biggest cost of the project."},
+    "a4_units_stated": {"pass": true, "note": "readme.txt documents all ten columns and states genome build GRCh37; Z is unitless and beta is on the standardised latent-factor scale produced by genomic structural equation modelling."},
+    "a5_enough_rows": {"pass": true, "n_rows": 6747542, "note": "Row count per factor is ~6.8 million (from supplementary table ST14, not verified in the file). But the effective independent unit is the linkage-disequilibrium block, not the variant: only 172/537/170/140 independent loci per factor, 1,019 total, counted by me in ST15-ST18. Passes on raw rows; the honest evaluation n is ~1,000-1,400."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~1.2 GB compressed for the four factor files, ~3-5 GB uncompressed; subsetting to a standard ~1.2M-variant panel while streaming brings it under 1 GB", "note": "Passes only with streaming and subsetting. The DNA-language-model route (embedding hundreds of thousands of sequence windows) is not feasible on a 16 GB CPU-only laptop and would need heavy subsetting or a GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Every count I could check matched exactly: 172/537/170/140 locus rows in ST15-ST18 equal the totals in ST14 and in the Figure-4b source-data workbook. The 6.8M-variant totals could not be checked against the download (file over the 50 MB cap), but no disagreement was observed anywhere."},
+    "a8_label_provenance": {"pass": true, "note": "Passes, with a loud warning. The label is not another machine-learning model's prediction: it traces back to measured genotype-phenotype regression coefficients in 31 published GWAS. But it is a deterministic reweighted combination of exactly those 31 GWAS (genomic structural equation modelling), with heterogeneous variants already filtered out by the QSNP step. Any feature drawn from those 31 GWAS, or from any meta-analysis containing their cohorts, is leakage by construction."
   },
-  "part_a_verdict": "reject",
-  "score_items": {},
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Four separate genome-wide files, one per disease cluster, identical schema joining on chromosome:position:alleles; verified header."},
+    "B2": {"score": 2, "why": "Clean gzipped tab-separated file; header decompressed cleanly from a 300 KB ranged read."},
+    "B3": {"score": 2, "why": "All four factors are on the same standardised genomic structural equation modelling scale; authors already normalised."},
+    "B4": {"score": 1, "why": "No censored values expected in summary statistics, but missingness in the minor-allele-frequency column was not verified in the file."},
+    "B5": {"score": 1, "why": "Duplicate or multi-allelic rsID rows are common in such files and I could not check; easy to dedupe if present."},
+    "B6": {"score": 2, "why": "readme.txt documents all ten columns plus genome build GRCh37; I read it."},
+    "C1": {"score": 0, "why": "The realistic question only matters if we beat PolyFun, S-LDSC or AlphaGenome; a null result teaches nothing new."},
+    "C2": {"score": 1, "why": "Enformer, AlphaGenome, PolyFun and SBayesRC are open and honestly evaluated on this generic task; none applied to these four factors."},
+    "C3": {"score": 1, "why": "Weak angle: the four factor files are genuinely new and unmodelled, but the task class is thoroughly served."},
+    "C4": {"score": 1, "why": "Collecting the underlying GWAS is hugely expensive, but the analysis producing these labels is cheap and already done."},
+    "C5": {"score": 2, "why": "Published numbers exist (1,019 locus counts in ST14, plus AlphaGenome and PolyFun benchmarks) and obvious dummies exist."},
+    "D1": {"score": 2, "why": "Open-weight DNA backbones match genomic coordinates: Nucleotide Transformer, DNABERT-2, HyenaDNA; AlphaGenome weights non-commercial."},
+    "D2": {"score": 1, "why": "Caching embeddings for ~1M sequence windows on a CPU-only laptop is not viable; only a heavy subset works."},
+    "D3": {"score": 2, "why": "Data is CC BY 4.0 (verified on figshare); HyenaDNA and DNABERT-2 carry permissive licences."},
+    "E1": {"ok": true, "why": "Leave-one-chromosome-out or leave-one-linkage-disequilibrium-block-out split is standard and the coordinate column supports it."},
+    "E2": {"ok": true, "why": "22 chromosomes and roughly 1,300-1,700 near-independent linkage-disequilibrium blocks genome-wide give plenty of hold-out groups."},
+    "E3": {"ok": true, "why": "Per-allele-frequency-bin mean absolute Z, or a gene-density-only predictor, are obvious dummy baselines."},
+    "E4": {"ok": true, "why": "The standard error column gives a per-variant noise estimate directly; the QSNP and non-QSNP file pairs give a second handle."},
+    "E5": {"ok": true, "why": "Well-known depression loci (the chromosome 1 NEGR1 region, the DRD2 region seen in ST25-ST29) must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffling within linkage-disequilibrium block and annotation-block ablation are both cheap to run."},
+    "E7": {"ok": true, "why": "Independent published depression GWAS (for example the 2024 trans-ancestry depression study) and the paired no-QSNP files allow external checks."},
+    "E8": {"ok": true, "why": "The 172/537/170/140 locus counts in ST14 can be reproduced by clumping the downloaded files with PLINK."},
+    "G1": {"score": 2, "why": "Standard identifiers present and verified in the header: rsID plus GRCh37 chromosome and base position."},
+    "G2": {"score": 2, "why": "Named joinable partners: GTEx v8 expression, the Open Targets Platform, and the AlphaGenome Atlas of precomputed variant effects."},
+    "G3": {"score": 1, "why": "Coordinate joins are manageable but need build harmonisation and multi-allelic collapse rules; one variant maps to many genes."},
+    "G4": {"score": 1, "why": "Combination gives better variant prioritisation at gut-brain-axis loci, but that is a refinement, not a question neither could answer."},
+    "H1": {"score": 2, "why": "Genome-wide files include all variants, significant and null, so negatives are systematically present, not just hits."},
+    "H2": {"score": 0, "why": "Every constituent GWAS is European-ancestry; one analysis framework, one build, no ancestry diversity."},
+    "H3": {"score": 2, "why": "The honest claim can be written precisely in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 2, "why": "Supplementary tables ST1 and ST10 list every input trait, sample size and PMID, so the gaps are explicit."},
+    "I1": {"score": 1, "why": "Psychiatric-genetics groups such as the authors at QIMR Berghofer, but no named group waiting on this prediction."},
+    "I2": {"score": 1, "why": "A better variant ranking might redirect follow-up experiments marginally; it would not change a clinical or lab decision."},
+    "I3": {"score": 1, "why": "Ranking metrics roughly match the prioritisation decision, but the decision is made with fine-mapping posteriors, not model scores."},
+    "I4": {"score": 0, "why": "Established statistical methods (stratified linkage-disequilibrium score regression, PolyFun) already do this job better than generic machine learning."},
+    "J1": {"score": 1, "why": "Real splits and transfer learning, but the bulk of the work is genome-scale plumbing and annotation assembly."},
+    "J2": {"score": 0, "why": "Judging sensible output needs statistical-genetics intuition about linkage disequilibrium and winner's curse; easy to fool yourself."},
+    "J3": {"score": 1, "why": "A harmonised four-factor variant table would be shareable even if the model fails, but it duplicates the figshare deposit."},
+    "J4": {"score": 1, "why": "Could be bounded at four to six weeks, but the annotation build makes the estimate soft."},
+    "J5": {"score": 1, "why": "A kill condition is statable (no gain over a frequency-and-gene-density dummy), but nothing is written down yet."}
+  },
   "c2_audit": {
     "existing_models": [
-      {"name": "FLAMES (fine-mapped locus assessment model of effector genes), Nature Genetics 2025", "open_weights": null, "score_and_split": "Search summary only: reported to outperform single-line-of-evidence prioritisation at fine-mapped GWAS loci; I did not retrieve the exact metric or split.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
-      {"name": "V2D (variant-to-disease) machine-learning prioritisation framework, medRxiv/PubMed 41282743, 2025", "open_weights": null, "score_and_split": "Search summary only: neural-network scores reported as highly enriched for heritability and transportable to non-European GWAS; exact numbers not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
-      {"name": "AlphaGenome and Enformer, DNA sequence models for regulatory variant effects", "open_weights": true, "score_and_split": "AlphaGenome reported to match or beat external models on 24 of 26 variant-effect evaluations; benchmarking summaries note deep-learning scores add only modest information over conservation and regulatory annotations under stratified LD score regression.", "authors_named_unsolved": "Benchmarks say sequence models are one layer of evidence, not a standalone fine-mapping solution.", "runnable_as_baseline": true},
-      {"name": "Genomic SEM (this paper's own method, plus MAGMA, GSA-MiXeR, T-SEM/FUSION, gsMAP as used here)", "open_weights": true, "score_and_split": "Not a predictive model; a statistical estimator with no held-out evaluation. Code is open (GenomicSEM R package v0.0.5) and the authors' scripts are on Zenodo (33 KB).", "authors_named_unsolved": "The paper frames the gut-brain axis mechanism and the causal direction of comorbidity as open.", "runnable_as_baseline": false}
+      {
+        "name": "PolyFun with stratified linkage-disequilibrium score regression (functionally informed fine-mapping)",
+        "open_weights": true,
+        "score_and_split": "Published applications report functionally informed fine-mapping finding 101 causal variants versus 87 by statistical fine-mapping alone, using 3 Mb linkage-disequilibrium blocks with 1 Mb overlap; evaluated across dozens of UK Biobank traits.",
+        "authors_named_unsolved": "Accuracy depends on the linkage-disequilibrium reference panel matching the GWAS cohort, and performance outside European ancestry is unresolved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Enformer (a deep neural network predicting regulatory activity from DNA sequence)",
+        "open_weights": true,
+        "score_and_split": "Predicts gene expression and chromatin signals across >5,000 genome profiles using up to 100 kb of context; evaluated on held-out genomic regions, and its variant-effect scores are reported as enriched for trait heritability.",
+        "authors_named_unsolved": "Benchmarks found weak performance on personal (between-individual) expression variation, which is exactly the regime GWAS signal lives in.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "AlphaGenome (a unified DNA sequence model from Google DeepMind)",
+        "open_weights": null,
+        "score_and_split": "Reported to improve on Borzoi and Enformer across regulatory variant-effect benchmarks, including predicted direction of effect for target genes at GWAS loci, compared against expression-QTL colocalisation at 80% and 90% accuracy thresholds.",
+        "authors_named_unsolved": "Gains in assigning causal genes at GWAS loci remain limited relative to colocalisation evidence.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "SBayesRC (annotation-informed polygenic prediction)",
+        "open_weights": true,
+        "score_and_split": "Reported 14% better prediction in European ancestry and up to 34% in cross-ancestry prediction than SBayesR, beating LDpred2, LDpred-funct, MegaPRS, PolyPred-S and PRS-CSx; evaluated on held-out biobank samples.",
+        "authors_named_unsolved": "Cross-ancestry transfer remains the named weak point.",
+        "runnable_as_baseline": true
+      }
     ]
   },
-  "backbone": {"name": "AlphaGenome or Nucleotide Transformer (DNA sequence models) for variant-window embeddings", "freeze_and_head_viable": true, "hardware": "Embeddings for ~1-2k loci are feasible on CPU over days, or a few hours on a rented GPU; a gradient-boosting baseline on annotations needs neither.", "licence": "AlphaGenome weights are non-commercial; Nucleotide Transformer is permissive. The data itself is CC BY 4.0."},
-  "integration": {"partner_dataset": "Open Targets Genetics / GWAS Catalog and GTEx v8, joinable to these variants", "join_key": "rsID or GRCh37 chromosome:position:alleles", "bigger_question_one_sentence": "Do variants carrying shared depression-plus-physical-disease liability sit in different tissues' regulatory elements than variants specific to either side?"},
-  "controls": {"positive_control": "A model given annotations should recover the known enrichment of GWAS signal in conserved and promoter/enhancer regions.", "negative_control": "Shuffle the factor Z-scores within LD blocks and confirm performance collapses to the per-block mean.", "external_validation": "The depression-only GWAS and the 24 constituent disease GWAS (Supplementary Table 1) give held-out traits, but they are the same data the label was built from, so they are not independent."},
-  "honest_claim_h3": "A model here could only claim to predict the genomic-SEM-estimated strength of a variant's association with a depression-disease latent factor, among European-ancestry GWAS of the 24 traits these authors chose, at whatever statistical power those particular GWAS happened to have - not any measured property of the variant.",
+  "backbone": {
+    "name": "HyenaDNA or Nucleotide Transformer (DNA language models), with AlphaGenome as a non-commercial alternative",
+    "freeze_and_head_viable": false,
+    "hardware": "Embedding ~1 million sequence windows on a CPU-only 16 GB laptop is impractical (rough estimate 100+ hours); only a subset of tens of thousands of variants is feasible without a GPU.",
+    "licence": "Data is CC BY 4.0 (verified on figshare); HyenaDNA and DNABERT-2 are permissively licensed; AlphaGenome weights are non-commercial."
+  },
+  "integration": {
+    "partner_dataset": "GTEx v8 tissue expression and the Open Targets Platform, plus the AlphaGenome Atlas of precomputed variant effects",
+    "join_key": "rsID and GRCh37 chromosome:base position (both verified present in the file header)",
+    "bigger_question_one_sentence": "Do the variants carrying shared depression-gastrointestinal liability act through gut tissue regulation rather than brain tissue regulation?"
+  },
+  "controls": {
+    "positive_control": "Recovery of well-established depression loci (the chromosome 1 NEGR1 region and the DRD2 dopamine-receptor region, which the paper's own gene-set tables ST25-ST29 highlight) and of the major histocompatibility complex region for the immune factor.",
+    "negative_control": "Shuffle the Z values within each linkage-disequilibrium block and confirm collapse to the allele-frequency-bin dummy; also train on minor allele frequency and gene density alone to see how much of the apparent signal is confounding.",
+    "external_validation": "An independently published depression GWAS not among the 31 inputs, plus the paired no-QSNP versions of each factor file."
+  },
+  "honest_claim_h3": "Among European-ancestry common variants on genome build GRCh37, sequence-derived annotations rank variants by their association with a genomic structural equation model composite of depression and physical-disease GWAS, conditional on linkage disequilibrium and allele frequency, and only for variants that survived the paper's heterogeneity (QSNP) filter.",
   "plain_idea": {
-    "one_liner": "Use DNA sequence and functional annotation around each variant to predict its contribution to shared depression-physical disease genetic liability.",
-    "train_on": "Each example is one genetic variant described by its surrounding DNA sequence and regulatory annotations; roughly 6.5 million variants per factor are listed, but only about 1,019 independent genome-wide-significant loci across the four factors, and ~1,700 independent linkage blocks genome-wide.",
-    "predict": "The per-variant effect size or Z-score for a depression-disease latent factor. The true answer is not a measurement: it is an estimate produced by genomic structural equation modelling applied to 24 published disease GWAS.",
-    "why_worthwhile": "If it worked, psychiatric genetics groups could tell shared-liability variants from disease-specific ones without rerunning multivariate models; as it stands, the target is a statistic rather than a measured quantity, so the exercise mostly recovers the statistics' own power profile."
+    "one_liner": "Use the DNA sequence around a common variant to predict how strongly it carries shared depression and physical-disease genetic risk.",
+    "train_on": "Per-variant rows from four genome-wide files, one for each disease cluster (cardiovascular, metabolic, gastrointestinal, immune), roughly 6.8 million variants each according to supplementary table ST14. The files supply only coordinates and alleles, so all features would be built from an external reference genome and annotation sets.",
+    "predict": "The Z statistic measuring each variant's association with the shared depression-disease latent factor. That number is not a new measurement: it is produced by genomic structural equation modelling, a statistical reweighting of 31 previously published GWAS.",
+    "why_worthwhile": "Psychiatric-genetics groups would get a sharper shortlist of candidate causal variants at the gut-brain-axis loci the paper highlights; even a failure would quantify how little of this composite signal is readable from sequence."
   },
   "paper_type": "computational",
   "crowded_field_case": {
-    "more_or_better_data": {"answer": "no", "why": "The eight factor files are derived from 24 public GWAS that variant-prioritisation models such as FLAMES and the V2D framework already use; nothing here is a new measurement, and the 1,019 significant loci are fewer than those models train on."},
-    "confidence_score": {"answer": "partly", "why": "Standard errors are supplied per SNP, so uncertainty is quantified - but it is the uncertainty of the genomic SEM estimate, not of any biological measurement, and there are no replicate measurements to calibrate against."},
-    "models_beatable": {"answer": "no", "why": "AlphaGenome (2025/2026) and the 2025 FLAMES and V2D frameworks are recent, open or partly open, and evaluated on fine-mapped loci; beating them on a power-dependent derived statistic would not be a meaningful win."},
-    "guaranteed_improvement": {"answer": "no", "why": "The constituent GWAS that could be joined in are exactly the data the label was computed from, so adding them guarantees leakage rather than improvement; no independent measurement of the same quantity exists."}
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The four factor files are reweighted combinations of 31 already-public GWAS, so they add no new measurements. Enformer, AlphaGenome and PolyFun were developed against far broader data (thousands of functional genome profiles, dozens of UK Biobank traits)."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The standard error column gives a per-variant precision estimate, and the QSNP versus no-QSNP file pairs give a sensitivity handle. But existing fine-mapping methods already output calibrated posterior inclusion probabilities, which is a stronger confidence statement than anything these files support."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "AlphaGenome (2025-2026) and Enformer (2021) are recent, evaluated on held-out genomic regions, and PolyFun is evaluated with proper linkage-disequilibrium blocks. These are honest evaluations by specialist groups; a laptop-scale model is not going to beat them."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The condition that fails is baseline access: AlphaGenome cannot be run at genome scale on a CPU-only laptop, and the published PolyFun numbers are on different traits and splits, so there is no shared evaluation to beat."
+    }
   },
-  "label_elsewhere": null,
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "The GWAS Catalog and the Open Targets Platform hold variant-trait association statistics for thousands of traits on the same identifiers (known resources; the paper's own supplementary table ST1 links 30 of its inputs to GWAS Catalog study pages, which I read). Other genomic structural equation modelling factor GWAS exist too, including a 2026 Nature Communications study of shared psychiatric-physical liability found in search.",
+    "approx_items": null,
+    "join_key": "rsID, or GRCh37 chromosome:base position",
+    "why": "Plenty of external labelled variant-trait data exists for training and for an out-of-sample check, which is the one genuinely strong feature of this candidate."
+  },
   "leakage_plan": null,
   "success_criteria": null,
   "publication_target": null,
   "pitch": null,
-  "ml_idea": "The project considered was: predict each variant's effect on a depression-disease shared-liability factor (or classify shared versus disease-specific variants) from DNA sequence embeddings and functional annotations, held out by chromosome. It fails A8 because the target is produced by genomic structural equation modelling from 24 publicly downloadable GWAS, so the obvious features reconstruct the label; and with sequence-only features the target is governed by linkage disequilibrium and each input GWAS's sample size rather than by variant biology. The only decision anyone actually wants - which depressed patient develops cardiometabolic disease - needs individual-level biobank genotypes, which are controlled access and are not in this release.",
-  "effort": {"hours_to_feature_table": 25, "working_set_gb": 3.5, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": null, "cv_run_minutes": 20, "compute_note": "Estimated, not timed: 2.4 GB of gzipped summary statistics read per chromosome, joined to annotation tracks; a gradient-boosting baseline on ~1-2k loci runs in minutes. Sequence-model embeddings would add a GPU day.", "cheapest_killing_check": "Regress each factor's per-SNP Z on a weighted sum of the constituent disease GWAS Z-scores (download links are in Supplementary Table 1). If the R-squared is near 1, the label is reconstructible from freely available features and the supervised framing is circular."},
+  "ml_idea": "Predict each common variant's association statistic (Z) for the shared depression-physical disease latent factors from DNA sequence context and functional annotation, with leave-one-chromosome-out or leave-one-linkage-disequilibrium-block-out evaluation, then test whether a model fitted on one disease cluster transfers to another. Rejected because the features must be built entirely from external genome-scale resources, the effective evaluation set is ~1,019 independent loci rather than 6.8 million rows, and the competitors (PolyFun, Enformer, AlphaGenome) are open, recent and already honestly evaluated.",
+  "effort": {
+    "hours_to_feature_table": 35,
+    "working_set_gb": 3.0,
+    "needs_gpu": true,
+    "peak_ram_gb": 6.0,
+    "embedding_hours": 100.0,
+    "cv_run_minutes": 30,
+    "compute_note": "Estimated, not timed. Working set from the verified figshare file sizes (227-318 MB gzipped each, four factors) expanding roughly threefold on decompression; peak RAM assumes streaming by chromosome with pandas chunking. Embedding hours assume roughly 1 million 2 kb windows at about 3 windows per second on CPU, which is why the backbone route needs a GPU or a heavy subset.",
+    "cheapest_killing_check": "Count the independent loci per factor before anything else. I did this: 172, 537, 170 and 140 rows in supplementary tables ST15-ST18, 1,019 total. That is the real number of positive examples, and it kills the idea that this is a 6.8-million-row dataset."
+  },
   "verdict": "reject",
-  "verdict_reason": "Fails A8 (label provenance). Every candidate target in this release - the per-SNP factor beta/Z, the Q-SNP class, the TWAS gene hits, the pathway and cell-type scores - is the output of a statistical model (genomic SEM, FUSION, MAGMA, GSA-MiXeR, gsMAP) fitted to 24 public GWAS, not a measurement. The natural feature set is those same GWAS, which reconstructs the label by linear combination, so the task is circular by construction; with sequence-only features the target is driven by linkage disequilibrium and GWAS sample size rather than biology. A1-A7 pass: the data is genuinely open (CC BY 4.0 figshare, columns documented, GRCh37 stated), but the effective sample size is ~1,019 independent loci, not 6.5 million rows, and the field (FLAMES, V2D, AlphaGenome) is already crowded with recent, honestly evaluated variant-prioritisation models."
+  "verdict_reason": "Part A passes cleanly: the four factor files are open under CC BY 4.0 on figshare, the target (beta, SE, P, Z) is already a column, every column and the genome build are documented in a readme I read, and every count I could check matched the paper exactly (172/537/170/140 loci). It fails further down. Part C scores 5/10 and Part I scores 3/8. The files supply labels only, so every feature must be assembled from external genome-scale resources; the effective evaluation unit is the linkage-disequilibrium block, so the honest sample size is about 1,019 loci rather than 6.8 million variants; the label is a deterministic reweighting of 31 published GWAS, so any feature touching those GWAS leaks by construction; and the task of ranking variants from sequence and annotation is served by open, recent, honestly evaluated methods (PolyFun, Enformer, AlphaGenome, SBayesRC) that cannot be run as a laptop baseline, meaning the project could only succeed by beating numbers we cannot reproduce. This is also exactly the genomics-scale, European-ancestry-only resource the project brief deprioritises, and the angle is not strong enough to override that."
 }

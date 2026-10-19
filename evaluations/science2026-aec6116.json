@@ -1,0 +1,53 @@
+{
+  "paper_id": "science2026-aec6116",
+  "title": "Psilocybin prevents chemotherapy-induced peripheral neuropathy through mitochondrial trafficking preservation.",
+  "doi": "10.1126/science.aec6116",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE333441",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded GSE333441_RAW.tar (41.3 MB, 40 gzipped CSV files) from NCBI GEO (Gene Expression Omnibus) and unpacked it; opened one file from each of the three arms. Each file is one sample's gene table with columns Name, Chromosome, Region, Identifier (Ensembl gene ID), Total counts, RPKM, TPM, CPM. Row counts: 25,412 genes (mouse primary dorsal root ganglion), 63,523 genes (human iPSC-derived sensory neurons), 21,541 genes (hDRG set). Also read both series matrix files, which give the treatment group of every sample: mouse n=11 (5 Control, 3 cisplatin, 3 cisplatin+psilocybin), human iPSC-derived sensory neurons n=13 (4 Control, 3 psilocybin, 3 cisplatin, 3 psilocybin+cisplatin), hDRG n=16 (6 cisplatin, 10 psilocybin+cisplatin, no untreated control). Searched Dryad for a deposit on this work: 0 hits.",
+    "what_came_from_paper_text_only": "Everything about the mouse behaviour (tactile sensitivity), intraepidermal nerve fibre counts, electroencephalography power, mitochondrial trafficking imaging, tumour-growth experiments and the TrkB-Akt-PAK5-MAP2-KIF5B pathway comes from the abstract and the GEO series description only. Science is not open access here (no PubMed Central ID, Europe PMC reports no full text, no supplementary file list), so I could not see the methods, the per-animal data tables or any supplementary data file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO series GSE333441 is public; I downloaded and unpacked the 41.3 MB tar of 40 per-sample count CSVs with no login. The paper's own figure/behaviour data is not public (Science, paywalled, no PubMed Central deposit)."},
+    "a2_label_is_a_column": {"pass": true, "note": "Treatment group (Control / psilocybin / cisplatin / psilocybin+cisplatin) is a 'treatment:' characteristics field for every sample in both series matrix files, so a group label exists without construction."},
+    "a3_inputs_present": {"pass": true, "note": "Gene-level counts plus RPKM, TPM and CPM are in each file with Ensembl gene identifiers present, so no identifier lookups are needed."},
+    "a4_units_stated": {"pass": true, "note": "Column headers name the unit explicitly: 'Total counts', 'RPKM', 'TPM', 'CPM' (reads per kilobase per million, transcripts per million, counts per million)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 40, "note": "FAIL. The unit of analysis is the sample, and there are only 40 RNA-sequencing samples in total (11 mouse, 13 human iPSC-derived neurons, 16 hDRG), with 3-10 per treatment group. The checklist needs ~400 even for classification. Genes are features, not independent rows."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.2 GB", "note": "40 gzipped CSVs, 41 MB packed; the full gene x sample matrix is a few tens of megabytes in memory."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO reports 40 samples and I counted 40 files; I could not cross-check against the paper's methods because the full text is paywalled. The two human arms use different gene universes (63,523 vs 21,541 rows), which would need reconciling."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are the experimenter's assigned drug treatment, i.e. a recorded experimental condition, not another model's output and not computable from the expression features."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Transformer-based multimodal chemotherapy-induced peripheral neuropathy (CIPN) risk model (Research, 2025; PubMed 40765998)", "open_weights": null, "score_and_split": "Reported area under the receiver operating characteristic curve 0.93, accuracy 88.5% on patient data combining clinical, genomic, imaging and wearable features; split details not retrieved (abstract-level search result only).", "authors_named_unsolved": "Not retrieved - I only saw search-result summaries, not the paper.", "runnable_as_baseline": false},
+      {"name": "Machine learning models for the prediction of chemotherapy-induced peripheral neuropathy (Pharmaceutical Research, 2019; PubMed 30617559)", "open_weights": null, "score_and_split": "Support vector machine and related classifiers predicting neuropathy incidence in patients; numbers and split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "Geneformer or scGPT (transcriptome foundation models) would be the nominal fit for expression profiles", "freeze_and_head_viable": false, "hardware": "CPU is plenty for 40 samples, but 40 samples cannot train or honestly evaluate any head", "licence": "Not assessed - project rejected before backbone mattered"},
+  "integration": {"partner_dataset": "Other dorsal root ganglion / sensory neuron chemotherapy RNA-sequencing series in GEO, joinable on Ensembl gene ID", "join_key": "Ensembl gene ID", "bigger_question_one_sentence": "A cross-study meta-analysis of cisplatin-exposed sensory neuron transcriptomes could ask which injury genes are reproducible across labs, but that is a differential-expression meta-analysis, not a machine-learning project, and this series contributes only 40 of its samples."},
+  "controls": {"positive_control": "A working pipeline should recover cisplatin-induced DNA-damage and p53-pathway genes in the cisplatin arms - but with 3-6 samples per group this is a differential-expression test, not a model check.", "negative_control": "Label shuffling is runnable but meaningless at n=3-10 per group.", "external_validation": "No second psilocybin-plus-chemotherapy neuron transcriptome dataset was found; the hDRG arm has no untreated control, so it cannot even serve as an internal replicate of the four-group design."},
+  "honest_claim_h3": "With 40 bulk RNA-sequencing samples and 3-10 per treatment group, no model could claim more than 'these particular cultures separate by treatment', which is a differential-expression result, not a prediction.",
+  "plain_idea": {
+    "one_liner": "Use sensory-neuron gene expression to predict whether a culture received chemotherapy, psilocybin, both, or neither.",
+    "train_on": "Gene-level expression (counts and transcripts per million) for each RNA-sequencing sample: 40 samples in total - 11 mouse primary dorsal root ganglion cultures, 13 human stem-cell-derived sensory neuron cultures, 16 human dorsal root ganglion samples. Verified by opening every file in the GEO archive.",
+    "predict": "The treatment group assigned by the experimenters (control, psilocybin, cisplatin, psilocybin+cisplatin), recorded in the GEO sample metadata as the drug added to the culture.",
+    "why_worthwhile": "If a transcriptional signature of psilocybin's protective effect were learnable, pain and oncology labs could screen other compounds for the same signature cheaply instead of running months-long animal neuropathy studies; with 40 samples, though, nothing testable comes out."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only public data is GSE333441: 40 bulk RNA-sequencing samples of sensory neurons treated with cisplatin and/or psilocybin. The conceivable task - classify treatment group, or learn a 'neuroprotective' expression signature transferable to other compounds - needs hundreds of samples; here there are 3-10 per group, and the human dorsal root ganglion arm has no untreated control at all. The paper's genuinely interesting measurements (mitochondrial trafficking velocities, intraepidermal nerve fibre density, electroencephalography power, per-animal tactile thresholds) are in a paywalled Science article with no PubMed Central deposit and no Dryad/Zenodo record, so they are not obtainable.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.2, "needs_gpu": false, "peak_ram_gb": 1,
+             "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Estimated from the files I actually unpacked: 40 CSVs, at most 63,523 rows each; merging them into a gene x sample matrix in pandas is minutes and well under 1 GB of memory. No cross-validation time estimated because the sample count makes cross-validation meaningless.",
+             "cheapest_killing_check": "Count samples per treatment group in the GEO series matrix - it takes one command and returns 3-10 per group, which kills it."},
+  "verdict": "reject",
+  "verdict_reason": "Part A5 fails in the files: the entire public dataset is 40 bulk RNA-sequencing samples with 3-10 per treatment group, far below the ~400 needed for even a classification task, and the human dorsal root ganglion arm lacks an untreated control. The paper's richer measurements (nerve fibre counts, mitochondrial motility, electroencephalography, behaviour) sit behind a Science paywall with no PubMed Central, Dryad or Zenodo deposit, so they cannot be used either. Everything else about the data is clean - it downloads freely, units are labelled, treatment labels are real experimental assignments - but n=40 is a dead end."
+}

@@ -1,0 +1,121 @@
+{
+  "paper_id": "nar2026-gkag875",
+  "title": "Ribosome dynamics at the conserved PGP motif governs 2A peptide-bond-skipping efficiency.",
+  "doi": "10.1093/nar/gkag875",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE328587 ; https://github.com/usa0ri/P2A_2026 ; https://doi.org/10.5281/zenodo.19670703",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened the processed count file (find_subsequence_mm2_data20251217_S080-Con_one_P2A.csv.gz, 6,386 bytes) from the authors' GitHub, which mirrors the Gene Expression Omnibus (GEO, a public sequencing-data archive) supplementary file byte-for-byte in size: it is 2,071 rows (plasmid positions -1 to 2068) x 3 sample columns of raw read counts, no header beyond sample names. Listed the full GEO supplementary directory (3 count CSV.gz files of ~6 KB plus GSE328587_RAW.tar, 150 KB) and the GEO series record via NCBI eutils: 34 samples, Homo sapiens, all ribosome-profiling or disome-profiling of plasmid reporters. Listed the whole GitHub repository tree (16 reporter FASTA sequences, 16 SnapGene plasmid files, data_list.csv mapping all 34 GEO sample accessions to reporter and treatment, one analysis script). Unzipped the journal supplement and parsed the .docx: it contains 0 tables, only ~2,300 characters of figure legends plus 6 images.",
+    "what_came_from_paper_text_only": "That the skipping score is a western-blot densitometry ratio (FLAG or HA signal divided by that signal plus the uncleaved FLAG-HA fusion signal), measured with n = 3 biological replicates; that the P-score is read counts at the GP codons over counts at the PGP motif; the reported P-score drop from 0.79 to 0.55 when a GSG linker is added. None of those per-construct numbers appear in any downloadable file I could find - they exist only as bar graphs and one scatter plot inside figure images."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Everything is public and open: CC BY article, GEO GSE328587 supplementary files download without login (I pulled an identical copy from the authors' GitHub when the NCBI FTP host timed out), code on GitHub and Zenodo."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The quantity to predict - peptide-bond-skipping efficiency (the 'skipping score') - is in no file. It is western-blot band quantification shown only as bar heights in figure images; it would have to be digitised from pictures, construct by construct. The P-score is computable from the count CSVs, but that is the ribosome-occupancy feature, not the phenotype."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are fine: all 16 reporter DNA sequences are present as FASTA in the GitHub repository (I opened S080-L_one_P2A.fa, 2,231 bytes of plasmid sequence), so no identifier lookups are needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The count files are plain integer read counts per plasmid position; the skipping score and P-score are defined as explicit unitless ratios in the methods."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 16,
+      "note": "FAIL. 16 distinct reporter constructs (counted in the GitHub reporter_sequences folder and in data_list.csv) across 34 sequencing samples. The checklist needs ~1,500 labelled rows, or ~400 for classification. The 2,071 rows inside a count file are positions along one plasmid, not independent labelled examples."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "<1 MB",
+      "note": "Total processed data is three ~6 KB gzipped CSVs plus a 150 KB tar; trivially laptop-sized."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "GEO reports 34 samples and the authors' data_list.csv lists exactly 34 sample accessions with matching reporter names; no disagreement found."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Both quantities trace to physical measurement - western-blot densitometry for the skipping score, sequencing read counts for the P-score - so no model-generated label and no circularity. This killer is the one that passes."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Sort-Seq fuzzy-clustering classifier of 2A skipping activity (from a high-throughput study of 2A-like peptides, reported in search results as a 2025-2026 Cell Reports / bioRxiv pair from the Matreyek lab)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved - I saw only search snippets stating that 3,271 2A-like peptide sequences were assayed with a three-colour fluorescent reporter and that a fuzzy-clustering algorithm classified skipping from Sort-Seq scores. I did not open the paper, so I have no metric or split.",
+        "authors_named_unsolved": "Unknown - not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model with small CPU-runnable checkpoints) would be the natural backbone for embedding the nascent-chain sequence upstream of the 2A motif",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU-only would be ample for 16 sequences, which is exactly the problem: 16 examples cannot train or evaluate any head.",
+    "licence": "ESM-2 is MIT-licensed; the paper's data is CC BY and the code repository carries a licence file."
+  },
+  "integration": {
+    "partner_dataset": "The high-throughput 2A-like peptide Sort-Seq library (reported in search results as 3,271 assayed sequences) and the ~4,218 computationally identified eukaryotic 2A-like peptides",
+    "join_key": "the 2A peptide amino-acid sequence itself (no standard accession is involved)",
+    "bigger_question_one_sentence": "Does ribosome dwell time at the PGP motif, measured here for 16 reporters, explain the skipping efficiency of thousands of natural 2A-like peptides measured elsewhere - a question neither dataset answers alone, but one this paper contributes only 16 points to."
+  },
+  "controls": {
+    "positive_control": "Would exist in principle: the model must recover the published result that adding a GSG linker lowers the P-score from 0.79 to 0.55 and raises skipping. With 16 constructs this is a statement about a handful of points, not a control for a model.",
+    "negative_control": "Label shuffling is runnable but meaningless at n = 16.",
+    "external_validation": "The separate Sort-Seq 2A library would be a genuine external set, but it is the better training set, not a validation set for a 16-point model."
+  },
+  "honest_claim_h3": "With these files alone a model could claim nothing beyond 'ribosome occupancy at the terminal proline codon is inversely related to skipping efficiency across 16 engineered reporters in one human cell line (HEK293) from one lab' - which is the paper's own correlation, not a prediction.",
+  "plain_idea": {
+    "one_liner": "Use the protein sequence upstream of a 2A skipping motif to predict how efficiently the ribosome skips the peptide bond.",
+    "train_on": "The sequence of the nascent protein chain upstream of the porcine teschovirus-1 2A motif, plus ribosome-occupancy counts at the motif. I verified only 16 distinct reporter sequences and 34 sequencing samples exist here.",
+    "predict": "The skipping score - the fraction of protein product that separated at the 2A junction, measured by western-blot band quantification (FLAG or HA band over that band plus the uncleaved fusion band), with three biological replicates per construct.",
+    "why_worthwhile": "Gene-therapy and multi-gene vector designers choose 2A linkers blind and often get uneven protein ratios; a sequence-to-efficiency model would let them pick an upstream context that works. Even a failed model would tell us whether upstream context is predictable at all."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "16 reporter constructs here versus roughly 3,271 2A-like sequences assayed in the separate Sort-Seq study I found in search results. This paper's data is two orders of magnitude smaller for the same phenotype."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Three biological replicates per construct would let you estimate noise, but those replicate values are only in bar graphs, not in a file, and 16 groups cannot support calibrated per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The only model I found is a fuzzy-clustering classifier on Sort-Seq scores, which sounds weak, but I did not retrieve the paper and cannot state its score or split - and in any case this dataset is far too small to beat it."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The condition that fails is the baseline: we cannot run the existing classifier on these 16 constructs, the assays differ (western blot here versus fluorescence sorting there), and 16 examples cannot define an evaluation split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The idea considered was sequence-to-skipping-efficiency regression: embed the ~40 amino acids upstream of the 2A motif with a protein language model and predict the skipping score, with ribosome dwell time at the PGP motif as an auxiliary target. The idea is sound; this paper supplies 16 constructs, which is a mechanism experiment, not a training set. The usable project lives in the separate high-throughput 2A libraries (thousands of sequences), with this paper's ribosome-profiling traces as mechanistic annotation for a handful of them.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0.01,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: the entire processed dataset is under 1 MB and 16 sequences of ~700 amino acids embed in seconds on a CPU. Compute is a non-issue; the sample count is the issue.",
+    "cheapest_killing_check": "Count the distinct reporter constructs with a measured skipping score. I did it: 16 in the GitHub reporter_sequences folder and in data_list.csv, and the scores are not in any file - that kills it in ten minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails two Part A killers, both verified in the files. A5: only 16 distinct reporter constructs (34 sequencing samples), against a ~400-row minimum. A2: the thing to predict, the skipping score, is in no downloadable table - it is western-blot bar heights inside figure images, and the journal supplement is a .docx with zero tables. The data is exemplary for a mechanism paper (open, tidy, all plasmid sequences and code posted) and the biology is interesting, but it is a 16-condition experiment. Anyone wanting to model 2A skipping efficiency should start from the high-throughput 2A-like peptide libraries that my searches surfaced (~3,271 sequences assayed by fluorescence sorting), not from this paper."
+}

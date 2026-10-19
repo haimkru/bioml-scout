@@ -1,0 +1,51 @@
+{
+  "paper_id": "science2026-adu6688",
+  "title": "The fungal pathogen Candida auris exposes chitin to trigger IFNγ and persist in hair follicles.",
+  "doi": "10.1126/science.adu6688",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE328064 (plus GSE328701 and GSE329153)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened GSE328064_RAW.tar (96 MB): all 18 CellRanger .h5 matrices parse with h5py, 31,132 cells total (1,179-2,394 per library), 32,297 features (32,285 mouse genes with Ensembl IDs + symbols, plus 12 multiplexing tags), mm10, median ~9,000-10,600 UMI (unique molecular identifier counts) per cell. Downloaded one GSE328701 file (GSM9687910_WT_Caur3): it contains 0 cells (321 KB stub) — every 'technical replicate 3' file in that series is the same 321,167-byte size, so 6 of 18 libraries there are empty. Downloaded GSM9698341 human abundance table: 328,868 transcript rows, columns target_id/length/eff_length/est_counts/tpm. Read all three GEO series records, all three filelist.txt manifests, sample-level metadata for one sample per series, and the GSE328701 sample-metadata spreadsheet (18 rows mapping condition to file).",
+    "what_came_from_paper_text_only": "Only the abstract: the paper is paywalled, not in PubMed Central or Europe PMC (isOpenAccess=N, inEPMC=N), and no preprint or Zenodo/Dryad deposit was found. So the biology (chitin exposure, hair-follicle tropism, CFU counts, mutant screens) and the Science supplementary tables were not seen; group sizes, mouse numbers and any strain panel are unverified. Experimental design, cytokine doses and processing pipeline come from the GEO metadata, which I did read."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Fully open on the NCBI GEO FTP site, no login: I downloaded a 96 MB archive, a 6.7 MB matrix and a 4 MB table successfully."},
+    "a2_label_is_a_column": {"pass": true, "note": "Sample-level labels (control / C. albicans / C. auris; wild-type / IFNγ-knockout / IL-17-knockout / IFNγ-overexpressing; control / IFNγ / IL-17A / both) are in file names and GEO sample fields, a trivial mapping. Caveat: no cell-type annotations, no Seurat or AnnData object and no per-barcode metadata were deposited, so the paper's actual readout (hair-follicle keratinocyte subsets) would have to be reconstructed by clustering."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are the expression matrices themselves — present as CellRanger .h5 files and kallisto transcript abundance tables, with Ensembl identifiers in the files."},
+    "a4_units_stated": {"pass": true, "note": "Verified in the files: integer UMI (unique molecular identifier) counts in the single-cell matrices; est_counts and tpm (transcripts per million) columns in the human bulk tables, with the pipeline (kallisto, tximport, DESeq2) stated in GEO."},
+    "a5_enough_rows": {"pass": false, "n_rows": 31132, "note": "FAIL at the unit of biological independence. 31,132 cells sound like plenty, but they come from only 3 conditions x 2 pooled-mouse biological replicates (18 libraries, where a/b/c are technical replicates of the same pool) in GSE328064; GSE328701 has 6 genotype/treatment groups x 2 usable libraries (replicate 3 is empty in all 6 groups, verified: 0 cells); the human series is 26 bulk samples from 4 donors. Any label worth predicting is a per-pool or per-donor property, so the effective n is 6, 12 and 26 — far under the ~400 needed for classification. Cells within a library are pseudo-replicates, exactly the failure mode of the scCT-DB candidate."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~250 MB of processed matrices total (96 + 56 + 107 MB archives); a merged matrix of 31,132 cells x 32,285 genes is ~2-4 GB dense, well under 16 GB as sparse.", "note": "Verified sizes from the GEO manifests and by downloading; no GPU needed."},
+    "a7_counts_match_paper": {"pass": true, "note": "Cannot fully check — the paper is paywalled, so no cell counts were available to compare. GEO manifests, series records and the actual files agree with each other, except that 6 GSE328701 files listed as replicate 3 are empty stubs that the metadata spreadsheet still lists as real samples."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are the experimental treatment applied at the bench (which fungus was painted on the skin, which mouse genotype, which cytokine added), not any model's output and not computable from the expression features."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "scPerturBench (2025 benchmark of 27 single-cell perturbation-response prediction methods, Nature Methods / GitHub bm2-lab)", "open_weights": true, "score_and_split": "Found via search result listing only; reported to evaluate generalization to unseen cell contexts and unseen perturbations across 29 datasets. I did not retrieve the numbers.", "authors_named_unsolved": "Generalization to unseen cellular contexts and unseen perturbations, per the result summary.", "runnable_as_baseline": true},
+      {"name": "Deep-learning gene-perturbation predictors (GEARS, scGPT, scFoundation, CPA, Geneformer) as assessed by 'Deep-learning-based gene perturbation effect prediction does not yet outperform simple linear baselines' (Nature Methods 2025)", "open_weights": true, "score_and_split": "Search-result summary only: none of the five foundation models beat deliberately simple linear/additive baselines for unseen perturbations. Numbers not retrieved.", "authors_named_unsolved": "Predicting effects of unseen perturbations at all — simple baselines still win.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "scGPT or Geneformer (single-cell transcriptome foundation models); not reached, since Part A failed", "freeze_and_head_viable": true, "hardware": "CPU-feasible for ~31k cells but pointless at n=6 biological units", "licence": "Permissive for both (MIT-style code, open weights), per their public repositories"},
+  "integration": {"partner_dataset": "Two independent mouse C. auris skin scRNA-seq datasets exist (PLOS Pathogens 2024, Thangamani lab; PLOS Pathogens 2025 'Candida auris Induces IFNγ to Colonize the Skin'), plus mouse skin cell atlases on Ensembl gene identifiers", "join_key": "Mouse Ensembl gene ID (present in the files, e.g. ENSMUSG00000051951)", "bigger_question_one_sentence": "Does a fungal-species-specific skin immune signature replicate across independent labs — a question worth asking, but one that needs more than the 6 pooled mice this paper deposited."},
+  "controls": {"positive_control": "Available in principle: the model must recover Ifng/Stat1/Cxcl9 induction in C. auris versus C. albicans skin (all three genes verified present in the matrices) and Il17a-axis genes in C. albicans.", "negative_control": "Label shuffling across libraries is runnable but near-meaningless with 2 biological replicates per condition.", "external_validation": "Yes — two independently produced mouse C. auris skin scRNA-seq datasets (PLOS Pathogens 2024 and 2025), the 2025 one reporting the same IFNγ conclusion."},
+  "honest_claim_h3": "A model trained here could only claim 'in one laboratory's mouse experiment with two pooled biological replicates per condition, skin cell transcriptomes separate C. auris from C. albicans colonization' — a statement about six mice and one batch, not about fungal skin immunity.",
+  "plain_idea": {
+    "one_liner": "Use a skin cell's gene-expression profile to predict which fungus colonized the mouse, or which immune signal it was given.",
+    "train_on": "Each example is one skin cell's gene counts (32,285 mouse genes). I verified 31,132 cells across 18 libraries, but these come from only 6 pooled-mouse groups; a second series adds 12 usable libraries and a human skin-model series adds 26 bulk samples from 4 donors.",
+    "predict": "The experimental condition: which fungus was applied (Candida auris, Candida albicans, none), which mouse genotype, or which cytokine was added. The true answer is what the experimenters did at the bench, recorded in the sample metadata.",
+    "why_worthwhile": "Fungal skin colonization labs would want a transcriptional signature that says which pathogen a host is carrying; but with six mice behind the labels, any accuracy number mostly measures batch, not biology."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: classify skin cells (or pseudobulk libraries) by colonizing fungus and host genotype from single-cell expression, with a frozen single-cell foundation model plus a linear head. Dead because the label varies only across 6 pooled-mouse groups in experiment 1 and 12 usable libraries in experiment 2, so held-out-animal evaluation is impossible and cell-level accuracy would measure batch and library identity. A salvage use is as a small external-validation or positive-control set for someone else's mouse-skin immune model, not as a training set.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.3, "needs_gpu": false, "peak_ram_gb": 4, "embedding_hours": 3, "cv_run_minutes": 10, "compute_note": "Estimated from measured file sizes and sparse non-zero counts (4.45M non-zeros in a 2,174-cell library); I timed the downloads and the h5py reads, which were seconds, but did not time any embedding or cross-validation run.", "cheapest_killing_check": "Count independent biological units per condition before anything else: the GEO design string says 2 biological replicates x 3 technical replicates per condition, which I confirmed from the 18 file names and by finding 6 of 18 experiment-2 files to be empty (0 cells)."},
+  "verdict": "reject",
+  "verdict_reason": "A5 fails in disguise: 31,132 cells but only 6 pooled-mouse groups, 12 usable experiment-2 libraries and 26 bulk samples from 4 donors, so no honest held-out-animal split exists. Data is otherwise clean, open and laptop-sized; cell-type annotations were also not deposited."
+}

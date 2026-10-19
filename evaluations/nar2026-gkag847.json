@@ -1,0 +1,56 @@
+{
+  "paper_id": "nar2026-gkag847",
+  "title": "Dual regulation of transcription factor binding by tup11/12-mediated destabilization and DNA loop-mediated stabilization ensures stress-specific gene activation in fission yeast.",
+  "doi": "10.1093/nar/gkag847",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE342430",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed GSE342430_TPM_normalized_count_data.txt.gz (460 KB): 5,323 rows (genes) x 15 columns, 9 expression columns in TPM (transcripts per million, each summing to exactly 1,000,000), no duplicate gene IDs, no missing values, 2.8% zeros, chromosome/start/end/strand/length present. Also unzipped the journal supplement: it holds one 103 KB Excel file (S7_rawdata) with 16 sheets (8 data sheets of 15-67 rows plus 8 statistics sheets) and a 2.7 MB PDF. Reapplied the paper's own filtering rules to the TPM table: 293 glucose-starvation-induced genes, 72 also aberrantly induced in the tup11/12 deletion under nitrogen starvation, 17 of those dependent on Php5.",
+    "what_came_from_paper_text_only": "Read-mapping pipeline (hisat2 against ASM294v2.30, featureCounts, PomBase annotation of 4 January 2025) and the claim that only protein-coding genes were kept. Nothing in the paper states a gene count I could compare the 5,323 rows against. Raw sequencing reads (BioProject PRJNA1399038) and the reused Atf1-Rst2 sequential ChIP-seq (DNA Data Bank of Japan accession DRA011814) were not downloaded, per the project rule against raw sequencing data."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified by download: GEO (Gene Expression Omnibus) series GSE342430 gives one open 460 KB gzipped text file; the journal supplement unzips to an Excel file of per-figure raw values. No login, no application."},
+    "a2_label_is_a_column": {"pass": true, "note": "Expression is a column per sample (TPM), so a simple fold change between two columns of the same table is arithmetic, not construction. The paper's own phenotype of interest, however, is a chain of threshold rules across six columns."},
+    "a3_inputs_present": {"pass": true, "note": "The obvious input, promoter DNA sequence, is absent from the files, but the table carries chromosome, start, end and strand, so one PomBase genome FASTA download yields every promoter mechanically. Not thousands of lookups."},
+    "a4_units_stated": {"pass": true, "note": "Units stated in the column names and confirmed in the file: every TPM column sums to exactly 1,000,000. The Excel sheets label columns normalized_signal and relative_signal, defined per figure."},
+    "a5_enough_rows": {"pass": false, "n_rows": 17, "note": "FAIL. The phenotype the paper is about, fbp1-like genes under dual Tup11/12 and Php5 control, reproduces to 17 genes when I reran the paper's own filters on the downloaded table, far under the ~400 needed even for classification. The underlying experiment is 9 sequencing libraries (3 genotypes x 3 nutrient conditions) with zero replicates, and the per-figure Excel sheets hold 15-67 rows each (904 non-empty rows across all 16 sheets, most of them statistics output)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.0005 GB", "note": "The whole expression table is 460 KB gzipped and the supplement 2.5 MB; it loads in under a second on any laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "GEO lists 9 samples, matching the 3 genotypes x 3 conditions described. The 5,323 rows are plausible for fission yeast protein-coding genes, but the paper states no gene count, so this is unverifiable rather than confirmed."},
+    "a8_label_provenance": {"pass": true, "note": "TPM values come from actual RNA sequencing reads counted with featureCounts, not from any model's prediction, and are independent of promoter sequence features. No circularity."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "FUN-PROSE (deep neural network predicting condition-specific gene expression in fungi from promoter sequence plus transcription factor expression levels, PLOS Computational Biology 2023)", "open_weights": null, "score_and_split": "Not retrieved beyond the search abstract; reported to work in Saccharomyces cerevisiae (baker's yeast), Neurospora crassa and Issatchenkia orientalis.", "authors_named_unsolved": "Not retrieved - I only read the search-result abstract, not the paper.", "runnable_as_baseline": null},
+      {"name": "CRMnet (convolutional/transformer model predicting expression from large regulatory sequence libraries in Saccharomyces cerevisiae, Frontiers in Big Data 2023)", "open_weights": null, "score_and_split": "Reported Pearson correlation 0.971 on a million-sequence random promoter library; split details not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "Not assessed - stopped at Part A", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "Not written - the project was rejected at Part A before any claim could be scoped.",
+  "plain_idea": {
+    "one_liner": "Use promoter DNA sequence to predict which fission yeast genes switch on during starvation and which stay stress-specific.",
+    "train_on": "Each example would be one gene: roughly 1 kilobase of DNA upstream of its start, plus its expression in nine conditions. Verified count: 5,323 genes, but only 9 sequencing libraries with no repeats.",
+    "predict": "The fold change in messenger RNA level between glucose-rich and glucose-starved cells, and whether a gene is wrongly switched on in mutant cells. True answers come from RNA sequencing, counted once per condition with no replicate.",
+    "why_worthwhile": "Yeast gene-regulation labs would learn whether the promoter arrangement of two transcription factor sites predicts stress specificity; but this dataset is far too small to test that."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "9 unreplicated sequencing libraries over 5,323 genes, against promoter-expression models trained on hundreds of thousands to millions of measured sequences (CRMnet's library) or whole replicated fungal expression compendia (FUN-PROSE)."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate libraries anywhere in the dataset, so per-gene measurement noise cannot be estimated and no calibrated uncertainty can be derived."},
+    "models_beatable": {"answer": "partly", "why": "FUN-PROSE (2023) and CRMnet (2023) are a few years old, but neither is beatable using 9 libraries from one lab; we would have no training set of our own."},
+    "guaranteed_improvement": {"answer": "no", "why": "We cannot run either model as a baseline on this data (different species and different assay scale), so the condition that our model sees everything theirs sees plus more fails outright."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict each fission yeast gene's glucose-starvation induction, and its Tup11/12- and Php5-dependent misfiring, from the arrangement of CRE-core (TGACGT) and STRE-like (CCCC[G/T]C) motifs in its promoter, using a DNA language model with a frozen backbone and a small regression head. Dies because the dataset provides 9 unreplicated libraries and only 17 genes with the phenotype of interest.",
+  "effort": {"hours_to_feature_table": 4, "working_set_gb": 0.001, "needs_gpu": false, "peak_ram_gb": 1, "embedding_hours": 2, "cv_run_minutes": 5, "compute_note": "Estimated, not timed beyond the actual parse: the expression table loaded in under a second with pandas, and 5,323 promoters of 1 kilobase each would embed on CPU in a couple of hours with a small DNA language model. Compute was never the problem here.", "cheapest_killing_check": "Reapply the paper's own gene-selection rules to the downloaded TPM table and count the positives. I did this: 293 glucose-responding genes, 72 aberrantly induced in the tup11/12 mutant, 17 of those Php5-dependent. Seventeen is the whole phenotype."},
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on verified counts. This is a single-locus mechanistic study of the fbp1 gene: the only table-scale data is one RNA-sequencing matrix of 5,323 genes across 9 libraries (3 genotypes x 3 nutrient conditions) with zero replicates, and the paper's phenotype of interest reproduces to 17 genes when its own filters are rerun on the downloaded file. The journal supplement is 16 Excel sheets of 15-67 rows each. Everything downloads cleanly, units are stated (TPM columns sum exactly to 1,000,000) and the label is a genuine measurement, so A1-A4 and A6-A8 pass; there is simply nothing to train on, no replicate from which to estimate measurement noise, and no group structure to hold out."
+}

@@ -1,0 +1,111 @@
+{
+  "paper_id": "science2026-aea5113",
+  "title": "ILC2s regulate a fibroblast progenitor niche in the pancreas.",
+  "doi": "10.1126/science.aea5113",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE248387",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened two bulk RNA-sequencing count tables from GEO (Gene Expression Omnibus, a public repository): GSE248383 co-culture normalised counts (22,731 mouse Ensembl gene rows x 10 sample columns) and GSE248384 ILC2 (group 2 innate lymphoid cell) normalised counts (20,732 gene rows x 9 sample columns). Listed every supplementary file of all five public sub-series and read their filelist.txt sizes. Downloaded one single-cell matrix (GSM9254817_T2A_3A_filtered_feature_bc_matrix.h5, 8.6 MB) and read it with h5py: 33,697 features x 895 cell barcodes, all 'Gene Expression' type, containing Pi16, Dpp4, Ly6c1, Col15a1 and a tdTomato reporter transcript, and no cell annotation of any kind. Confirmed the second accession in the paper, GSE309073, is private until 31 Dec 2026.",
+    "what_came_from_paper_text_only": "Which mouse genotype, injury timepoint or tumour each library came from beyond the GEO sample titles; the fibroblast subtype definitions (Pi16+Dpp4+Ly6c+ progenitor versus Col15a1+ differentiated); all imaging, flow-cytometry and cell-density measurements that underpin the paper's conclusions; the contents of Supp Data 1 and 2 (the Europe PMC supplementary-file endpoint timed out twice, so the supplement was not retrievable)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "GSE248387 and its five public sub-series download freely over HTTPS without login; I pulled real files. Partial problem: GSE309073, the second accession named in the data availability statement, is private until 31 Dec 2026."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. No label column exists anywhere in the deposited files. The single-cell files are unannotated raw count matrices (barcodes x genes, verified by opening one) and the bulk files are gene x sample counts. The paper's outcome of interest - which fibroblast state a cell is in, and its niche position - would have to be built from scratch by clustering and manual marker-based annotation."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are present as actual expression values with mouse Ensembl gene identifiers and gene symbols; no identifier lookups needed."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Single-cell files are integer unique-molecule counts in standard 10x Genomics HDF5 format; bulk files come as paired raw and normalised counts, though the file names state only 'norm' without naming the normalisation method."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 32,
+      "note": "FAIL at the level of experimental units. The whole super-series is 32 samples: 10 bulk co-culture, 9 bulk ILC2, 1 + 10 single-cell pancreas libraries, and 8 tumour libraries from 5 mice. Cell counts run to tens of thousands (895 cells in the one library I opened), but every experimentally assigned label (genotype, injury day, tumour) varies only across the 2-5 mice per group, so the effective n is far under the 400-row floor."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~1.1 GB of compressed matrices (862 MB GSE248386 + 196 MB GSE308872 + 38 MB + 1.3 MB bulk CSVs)",
+      "note": "Verified from GEO filelist.txt sizes; would fit in 16 GB of memory if loaded sparsely one library at a time."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The 32 GEO sample accessions add up exactly across the five sub-series, and the bulk column names (4 monoculture, 3 wild-type co-culture, 3 IL13-knockout co-culture; 4 naive, 5 IL33-treated ILC2) match the sample titles."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for the only label the data could supply at scale. A per-cell fibroblast subtype label is derived from the same expression matrix used as input, so predicting it is circular by construction. The non-circular labels (mouse genotype, injury day) are genuinely experimental but exist only at the 32-sample level, which is A5's failure."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeCAF, a published single-sample classifier of cancer-associated fibroblast subtypes (reported Feb 2026, found via search, abstract and press release only)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved; press material claims stability across sequencing platforms in pancreatic ductal adenocarcinoma and other cancers.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Cancer-associated fibroblast classification in single-cell and spatial proteomics data (Nature Communications 2023, found via search, title and summary only)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Geneformer or scGPT, single-cell transcriptome foundation models",
+    "freeze_and_head_viable": null,
+    "hardware": "Embedding ~100k cells on a CPU-only laptop would take many hours; practical only after subsetting",
+    "licence": "Apache-2.0 (Geneformer) / MIT (scGPT), permissive"
+  },
+  "integration": {
+    "partner_dataset": "fibroXplorer / Buechler cross-tissue mouse fibroblast atlas (ArrayExpress E-MTAB-8483), the resource this paper's fibroblast nomenclature comes from",
+    "join_key": "mouse gene symbol / Ensembl gene identifier",
+    "bigger_question_one_sentence": "Does a universal-fibroblast-state classifier trained on other mouse tissues correctly place pancreatic fibroblasts in homeostasis, pancreatitis and tumour - a real transfer question, but one whose answer here cannot be scored because this paper deposits no annotation to score it against."
+  },
+  "controls": {
+    "positive_control": "Pi16, Dpp4, Ly6c1 and Col15a1 are all present as features in the matrices, so any pipeline must recover the published marker split between interstitial and intraparenchymal fibroblasts.",
+    "negative_control": "Label shuffling across mice is possible but meaningless with 2-5 mice per group.",
+    "external_validation": "The Buechler cross-tissue fibroblast atlas (E-MTAB-8483 / fibroXplorer) is an independent source of the same fibroblast states in other tissues."
+  },
+  "honest_claim_h3": "Any model built on these files could only claim to reproduce the authors' own clustering of ~100,000 pancreatic cells from fewer than 30 mice in one facility, because no independently measured outcome is deposited.",
+  "plain_idea": {
+    "one_liner": "Use a fibroblast's gene expression to predict which tissue-repair state it occupies and whether an immune cell drove it there.",
+    "train_on": "Single-cell gene expression of pancreatic fibroblasts across healthy, injured and tumour-bearing mice; I verified 895 cells in one of 19 single-cell libraries and ~1.1 GB of matrices in total, from 32 deposited samples.",
+    "predict": "The fibroblast state (progenitor-like Pi16+Dpp4+Ly6c+ versus differentiated Col15a1+). The true answer would have to come from the authors' own clustering of the same expression values, which is why the idea does not stand up.",
+    "why_worthwhile": "Immunologists studying tissue repair and pancreatic cancer would want to know whether fibroblast states transfer across tissues, but this dataset cannot test it because the states are not recorded in the files."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only project this data supports is re-clustering ~100k unannotated pancreatic single-cell profiles and predicting fibroblast subtype from expression - a label that is itself derived from that expression. The genuinely experimental labels (genotype, pancreatitis day, tumour) exist for only 32 samples from a handful of mice per group.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 1.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 8.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes read from GEO filelist.txt and one 8.6 MB HDF5 file opened with h5py; the 40 hours is an estimate of quality control, integration across 19 libraries and manual annotation, not a timed figure.",
+    "cheapest_killing_check": "Count the experimental units behind any label: I did this and got 32 deposited samples with 2-5 mice per condition, which kills it in ten minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "No label column in the files (A2), labels that would be derived from the input expression itself (A8), and only 32 samples from a handful of mice per condition (A5)."
+}

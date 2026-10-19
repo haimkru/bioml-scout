@@ -1,0 +1,59 @@
+{
+  "paper_id": "nar2026-gkag399",
+  "title": "PrimerWeaver: an integrated web server for primer design in molecular biology workflows.",
+  "doi": "10.1093/nar/gkag399",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.18830105",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the journal supplement (2.38 MB) and opened all 7 sheets of 'Supplemental Tables_updated.xlsx' with pandas: Table S1 = 2,000 unique primer sequences (1,000 pairs, names P0001-P1000) with length, GC percent, melting temperature (Tm) from SnapGene, Benchling, Multiple Primer Analyzer and PrimerWeaver plus dimer/hairpin flags; Tables S2-S7 = 194 multiplex targets and only 6-12 in-silico test cases each. Also read the Supplementary_Information.docx text (11,011 characters) and queried the Zenodo API: record 18830105 holds one file, PrimerWeaver-main.zip (8.77 MB of JavaScript/CSS/HTML source), licence CC-BY-4.0.",
+    "what_came_from_paper_text_only": "That the browser tool runs all calculations locally and that wet-lab validation was performed; the only wet-lab record I could find is a figure legend saying eight randomly picked colonies per cloning method all gave bands of the expected size (gel images, no table of outcomes)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement zip and Zenodo source archive (CC-BY-4.0) both downloaded without login; the web tool itself is open at ignea.lab.mcgill.ca/primerweaver."},
+    "a2_label_is_a_column": {"pass": false, "note": "Checked every sheet: there is no measured outcome column anywhere. The only numeric columns are software-computed primer properties (length, GC percent, melting temperature, free energy) and free-text 'Assembled sequence 100% identical' comments; any experimental label (did the PCR work, how well) would have to be created from scratch."},
+    "a3_inputs_present": {"pass": true, "note": "Primer and template DNA sequences are literally in the cells (2,000 primer sequences in Table S1, alphabet A/C/G/T plus 200 degenerate IUPAC letters), so no accession lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Column headers state units in the files: Tm (degrees Celsius), GC%, product size (bp), free energy in kcal/mol (stated in the supplementary methods)."},
+    "a5_enough_rows": {"pass": false, "n_rows": 2000, "note": "2,000 primer rows exist but carry no outcome; the parts with any experimental or workflow result are tiny (6, 7, 12 and 8 in-silico test cases in Tables S4-S7; 8 colonies per cloning method in a gel figure), far under the ~400-row floor."},
+    "a6_fits_laptop": {"pass": true, "working_set": "0.5 MB spreadsheet", "note": "Whole dataset is a 522 KB Excel workbook; opens in under a second on a laptop."},
+    "a7_counts_match_paper": {"pass": true, "note": "Table S1 contains exactly 1,000 primer pairs as the benchmarking section implies; nothing contradicted the text, though the paper gives few hard counts to check."},
+    "a8_label_provenance": {"pass": false, "note": "The only candidate labels are other programs' deterministic outputs: SnapGene/Benchling/Multiple Primer Analyzer melting temperatures are nearest-neighbour thermodynamic formulas applied to the same sequence that would be the feature, so predicting them is both distilling a tool and leakage by construction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "PrimerWeaver (this paper's own tool)", "open_weights": true, "score_and_split": "No machine-learning model and no accuracy number; it is a rule-based primer designer scored against SnapGene and Benchling for agreement, not against experiments.", "authors_named_unsolved": "Paper frames remaining need as workflow integration and sequence confidentiality, not prediction accuracy.", "runnable_as_baseline": true},
+      {"name": "PrimerCast (dataset plus model, NeurIPS 2025 datasets track, found by search)", "open_weights": null, "score_and_split": "Listing describes 50,760 primer-target reactions over 141 viral targets with quantitative amplification-efficiency labels and reports beating heuristic tools; split not stated in the listing I saw.", "authors_named_unsolved": "Not retrieved beyond the abstract listing.", "runnable_as_baseline": null},
+      {"name": "1D-CNN amplification-efficiency model (Nature Communications 2025, found by search)", "open_weights": null, "score_and_split": "Search snippet reports AUROC (area under the receiver operating characteristic curve) 0.88 and AUPRC (area under the precision-recall curve) 0.44 on synthetic DNA pools; exact split not retrieved.", "authors_named_unsolved": "Snippet says model generalization exposed workflow-dependence of poor amplification efficiency.", "runnable_as_baseline": null},
+      {"name": "PrimerAST (Scientific Reports 2026, found by search)", "open_weights": null, "score_and_split": "Reported ROC-AUC up to 0.99 but on only 316 primer pairs where negatives were synthetically generated, so the number is almost certainly optimistic.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null},
+      {"name": "Recurrent neural network PCR-success predictor (Scientific Reports 2021, found by search)", "open_weights": null, "score_and_split": "70 percent accuracy predicting PCR success from primer/template 'pseudo-sentences'; split not retrieved.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": null}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 or Nucleotide Transformer (DNA language models) would suit primer sequences", "freeze_and_head_viable": true, "hardware": "Laptop CPU would be enough for 2,000 short oligos", "licence": "Open weights, but irrelevant here because there is no label to fit a head to"},
+  "integration": {"partner_dataset": "PrimerCast's 50,760 measured primer-target amplification reactions (NeurIPS 2025 listing) or NCBI Primer-BLAST records", "join_key": "Primer sequence string", "bigger_question_one_sentence": "Could not be made to work: this paper's 2,000 primers are synthetic benchmarking examples with no measured outcome, so joining them to a measured-efficiency resource adds unlabelled rows, not information."},
+  "controls": {"positive_control": "Predicting melting temperature from sequence would be a trivially learnable positive control, but it is also the only available target, which is exactly the problem.", "negative_control": "Label shuffling is runnable but meaningless without a real label.", "external_validation": "None in this paper; measured amplification datasets exist elsewhere but share no labelled rows with it."},
+  "honest_claim_h3": "The most a model trained on these files could honestly claim is 'it reproduces SnapGene's melting-temperature formula from the primer sequence', which is a closed-form calculation, not biology.",
+  "plain_idea": {
+    "one_liner": "Use primer and template DNA sequence to predict whether a polymerase chain reaction or cloning step will actually work.",
+    "train_on": "What I considered: the 2,000 primer sequences in Table S1, each with length, GC content and melting temperature as computed by four different design programs. Verified count: 2,000 primers (1,000 pairs).",
+    "predict": "Intended output was experimental success or amplification efficiency, but no such measurement exists in these files; the only truth available is another program's calculated melting temperature, and a gel figure where all 32 tested colonies succeeded.",
+    "why_worthwhile": "A model that told molecular biologists which primer pairs will fail before they order oligos would save real bench time, but this paper supplies no failures and no measurements to learn from."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This paper offers 2,000 unlabelled primers; PrimerCast's listing claims 50,760 primer-target reactions with measured amplification efficiency, and the Nature Communications 1D-CNN used synthetic DNA pools with efficiency read out by sequencing."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements and no measured quantity at all, so per-prediction uncertainty cannot be calibrated from these files."},
+    "models_beatable": {"answer": "no", "why": "The relevant comparators are 2025-2026 deep-learning models trained on tens of thousands of measured reactions; this paper's tool is rule-based and makes no accuracy claim to beat."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: our model would see no labels these files provide, so there is nothing to add to an existing baseline; the labelled data lives entirely in other papers."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and abandoned: predict polymerase chain reaction or cloning success from primer plus template sequence. The supplement contains no success/failure or efficiency measurement; its one large table (2,000 primers) holds only software-calculated melting temperature, GC content and length from four design tools, so any model would be re-deriving a thermodynamic formula or distilling SnapGene. The measured data for this task exists in other papers (PrimerCast, the Nature Communications 1D-CNN study), not here.",
+  "effort": {"hours_to_feature_table": 2, "working_set_gb": 0.001, "needs_gpu": false, "peak_ram_gb": 0.5, "embedding_hours": 0.2, "cv_run_minutes": 2, "compute_note": "Estimated from the actual file sizes I opened: a 522 KB Excel workbook with 2,000 short oligos; everything would run in seconds, which is why effort was never the issue.", "cheapest_killing_check": "Open Supplemental Tables_updated.xlsx and look for any column holding a measured experimental result. There is none — that check takes five minutes and kills the project."},
+  "verdict": "reject",
+  "verdict_reason": "Software tool paper whose supplement has no measured outcome: fails A2, A5 and A8 together. The one sizeable table (2,000 primers) carries only melting temperature, GC content and length computed by SnapGene, Benchling, Multiple Primer Analyzer and PrimerWeaver, so the only learnable target is a deterministic function of the input sequence and simultaneously another program's output. The wet-lab evidence is 8 colonies per cloning method, all successful, in a gel figure (no negatives, no table). Zenodo holds only JavaScript source code. Measured primer-performance data for this exact task already exists elsewhere (PrimerCast, 50,760 reactions), which is where such a project should start instead."
+}

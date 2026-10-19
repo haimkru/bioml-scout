@@ -1,0 +1,217 @@
+{
+  "paper_id": "nar2026-gkag709",
+  "title": "CNEwrap: a scalable toolkit with a novel algorithm for large-scale genome-wide accelerated conserved non-coding elements detection.",
+  "doi": "10.1093/nar/gkag709",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.6084/m9.figshare.29625779",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked the Figshare release (CC BY 4.0, no login): ScienceData.zip (81 MB extracted) and SimData.zip. Counted 10,032 rows in hg38_science_rename.bed and 803 IDs in hg38_science_verified.csv; found 3,397 non-empty per-element alignment FASTA files (1,701 with 10 species, 1,696 with 19) and opened one (10 aligned mammal sequences). Confirmed the three caller output tables (SPsum.tsv 1,701 rows; PhyloP.txt 1,701; ForwardGenomics 1,565) all key on element ID. Verified exactly 127 of the 803 validated elements have alignments, matching the paper's sentence. Separately downloaded the open Zenodo/GitHub hCONDEL release (jxmavs/hCONDEL v2.0) and opened its two result tables: 10,032 rows x 91 columns of DESeq2 reporter-assay results (log2FoldChange_Skew and lfcSE per 6 cell types) and 10,032 x 97 of annotation; the element-ID join to this paper's bed matched 10,032 of 10,032. Also opened the 36,000-sequence MPRA oligo FASTA (230 bp, human 'HH' and chimp 'CC' alleles).",
+    "what_came_from_paper_text_only": "The published recall figures (EvoAcc 34, PhyloAcc 4, PhyloP 6, ForwardGenomics 0 of the 127 validated elements) and the definition of the 803 'verified' set (species-specific activity BH-adjusted p<.05 plus human-or-chimp activity p<.1, excluding low-representation elements). I could not reproduce the EvoAcc number: the released SPsum.tsv gives 21, not 34, accelerated calls among the 127. Also taken on trust: that the 19-species alignment set is a second reference run, and the CNEWRAP.zip toolkit contents (111 MB, over the 50 MB cap, metadata only)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Figshare DOI 10.6084/m9.figshare.29625779 downloads openly under CC BY 4.0, no login, no application. The companion label source (Zenodo 10.5281/zenodo.7829717 and GitHub jxmavs/hCONDEL) is also open; I fetched files from it directly."},
+    "a2_label_is_a_column": {"pass": true, "note": "The measured label is literally a column: log2FoldChange_Skew_<cell type> in novaseq_12_15_18_deseq_results_submission.txt, one row per element. It sits in the companion open release, not this paper's zip, but the join on element ID (hCONDEL_ID) matched 10,032 of 10,032 rows with zero duplicates. This paper's own zip carries only a bare 803-line list of names, which is a membership flag, not a measurement."},
+    "a3_inputs_present": {"pass": true, "note": "Sequences are present, not referenced: I opened a per-element FASTA containing 10 aligned mammal sequences, and there are 3,397 such files. For all 10,032 elements the human and chimpanzee coordinates are columns, and a 36,000-sequence 230 bp oligo FASTA exists. Caveat I verified: that oligo FASTA is keyed on pipe-delimited coordinates and my join to the metatable's hg38 assay coordinates matched 0 of 10,032, so getting exact tested sequences for all elements needs one extra mapping step."},
+    "a4_units_stated": {"pass": true, "note": "Units are explicit in the column names: log2 fold change of reporter activity (human allele versus chimpanzee allele), with lfcSE standard errors in the same units and p-values alongside. Verified by reading the header and value ranges. This paper's own score columns (sum_score, acc_score, ICscore) are in arbitrary undocumented units, but they are baselines, not the label."},
+    "a5_enough_rows": {"pass": true, "n_rows": 10032, "note": "10,032 elements with a quantitative measured label in each of 6 cell types (counted in the file); 924 significant at padj<0.05 in at least one cell type. This paper's own alignment subset is much thinner: 1,701 elements, of which 127 are validated positives, both counts verified and matching the paper exactly."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.15 GB", "note": "Extracted ScienceData is 81 MB; the two label tables are 16 MB and 6 MB; the oligo FASTA is 14 MB. Everything parsed in seconds in pandas on this machine. No GPU needed for a frozen-embedding baseline on 230 bp sequences."},
+    "a7_counts_match_paper": {"pass": true, "note": "Row counts agree exactly: 10,032 elements, 803 validated, 1,701 with alignments, 127 validated-with-alignment. The disagreement is in a performance number, not a count: the paper reports EvoAcc flagging 34 of 127 but the released score table yields 21 under either its own call column or p<0.05. That is a flag on reproducing their claim, not on the data's integrity."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a physical measurement: barcode counts from a lentiviral massively parallel reporter assay in 6 cell lines, summarised by DESeq2 into a log2 fold change. It is not a model output and is not computable from the sequence features. The trap to avoid is using this paper's own EvoAcc call or p-value as the label, which would be distilling their algorithm; conservation scores (phastCons, phyloP) are legitimate features but are derived from the same alignments, so they must be ablated separately."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Few tables plus 3,397 per-element FASTA files; element-ID join matched 10,032/10,032 in the files."},
+    "B2": {"score": 2, "why": "Bed, tab-separated result tables and FASTA all parsed first try in pandas and plain Python."},
+    "B3": {"score": 1, "why": "One assay, one DESeq2 pipeline, but skew reported separately for 6 cell types; aggregation is a choice."},
+    "B4": {"score": 1, "why": "Log2 fold change 0-0.1% missing in the file; elements excluded for low assay representation are invisible."},
+    "B5": {"score": 2, "why": "Element ID unique in all three tables; zero duplicates found when I checked."},
+    "B6": {"score": 1, "why": "Label tables self-describing; this paper's bed columns 7-9 and score columns undocumented, no README."},
+    "C1": {"score": 2, "why": "Whether evolutionary acceleration predicts measured human-specific activity change is informative either way."},
+    "C2": {"score": 1, "why": "General reporter-activity predictors are open and strong; none found evaluated on these human-specific deletions."},
+    "C3": {"score": 1, "why": "Clear better/unique-application angle, but the measured labels have been public since 2023."},
+    "C4": {"score": 2, "why": "Labels come from a lentiviral reporter assay in 6 cell lines; callers also cost real CPU (their Table S3)."},
+    "C5": {"score": 2, "why": "Published recalls 34/4/6/0 of 127 plus the released per-element score tables I opened."},
+    "D1": {"score": 2, "why": "DNA language models with open downloadable weights (DNABERT-2, Nucleotide Transformer) fit 230 bp inputs."},
+    "D2": {"score": 2, "why": "About 20,000 short sequences embedded once on CPU, then a small head; no fine-tuning needed."},
+    "D3": {"score": 2, "why": "Data licence CC BY 4.0, read from the Figshare record; companion release open; backbones openly licensed."},
+    "E1": {"ok": true, "why": "Chromosome column present in both the bed and the metatable; whole-chromosome holdout is available."},
+    "E2": {"ok": true, "why": "Elements spread across all autosomes plus X in the bed I parsed, so 20+ holdout groups."},
+    "E3": {"ok": true, "why": "Majority class (9% significant), per-cell-type mean skew, and phyloP-alone ranking are all computable."},
+    "E4": {"ok": true, "why": "Per-element DESeq2 standard error in the file: median 0.33 log2 units, 0.48 in neural progenitors."},
+    "E5": {"ok": true, "why": "Recover GC content from sequence; recover documented enrichment in ENCODE regulatory elements (column present)."},
+    "E6": {"ok": true, "why": "Label shuffling and ablating the conservation block against the sequence block are both straightforward."},
+    "E7": {"ok": true, "why": "Six cell types allow held-out-cell-type testing; a second enhancer set exists but only 12 of 532 overlap."},
+    "E8": {"ok": false, "why": "I tried: released table gives EvoAcc 21 of 127, not the published 34, so the number did not reproduce."},
+    "G1": {"score": 2, "why": "hg38 genomic coordinates and gene symbols present in the bed and metatable, both opened."},
+    "G2": {"score": 2, "why": "ENCODE candidate regulatory elements, Zoonomia 241-mammal constraint and gnomAD all join on hg38 coordinates."},
+    "G3": {"score": 1, "why": "Coordinate overlap is one-to-few (one element can hit several regulatory elements); needs a collapse rule."},
+    "G4": {"score": 2, "why": "Asks whether deletions that change activity sit where mammal and human-population constraint disagree."},
+    "H1": {"score": 2, "why": "Negatives are measured, not absent: 9,108 of 10,032 elements were assayed and not significant."},
+    "H2": {"score": 1, "why": "One assay, one lab, 6 cultured cell lines, 10-19 mammal species; no primary tissue, no primate panel."},
+    "H3": {"score": 2, "why": "Claim statable in one sentence, with the assay-representation and cell-line caveats named."},
+    "H4": {"score": 2, "why": "Paper states the 1,701-mapped and 127-validated subsetting explicitly in its own validation section."},
+    "I1": {"score": 2, "why": "Named groups: the Reilly/Karlsson/Capellini labs who ran the assay, Zoonomia, the PhyloAcc developers."},
+    "I2": {"score": 1, "why": "Would reorder which elements get assayed next, but the callers' weakness is already visible in this paper."},
+    "I3": {"score": 2, "why": "Precision in a top-100 ranked list is exactly the decision a lab makes when choosing a validation panel."},
+    "I4": {"score": 1, "why": "Mapping is complex, but phyloP alone may already rank well; the dumb baseline must be run first."},
+    "J1": {"score": 2, "why": "Frozen DNA-model embeddings, grouped splits, feature-block ablation, calibration against measured error."},
+    "J2": {"score": 1, "why": "Comparative genomics plus reporter assays; plausibility of a predicted log2 skew needs a second opinion."},
+    "J3": {"score": 2, "why": "A joined benchmark table of 1,701 elements with four caller scores and measured skew is shareable alone."},
+    "J4": {"score": 2, "why": "Three weeks: one for the joined table, one for embeddings and baselines, one for ablations."},
+    "J5": {"score": 2, "why": "Kill condition is concrete: no gain over phyloP-alone on held-out chromosomes after two weeks."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "EvoAcc (this paper's own algorithm, a phylogeny-aware nucleotide-variation test for lineage-specific acceleration)",
+        "open_weights": true,
+        "score_and_split": "Published: flagged 34 of 127 experimentally validated human-specific deletions as accelerated. I recomputed 21 of 127 from the released score table, so the published number did not reproduce. No train/test split exists; it is a statistical test, not a fitted model.",
+        "authors_named_unsolved": "They state EvoAcc only performs 'comparably to existing algorithms' on real human data, with its advantage limited to insertion/deletion sensitivity and to simulations with two or three accelerated lineages; detecting single-lineage acceleration in real alignments stays unsolved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PhyloAcc (Bayesian substitution-rate-shift detector for conserved elements)",
+        "open_weights": true,
+        "score_and_split": "Flagged 4 of the 127 validated elements per this paper; its full per-element posterior output is in the released zip, which I opened (1,690 loci summarised).",
+        "authors_named_unsolved": "Their 2024 workflow guidance paper frames incomplete lineage sorting and choosing foreground branches as the practical difficulties.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PhyloP (per-site conservation/acceleration likelihood-ratio test)",
+        "open_weights": true,
+        "score_and_split": "Flagged 6 of the 127 validated elements per this paper; the per-element output table with likelihood ratios is in the zip and I opened it (1,701 rows).",
+        "authors_named_unsolved": "Not stated in this paper beyond limited sensitivity to insertions and deletions.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ForwardGenomics (trait-association test on relative sequence divergence)",
+        "open_weights": true,
+        "score_and_split": "Flagged 0 of the 127 validated elements; I confirmed 0 of 120 at generalised-least-squares p<0.05 in the released output.",
+        "authors_named_unsolved": "Not stated.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PARM, a reporter-assay-trained deep learning model of human promoter activity (Nature 2026, cited as reference 52 by this paper)",
+        "open_weights": null,
+        "score_and_split": "Reported to predict autonomous promoter activity genome-wide from sequence in multiple cell types at roughly 1,000-fold lower compute than prior models; I did not retrieve a number on human-versus-chimpanzee allelic skew, and it targets promoters rather than these mostly distal conserved elements.",
+        "authors_named_unsolved": "Predicting non-coding variant effects is named as the promising-but-open application.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Machine learning dissection of human accelerated regions in primate neurodevelopment (Whalen et al., Neuron)",
+        "open_weights": null,
+        "score_and_split": "Used machine learning over hundreds of epigenetic datasets to predict that at least 30% of human accelerated regions are developmental enhancers; evaluated on epigenomic annotation, not on measured allelic reporter skew for these deletions.",
+        "authors_named_unsolved": "Which specific sequence changes within an accelerated region drive the activity change.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 (a DNA language model) as the primary, with Nucleotide Transformer as a cross-check",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM; embeddings cached once for roughly 20,000 sequences of 230 base pairs",
+    "licence": "Backbone weights are openly distributed on HuggingFace (Nucleotide Transformer v2 checkpoints are non-commercial); the data itself is CC BY 4.0, which I read off the Figshare record"
+  },
+  "integration": {
+    "partner_dataset": "ENCODE candidate cis-regulatory elements plus the Zoonomia 241-mammal phyloP constraint track and gnomAD human-population constraint",
+    "join_key": "hg38 genomic coordinates (present as chromosome/start/end columns in both this paper's bed and the companion metatable, both of which I opened)",
+    "bigger_question_one_sentence": "Do the human-specific deletions that actually change reporter activity sit preferentially where deep mammalian constraint and present-day human population constraint disagree, which neither the reporter assay nor the constraint tracks can answer alone?"
+  },
+  "controls": {
+    "positive_control": "Predict GC content and element length from the input sequence, which must come out near-perfect; and recover the documented enrichment of significant elements in ENCODE candidate regulatory elements using the ENCODE_ccre column I saw in the metatable.",
+    "negative_control": "Shuffle the log2 skew labels and confirm Spearman correlation collapses to zero; then ablate the conservation-feature block against the raw-sequence block, since conservation scores are computed from the same alignments and could be doing all the work.",
+    "external_validation": "Hold out whole cell types (6 are measured independently), and use the 803-element validation sub-library whose separate 'ref'/'alt' oligos I found in the assay FASTA; the companion enhancer set in Data2 is independent but too small (12 of 532 overlap the alignments)."
+  },
+  "honest_claim_h3": "Among short human-specific deletions in mammal-conserved elements that were represented well enough in one lentiviral reporter library to be measured in six cultured cell lines, the model ranks which deletions change reporter activity between the human and chimpanzee version of the element.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and its alignment across mammals to predict whether a human-specific deletion changes gene-switch activity.",
+    "train_on": "Each example is one conserved stretch of non-coding DNA carrying a short deletion found only in humans: its roughly 200 base pairs of human and chimpanzee sequence plus conservation measures. 10,032 elements have measured labels; 1,701 of these also have the 10-mammal alignments released with this paper, with 127 of them experimentally confirmed hits. All counts verified in the files.",
+    "predict": "The measured log2 fold change in reporter activity between the human and chimpanzee version of the element, in each of six cell types. The true answer comes from a massively parallel reporter assay, a lab experiment that inserts thousands of DNA fragments into cells at once and counts how strongly each switches on a reporter gene; the values and their standard errors are columns in the companion open release.",
+    "why_worthwhile": "Labs hunting for the DNA changes that made humans distinctive currently screen candidates with phylogenetic acceleration tests, which on this paper's own validation flagged at most 34 of 127 experimentally confirmed cases; a better ranking would change which elements get assayed next. Even a failure tells those labs that acceleration is the wrong screening filter."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "10,032 elements with measured human-versus-chimpanzee reporter skew in 6 cell types is far more than the 127 validated cases the four acceleration callers were judged on, and none of those callers was ever fitted to measured activity. But it is one published assay from 2023, not larger than the reporter-assay corpora that general activity predictors such as PARM are trained on."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "Every element carries a DESeq2 standard error for every cell type (median 0.33 log2 units, 0.48 in neural progenitors), which I read in the file, so predictions can be calibrated against measurement noise and low-power elements flagged. EvoAcc, PhyloAcc, PhyloP and ForwardGenomics emit p-values for acceleration, which say nothing about uncertainty in the regulatory effect."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "All four comparators are phylogenetic substitution-rate tests with no learned sequence component and no pretrained backbone. On this paper's own 127 validated elements they recovered 34, 4, 6 and 0 respectively as published, and I could only recompute 21 for the best of them."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Two conditions fail. The acceleration callers' scores are released and runnable as a baseline, and our model would see everything they see, but the added material (multi-species alignments and conservation tracks) is extra features, not a second measurement of reporter activity, so it can add noise rather than signal. And I did not verify that a strong sequence-only reporter-activity predictor can be obtained and run on the same split, which is what a fair comparison needs."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "The companion Xue et al. release (Zenodo 10.5281/zenodo.7829717, GitHub jxmavs/hCONDEL v2.0), which I downloaded and opened: 10,032 elements with log2 reporter-activity skew in 6 cell types. Broader reporter-assay allelic-skew measurements also exist in ENCODE and in published MPRA atlases (known resources, not opened here).",
+    "approx_items": 10032,
+    "join_key": "Element ID (hCONDEL_ID) for the companion release, matching 10,032 of 10,032; hg38 genomic coordinates for everything else",
+    "why": "The quantitative label exists for all 10,032 elements, not just the 1,701 this paper aligned, so the model can be trained on roughly six times more data than this paper's subset and then tested on the elements the paper never touched."
+  },
+  "leakage_plan": {
+    "risks": [
+      "These deletions cluster in the genome and some elements sit within a few kilobases of each other, so near-duplicate neighbours could land in both training and test sets.",
+      "Conservation features (phastCons, phyloP, number of mismatched and unaligned bases) are computed from the same alignments used as model input, so they are correlated inputs rather than independent evidence and can make the evolutionary signal look stronger than it is.",
+      "Assay power differs by cell type (median standard error 0.33 log2 units in most lines but 0.48 in neural progenitors), so a model could learn which cell type was measured well rather than any biology.",
+      "The 1,701-element subset released with this paper is conditioned on being called a conserved element by the authors' own pipeline, a selection that correlates with conservation and therefore with the features.",
+      "Using this paper's own EvoAcc call or p-value as the label instead of the measured activity would make the model a copy of their algorithm; the label must come from the reporter assay columns only."
+    ],
+    "split": "Hold out whole chromosomes, built from the chromosome column that I confirmed is present in both hg38_science_rename.bed and the companion metatable; before splitting, merge any elements within 10 kilobases into a single locus group so neighbours cannot be separated.",
+    "checks": [
+      "Shuffle the log2 skew labels and confirm Spearman correlation collapses to roughly zero and precision in the top 100 falls to the 9% base rate.",
+      "Train on conservation features alone, then on sequence alone, to see which block does the work and whether the evolutionary signal adds anything.",
+      "Measure sequence similarity between each test element and its nearest training element, and check that accuracy does not fall off sharply with distance."
+    ],
+    "verdict": "Manageable: the chromosome and coordinate columns needed for a clean grouped split are present and I verified them, and the main subtlety (conservation features derived from the input alignments) is handled by an ablation rather than by a different split."
+  },
+  "success_criteria": {
+    "metric": "Precision among the top 100 ranked elements, because a lab validating candidates assays a fixed-size panel and cares only about how many of those are real; Spearman correlation with measured log2 skew as the secondary ranking metric.",
+    "baselines": "The dummy rate of 9% (924 of 10,032 elements significant at adjusted p<0.05 in any cell type, counted in the file); ranking by the del_phyloP_max_score column alone; and the published acceleration-caller recalls of 34, 4, 6 and 0 of 127 validated elements (EvoAcc, PhyloAcc, PhyloP, ForwardGenomics), noting that I recomputed 21 rather than 34 for EvoAcc.",
+    "success": "Precision at the top 100 of at least 0.35 on held-out chromosomes, against the 0.09 base rate and against phyloP-alone, together with Spearman of at least 0.25 against measured log2 skew.",
+    "noise_ceiling": 0.33,
+    "kill": "If after two weeks the combined sequence-plus-evolution model cannot beat ranking by del_phyloP_max_score alone on held-out chromosomes, stop."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology",
+      "why": "It publishes method-plus-biology genomics papers, and would take a model that clearly beats both the acceleration callers and a sequence-only baseline and names specific human-specific deletions worth assaying."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "It publishes benchmarks and modest new predictors, which fits the likely outcome: a clean grouped-split comparison showing how little of the measured human-specific regulatory change the four published acceleration callers recover, plus a sequence model that does moderately better."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "It publishes negative and partial results and benchmark resources, so even 'evolutionary acceleration and measured regulatory change are largely decoupled, and here is the joined benchmark table' is publishable there."
+    }
+  },
+  "pitch": {
+    "headline": "10,032 human-specific deletions with measured human-versus-chimpanzee reporter activity in six cell types, and four published callers that found at most 34 of 127 confirmed hits.",
+    "what_makes_the_data_unusual": "Both alleles of the same element measured side by side, with a standard error for every element (median 0.33 log2 units) and 924 of 10,032 significant. All opened by me, all openly licensed CC BY 4.0.",
+    "the_win": "Beat the published acceleration-caller recall of 34 of 127 validated elements, and reach precision of 0.35 or better in a top-100 list on held-out chromosomes against a 9% base rate.",
+    "even_if_it_fails": "We learn that phylogenetic acceleration and measured human-specific regulatory change are largely decoupled, which tells comparative-genomics labs their main screening tool is the wrong filter.",
+    "who_wants_it": "The labs that generated the deletion assay (Reilly, Karlsson, Capellini), the Zoonomia consortium, and the PhyloAcc developers, all of whom must choose which elements to assay next."
+  },
+  "ml_idea": "Rank short human-specific deletions in mammal-conserved non-coding DNA by whether they change regulatory activity. Input: the roughly 200 base pairs of human and chimpanzee sequence, embedded once with a frozen DNA language model, plus alignment-derived features (per-element conservation, counts of mismatched and unaligned bases, and the four released acceleration-caller scores for the 1,701 aligned elements). Output: the measured log2 fold change in reporter activity between the human and chimpanzee allele, per cell type, plus a binary significant/not call. Train with whole-chromosome holdout and locus grouping. The one experiment that matters is the ablation: does the evolutionary block add anything over sequence alone, and does either beat the published acceleration callers on the same 127 validated elements?",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 0.15,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 4,
+    "cv_run_minutes": 15,
+    "compute_note": "Estimated, not timed end to end: the joins and table parsing I did run in seconds on this laptop (total data under 150 MB), and the embedding figure assumes roughly 20,000 sequences of 230 base pairs through a small DNA language model on CPU at 1-2 sequences per second. The 12 hours to a feature table is dominated by parsing 3,397 alignment FASTA files and resolving sequences for the elements that lack them.",
+    "cheapest_killing_check": "Map the 230 base pair tested oligo sequences to element IDs: my coordinate join of MPRA_1_JX_230_BP_36K_oligos.fa to the metatable's assay coordinates matched 0 of 10,032, so confirm via the repository's _seq_names.txt (or re-extract from hg38 using the coordinate columns) before planning on sequence inputs for all 10,032. If that fails you are limited to the 1,701 aligned elements with 127 positives, which is too thin to beat a published number."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "Part A passes with the files opened, and the decisive join worked: this paper's 10,032 element identifiers matched the companion open release one-for-one, turning a software paper into a real supervised task with measured log2 reporter-activity labels, per-element standard errors, systematically measured negatives, and four published baselines whose recall (34 of 127 at best) is low enough to beat. Two things to verify first: the exact tested 230 base pair sequences did not join to element identifiers on the coordinates I tried (0 of 10,032), so confirm that mapping before assuming inputs exist beyond the 1,701 aligned elements; and note that I could not reproduce the paper's headline EvoAcc figure, getting 21 rather than 34 accelerated calls among the 127 validated elements, which is worth resolving since it is the number the project would be measured against. Most of the modelling value sits in the 2023 companion release rather than in this paper, whose unique contribution is the alignments and caller scores for 1,701 elements."
+}

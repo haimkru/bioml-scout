@@ -1,0 +1,146 @@
+{
+  "paper_id": "science2026-ady6893",
+  "title": "Single-cell multiomics and chromatin structure reveal gene-regulatory dynamics in heart failure.",
+  "doi": "10.1126/science.ady6893",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/21248974",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Found the public Zenodo deposit 10.5281/zenodo.21248974 (CC-BY-4.0, 43 files, 43.5 GB) linked from the study portal https://epigenome.wustl.edu/HeartEpigenome/. Downloaded and parsed 26 supplementary tables under 25 MB with pandas: Table_S8 (ChromHMM states, exactly 285,873 candidate regulatory elements x 12 cell types), Table_S9 (27,524 cell-type-specific elements), Table_S12 (121,473 Activity-By-Contact enhancer-gene links, 33,587 elements, 10,669 genes, 12 cell types), Table_S17 (47,474 differentially marked histone regions, all with adjusted p < 0.05), Table_S18 (11,369 differential links), Table_S33 (50,352 ChromBPNet variant scores), Table_S28 (10,311 fine-mapped variants in elements), Table_S1 (clinical metadata, 13 rows x 18 columns). For the four files over the 50 MB download cap I used ranged GET requests of 200-400 kB at three positions each: Table_S16 differential accessibility (317 MB, header baseMean/log2FoldChange/lfcSE/stat/pvalue/padj/contrast/celltype, non-significant rows present, 0 missing values in ~5,200 sampled rows, ~2.0M rows estimated from average line length), Table_S15 differential expression (75.8 MB, ~530k rows estimated), Table_S7 (66.7 MB, 12 cell-type accessibility columns + module, ~285,500 rows estimated), Table_S6 nuclei metadata (108.7 MB, ~776,600 rows estimated). Confirmed the raw sequencing is dbGaP phs004650 'Authorized Access' (controlled) via BioProject PRJNA1454960/PRJNA1454959. HEAD-checked three public signal files on the portal (vCM ATAC bigWig 1.59 GB, vCM heart-failure bigWig 1.36 GB, vCM heart-failure Hi-C 1.36 GB), all HTTP 200.",
+    "what_came_from_paper_text_only": "The Science article itself is paywalled with no PubMed Central copy; I read the abstract and the open medRxiv preprint (PMC12083629) of the same study for cohort design, cell-type counts and the statement that findings apply to end-stage heart failure with reduced ejection fraction. The claim of 776,479 nuclei comes from the portal text, not from a file I counted. I did not verify the exact row count of Table_S16, Table_S15, Table_S7 or Table_S6, only estimated them from file size and sampled line length. I did not open the .rds, .h5ad or .qs single-cell objects (1.5-14.7 GB each)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 21248974 is public and CC-BY-4.0; I downloaded 26 tables without any login. Raw sequencing is controlled (dbGaP phs004650) but is not needed for the proposed project."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in a ranged read of Table_S16: 'log2FoldChange' is a literal column, keyed by element coordinate, cell type and contrast. No construction needed."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs are hg38 genomic coordinates, not sequences; one human genome FASTA plus pyfaidx turns 285,873 coordinates into sequences locally. Genome build hg38 confirmed from the portal's browser link."},
+    "a4_units_stated": {"pass": true, "note": "Table_S16/S15 use standard DESeq2 column names (log2FoldChange, lfcSE, padj) so the scale is unambiguous. Table_S7's accessibility values are normalized but their scale is undocumented."},
+    "a5_enough_rows": {"pass": true, "n_rows": 285873, "note": "285,873 candidate regulatory elements counted exactly in Table_S8; labelled rows across 12 cell types and 3 contrasts estimated at ~2.0M in Table_S16 (estimate, not a count)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~3 GB (317 MB label table + hg38 genome + ~0.3 GB cached sequence embeddings)", "note": "Tabular labels plus 300 bp sequences; a frozen DNA language model with a linear or boosted-tree head needs no GPU. Training a base-resolution convolutional network from scratch would."},
+    "a7_counts_match_paper": {"pass": true, "note": "Portal says 776,479 nuclei; my size-based estimate of the nuclei metadata table is ~776,600 (consistent). The dbGaP/BioProject record says 759,222 nuclei, a discrepancy I could not resolve; donor count 36 (23 failing, 13 non-failing) matches everywhere."},
+    "a8_label_provenance": {"pass": true, "note": "The proposed label is a DESeq2 log2 fold change computed from measured single-nucleus ATAC fragment counts, i.e. a physical measurement. Critically, the Activity-By-Contact scores (Tables S12/S18) and ChromBPNet scores (Table S33) in the same deposit ARE model outputs and must never be used as labels."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Label in one table (S16); features need hg38 genome plus optional joins to S7/S8/S9 on element coordinate."},
+    "B2": {"score": 1, "why": "Tab files parsed first try, but S15/S16 row names carry appended integers from R make.unique; needs a prefix join."},
+    "B3": {"score": 2, "why": "All labels from one DESeq2 pipeline on one assay and one donor cohort; already normalized by the authors."},
+    "B4": {"score": 2, "why": "Zero missing values in ~5,200 sampled rows across three positions of S16 and S15."},
+    "B5": {"score": 1, "why": "Unique per element x cell type x contrast, but the three contrasts (all-HF, ICM, NICM) share donors and overlap."},
+    "B6": {"score": 1, "why": "File names descriptive and DESeq2 columns self-explanatory, but Zenodo description is empty and S7 units undocumented."},
+    "C1": {"score": 2, "why": "'How far does sequence alone go in predicting disease response?' is informative whichever way it resolves."},
+    "C2": {"score": 1, "why": "ChromBPNet, scBasset, Enformer/Borzoi, AlphaGenome are open and well evaluated on steady-state accessibility; none on this disease delta."},
+    "C3": {"score": 2, "why": "Clear unique-application angle: this measured heart-failure accessibility delta table has not been modelled by anyone."},
+    "C4": {"score": 2, "why": "The label required 36 explanted human hearts and multimodal single-cell assays; prediction from sequence is far cheaper."},
+    "C5": {"score": 1, "why": "Obvious dummy baselines (per-cell-type mean, GC content, baseMean, motif counts); no published number on this exact task."},
+    "D1": {"score": 2, "why": "DNABERT-2 and HyenaDNA have open downloadable weights matched to 300 bp human DNA input."},
+    "D2": {"score": 2, "why": "285,873 sequences of ~300 bp can be embedded once on CPU and cached, then fitted with a ridge or boosted-tree head."},
+    "D3": {"score": 2, "why": "DNABERT-2 and HyenaDNA are Apache-2.0; the data itself is CC-BY-4.0, verified on the Zenodo record."},
+    "E1": {"ok": true, "why": "Chromosome is parseable from the element coordinate in S16; holding out whole chromosomes is the standard non-random split."},
+    "E2": {"ok": true, "why": "23 chromosomes and 12 cell types available as held-out groups; verified both columns exist."},
+    "E3": {"ok": true, "why": "Per-cell-type mean log2 fold change, GC content and baseMean are all computable from columns I saw."},
+    "E4": {"ok": true, "why": "lfcSE column gives a per-element standard error, and ICM vs NICM contrasts give replicate-like agreement."},
+    "E5": {"ok": true, "why": "Steady-state cell-type accessibility (S7) must be learnable, and MEF2A/cardiomyocyte motif enrichment in S10/S14 must be recovered."},
+    "E6": {"ok": true, "why": "Label shuffling within cell type and dinucleotide-shuffled sequences are both trivially runnable here."},
+    "E7": {"ok": true, "why": "Internal ICM-to-NICM transfer is free; an independent dilated-cardiomyopathy single-nucleus ATAC dataset would need reprocessing."},
+    "E8": {"ok": true, "why": "The paper's count of significant differentially accessible regions can be recomputed from S16, though it is a count not a model score."},
+    "G1": {"score": 2, "why": "hg38 coordinates, HGNC gene symbols and rsIDs all present in the tables I opened."},
+    "G2": {"score": 2, "why": "ENCODE SCREEN candidate elements and FinnGen/HERMES heart-failure fine-mapping join on coordinates and rsID."},
+    "G3": {"score": 1, "why": "Coordinate-overlap joins are one-to-many; manageable with bedtools and a max-overlap collapse rule."},
+    "G4": {"score": 2, "why": "Combines into: are heart-failure-responsive elements the same ones carrying common-variant risk, and is that predictable from sequence?"},
+    "H1": {"score": 2, "why": "Non-significant elements are present in S16 (sampled rows with adjusted p of 0.08 and 0.55), so negatives are systematic."},
+    "H2": {"score": 1, "why": "36 donors, 4 chambers, 12 cell types, two cardiomyopathy causes, but one consortium, end-stage disease only, mostly White donors."},
+    "H3": {"score": 2, "why": "The honest claim can be written in one sentence (see honest_claim_h3)."},
+    "H4": {"score": 2, "why": "Preprint states findings apply to heart failure with reduced ejection fraction; donor ethnicity and age are in Table S1."},
+    "I1": {"score": 2, "why": "Named users: Ren and Gaulton labs (UCSD), Kundaje lab (ChromBPNet), cardiac regulatory genomics groups."},
+    "I2": {"score": 2, "why": "A ranked list of sequence-predicted responsive elements changes which targets go on a CRISPR-interference plate."},
+    "I3": {"score": 2, "why": "Precision in the top 100 predicted elements is literally the decision a lab makes when choosing what to test."},
+    "I4": {"score": 1, "why": "Motif grammar is complex, but a motif-count logistic regression may match a language model; must be tested first."},
+    "J1": {"score": 2, "why": "Frozen-backbone embeddings, grouped chromosome splits, calibration and negative controls: real modelling work."},
+    "J2": {"score": 2, "why": "Cardiac positive controls (MEF2, GATA4, AP-1 in fibroblasts) are named in the paper's own motif tables."},
+    "J3": {"score": 2, "why": "The cleaned element x cell type x contrast table with sequences is a reusable resource even if the model fails."},
+    "J4": {"score": 1, "why": "No week budget written down yet; 4 weeks proposed here but not committed."},
+    "J5": {"score": 1, "why": "Kill condition stated in success_criteria but not yet written into NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {"name": "ChromBPNet (Kundaje lab, 2025) - a convolutional network predicting base-resolution chromatin accessibility from DNA sequence", "open_weights": true, "score_and_split": "Reported correlation around r = 0.7 between predicted and measured variant effects on accessibility (caQTLs) in coronary smooth muscle cells; evaluated on held-out chromosomes. Code on GitHub (kundajelab/chrombpnet).", "authors_named_unsolved": "Distal regulatory element effects remain poorly predicted relative to promoter-proximal ones, and transfer across cell contexts and ancestries is incomplete.", "runnable_as_baseline": false},
+      {"name": "ChromBPNet models trained by this paper's own authors on failing and non-failing cardiomyocytes (vCM_NO_HF, aCM_NO_HF appear in Table S33)", "open_weights": false, "score_and_split": "No performance number is given in the deposit; Table S33 contains 50,352 per-variant scores from vCM_NO_HF and aCM_NO_HF models only. Weights are not in the Zenodo record and retraining needs dbGaP-controlled fragment files.", "authors_named_unsolved": "Not stated in the open preprint text I could read.", "runnable_as_baseline": false},
+      {"name": "scBasset - a sequence model of single-cell ATAC accessibility", "open_weights": true, "score_and_split": "Published on peak-by-cell accessibility prediction; evaluated on held-out peaks. Not applied to this cardiac dataset.", "authors_named_unsolved": "Generalisation to unseen cell types and conditions.", "runnable_as_baseline": true},
+      {"name": "Enformer and Borzoi - long-context sequence-to-genomic-track models", "open_weights": true, "score_and_split": "Enformer predicts DNase and CAGE tracks from 200 kb of sequence on held-out chromosomes; both are known to underestimate distal enhancer effects.", "authors_named_unsolved": "Distal enhancer effect sizes are systematically underestimated; variant effect prediction on expression is weaker than on accessibility.", "runnable_as_baseline": true},
+      {"name": "AlphaGenome - DNA sequence model with released non-commercial weights and a heads-only fine-tuning package", "open_weights": true, "score_and_split": "Evaluated on held-out genomic regions across many assay tracks; includes bulk heart tissue but not cell-type-resolved failing-heart accessibility.", "authors_named_unsolved": "Cell-state and disease-context specificity beyond the training biosamples.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "DNABERT-2 (Apache-2.0) or HyenaDNA-tiny for 300 bp human DNA; one-hot convolutional network as the non-pretrained comparator", "freeze_and_head_viable": true, "hardware": "16 GB laptop CPU; embeddings cached once to disk (~0.3 GB), heads fitted with scikit-learn or LightGBM", "licence": "Apache-2.0 backbone weights; data CC-BY-4.0 (verified on the Zenodo record)"},
+  "integration": {"partner_dataset": "FinnGen R11 and HERMES heart-failure GWAS fine-mapping (already partially intersected in Tables S27/S28) plus ENCODE SCREEN candidate cis-regulatory elements", "join_key": "hg38 genomic coordinates and rsID", "bigger_question_one_sentence": "Are the cardiac regulatory elements that change accessibility in heart failure the same ones that carry inherited risk for it, and can DNA sequence flag them without needing a failing heart to measure?"},
+  "controls": {"positive_control": "Predict steady-state cell-type accessibility from the same sequences (Table S7) - this must work well; and the model must recover the paper's own reported motif enrichments (MEF2A in cardiomyocyte elements, RUNX1/AP-1 in activated fibroblast elements, Tables S10/S14, both files opened).", "negative_control": "Shuffle log2 fold change within each cell type and confirm collapse to the per-cell-type mean; re-run on dinucleotide-shuffled sequences; train on baseMean alone to see how much of the signal is just coverage.", "external_validation": "Train on the non-ischaemic cardiomyopathy contrast and test on the ischaemic one (both present as a 'contrast' column I verified), then an independent dilated-cardiomyopathy single-nucleus ATAC dataset, which would need reprocessing."},
+  "honest_claim_h3": "Among the 285,873 regulatory elements already accessible in at least one cardiac cell type of 36 explanted adult human hearts, DNA sequence alone ranks which ones gain or lose accessibility in end-stage heart failure with reduced ejection fraction, in a cohort that is almost entirely White donors from one consortium.",
+  "plain_idea": {
+    "one_liner": "Use the DNA letters of a cardiac regulatory switch to predict whether it turns up or down in failing hearts.",
+    "train_on": "Each example is one ~300 base-pair regulatory element (a short stretch of DNA that controls nearby genes) in one of 12 heart cell types. 285,873 such elements were counted exactly in Table S8; the label table covers them across 12 cell types and 3 disease contrasts, roughly 2.0 million labelled rows (estimated from file size, not counted).",
+    "predict": "The output is the log2 fold change in how open that element is in failing versus non-failing hearts. The true answer comes from single-nucleus ATAC-seq (a measurement of which DNA is physically accessible) on 23 failing and 13 non-failing human hearts, summarised per cell type by DESeq2, a standard statistical test.",
+    "why_worthwhile": "Cardiac genomics labs would get a ranked shortlist of disease-responsive switches to test with gene editing, without needing another explanted heart. Even if sequence turns out not to predict the response, that itself says disease response is driven by cell state rather than by the element's own DNA, which is worth knowing."
+  },
+  "paper_type": "resource",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "partly", "why": "No existing sequence model was trained on cell-type-resolved heart-failure accessibility change: this deposit has 285,873 elements x 12 cardiac cell types x 3 disease contrasts from 36 human hearts, whereas ENCODE heart tracks behind Enformer and AlphaGenome are bulk tissue. But the total accessibility data behind those models is far larger than ours."},
+    "confidence_score": {"answer": "yes", "why": "Table S16 carries an lfcSE (standard error of the fold change) for every element, and the overlapping ischaemic and non-ischaemic contrasts act as near-replicates, so predictions can be weighted by measurement noise. ChromBPNet, scBasset and Enformer report point predictions without a measurement-noise-calibrated interval."},
+    "models_beatable": {"answer": "no", "why": "ChromBPNet (2025) and AlphaGenome (2025-26) are recent, open and already evaluated on held-out chromosomes, so beating them at steady-state accessibility is unrealistic. The opening is that none of them predicts a disease delta, so this is a different task rather than a head-to-head rematch."},
+    "guaranteed_improvement": {"answer": "no", "why": "The authors' own failing/non-failing ChromBPNet models are not in the Zenodo deposit and retraining them needs the dbGaP-controlled fragment files, so the condition 'the existing model can be run as our baseline' fails."}
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Steady-state chromatin accessibility for the same coordinates is in very large public resources - ENCODE SCREEN candidate cis-regulatory elements and the human single-cell candidate element atlas (known resources, coordinate-keyed). The specific label here, a disease-versus-control accessibility change per cardiac cell type, is measured in only a handful of studies (for example dilated-cardiomyopathy single-nucleus ATAC work), which I found by search but did not download.",
+    "approx_items": null,
+    "join_key": "hg38 genomic coordinates (and rsID for the variant tables)",
+    "why": "The abundant steady-state label gives a free pretraining task and positive control, while the scarce disease-delta label is exactly what makes this dataset worth modelling."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Neighbouring regulatory elements share sequence context and coverage, so a random row split would put near-duplicates in both train and test.",
+      "baseMean and lfcSE are computed from the very counts that produced the log2 fold change label, so using them as features leaks both the label's magnitude and its noise structure.",
+      "The three contrasts (all heart failure, ischaemic only, non-ischaemic only) share donors, so the same element's labels across contrasts are not independent and must stay on the same side of the split.",
+      "Repeat families and paralogous sequences can place near-identical DNA in train and test even after a chromosome split.",
+      "Two tables in the same deposit are model outputs, not measurements: Activity-By-Contact scores (S12/S18) and ChromBPNet scores (S33). Using either as a label would mean distilling another model instead of learning biology."
+    ],
+    "split": "Hold out whole chromosomes, built from the chromosome parsed out of the element coordinate in Table_S16 (for example chr8 and chr9 for validation, chr1 and chr2 for test). I confirmed that coordinate column exists and parses in every sampled row. A second axis holds out whole cell types to test cross-cell-type transfer.",
+    "checks": [
+      "Shuffle the log2 fold change within each cell type and confirm performance collapses to the per-cell-type mean.",
+      "Train on baseMean alone, and separately on GC content alone, to see how much apparent skill is coverage and composition.",
+      "Measure nearest-neighbour sequence similarity between each test element and the training set, and re-score after removing the most similar decile.",
+      "Re-run on dinucleotide-shuffled sequences, which should match the dummy baseline."
+    ],
+    "verdict": "Manageable: the chromosome column needed for the split is present and verified, and the main trap (feeding back baseMean) is avoidable by decision rather than by cleaning."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured log2 fold change in accessibility (failing versus non-failing) on held-out chromosomes in ventricular cardiomyocytes, plus precision among the top 100 predicted gained elements - because the top 100 is what a lab would actually put on a gene-editing plate.",
+    "baselines": "Per-cell-type mean log2 fold change (Spearman 0 by construction); single-feature models on GC content, baseMean and distance to the nearest transcription start site; a motif-count logistic regression using the JASPAR motif set. No published sequence-model number exists for this task - I searched and found none.",
+    "success": "Spearman at or above 0.25 on held-out chromosomes in ventricular cardiomyocytes for the sequence-only model, against 0.10 or less for the GC-content and baseMean baselines, and at least 50 of the top 100 predicted gained elements significant at adjusted p < 0.05.",
+    "noise_ceiling": null,
+    "kill": "If after one week the sequence-only model beats the GC-content baseline by less than 0.05 Spearman on held-out chromosomes in every cell type, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes sequence-to-regulation methods with honest held-out evaluation; would need sequence to predict disease-responsive elements across several cell types and to validate in an independent cardiomyopathy dataset."},
+    "realistic": {"journal": "PLOS Computational Biology", "why": "Publishes careful, well-controlled analyses including partly negative ones; a quantified answer to 'how much of the heart-failure accessibility change is sequence-encoded' fits whichever way it comes out."},
+    "fallback": {"journal": "NAR Genomics and Bioinformatics", "why": "Takes benchmark and resource papers; even a null result plus the cleaned element-by-cell-type-by-contrast table with sequences is publishable there."}
+  },
+  "pitch": {
+    "headline": "285,873 cardiac regulatory elements, measured as more or less open in 23 failing versus 13 non-failing human hearts, across 12 cell types, free to download.",
+    "what_makes_the_data_unusual": "Cell-type-resolved disease-versus-control accessibility from 36 explanted human hearts, with non-significant elements kept (negatives present) and a standard error per element, under CC-BY-4.0. I opened the tables; only the raw sequencing is access-controlled.",
+    "the_win": "A sequence-only model reaching Spearman 0.25 on held-out chromosomes in ventricular cardiomyocytes, against 0.10 for GC content, with over half of its top 100 predicted gained elements significant.",
+    "even_if_it_fails": "A null result says heart-failure accessibility change is not written into the element's own DNA but set by cell state, which directly constrains how sequence models should be used in disease genomics.",
+    "who_wants_it": "The Ren and Gaulton labs at UCSD who made the data, the Kundaje lab who build sequence models of accessibility, and cardiac target-discovery groups choosing which elements to disrupt in stem-cell-derived cardiomyocytes."
+  },
+  "ml_idea": "Predict the measured log2 fold change in chromatin accessibility between failing and non-failing human hearts for each of 285,873 candidate regulatory elements in each of 12 cardiac cell types, from the element's 300 bp hg38 sequence plus a cell-type indicator. Backbone: frozen DNABERT-2 or HyenaDNA embeddings cached once on CPU, fitted with a ridge or gradient-boosted head, compared against a small one-hot convolutional network and against motif-count and GC-content baselines. Split by whole chromosome and, separately, by held-out cell type. Positive control: the same pipeline predicting steady-state cell-type accessibility (Table S7), which must work. Labels come only from the DESeq2 output on measured ATAC counts, never from the Activity-By-Contact or ChromBPNet columns in the same deposit.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 3.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 6,
+    "embedding_hours": 6,
+    "cv_run_minutes": 25,
+    "compute_note": "Estimated, not timed: 285,873 sequences of ~300 bp at roughly 15-30 sequences per second for DNABERT-2 on an Apple Silicon CPU gives 3-6 hours of one-off embedding; the 317 MB label table loads in chunks under 2 GB, and a 23-fold chromosome cross-validation of a ridge or boosted-tree head on 286k x 256 features is tens of minutes. Only the downloads and the pandas parses in this evaluation were actually timed.",
+    "cheapest_killing_check": "Download Table_S16 (317 MB) and count, per cell type for the HF_vs_NON_HF contrast, how many elements reach adjusted p < 0.05 and how many rows resolve cleanly against the 285,873 element universe in Table_S8. If ventricular cardiomyocytes have fewer than ~2,000 significant elements out of ~170k tested, or if the appended-integer row names cannot be matched back to the element list, the project is dead before any modelling."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "The data is public, CC-BY-4.0 and genuinely model-ready: the label is a literal log2FoldChange column computed from measured single-nucleus ATAC counts, negatives are present, there is a per-element standard error for a noise ceiling, and a chromosome split is trivially available. All eight Part A killers pass on files I actually opened. Two things stop it being an immediate 'do it'. First, the two tables the project depends on most (Table_S16 at 317 MB and Table_S7 at 66.7 MB) are over the download cap, so their row counts are estimates from sampled line lengths, not counts, and the project's viability rests on how many elements are actually significant per cell type. Second, row names in Table_S16 carry appended integers from R's make.unique, so every element identifier has to be resolved back against the verified 285,873-element universe before anything can be joined - a half-day of work that could also turn out to be ambiguous. Model-readiness scores 7 of 12, just under the threshold, for exactly these reasons. Do the cheapest killing check first: count significant elements per cell type and confirm the identifiers resolve. The field is crowded for steady-state accessibility (ChromBPNet, scBasset, Enformer, AlphaGenome, all open and honestly evaluated) but empty for this disease delta, and the authors' own failing/non-failing ChromBPNet models are not released, so there is no baseline to beat and no risk of a marginal-gain paper."
+}

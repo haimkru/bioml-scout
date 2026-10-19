@@ -1,0 +1,67 @@
+{
+  "paper_id": "science2026-adx9929",
+  "title": "Surface immune signaling unlocks NLR activation through mRNA alternative splicing.",
+  "doi": "10.1126/science.adx9929",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/19688609",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened the Zenodo deposit (CC-BY-4.0): MADA_ext.zip (4.2 MB), phylo.zip (1.2 MB), HMM.zip (31.9 MB) and both R Markdown files. Counted rows and columns: SolDB_MADA_ext.csv = 619 rows x 11 columns (HMMER hit position, E-value, bit score, methionine counts); SolDB_MADA_ext_meta.csv = 619 rows across 84 species and 224 genome assemblies, all architecture 'CNL'; SolDB_MADA_annot.csv = 8,530 rows (619 'extended' with a hex colour, 7,911 'normal' whose identifier sits in the wrong column); SolDB_MADA_ext_meta_redundant_coord.csv = 1,642 rows with genome coordinates; NLR_ref.fasta = 74,158 protein sequences; HMMER table = 8,608 unique hits for one query motif. Listed sequences.zip (140 MB, over the 50 MB cap) by a ranged read of its zip index: 7 FASTA/cluster files only. Read the R code (Rpi-vnt1_nterm_v3.md) that creates the label. Searched NCBI SRA, ENA, GEO and BioProject for sequencing data from this study and found none (the 18 SRA hits for 'Rpi-vnt1' belong to unrelated BioProject PRJDB34659).",
+    "what_came_from_paper_text_only": "The paper itself is paywalled with no PubMed Central copy, so the abstract is all I have of the text: the prodomain-inhibits-resistosome mechanism, the pattern-triggered-immunity-induced splicing of Rpi-vnt1.1, and the claim that N-terminal extensions are widespread. No methods, no figure numbers and no data availability statement were readable, so I could not cross-check the deposit's counts against the paper's own numbers."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 19688609, CC-BY-4.0, no login; I downloaded four of eight files successfully. sequences.zip is 140 MB, above the 50 MB cap, but its contents are duplicated inside HMM.zip."},
+    "a2_label_is_a_column": {"pass": false, "note": "The paper's actual measurement - how much of the inhibitory intron is retained versus spliced out - appears nowhere as a column; there is no isoform-ratio, percent-spliced-in or expression table in the deposit. The only column-form label is a flag derived by the authors' own script from the protein sequence."},
+    "a3_inputs_present": {"pass": true, "note": "Protein sequences are inline in the metadata CSV and in FASTA (74,158 NLR proteins); 1,642 genomic sequences with flanking regions are in FASTA with coordinates."},
+    "a4_units_stated": {"pass": true, "note": "HMMER E-value and bit score, residue positions and genome coordinates with strand are all labelled columns; units are unambiguous."},
+    "a5_enough_rows": {"pass": true, "n_rows": 8530, "note": "619 'N-terminally extended' CNL-type NLRs against 7,911 'normal' MADA-motif NLRs, counted in the files - enough rows for classification if the label were legitimate."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.2 GB", "note": "All tables and the 79 MB protein FASTA load comfortably in memory on a 16 GB laptop; no GPU needed."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked - the paper is paywalled with no PubMed Central copy, so no published count exists to compare. Internally, 8,608 HMMER hits versus 8,530 annotated rows differ by 78, and SolDB_MADA_annot.csv stacks two blocks with mismatched columns (7,911 rows have the identifier in the colour column)."},
+    "a8_label_provenance": {"pass": false, "note": "Killer. The label ('MADA motif starts at residue 2 or later, with an upstream methionine, inside the coiled-coil domain') is computed from the protein sequence itself by HMMER plus two counting rules, as I read in the authors' R script - so a sequence model would be re-learning a deterministic function of its own input. Worse, the underlying gene models are Helixer predictions (a neural-network gene annotator), so the N-terminal sequence and the intron boundary are themselves another model's output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "NLRexpress (bundle of 17 machine-learning predictors of NLR sequence motifs, Frontiers in Plant Science 2022)", "open_weights": true, "score_and_split": "Reported as fast and precise for coiled-coil, TIR, nucleotide-binding and leucine-rich-repeat motif detection; exact split not retrieved (search result abstract only).", "authors_named_unsolved": "Not retrieved - I only saw the abstract-level search result.", "runnable_as_baseline": true},
+      {"name": "NLRtracker (rule-and-profile pipeline that annotates NLR domain architecture; used by this paper itself to build its table)", "open_weights": true, "score_and_split": "Not a scored predictor - a deterministic annotation pipeline, which is exactly what generates this deposit's 'label'.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "Resistify (NLR classifier, 2025, Smith et al.)", "open_weights": true, "score_and_split": "Not retrieved beyond the title; reported to reveal helitron-associated NLR expansion in Solanaceae.", "authors_named_unsolved": "Not retrieved.", "runnable_as_baseline": true},
+      {"name": "UniSplicer (deep-learning splice-site predictor for diverse species, Plant Communications 2025) and SpliceAI", "open_weights": true, "score_and_split": "UniSplicer reported to beat SpliceAI and Spliceator; SpliceAI verification around 80% in Arabidopsis thaliana and 60% in rice, per the retrieved abstract.", "authors_named_unsolved": "Accurate prediction with limited transcriptomic data for non-model species, per the retrieved abstract.", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model, small CPU-runnable checkpoints) would fit the 8,530 NLR protein sequences; a DNA model such as Nucleotide Transformer would fit the 1,642 genomic regions.", "freeze_and_head_viable": true, "hardware": "CPU laptop, embeddings cached once", "licence": "MIT (ESM-2); data is CC-BY-4.0"},
+  "integration": {"partner_dataset": "RefPlantNLR (curated, experimentally validated plant NLR collection) is already bundled in the deposit; UniProt and AlphaFold DB would join on accession for the reference subset only.", "join_key": "Sequence identifier; genome coordinates plus assembly accession for the Solanaceae entries (these are Helixer-predicted gene IDs, not stable public identifiers).", "bigger_question_one_sentence": "Could ask whether N-terminal extensions co-occur with particular intron architectures across Solanaceae, but with no measured splicing values the combination still cannot be tested."},
+  "controls": {"positive_control": "Rpi-vnt1.1 itself, the one protein with experimental evidence for the prodomain, must come out positive - but it is a single item, not a control set.", "negative_control": "Label shuffling is runnable; it would not rescue the project, because the label is a function of the input sequence.", "external_validation": "RefPlantNLR gives experimentally validated NLRs, but none of them carry a measured splicing or autoactivity value for this task."},
+  "honest_claim_h3": "The only claim a model trained on this deposit could make is 'we can reproduce the authors' HMMER-plus-methionine-counting rule from the same sequence it was computed on', which is a re-implementation of a deterministic annotation, not a biological prediction.",
+  "plain_idea": {
+    "one_liner": "Use plant immune receptor gene sequences to predict which ones carry a self-inhibiting front segment removed by regulated splicing.",
+    "train_on": "The project I considered: 8,530 nucleotide-binding leucine-rich repeat (NLR) immune receptor proteins from 224 Solanaceae genome assemblies and 84 species, with 1,642 matching genomic regions including flanking sequence - counts I verified in the files.",
+    "predict": "Whether a receptor carries an extra N-terminal segment ahead of its coiled-coil activation motif, and ultimately whether that segment is spliced out when the plant detects a pathogen. The true answer for the second, the measured isoform ratio, exists for only one gene in the paper's figures and in no file.",
+    "why_worthwhile": "Plant breeders and resistance-gene engineers would like to know which cloned resistance genes are silently held back by a removable front segment, since that would explain why some transferred genes fail in new crops. Nothing in the deposit lets that be learned."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "8,530 annotated NLRs from one plant family is a narrower slice than the pan-species collections already used by NLRexpress, NLRtracker and Resistify, and it was produced by running NLRtracker itself."},
+    "confidence_score": {"answer": "no", "why": "There are no replicate measurements of anything - the files contain HMMER E-values and bit scores, which are search statistics, not measurement noise."},
+    "models_beatable": {"answer": "no", "why": "The relevant tools (NLRexpress 2022, NLRtracker, Resistify 2025) are open and would be the generators of our own labels, so beating them is logically impossible here."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: there is no measured quantity to predict, so no baseline can be beaten on anything meaningful."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a protein or DNA language model to predict which Solanaceae coiled-coil NLR immune receptors carry an N-terminal extension upstream of the MADA activation motif, and by extension which carry a splicing-removable prodomain. The label is HMMER output on the same sequence used as input, and the paper's real measurement - the pathogen-induced isoform ratio - is in no file.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 8,
+    "cv_run_minutes": 10,
+    "compute_note": "Estimated, not timed: 8,530 proteins averaging 921 residues through a small ESM-2 checkpoint on a laptop CPU at roughly 0.3 sequences per second gives about 8 hours one-off; the tables themselves are tens of megabytes and load in seconds, which I did time implicitly while inspecting them.",
+    "cheapest_killing_check": "Search the deposit for any isoform-ratio, percent-spliced-in or read-count column (there is none), then read the twenty lines of Rpi-vnt1_nterm_v3.md that build the label - they show it is HMMER's hit position plus a methionine count on the same input sequence. Both checks together take fifteen minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A8 and A2. The deposit is a reproducibility archive of the paper's bioinformatics, not measured data: the only label is the authors' own HMMER-plus-methionine rule applied to the very protein sequence that would be the model input, and the gene models underneath come from Helixer, a neural-network annotator, so a model would be distilling two tools rather than learning biology. The paper's actual discovery - that pattern-triggered immunity shifts Rpi-vnt1.1 mRNA splicing to remove the inhibitory prodomain - is supported by gel and cell-death experiments on essentially one gene, and no splicing quantification, expression table or sequencing accession from this study exists in Zenodo, GEO, SRA, ENA or BioProject. A7 is also unverifiable because the paper is paywalled with no PubMed Central copy, and the annotation file stacks two row-blocks with mismatched columns."
+}

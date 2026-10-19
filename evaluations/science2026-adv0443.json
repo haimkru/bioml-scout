@@ -1,0 +1,96 @@
+{
+  "paper_id": "science2026-adv0443",
+  "title": "Genomes of Poaceae relatives reveal key metabolic innovations preceding the evolution of grasses.",
+  "doi": "10.1126/science.adv0443",
+  "journal": "Science",
+  "data_url": "https://www.biorxiv.org/content/10.1101/2024.11.06.622220v2.supplementary-material (preprint supplement, CC-BY-NC); genome assemblies GCA_059746145.1 (Pharus latifolius), GCA_059642725.1 (Joinvillea ascendens), GCA_059706395.1 (Typha latifolia), BioProject PRJNA1179411 (Ecdeiocolea monostachya)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and read the 79-page preprint supplement PDF: Table S3, the only measured-value table, holds exactly 37 enzyme variants with Km (micromolar), kcat (per second) and kcat/Km (per second per millimolar) for both tyrosine- and phenylalanine-ammonia-lyase assays; Table S4 lists 30 candidate residues; Table S1 lists 39 species. Downloaded the Zenodo deposit (10.5281/zenodo.20131801): 10 files, 17,966 bytes total, Perl and Slurm scripts only, zero data. Confirmed via NCBI that three new chromosome-level assemblies are public with GenBank FTP paths (released July-August 2026) and that Ecdeiocolea is under BioProject PRJNA1179411/PRJNA894727.",
+    "what_came_from_paper_text_only": "Assembly statistics (Joinvillea 1.21 Gb/29,122 genes, Ecdeiocolea 897 Mb/27,801 genes, Pharus 1.12 Gb/32,144 genes) and the 2,493,258 putative paralog pairs from 10,255 orthogroup trees come from the preprint text; I did not download any assembly FASTA or the orthogroup trees (the latter are not deposited). The Science version of record is paywalled, so I read the bioRxiv preprint (10.1101/2024.11.06.622220 v2) instead."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Partly. Assemblies download from GenBank without login and the supplement PDF is public on bioRxiv, but the data availability statement says 'All other data reported in this paper will be shared by the lead contacts upon request', and most comparison genomes sit in Phytozome, which needs a free JGI account."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Yes, but only as a PDF table: Table S3 has kcat/Km for tyrosine-ammonia-lyase activity as a column for each enzyme, so the label exists; it needs transcription from PDF, not construction across sources."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Weakly. Protein sequences are not in any file; the table gives gene-model identifiers (e.g. Joasc.05G060400.1) needing Phytozome lookups, but that is ~10 lookups plus mutants built from the mutation notation, not thousands."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Verified in Table S3: Km in micromolar, kcat in per second, catalytic efficiency in per second per millimolar, means plus/minus standard deviation with n=3 replicates stated in the Fig. 3 legend."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 37,
+      "note": "FAIL. The only measured table (Table S3, counted by hand in the PDF) has 37 enzyme variants: 10 wild-type ammonia lyases plus 27 site-directed mutants, mostly of one protein (JaPAL). The checklist needs ~1,500 labelled rows, or ~400 for classification; 37 is two orders of magnitude short, and the wild-type classification task has 10 examples."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "<1 MB for the kinetics table; ~3 GB if all four genome assemblies were downloaded",
+      "note": "Not the binding problem. Assessed only because the table is trivially small; stopped scoring at A5."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The text's statements (PTAL Km for tyrosine 11-19 micromolar, PAL 3449-6211 micromolar) match Table S3 values I read; no total enzyme count is claimed in the text to contradict."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Good provenance: labels are Michaelis-Menten parameters from HPLC (high-performance liquid chromatography) assays of purified recombinant enzymes, a real physical measurement, not another model's output. This is the one Part A item the paper is strongest on."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model; the 150M-parameter checkpoint runs on a laptop CPU)",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU only; 37 sequences embed in under a minute",
+    "licence": "MIT (ESM-2 weights)"
+  },
+  "integration": {
+    "partner_dataset": "BRENDA / SABIO-RK enzyme kinetics (EC 4.3.1.24 phenylalanine ammonia-lyase, EC 4.3.1.23 tyrosine ammonia-lyase) plus UniProt sequences",
+    "join_key": "EC number and UniProt accession",
+    "bigger_question_one_sentence": "Could a sequence model trained on all published aromatic amino acid lyase kinetics predict which plant paralogs switched to tyrosine, so the switch could be found in genomes without assaying every enzyme? — plausible as a question, but this paper contributes only 37 of the needed rows."
+  },
+  "controls": {
+    "positive_control": "The His140 (histidine at alignment position 140) rule: any working model must rank the six His140 enzymes above the four Phe140 ones, since that single residue already separates them perfectly in these data.",
+    "negative_control": "Shuffle the tyrosine-activity labels across the 37 variants and confirm the score collapses; also train on the single residue at position 140 alone, which likely explains most of the signal.",
+    "external_validation": "BRENDA/SABIO-RK entries for bacterial and fungal tyrosine ammonia-lyases, and previously published Sorghum and Brachypodium PAL/PTAL kinetics (references 14 and 56 of the paper)."
+  },
+  "honest_claim_h3": "With 37 enzyme variants, 27 of them mutants of a single Joinvillea protein, any model could only claim 'I reproduce the His140/Ser112 rule the authors already identified by hand in these ten wild-type enzymes', which is a lookup, not a prediction.",
+  "plain_idea": {
+    "one_liner": "Use a plant enzyme's protein sequence to predict whether it can use tyrosine as well as phenylalanine to make lignin.",
+    "train_on": "Each example would be one purified ammonia-lyase enzyme, represented by its protein sequence; I verified there are 37 such examples in the paper's Table S3 (10 wild-type enzymes from six plant species plus 27 engineered point mutants).",
+    "predict": "The catalytic efficiency for tyrosine (kcat/Km, per second per millimolar), measured by the authors with HPLC (high-performance liquid chromatography) assays of purified recombinant protein, three replicates per enzyme.",
+    "why_worthwhile": "Metabolic engineers who want tyrosine-fed lignin or p-coumaric acid production would like to pick promising enzymes from genome sequence instead of cloning each one; even a failure would quantify how far a single active-site residue goes."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict tyrosine-ammonia-lyase catalytic efficiency (or the binary PAL-versus-PTAL call) from protein sequence using frozen ESM-2 embeddings plus a small head, trained on the paper's 37 measured enzyme variants and validated against literature lyase kinetics. Rejected: 37 rows, 27 of them mutants of one protein, and the authors show a single residue (Phe/His 140, with Ser/Ile 112 as a modifier) already separates the classes, so a two-residue lookup table does the job.",
+  "effort": {
+    "hours_to_feature_table": 3.0,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 2.0,
+    "embedding_hours": 0.02,
+    "cv_run_minutes": 1.0,
+    "compute_note": "Estimated, not timed: 37 sequences of ~700 residues through ESM-2 150M on CPU is well under a minute, and the feature table is three hours of transcribing a PDF table plus fetching ten gene models from Phytozome.",
+    "cheapest_killing_check": "Count the rows of the kinetics table in the supplement — I did this: 37, versus the ~400 minimum for a classification task. Done in one download."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A5 fails by two orders of magnitude: the only measured table has 37 enzyme variants (10 wild-type, 27 mutants of mostly one protein), verified by reading the supplement PDF. The rest of the paper's output is four genome assemblies and phylogenetic inferences, with no feature/label table and 'other data on request'. The science is excellent and the labels have clean provenance (HPLC kinetics, units stated), but there is nothing here to train on, and the authors show a one- or two-residue rule already separates PAL from PTAL, so even with more rows the task is a lookup rather than a model."
+}

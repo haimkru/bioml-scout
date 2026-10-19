@@ -1,0 +1,169 @@
+{
+  "paper_id": "nar2026-gkag733",
+  "title": "Synonymous mutations in essential genes infrequently produce fitness effects in human cell lines.",
+  "doi": "10.1093/nar/gkag733",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21109071",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the Europe PMC supplement and read all 16 sheets of SupplementaryTable_review.xlsx (library design: 2,134 ABE and 3,528 CBE guide RNAs, 128 genes). The processed screen results sit inside a 6.36 GB Zenodo zip, so I read its central directory with an HTTP range request and pulled the 26 member files I needed (12.3 MB total) by byte range: 11 DESeq2 result tables and 11 raw read-count tables. Confirmed the outcome columns (log2FoldChange, lfcSE, pvalue, padj), 0 missing values, 0 duplicate guide IDs, row counts (4,309 ABE / 7,163 CBE per condition), category breakdown, and computed replicate-to-replicate reproducibility myself from the raw counts.",
+    "what_came_from_paper_text_only": "The 8,558 figure for putative synonymous mutations, the 37.9-fold ratio versus missense, the exclusion of splice-proximal sites, the editing-efficiency validation, and the cell-culture timeline. I did not download the raw sequencing (BioProject PRJNA1236376) or the 3.6 GB whole-genome-sequencing archive."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 21109071, CC-BY-4.0, no login. Caveat I verified: the processed tables are buried inside a single 6.36 GB zip, so a normal user downloads 6.36 GB to get 12 MB of useful CSVs (I used byte-range requests instead)."},
+    "a2_label_is_a_column": {"pass": true, "note": "log2FoldChange and padj are literal columns in DESeq2_*.csv, indexed by guide name (e.g. SYN_CLP1_0), which joins directly to the library annotation. Opened and confirmed."},
+    "a3_inputs_present": {"pass": true, "note": "20-nucleotide guide sequences are in the count tables; gene, RefSeq transcript, chromosome, edit coordinate, codon change and amino-acid change are in supplementary tables 5-8. No external lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Standard DESeq2 output: log2 fold change, its standard error, p-value, adjusted p-value, plus raw read counts. Units unambiguous; verified in the headers."},
+    "a5_enough_rows": {"pass": true, "n_rows": 11472, "note": "4,309 adenine-base-editor guides plus 7,163 cytosine-base-editor guides with a label per cell line and timepoint; 11,472 distinct guides. Counted in the files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "12.3 MB of CSVs (DESeq2 results plus read counts)", "note": "Trivially fits 16 GB RAM, no GPU needed. Only the one-off 6.36 GB download is awkward."},
+    "a7_counts_match_paper": {"pass": true, "note": "Guide counts match exactly (paper: 5,662 windows = 2,134 ABE + 3,528 CBE; files agree; 128 genes agree). But the headline 8,558 putative synonymous mutations does not reconcile: I count 9,929 synonymous edit events, collapsing to 5,638 unique genome positions. The modelling unit (the guide) matches, so I pass this with that caveat recorded."},
+    "a8_label_provenance": {"pass": true, "note": "Label is a measured quantity: Illumina read counts of guide abundance, day 14/day 0 versus the pre-selection sample, normalised by DESeq2. Not another model's output and not computable from the sequence features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "11 DESeq2 tables plus 2 library sheets plus 11 count tables; guide-name key joins cleanly, verified in files."},
+    "B2": {"score": 1, "why": "DESeq2 CSVs parsed first try; library sheets store Python-style lists as text needing literal parsing."},
+    "B3": {"score": 2, "why": "All outcomes produced by one DESeq2 pipeline against the same pre-selection reference; authors already normalised."},
+    "B4": {"score": 2, "why": "Zero missing log2 fold changes or adjusted p-values in any file I opened; no censored or qualitative entries."},
+    "B5": {"score": 2, "why": "Checked: 0 duplicated guide identifiers within each results table."},
+    "B6": {"score": 1, "why": "DESeq2 columns self-documenting, but no README; count-column codes (KC1, DN1, D14) reverse-engineered."},
+    "C1": {"score": 0, "why": "Verified replicate correlation for synonymous guides is 0.05-0.20, so a null result cannot be interpreted."},
+    "C2": {"score": 0, "why": "Several open, honestly split models exist for synonymous variant effect and base-editor guide fitness; see audit."},
+    "C3": {"score": 0, "why": "No angle survives: data is 35x smaller than the prime-editing synonymous screen and its label is noise."},
+    "C4": {"score": 2, "why": "Pooled base-editing screens in two cell lines over weeks are genuinely slow and costly lab work."},
+    "C5": {"score": 2, "why": "Dummy baselines obvious (per-category, per-gene mean); published hit rates reproducible from the files."},
+    "D1": {"score": 2, "why": "DNABERT-2 and Nucleotide Transformer are open-weight DNA language models matching 20-nucleotide guides plus context."},
+    "D2": {"score": 2, "why": "Only ~11,500 short sequences; embeddings cacheable once on CPU in about an hour."},
+    "D3": {"score": 2, "why": "Data is CC-BY-4.0 (checked Zenodo metadata); the DNA backbones are permissively licensed."},
+    "E1": {"ok": true, "why": "Hold out whole genes (128 present) or whole cell line; gene column present in files."},
+    "E2": {"ok": true, "why": "128 genes, 2 cell lines, 2 base editors, 2 timepoints: ample held-out groups."},
+    "E3": {"ok": true, "why": "Per-category and per-gene mean log2 fold change computable directly from the tables I opened."},
+    "E4": {"ok": true, "why": "Two replicates per condition; I computed the ceiling: r=0.054 synonymous, 0.708 stop-codon guides."},
+    "E5": {"ok": true, "why": "Stop-codon guides deplete strongly: 198/902 significant in K562 cytosine editor, verified by me."},
+    "E6": {"ok": true, "why": "888 non-targeting/control guides in the cytosine library plus label shuffling; both runnable."},
+    "E7": {"ok": true, "why": "Re-analysed HAP1, MCF7 and MCF10A base-editor screens ship in the Zenodo review archive; prime-editing screen public."},
+    "E8": {"ok": true, "why": "Hit rates in NCT_hit_rate.csv and supplementary table 14 reproduce from the DESeq2 files I pulled."},
+    "G1": {"score": 2, "why": "Gene symbol, RefSeq transcript, chromosome and GRCh38 coordinate all present in supplementary tables 5-8."},
+    "G2": {"score": 2, "why": "DepMap gene effect (already used by authors), ClinVar and gnomAD on coordinates: named, joinable."},
+    "G3": {"score": 1, "why": "Each guide maps to 1-3 edit positions, so a collapse rule is needed before any variant-level join."},
+    "G4": {"score": 1, "why": "Could ask whether screen-depleted synonymous sites match clinically flagged ones, but the noise undermines it."},
+    "H1": {"score": 2, "why": "Non-targeting, non-essential-gene and neutral control guides systematically included; most outcomes are null."},
+    "H2": {"score": 1, "why": "Only two leukemia suspension cell lines (K562, Jurkat), 128 essential genes, one lab."},
+    "H3": {"score": 2, "why": "The claim can be written precisely in one sentence; see honest_claim_h3."},
+    "H4": {"score": 2, "why": "Paper explicitly states splice-proximal exclusion, editing-efficiency limits and the cell-line restriction."},
+    "I1": {"score": 1, "why": "Codon-usage and base-editor-screen communities would read it; no single lab waiting on it."},
+    "I2": {"score": 0, "why": "The biological question is already answered by this paper and by the larger prime-editing screen."},
+    "I3": {"score": 0, "why": "Only 9-23 synonymous positives per condition; no classification metric is stable at that count."},
+    "I4": {"score": 0, "why": "Guide category alone explains nearly all depletion variance; a lookup table matches any model."},
+    "J1": {"score": 1, "why": "Would teach grouped splits and noise ceilings, but modelling would be mostly fitting noise."},
+    "J2": {"score": 2, "why": "Controls are unambiguous: stop-codon guides must deplete, non-targeting guides must not."},
+    "J3": {"score": 1, "why": "The replicate-reproducibility analysis is shareable as a short note even with no model."},
+    "J4": {"score": 0, "why": "No time budget set for this candidate."},
+    "J5": {"score": 0, "why": "No kill date written; moot since the killing check already ran."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DS Finder (from the prime-editor synonymous-mutation screen, Nature Biotechnology 2025)",
+        "open_weights": null,
+        "score_and_split": "Gradient-boosted trees (CatBoost) trained on a prime-editing screen of 297,900 engineered guide RNAs covering synonymous mutations; feature importance via SHAP. I read this from search result summaries and the bioRxiv listing, not from the full text (the Nature page redirects to a login), so I could not verify the exact held-out split or score.",
+        "authors_named_unsolved": "They report that functional synonymous mutations act mainly through splicing disruption, messenger-RNA structure and translation initiation, implying that effects outside those mechanisms remain unpredicted.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "SyMetrics (NAR Genomics and Bioinformatics 2026), a synonymous-variant pathogenicity classifier",
+        "open_weights": true,
+        "score_and_split": "Extremely Randomized Trees on 4,696 benign and 367 deleterious synonymous single-nucleotide variants from dbDSM and ClinVar; 70/15/15 train/test/validation split; ROC-AUC 0.89 cross-validated, 0.87 final. Verified by fetching the article page.",
+        "authors_named_unsolved": "Relies on curated clinical labels, so it is untested against direct experimental fitness measurements.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "synVep, SilVA, IDSV, DDIG-SN, regSNPs-splicing (established synonymous-variant effect predictors)",
+        "open_weights": null,
+        "score_and_split": "Named in a 2023 Genome Biology review of in-silico methods for functional synonymous variants; I saw the review's summary of them, not their individual papers, so I have no verified score or split for each.",
+        "authors_named_unsolved": "The review's framing is that experimental validation data for synonymous variants is the limiting resource.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "BE-Hive, BE-DICT and DeepBE, deep-learning base-editing outcome predictors",
+        "open_weights": true,
+        "score_and_split": "BE-DICT is an attention model trained on 28,294 integrated target sequences (Nature Communications 2021); DeepBE covers 63 base editors (Nature Biotechnology 2023). The authors of this NAR paper already use BE-Hive in their own analysis code (src/behive_mapping.py in the GitHub repository I listed).",
+        "authors_named_unsolved": "Editing efficiency varies by sequence context, so phenotypically silent guides are hard to distinguish from truly neutral edits.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Machine-learning predictor of base-editor guide fitness score (Research Square preprint)",
+        "open_weights": null,
+        "score_and_split": "Reported ROC-AUC above 93% for discriminating strongly depleting cytosine-base-editor guides across cell lines, driven mostly by guide sequence features. From the search result summary only; preprint not fetched.",
+        "authors_named_unsolved": "Guides expected to be disruptive often appear phenotypically silent because of inefficient editing.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 or Nucleotide Transformer (DNA language models) on the guide plus flanking genomic context; ESM-2 (a protein language model) for the small missense subset",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; ~11,500 short sequences embed in about an hour",
+    "licence": "Backbone weights openly downloadable; data CC-BY-4.0"
+  },
+  "integration": {
+    "partner_dataset": "DepMap 22Q2 gene effect scores (already used by the authors) and ClinVar/gnomAD synonymous variants",
+    "join_key": "Gene symbol for DepMap; chromosome plus GRCh38 coordinate for ClinVar and gnomAD",
+    "bigger_question_one_sentence": "Do the synonymous positions that deplete cells in a fitness screen overlap the synonymous variants that clinical databases flag as deleterious, or are the two sets unrelated?"
+  },
+  "controls": {
+    "positive_control": "Stop-codon-creating guides in essential genes must deplete: verified, 198 of 902 significant at adjusted p<0.05 in K562 with the cytosine editor, and splice/start-disrupting guides 115 of 641.",
+    "negative_control": "888 non-targeting and control guides in the cytosine library (0.34% depleting hit rate, verified) plus label shuffling.",
+    "external_validation": "Re-analysed base-editor screens in HAP1, MCF7 and MCF10A cells shipped in the Zenodo review archive (I listed the files), and the published prime-editing synonymous screen."
+  },
+  "honest_claim_h3": "A model here could only claim: among single-guide base edits in 128 highly essential genes, away from splice sites, in two leukemia cell lines, it ranks which guides deplete over 14 days of growth, and that ranking is reliable only for guides that create stop codons or disrupt splicing, not for synonymous ones.",
+  "plain_idea": {
+    "one_liner": "Use the DNA sequence around a silent genetic change to predict whether that change slows human cell growth.",
+    "train_on": "Each example is one 20-letter guide RNA with its target gene, genome position and the exact codon change it makes; 11,472 guides, of which 5,601 make only silent (synonymous) changes. Count verified in the files.",
+    "predict": "The log2 change in how common that guide is after 14 days of cell growth, measured by counting DNA sequencing reads of the guide before and after, processed with DESeq2.",
+    "why_worthwhile": "If silent changes could be predicted to matter, clinical geneticists could stop dismissing them; if not, the negative result itself tells us the fitness cost of silent changes is below what this assay can see."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "This screen covers 8,558 putative synonymous mutations across 128 genes in 2 cell lines; the prime-editor screen behind DS Finder used 297,900 engineered guide RNAs, roughly 35 times more. No species, tissue or assay niche is uniquely covered here."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Two replicates per condition do let you compute a per-guide noise estimate, and I did: replicate-to-replicate correlation is 0.054 for synonymous guides versus 0.708 for stop-codon guides in K562 with the cytosine editor. That is a useful calibration number, but it shows the uncertainty swamps the signal rather than refining it."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "SyMetrics (2026) is an open Python package with a declared 70/15/15 split and ROC-AUC 0.87; DS Finder (2025) is trained on a 35-times-larger experimental screen. Both are recent and evaluated on held-out data."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: our label has no reproducible signal for the synonymous class (replicate r = 0.054), so joining it to an existing predictor's training data would add noise, not information. The assay also differs from the prime-editing assay the competing model was trained on."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "ClinVar and the Database of Deleterious Synonymous Mutations (dbDSM) hold curated pathogenic/benign labels for synonymous variants (confirmed via the SyMetrics article, which used 4,696 benign plus 367 deleterious). The prime-editor synonymous screen (Nature Biotechnology 2025) holds experimental fitness labels for ~297,900 guides. Found by search, not downloaded.",
+    "approx_items": 5063,
+    "join_key": "Chromosome plus genome coordinate (GRCh37/GRCh38), with gene symbol as a secondary key",
+    "why": "Clinical labels exist but are a different quantity (disease causation, not growth rate in a cell line), so they give a comparison set rather than extra training data for this label."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The considered project was: embed each guide's target sequence with an open DNA language model (DNABERT-2), add codon-usage, messenger-RNA folding and conservation features, and predict the measured log2 depletion, held out by gene and by cell line, asking specifically whether synonymous-variant pathogenicity predictors (SyMetrics, synVep) or the prime-editing-trained DS Finder transfer to an independent base-editing fitness readout. The measured noise ceiling kills it: for synonymous guides the two replicates of the same experiment correlate at r = 0.054 (cytosine editor) and 0.202 (adenine editor), while stop-codon control guides in the same tables reach 0.708 and splice-disrupting guides 0.704. Across cell lines the synonymous correlation is 0.00 (cytosine) to 0.22 (adenine). There is nothing reproducible to learn in the class of interest, and the class where signal does exist (stop-codon and splice-disrupting guides) is already well modelled and is identifiable by library design rather than by learning.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.012,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": 1.0,
+    "cv_run_minutes": 5,
+    "compute_note": "Measured file sizes directly (12.3 MB of CSVs extracted by byte range). Embedding and cross-validation times are estimates from ~11,500 short sequences through a small DNA language model on CPU; nothing timed. The 6 hours assumes either the byte-range extraction trick I used or a 6.36 GB download.",
+    "cheapest_killing_check": "Correlate replicate 1 against replicate 2 log2 fold change for the synonymous guides only, and compare with the stop-codon guides. I ran it in 15 minutes: 0.054 versus 0.708 (K562, cytosine editor). That single number ends the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Every Part A killer passes and the data is genuinely clean and open (CC-BY-4.0, 11,472 guides, measured DESeq2 labels, zero missing values, controls built in), but the label for the task of interest is noise: for synonymous guides the two replicates of the same screen correlate at r = 0.054 (cytosine editor) and 0.202 (adenine editor), against 0.70 for the stop-codon control guides in the same tables, and 0.00-0.22 across cell lines. Depleting-hit rates for synonymous guides (0.26-1.1%) sit at or below the rate for non-targeting control guides (0.34-5.7%), so the few positives are not distinguishable from false positives. On top of that the field is served: SyMetrics (open, ROC-AUC 0.87) and DS Finder (trained on a 35-times-larger prime-editing screen) already cover synonymous variant effects, and BE-Hive/BE-DICT/DeepBE cover base-editing outcomes. The paper is a solid negative biological result; it is not a modelling dataset."
+}

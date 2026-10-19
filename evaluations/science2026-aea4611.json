@@ -1,0 +1,135 @@
+{
+  "paper_id": "science2026-aea4611",
+  "title": "Conformational asymmetry of replicated human chromosomes.",
+  "doi": "10.1126/science.aea4611",
+  "journal": "Science",
+  "data_url": "https://github.com/glab-vbc/sister-asymmetry-analysis",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed the data shipped in the authors' GitHub repo (88.7 MB across 152 files, listed via the GitHub trees API): 6 asymmetry-score bigWig tracks, HeLa S3 replication-timing bigWig, 10 kb compartment and insulation tables, 41,001 loop calls, 9,089 Ok-seq initiation zones and 9,084 termination zones, 5,027 stripe peaks, hg19 chromsizes/centromeres. Built a genome-wide 100 kb feature/label table (30,353 bins; 27,167 with finite contact scores; 23,877 complete rows) and ran leave-chromosome-group-out cross-validation with shuffled-label and feature-ablation controls. Confirmed the Science page is paywalled (HTTP 403) and that no contact-matrix deposit exists in GEO (searched both corresponding authors), Zenodo, or the 4D Nucleome portal.",
+    "what_came_from_paper_text_only": "The abstract, and the bioRxiv preprint full text (10.1101/2025.07.09.663929, retrieved as Europe PMC XML), which supplied the data-availability statement, the '~9 million interactions per map' figure, and the definition of the asymmetry score. The published Science version's data-availability statement could not be retrieved (paywalled), so a GEO accession added at publication cannot be ruled out."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified. The preprint's 'Data and materials availability' names only two GitHub script repos, no data repository. The repo's own REQUIRED_DATASETS.md says the 734,545,355 bytes of .mcool contact matrices and 1,791,046,248 bytes of raw .pairs.gz 'the user must provide' and are 'still external'. I found no deposit in GEO (searched Goloborodko and Gerlich as authors; the only hits are the 2020 and 2023 predecessor series), Zenodo, or the 4D Nucleome portal. Only the 88 MB of derived tracks are downloadable; the primary measurement is effectively available-on-request."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "PASS with a caveat, verified. The asymmetry score is not shipped as a finished column, but it is one division of two bigWig tracks on an identical 100 kb bin grid (log2 of the trans_1_2 over the trans_2_1 cross-score). That is arithmetic, not construction by inference, so A2 passes."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "PASS, verified. Every candidate input is a real file with genomic coordinates, no identifier lookups needed: replication timing, compartment eigenvector, insulation, loops, CTCF peaks with motifs, and Ok-seq replication-fork zones, all on hg19."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "PASS, verified. Tracks are normalised contact frequencies (observed range 0 to 0.119); insulation is explicitly log2, column names carry the window size in base pairs, and bin coordinates are unambiguous hg19."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 23877,
+      "note": "PASS on raw count, verified: 23,877 complete 100 kb rows out of 30,353. But the effective count is far smaller: the score uses a sliding 1 Mb window, so neighbouring bins correlate (within-chromosome autocorrelation r=+0.42 at 100 kb, +0.27 at 500 kb)."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.09 GB",
+      "note": "PASS, verified. The whole usable set is 88.7 MB; I built the table and ran cross-validation in 25 seconds on CPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "PASS as far as checkable. Bin coverage (3,095,693,983 bases, 25 chromosomes) matches hg19, and the five conditions named in the preprint all have tracks present. The preprint's '~9 million interactions per map' could not be checked because the pairs files are not available."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL, verified in the files. The label is log2(trans_1_2 / trans_2_1); the local coverage term log2(trans_1_2 + trans_2_1) is computed from the very same two numbers and alone reaches leave-chromosome-out R-squared 0.131, with a monotone artefactual trend across coverage deciles (label mean +0.52 at lowest coverage rising to +1.11 at highest). Adding it lifts total R-squared from 0.141 to 0.294, so roughly half the apparent signal is a ratio-estimator bias. The insulation, compartment and loop features are also derived from the same Hi-C libraries as the label. Truly independent features explain almost nothing: replication timing plus Ok-seq gives R-squared 0.073, and Ok-seq fork direction alone gives 0.007."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Akita (convolutional network predicting Hi-C contact maps from DNA sequence)",
+        "open_weights": true,
+        "score_and_split": "Reported to predict genome folding from sequence alone on held-out chromosomes; benchmarked against Orca, DeepC and C.Origami by insulation-score correlation in IMR-90 cells. Exact numbers taken from a review, not from running it.",
+        "authors_named_unsolved": "Cell-type specificity and long-range/whole-chromosome scale, which later models (Orca, C.Origami) were built to address.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "C.Origami (multimodal network using sequence plus CTCF binding and chromatin accessibility)",
+        "open_weights": true,
+        "score_and_split": "De novo cell-type-specific contact-map prediction, evaluated on held-out chromosomes; published in Nature Biotechnology 2023. Numbers not independently verified here.",
+        "authors_named_unsolved": "Generalisation to cell types with no matching accessibility or CTCF data.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "TwinC (interpretable convolutional network for inter-chromosomal/trans contacts)",
+        "open_weights": null,
+        "score_and_split": "AUROC 0.80 on a cross-chromosomal test set from in situ and intact Hi-C in heart tissue; Nature Communications 2026. Read from the abstract, not run.",
+        "authors_named_unsolved": "Mechanistic drivers of trans contacts beyond compartments, accessibility and G-quadruplexes.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None appropriate. DNA backbones (Nucleotide Transformer, HyenaDNA, AlphaGenome) operate on sequence, but the label here is identical between the two sister chromatids by definition, so sequence cannot distinguish them.",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU would suffice for the tabular task, but the task itself is not viable.",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "ENCODE HeLa S3 replication timing and Ok-seq replication-fork directionality (both already bundled in the repo), joinable to AlphaGenome Atlas or 4D Nucleome on hg19 coordinates.",
+    "join_key": "hg19 genomic coordinates (chromosome, 100 kb bin start)",
+    "bigger_question_one_sentence": "Does the direction in which a replication fork travelled through a region set the direction in which its two sister chromatids end up offset? I tested exactly this and the answer is essentially no: Ok-seq fork direction explains R-squared 0.007 of per-bin asymmetry."
+  },
+  "controls": {
+    "positive_control": "Recover the paper's own reported contrasts: the A compartment should show more asymmetry than the B compartment. I confirmed this is present but tiny (+0.96 versus +0.83 log2 units, against a within-group spread of 0.48).",
+    "negative_control": "Label shuffling, which I ran: R-squared collapsed to -0.003 across three seeds, so the pipeline itself is sound and the weak result is a property of the data, not a bug.",
+    "external_validation": "The Sororin-depleted condition is the nearest thing to an independent repeat of the positional pattern, and it agrees with wild type at only r=0.13 across 25,342 bins. No second lab has produced sister-resolved Hi-C of this kind."
+  },
+  "honest_claim_h3": "A model could claim only that in one HeLa cell line, local sequencing coverage and replication timing weakly track a sister-chromatid offset score whose real content is a single genome-wide constant (+0.89 log2 units) that the paper already reports; it could not claim to predict where the offset is larger or smaller, because that variation is mostly counting noise.",
+  "plain_idea": {
+    "one_liner": "Use replication timing and fork direction to predict how far apart two copies of a chromosome sit after copying.",
+    "train_on": "Each example is a 100 kb stretch of the human genome described by its replication timing, replication-fork direction, compartment type, insulation, loop count and CTCF sites. I built this table and verified 23,877 complete rows.",
+    "predict": "A number saying how much the two sister chromatids are offset in that region, measured by sister-chromatid-sensitive Hi-C, a method that chemically tags newly made DNA so contacts between the two copies can be told apart.",
+    "why_worthwhile": "DNA-repair biologists want to know whether a broken chromosome finds its intact twin more easily in some regions than others; a map of where the offset is largest would tell them where to look. The data turns out not to support such a map."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Sister-resolved Hi-C is genuinely rare, and no model named above (Akita, C.Origami, TwinC) distinguishes sister chromatids at all. But only 88 MB of derived tracks from a single HeLa line are actually obtainable, against the thousands of Hi-C maps those models trained on."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No replicate tracks or per-bin read counts are shipped, so per-prediction error bars cannot be estimated. The closest proxy, the Sororin-depleted condition, agrees with wild type at only r=0.13, which indicates the noise swamps the signal rather than letting it be quantified."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The question does not arise: Akita (2020), C.Origami (2023) and TwinC (2026) all predict contact maps from sequence, and sequence is identical between sister chromatids, so none of them can be run as a baseline for this label and beating them is not the project."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on the first condition: no existing model can be run as a baseline for sister-chromatid asymmetry, and the contact matrices needed to compute the label at other resolutions are not deposited anywhere."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: predict the per-100 kb sister-chromatid asymmetry score from replication timing, Ok-seq fork directionality, compartment, insulation, loops and CTCF motif orientation, with leave-chromosome-out validation, to test whether replication fork direction sets the local register shift between sister chromatids. I built this exact model. It fails: the honest, coverage-free, independent-feature version reaches R-squared 0.073, and the mechanistically interesting feature (Ok-seq fork direction) reaches 0.007.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.09,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.5,
+    "embedding_hours": null,
+    "cv_run_minutes": 0.5,
+    "compute_note": "Timed, not estimated: downloading the tracks, building the 30,353-row 100 kb table and running five-fold leave-chromosome-group-out gradient boosting took 25 seconds of wall clock on CPU. Reading the bigWigs needed the pybbi package because pyBigWig segfaulted.",
+    "cheapest_killing_check": "Divide the two trans-sister bigWig tracks, then regress the result on replication timing and Ok-seq alone with chromosomes held out. I ran it: R-squared 0.073, and 0.007 for Ok-seq alone. This kills the project in under an hour."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Two Part A killers fail, both verified in the files rather than inferred from the paper. A1: the primary measurement is not deposited anywhere. The preprint's data-availability statement names only two GitHub script repositories, and the repo's own REQUIRED_DATASETS.md states that the 734 MB of .mcool contact matrices and 1.79 GB of raw pairs are 'still external' and must be supplied by the user; I found no matching deposit in GEO (searched by both corresponding authors), Zenodo, or the 4D Nucleome portal. A8: for the 88 MB of derived tracks that are available, the label is a ratio, log2(trans_1_2/trans_2_1), and its own coverage term log2(trans_1_2+trans_2_1) alone reaches leave-chromosome-out R-squared 0.131 with a monotone artefactual trend (+0.52 at lowest coverage to +1.11 at highest), accounting for about half of the total R-squared of 0.294. Beyond the killers, the science is the real problem: the paper's result is a single genome-wide constant (+0.89 log2 units, with per-chromosome means spanning only 0.037 against a within-chromosome spread of 0.83), so there is almost no positional variation for a model to learn. Independent features explain R-squared 0.073, Ok-seq fork direction alone 0.007, the two possible definitions of the score are uncorrelated with each other (r=-0.003), and the per-bin pattern reproduces across conditions at only r=0.13. Label shuffling collapsed performance to -0.003, confirming the pipeline was correct and the weak result is real. This is a fine Science paper about a global phenomenon; it is not a per-locus prediction dataset."
+}

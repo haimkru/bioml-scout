@@ -1,0 +1,196 @@
+{
+  "paper_id": "science2026-adv5434",
+  "title": "Dose-dependent sensitivity of human three-dimensional chromatin to a heart disease-linked transcription factor.",
+  "doi": "10.1126/science.adv5434",
+  "journal": "Science",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE307nnn/GSE307019/suppl/ (plus GSE285268, GSE285274, GSE285277, GSE285419, GSE307018, GSE307021)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 8 processed files from GEO series GSE307019: both H3K27ac differential-binding tables (79,619 data rows each, identical peak sets, 0 duplicate peak IDs, columns baseMean/log2FoldChange/lfcSE/stat/pvalue/padj/chromosome/start/end/peak_id), the three cohesin (RAD21) merged-peak BED files (47,150 / 48,203 / 42,939 regions), and the derived 'reduced' BED files. Confirmed the BEDs reproduce exactly from the CSV thresholds (2,890 rows = log2FC < -0.6 and adjusted p < 0.05 in heterozygote-vs-wild-type; 18,155 = same rule in null-vs-wild-type). Downloaded two TBX5 and one CTCF ChIP-seq peak file at sample level (775, 1,795 and 79,089 peaks) and ran an overlap test myself: TBX5-bound H3K27ac peaks average log2 fold change -0.53 (heterozygote) and -1.63 (null) versus about 0 for unbound, and 75.7% versus 22.0% are significantly reduced in the null. Confirmed genome build hg38 from the GEO series matrix data-processing field, not from the paper. Listed every supplementary file with sizes for all six series (Hi-C .mcool files 2.4-4.8 GB each, raw archives 14-22 GB). Also parsed the RNA-seq count table (29,744 genes x 42 samples).",
+    "what_came_from_paper_text_only": "Nothing: the Science full text would not load (Europe PMC returned HTTP 500 twice, the article is not open access) and the supplement was not retrievable, so all claims above come from the deposited files and GEO metadata. The paper's own stated peak and loop counts, its Hi-C loop/TAD/compartment calls, and its single-cell analyses are unverified by me."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public GEO FTP, no login or application. I downloaded 8 files successfully; the NCBI GEO web page is behind a bot challenge but the FTP mirror and E-utilities work fine."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the files: 'log2FoldChange' with its standard error 'lfcSE' and adjusted p-value is literally a column in both GSE307019_H3K27ac_HetvsWT.csv.gz and _NullvsWT.csv.gz, on the same 79,619 peaks. The dose series (wild-type -> one TBX5 copy -> none) is one merge on peak_id, which I ran: 79,619 of 79,619 rows survive."},
+    "a3_inputs_present": {"pass": true, "note": "DNA sequence is not in the table, but hg38 coordinates (chromosome/start/end) are, and hg38 is one reference-genome download, not thousands of identifier lookups. Transcription-factor binding features (TBX5, CTCF, cohesin peaks) are separately downloadable BED/narrowPeak files that overlap by coordinate; I ran that overlap successfully."},
+    "a4_units_stated": {"pass": true, "note": "Units are explicit and consistent: log2 fold change and its standard error in log2 units (DESeq2 output), baseMean in normalised read counts, coordinates in hg38 base pairs. Confirmed by reading the columns, and the GEO data-processing field names the pipeline (macs2 broad peaks, nf-core chipseq)."},
+    "a5_enough_rows": {"pass": true, "n_rows": 79619, "note": "79,619 peaks with a label in each of two contrasts. Class sizes I counted: 61,314 buffered, 15,415 reduced in null only, 2,740 reduced in both, 150 in heterozygote only. Even the smallest useful class (2,740 dose-sensitive) clears the 1,500-row bar."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.5 GB (two 5 MB compressed tables + small BEDs + about 160 MB of extracted 2 kb sequences), plus a 3 GB hg38 FASTA read through an index", "note": "The proposed task deliberately excludes the Hi-C .mcool files (2.4-4.8 GB each, about 40 GB total) and the 14-22 GB raw archives, which I confirmed by listing file sizes. Baseline runs on CPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Strong internal consistency: the two derived BED files have exactly 2,890 and 18,155 rows, which is exactly what I get by applying log2FC < -0.6 and adjusted p < 0.05 to the CSVs. GEO sample counts match the series records. The paper's own numbers could not be checked because the full text would not load."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a DESeq2 effect size computed from measured H3K27ac ChIP-seq read counts in genome-edited cells; it is not another model's prediction. The sequence features are independent of it. One real trap I flagged: cohesin and CTCF peaks were also called in the mutant genotypes, so only the wild-type peak sets may be used as features, or the label leaks in through the back door."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Two tables merging perfectly on peak_id, plus small BED files joined by coordinate overlap; I ran both joins."},
+    "B2": {"score": 2, "why": "Gzipped CSV and BED parsed first try with pandas; no fixes needed."},
+    "B3": {"score": 2, "why": "Both contrasts from one DESeq2 run on one peak set, already size-factor normalised by the authors."},
+    "B4": {"score": 1, "why": "20,067 of 79,619 peaks have a missing adjusted p in the heterozygote contrast (independent filtering); needs a policy."},
+    "B5": {"score": 2, "why": "Zero duplicated peak_ids verified; 101 peaks on unplaced contigs and 2,293 under 200 bp are trivially dropped."},
+    "B6": {"score": 2, "why": "Standard self-documenting DESeq2 columns; GEO data-processing field names aligner, peak caller and hg38 build."},
+    "C1": {"score": 2, "why": "Asks whether dosage-sensitivity sequence rules transfer across transcription factor, cell type and assay; informative either way."},
+    "C2": {"score": 1, "why": "Naqvi/Kim/Wysocka 2025 built exactly this model class, open and honestly evaluated, but for other factors and accessibility, not H3K27ac."},
+    "C3": {"score": 2, "why": "Clear diversity plus unique-application angle: no machine learning has touched these TBX5 dosage files, deposited 2025."},
+    "C4": {"score": 2, "why": "Generating a genome-edited allelic series of stem cell lines plus ChIP-seq is many months of lab work."},
+    "C5": {"score": 2, "why": "Verified dummy baseline (TBX5 peak overlap: 75.7% vs 22.0% reduced) and a published Pearson of about 0.55-0.60 to compare with."},
+    "D1": {"score": 2, "why": "Open-weight DNA sequence backbones (HyenaDNA, DNABERT-2, Nucleotide Transformer) and open ChromBPNet all take hg38 sequence."},
+    "D2": {"score": 2, "why": "Freeze a small DNA language model and cache 79,619 embeddings once on CPU (~7 h estimated); only exact ChromBPNet retraining needs a GPU."},
+    "D3": {"score": 2, "why": "HyenaDNA and DNABERT-2 carry permissive licences; GEO data is unrestricted public domain."},
+    "E1": {"ok": true, "why": "Chromosome column is in the file; hold out whole chromosomes, which also separates neighbouring near-duplicate enhancers."},
+    "E2": {"ok": true, "why": "79,518 peaks spread over 23 primary chromosomes, far more than the 5 groups needed."},
+    "E3": {"ok": true, "why": "Global mean log2 fold change, baseMean-only, and the TBX5-peak-overlap indicator are all computable; I computed the last one."},
+    "E4": {"ok": true, "why": "Per-peak lfcSE is a column (median 0.345); with label spread 0.592 (het) and 1.118 (null) it gives a reliability ceiling."},
+    "E5": {"ok": true, "why": "Already demonstrated in the files: TBX5-bound peaks shift -1.63 log2 in null versus -0.035 for unbound peaks."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation (sequence only vs binding only) are trivial on a 79,619-row table."},
+    "E7": {"ok": true, "why": "GSE267008 (SOX9/TWIST1 dosage accessibility), the acute TBX5-degron series GSE307018/GSE307021, and wild-type cohesin peaks as an orthogonal readout."},
+    "E8": {"ok": true, "why": "I already reproduced the authors' own 2,890 and 18,155 reduced-peak counts exactly from the raw tables."},
+    "G1": {"score": 2, "why": "hg38 genomic coordinates with build confirmed in GEO metadata; the standard key for every regulatory resource."},
+    "G2": {"score": 2, "why": "Named partners joinable on coordinates: ENCODE heart candidate regulatory elements, GSE267008 dosage data, gnomAD/Open Targets variants."},
+    "G3": {"score": 1, "why": "Coordinate overlap is one-to-many (a 1,122 bp median peak hits several candidate elements); needs a stated collapse rule."},
+    "G4": {"score": 2, "why": "Combination asks whether congenital-heart-disease noncoding variants sit in dosage-sensitive enhancers, which neither dataset answers alone."},
+    "H1": {"score": 2, "why": "61,314 buffered peaks are explicit measured negatives from the same assay, not absence of evidence."},
+    "H2": {"score": 0, "why": "One stem cell line (WTC11), one differentiation protocol, one timepoint (day 20 atrial), two replicates per genotype."},
+    "H3": {"score": 2, "why": "Claim statable in one sentence and bounded by the verified design; written out in honest_claim_h3."},
+    "H4": {"score": 2, "why": "Genotype, cell line, timepoint and pipeline are all explicit in the GEO sample metadata I read."},
+    "I1": {"score": 2, "why": "Bruneau lab (Gladstone), Wysocka/Naqvi labs (Stanford), Pediatric Cardiac Genomics Consortium variant curators."},
+    "I2": {"score": 2, "why": "A ranked list of dose-sensitive enhancers redirects which regions get reporter-assayed or CRISPR-tested next."},
+    "I3": {"score": 2, "why": "Precision in the top 100 matches the real decision (which enhancers to test) and Spearman matches ranking use."},
+    "I4": {"score": 1, "why": "TBX5-peak overlap already explains a lot but covers only 1.6% of peaks, so most sensitive peaks need a real model."},
+    "J1": {"score": 2, "why": "Frozen-backbone transfer learning, grouped splits, calibration and ablations: the modelling skills worth practising."},
+    "J2": {"score": 2, "why": "Cardiac enhancer biology is checkable against literature, and the comparable Stanford group is reachable."},
+    "J3": {"score": 2, "why": "The merged dose-sensitivity table with uncertainty is a shareable resource even if the model is mediocre."},
+    "J4": {"score": 2, "why": "Scoped here as 3-4 weeks: about 6 h to feature table, one overnight embedding run, days of modelling."},
+    "J5": {"score": 1, "why": "Kill condition written in success_criteria but not yet committed to NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Naqvi, Kim & Wysocka transfer-learned dosage-response models (ChromBPNet fine-tuned on transcription-factor dosage series), Cell Genomics 2025",
+        "open_weights": true,
+        "score_and_split": "Pearson correlation about 0.55-0.60 for full-depletion accessibility change, lower for the dose at which signal halves; trained on 151,457 accessibility peaks with 9,279 (SOX9) and 21,172 (TWIST1) direct-target elements; ChromBPNet's standard held-out-chromosome folds. Code on GitHub, trained models on Zenodo 10.5281/zenodo.11224809, data in GEO GSE267008.",
+        "authors_named_unsolved": "They name modelling the effects of chromatin modifiers and multi-nucleosome conformations, and explaining why phenotypes are factor-specific despite widespread co-binding, as open problems. H3K27ac dose response in a different lineage is squarely in that gap.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "ChromBPNet (Kundaje lab, 2025) - base-resolution sequence model of chromatin accessibility",
+        "open_weights": true,
+        "score_and_split": "Competitive with much larger models on variant effects, pioneer-factor binding and reporter activity; evaluated on held-out chromosomes. It predicts unperturbed signal, not dosage response, so it is a feature extractor here rather than a competitor.",
+        "authors_named_unsolved": "Extending from accessibility to other chromatin readouts and to non-steady-state, perturbed contexts.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "C.Origami / Akita / Orca - sequence models of three-dimensional genome contact maps",
+        "open_weights": true,
+        "score_and_split": "C.Origami reports beating Akita, DeepC and Orca on distance-stratified correlation of predicted contact maps; evaluated on held-out chromosomes and cell types. Relevant only to the Hi-C variant of this project, which I am not proposing because the contact files are about 40 GB and loop calls are not provided.",
+        "authors_named_unsolved": "Predicting contact maps for unseen cell types and the effect of non-CTCF factors on looping.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "HyenaDNA or DNABERT-2 as a frozen DNA sequence encoder over 2 kb windows centred on each peak, with gradient-boosted trees or a small multilayer perceptron head; ChromBPNet's published cardiomyocyte-style accessibility predictions as an optional extra feature block",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU, 16 GB RAM; roughly 7 hours one-time embedding for 79,619 windows, then minutes per cross-validation run",
+    "licence": "HyenaDNA and DNABERT-2 are permissively licensed (Apache 2.0 / MIT); some Nucleotide Transformer checkpoints are non-commercial, so prefer the former two"
+  },
+  "integration": {
+    "partner_dataset": "ENCODE candidate cis-regulatory elements and heart/cardiomyocyte ChIP-seq, plus GSE267008 (SOX9 and TWIST1 dosage-response accessibility in cranial neural crest cells) and congenital-heart-disease noncoding variant sets from Open Targets and gnomAD",
+    "join_key": "hg38 genomic coordinates (build confirmed in the GEO series matrix), collapsing one-to-many overlaps by greatest overlap length",
+    "bigger_question_one_sentence": "Are the sequence features that make an enhancer sensitive rather than buffered to transcription-factor dosage the same across different factors, cell types and chromatin readouts, and do congenital-heart-disease-associated noncoding variants cluster in the sensitive ones?"
+  },
+  "controls": {
+    "positive_control": "TBX5-bound peaks must come out as the most strongly reduced: I verified in the files that they average -1.63 log2 in the null versus -0.035 for unbound peaks, and 75.7% versus 22.0% are significantly reduced. A second, trivial control: predict baseMean (overall H3K27ac level) from sequence, which should be easy for any working pipeline.",
+    "negative_control": "Shuffle the log2 fold change labels and confirm performance collapses to the global mean; shuffle within chromosome to confirm the grouped split is actually grouping; replace sequence embeddings with same-shape random noise.",
+    "external_validation": "GSE267008 (published dosage-response accessibility for SOX9 and TWIST1) for cross-factor transfer; the acute TBX5-degron series GSE307018/GSE307021 as an orthogonal perturbation of the same factor; wild-type cohesin peaks as an orthogonal readout of the same enhancers."
+  },
+  "honest_claim_h3": "From hg38 sequence alone, this model ranks which of 79,619 H3K27ac-marked regions lose enhancer acetylation when TBX5 dosage is halved or abolished, in one genome-edited WTC11 stem cell line differentiated to day-20 atrial cardiomyocytes with two replicates per genotype; it does not claim to generalise to other cell lines, timepoints, factors, or to predict which losses matter for heart malformation.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence to predict which human heart enhancers lose activity when a heart-disease gene's dosage is halved or lost.",
+    "train_on": "79,619 genomic regions marked by H3K27ac (a chemical tag on histone proteins that marks active enhancers), each as a roughly 1 kb stretch of hg38 human DNA sequence plus flanking context, optionally with wild-type TBX5, CTCF and cohesin binding flags. All 79,619 rows verified present in the downloaded tables.",
+    "predict": "The measured change in enhancer activity, as a log2 fold change in H3K27ac signal, in cells carrying one working copy of TBX5 and in cells carrying none, relative to normal cells. True values come from ChIP-seq (antibody pull-down plus sequencing) on genome-edited stem-cell-derived heart muscle cells, processed with DESeq2; verified as columns in the files.",
+    "why_worthwhile": "Cardiac genetics labs have thousands of noncoding variants and no way to tell which sit in enhancers that break when a transcription factor's dose drops, which is what actually happens in patients carrying one bad copy; a ranking would say which regions to test first. Even a failure tells us whether the sequence rules published for other factors are factor-specific."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Not bigger: Naqvi et al. had 151,457 accessibility peaks and a graded chemical titration giving a continuous dose curve, versus our 79,619 peaks at three genetic dose levels. But ours covers areas theirs does not at all: a lineage-restricted cardiac disease factor, a histone-modification readout instead of accessibility, and a true allelic series (one copy, no copies) matching how human haploinsufficiency actually occurs."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Every peak carries a standard error (lfcSE, median 0.345) and a baseline expression level, so predictions can be weighted and a per-peak reliability stated; from label spread versus error I estimate the ceiling at roughly Pearson 0.81 for the one-copy contrast and 0.95 for the null. But only two replicates per genotype limits how well that noise is pinned down, and Naqvi et al. already report reproducibility-based ceilings."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The competitor is a 2025 convolutional model, open, with pretrained weights, evaluated on held-out chromosomes and reaching near-reproducibility on its own data: not beatable head-to-head on its own task. But it has never been run on a histone-modification dose response or on cardiac cells, so the comparison here is a transfer test rather than a race."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The accessible partner data (GSE267008) measures a different quantity (chromatin accessibility) in a different cell type under a chemical rather than genetic perturbation, and the evaluation split is different. The condition that the new data measures the same quantity the same way fails, so no improvement is guaranteed by construction."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "Closely analogous labels exist in GEO GSE267008 (SOX9 and TWIST1 dosage-response chromatin accessibility, Naqvi et al. 2025, found by search), in the broader degron/knockout differential-ChIP literature, and the related 'is this region an active enhancer' label is in ENCODE candidate cis-regulatory elements and Roadmap for millions of hg38 regions (known resources). The exact label here (H3K27ac response to graded TBX5 dosage) exists only in this dataset.",
+    "approx_items": null,
+    "join_key": "hg38 genomic coordinates",
+    "why": "The analogous accessibility dose-response data gives a real external test of whether the learned sequence rules are factor-specific or general, even though it cannot be pooled as extra training data for the same label."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Neighbouring enhancers in the same locus are near-duplicates: a random split would put a peak's neighbour in training and the peak in test.",
+      "Cohesin and CTCF peaks were called separately in the mutant genotypes, so using mutant-genotype binding as a feature would hand the model the answer; only wild-type peak sets are safe.",
+      "The baseline signal level (baseMean) is computed from the same read counts as the label, so a model given baseMean is partly reading the label's denominator.",
+      "DESeq2's independent filtering removed adjusted p-values for 20,067 peaks in the one-copy contrast, so filtering on significance silently selects for high-count peaks.",
+      "The TBX5 ChIP-seq replicates disagree wildly in peak number (775 versus 1,795 peaks in two day-20 replicates), so a binding feature built from one replicate encodes experiment quality, not biology."
+    ],
+    "split": "Hold out whole chromosomes, built from the 'chromosome' column, which I confirmed is present in both tables (23 primary chromosomes, 79,518 peaks). Report performance per held-out chromosome, and drop the 101 peaks on unplaced contigs and chrM.",
+    "checks": [
+      "Shuffle log2 fold change labels and confirm performance falls to the global-mean baseline.",
+      "Shuffle labels within chromosome to confirm the grouped split is actually grouping.",
+      "Train on baseMean alone, and on the TBX5-overlap flag alone, and report both numbers before claiming the sequence model adds anything.",
+      "Measure sequence similarity and genomic distance between each test peak and its nearest training peak, and report performance as a function of that distance."
+    ],
+    "verdict": "Manageable: the chromosome column makes the honest split one line of code, and the only real traps (mutant-genotype binding features, baseMean) are avoidable by construction."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured log2 fold change on held-out chromosomes, reported separately for the one-copy and no-copy contrasts, plus precision in the top 100 ranked peaks, because a lab would reporter-assay or CRISPR-test roughly the top hundred.",
+    "baselines": "Trivial: global mean log2 fold change (Spearman 0 by construction) and baseMean alone. Informative dummy, which I computed from the files: a TBX5-peak-overlap flag separates 75.7% reduced among 1,261 bound peaks from 22.0% among the rest, so any model must beat that flag on both ranking and top-100 precision. Published comparator: Pearson about 0.55-0.60 reported by Naqvi et al. 2025 for full-depletion accessibility change on their own data and split.",
+    "success": "Spearman at or above 0.45 on held-out chromosomes for the no-copy contrast and at or above 0.30 for the one-copy contrast, with top-100 precision at least 1.5 times the TBX5-overlap flag's precision, and the ordering of the four dose classes recovered.",
+    "noise_ceiling": 0.81,
+    "kill": "If after one week a frozen DNA-language-model head does not beat the TBX5-overlap flag by more than 0.05 Spearman on held-out chromosomes, and label shuffling does not cleanly collapse, stop. The noise ceiling above is my own estimate from label variance versus lfcSE (about 0.81 for the one-copy contrast, about 0.95 for the no-copy contrast), not a published figure."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning; it would take a clean demonstration that dosage-sensitivity sequence rules transfer across factors and cell types plus a statistically supported enrichment of congenital-heart-disease noncoding variants in the predicted sensitive enhancers."
+    },
+    "realistic": {
+      "journal": "PLOS Computational Biology",
+      "why": "The likely outcome is a careful, honestly split model of enhancer dosage sensitivity in one cell line that partly transfers from the published accessibility models, which is exactly the modelling-plus-evaluation paper this journal runs."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Even a negative result (sequence predicts the no-copy response but not the haploinsufficient one, or the published rules do not transfer) plus the cleaned 79,619-peak dose-sensitivity table with uncertainty is a publishable resource-and-benchmark note here."
+    }
+  },
+  "pitch": {
+    "headline": "79,619 human heart enhancers, each with a measured activity change at two transcription-factor dose levels, with no machine learning applied yet.",
+    "what_makes_the_data_unusual": "A genetic allelic series (two copies, one, none) of a disease transcription factor read out as H3K27ac enhancer marking, not accessibility: 2,890 enhancers break at half dose, 18,155 only at zero. Public domain GEO, verified in the files.",
+    "the_win": "Rank held-out-chromosome enhancers by dose sensitivity at Spearman 0.45 or better against a measured reliability ceiling of about 0.95, and beat the TBX5-binding flag that currently gives 75.7% versus 22.0% separation.",
+    "even_if_it_fails": "We learn whether the published sequence grammar of dosage sensitivity (low-affinity, homotypic motifs sensitise; high-affinity centred motifs buffer) is factor-specific, and we get a clean public table of which heart enhancers are haploinsufficiency-sensitive.",
+    "who_wants_it": "The Bruneau lab at Gladstone and the Wysocka/Naqvi groups at Stanford, plus congenital-heart-disease variant curators deciding which noncoding regions to reporter-assay next."
+  },
+  "ml_idea": "Predict per-enhancer dosage sensitivity from DNA sequence. Rows are the 79,619 H3K27ac peaks; inputs are frozen DNA-language-model embeddings of a 2 kb hg38 window plus motif counts and wild-type-only TBX5/CTCF/cohesin binding flags; targets are the two measured log2 fold changes (one TBX5 copy and no copies versus wild type) and the derived four-way dose class (buffered / heterozygote-only / null-only / sensitive in both). Evaluate on held-out whole chromosomes with lfcSE-weighted loss, compare against the TBX5-overlap dummy and against the published accessibility dosage models run as a baseline, then test cross-factor transfer on GSE267008.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 7,
+    "cv_run_minutes": 15,
+    "compute_note": "Estimated, not timed end to end: 79,619 windows of 2 kb at roughly 3 sequences per second through a small frozen DNA language model on an Apple Silicon CPU gives about 7 hours one-time, and gradient boosting on cached embeddings with 23 chromosome folds is minutes. I did time the actual downloads and the merge/overlap steps, which ran in under a minute on the 79,619-row tables.",
+    "cheapest_killing_check": "Already done: count how many dose-sensitive peaks carry a TBX5 ChIP-seq peak. Result was 1,261 TBX5-bound peaks overall (1.6%), rising from 0.5% of buffered to 11.3% of the sensitive-in-both class, so binding is informative but explains only a minority, leaving room for a sequence model. The second cheapest check, also done, is label reliability: lfcSE median 0.345 against label spread 0.592 in the one-copy contrast caps achievable correlation near 0.81 there."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer was checked in the downloaded files, not the paper: the label is literally a log2FoldChange column on 79,619 hg38 peaks in two matched contrasts that merge one-to-one, units and genome build are explicit in the data and GEO metadata, the authors' derived peak counts reproduce exactly from the raw tables, and the whole working set fits in half a gigabyte once the 40 GB of Hi-C contact files are excluded. I also reproduced the paper's central biological claim myself (TBX5-bound enhancers lose H3K27ac dose-dependently, -0.53 then -1.63 log2), which is a ready-made positive control. The field is not empty - Naqvi/Kim/Wysocka 2025 built open, honestly evaluated dosage-response sequence models - but for different factors, a different readout and a different cell type, and those authors explicitly name chromatin-modifier readouts as the unsolved part, so this is a genuine transfer test rather than a race. Main weakness: one stem cell line, two replicates per genotype, and the most interesting label (the half-dose response) is also the noisiest, with an estimated correlation ceiling near 0.81."
+}

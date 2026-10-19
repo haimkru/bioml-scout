@@ -1,0 +1,55 @@
+{
+  "paper_id": "science2026-ady3027",
+  "title": "Tracing the origins of de novo coronary collateral formation in cardiac repair.",
+  "doi": "10.1126/science.ady3027",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE334830",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "The only deposited dataset linked to this paper is GEO (Gene Expression Omnibus) series GSE334830: exactly 4 CUT&RUN samples (a method that maps where a protein sits on DNA) in human embryonic-stem-cell-derived endothelial cells - PBS-Input, PBS-YY1, VEGFA-Input, VEGFA-YY1. I read the series and sample metadata from NCBI E-utilities, the FTP file listing (GSE334830_RAW.tar, 854 MB; per-sample files 172-256 MB), and did a byte-range GET of the first 512 bytes of GSM9797964_PBS_YY1.bw, confirming a valid bigWig signal file (magic 0x888FFC26, version 4, 10 zoom levels). No processed table, no peak list, no count matrix, no cell-type annotation file exists in the deposit.",
+    "what_came_from_paper_text_only": "The paper itself is paywalled (Europe PMC: isOpenAccess=N, no PMCID, no full text, no supplementary file listing), so the lineage-tracing cell counts, the imaging quantifications and any single-cell RNA sequencing described in the abstract are known to me only from the abstract. No second GEO series, BioProject or Zenodo/Dryad record is linked to PubMed ID 42623479 - I searched GEO by title and by keyword and ran an NCBI elink from the PubMed record."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Public FTP, no login: GSE334830_RAW.tar (854 MB) plus four per-sample bigWig files of 172-256 MB each. All are over the 50 MB cap, so I verified format by byte-range request rather than full download."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. There is no label column anywhere. The deposit is four genome-wide signal tracks only. Any machine-learning target (a YY1 binding site, or a VEGFA-versus-PBS change in binding) would have to be constructed from scratch by peak calling and differential analysis on the tracks themselves."},
+    "a3_inputs_present": {"pass": true, "note": "Inputs would be human genome (hg38) sequence, freely available, so features are obtainable - but only because the features are a reference genome, not because the deposit supplies them."},
+    "a4_units_stated": {"pass": false, "note": "The bigWig values have no stated units or normalisation anywhere in the GEO metadata I retrieved (no processed-data description, and the paper's methods are behind the paywall), so read-depth normalisation between the YY1 and Input tracks is unknown."},
+    "a5_enough_rows": {"pass": false, "n_rows": 4, "note": "FAIL. Four samples: one cell type, two treatments, one antibody plus matched input, zero biological replicates. The checklist floor is ~1,500 labelled rows (or ~400 for classification); the experimental unit here is the sample, and there are 4."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.85 GB of bigWig signal tracks", "note": "Size is not the problem; four tracks fit easily in 16 GB RAM. Irrelevant given A2 and A5."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked. The paper has no open full text and no retrievable supplement, so there is no stated count to compare the deposit against."},
+    "a8_label_provenance": {"pass": false, "note": "Any label would be peaks called from the same signal tracks that would supply the training signal, i.e. derived from the data rather than from an independent measurement - exactly the leakage-by-construction pattern A8 warns about, and with no replicate to define a noise floor."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "No honest claim is available: the deposited data is four unreplicated genome-wide signal tracks from one cell line, which cannot support any predictive statement.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence to predict where the protein YY1 binds in growth-factor-treated human endothelial cells.",
+    "train_on": "The project I considered would train on short windows of human genome sequence paired with the CUT&RUN signal (a measurement of where a protein contacts DNA) from this paper. Verified example count: 4 samples, 1 cell type, 0 replicates - far too few.",
+    "predict": "Output would be whether YY1 binds a given genomic window, and whether that binding changes after VEGFA (vascular endothelial growth factor A) treatment. The true answer would come from peak calling on the paper's own signal tracks - i.e. constructed, not supplied.",
+    "why_worthwhile": "The underlying biology (how a growth factor rewires an endothelial cell's regulatory program to build new heart arteries) matters to cardiac regeneration labs, but this deposit cannot test it; the interesting measurements in the paper - the lineage-tracing cell counts - were never deposited."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: sequence-to-binding prediction (a model such as ChromBPNet or a DNA language model with a head) for YY1 occupancy and its VEGFA-induced change in human endothelial cells. Dead on arrival - the label does not exist as a column, there are four unreplicated samples from one cell line, and public ENCODE YY1 ChIP-seq already covers this task far better.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.85,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated beyond file sizes read from the GEO FTP listing, because the project fails Part A before compute matters; a sequence-to-signal model of this type would need a GPU.",
+    "cheapest_killing_check": "Count the deposited samples and look for a processed table. Two minutes on the GEO page: 4 bigWig files, no peaks, no matrix, no annotation - project dead."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The paper's only public data is four unreplicated CUT&RUN signal tracks (one human endothelial cell line, PBS versus VEGFA, YY1 plus input) totalling 854 MB. There is no label column and no processed table of any kind, so A2 fails; the sample count is 4, so A5 fails; and any label would be peaks called from the same tracks, so A8 fails too. The paper's genuinely novel measurements - the dual lineage-tracing counts showing capillary endothelial cells become collateral arteries - exist only as figures behind a paywall and were not deposited."
+}

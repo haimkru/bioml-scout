@@ -1,0 +1,230 @@
+{
+  "paper_id": "science2026-aee6239",
+  "title": "The global biogeography of passerine songs.",
+  "doi": "10.1126/science.aee6239",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5281/zenodo.19916290 (also mirrored as the public GitHub repo quentinbacquele/birdsong_biogeography, CC BY 4.0)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed with pandas: traits_data.csv (79.5 MB, 116,792 rows x 57 cols = one row per song segment, with 37 acoustic principal-component scores, species, family, recordist, date, country, lat/lng, xeno-canto recording ID); model_traits_morpho_social_data.csv and model_traits_data.csv and species_traits_data.csv (3,160 rows each, species-level motif probabilities plus body mass, three beak measurements, hand-wing index, social bond, communal breeding, territoriality, sexual selection, oscine/suboscine, environment of the range); combined_tei_and_environmental_data.csv (15,729 grid cells); matching_final_corrected.csv (10,945-row taxonomy matching table); unique_families.txt (121 families). Read the first rows of traits_data_pc_gmm_8components_proba.csv and metadata_xeno_passerines.csv by ranged HTTP request. Counted: 3,160 species, 121 families, 916 genera, 22,630 unique recordings, 1,734 recordists, 163 countries, 0 exact duplicate rows, 0 duplicate file names, 0 missing values in the 37 acoustic features, recording dates 1922-2025. Joined segment table to species trait table on species: 3,160 of 3,160 matched. Ran a real 5-fold cross-validation holding out whole bird families (29 s total, timed).",
+    "what_came_from_paper_text_only": "The paper itself is paywalled (not in PubMed Central, Europe PMC reports no open access, no supplementary files retrievable), so the abstract, press releases and the repository README are all I could read of the text. I could not read the methods, the limitations section, or the authors' own statement of what remains unsolved. Where the eight motifs come from (Gaussian mixture clustering of the acoustic principal components) and how the modulation power spectra were computed (500 ms windows, 67% overlap, 2-D fast Fourier transform) come from the README and the analysis scripts, not from the paper."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo record 19916290 is open with a CC BY 4.0 licence; the same tables are in a public GitHub repository. No login, no application. I downloaded six tables directly and parsed them. The one oversized item is segments_passerines.zip (20,016 MB of audio) - recorded as metadata only, and not needed for the proposed project."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified in the files: body mass, beak length/width/depth, hand-wing index, social bond, communal breeding, territoriality, sexual selection and oscine/suboscine ('learners') are each already a column in model_traits_morpho_social_data.csv, one row per species. The join to the acoustic features is one merge on the species column and matches 3,160 of 3,160. Nothing has to be constructed."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "The model inputs are present as numbers, not references: 37 acoustic principal-component scores per song segment for all 116,792 segments, with zero missing values. The original audio also exists (20 GB zip on Zenodo) but is optional."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Pass, but documentation is thin. The acoustic principal components are unitless scores. Body mass is in grams and beak measurements in millimetres (AVONET convention; the observed ranges, 4-973 g and 9-26 mm, are consistent with that), temperature is in kelvin (values around 292), vegetation height in metres. These units are implied by the source databases rather than written in a per-column codebook, but they are internally consistent."
+    },
+    "a5_enough_rows": {
+      "pass": true,
+      "n_rows": 3160,
+      "note": "3,160 species each with a full set of trait labels (1.6% missing on the morphology and social columns) for the species-level task, built from 116,792 labelled song segments. Both are comfortably above the thresholds."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "80 MB CSV in, ~1 GB RAM, no GPU",
+      "note": "Verified on this machine: reading the 79.5 MB segment table, aggregating to species means and running a full 5-fold family-held-out cross-validation for six targets took 29 seconds. The optional upgrade (bird-audio foundation-model embeddings) would need the 20 GB audio download, which is outside the size budget and is flagged as an extension, not the main task."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Exact match: the files contain 116,792 segments and 3,160 species, which is what the abstract and press release claim ('more than 116,000 songs from 3,160 species'). One trivial discrepancy: the per-species n_recordings column sums to 22,635 while the segment table has 22,630 unique recording IDs, a 5-record difference, probably a recording shared between two species names."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "For the direction I propose (song -> species traits) the labels are physical measurements made independently of the audio: body mass and beak dimensions from museum specimens (AVONET), social and mating-system codes from published field observations, oscine/suboscine from taxonomy. None is computed from the acoustic features. Two warnings I verified: (1) the paper's own eight-motif probabilities are the soft assignments of an unsupervised Gaussian mixture model fitted to the same acoustic principal components, so using those as a label is a derived quantity rather than a measurement; (2) the range-level environment columns (temperature, vegetation index, richness) could be read straight off the recording's own latitude/longitude, which sits in the same table, so those two columns must be dropped from the features."
+    }
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "Two tables, verified exact join on species (3,160/3,160); one groupby plus one merge gives the feature/label table."},
+    "B2": {"score": 2, "why": "All six CSVs parsed with pandas read_csv on the first try, no fixes needed."},
+    "B3": {"score": 2, "why": "All acoustic features from one pipeline; morphology from one standardised specimen database. Already normalised by authors."},
+    "B4": {"score": 2, "why": "No censored or qualitative values seen; missingness 1.6% on traits, 3.4% on coordinates."},
+    "B5": {"score": 2, "why": "Verified 0 exact duplicate rows and 0 duplicate file names; repeated segments per recording are grouping, not duplication."},
+    "B6": {"score": 1, "why": "README documents every file and script, but there is no per-column codebook; mass and temperature units are implied."},
+    "C1": {"score": 2, "why": "'How much ecology is audible in a song' is informative either way; I already have 0.40 versus 0.00 for the dummy."},
+    "C2": {"score": 1, "why": "No trait-prediction model found, but open bird-audio models (Perch 2.0, BirdNET) and a published pitch-mass result exist."},
+    "C3": {"score": 2, "why": "Unique application: the paper models traits to song; nobody has published the reverse with held-out families."},
+    "C4": {"score": 1, "why": "Body mass is already cheap from AVONET; social and mating systems need costly field study, and 52 species lack them here."},
+    "C5": {"score": 2, "why": "Dummy computed (R2 0.000) plus my own verified family-held-out numbers, plus Pearse 2018's published pitch-mass result."},
+    "D1": {"score": 2, "why": "Perch 2.0 and BirdNET are downloadable bird-vocalisation models trained on exactly this data type (xeno-canto audio)."},
+    "D2": {"score": 2, "why": "Perch embeddings are built for linear probing; one CPU pass over ~117k short clips, cached once. Audio download is the cost."},
+    "D3": {"score": 1, "why": "BirdNET is non-commercial (CC BY-NC-SA 4.0); Perch 2.0's licence I could not verify (HuggingFace returned 401)."},
+    "E1": {"ok": true, "why": "Family column verified (121 families) and a consensus phylogeny file is supplied for a stricter clade split."},
+    "E2": {"ok": true, "why": "Counted 121 families, 46 with at least 20 species and 74 with at least 5."},
+    "E3": {"ok": true, "why": "Global-mean dummy computed: R2 = 0.000, Spearman 0; per-family mean also available for looser splits."},
+    "E4": {"ok": true, "why": "3-273 segments and 1-25 independent recordings per species let you measure within-species spread as a ceiling."},
+    "E5": {"ok": true, "why": "Ran it: oscine versus suboscine from song gives AUC 0.787, the textbook expectation, plus known mass-pitch allometry."},
+    "E6": {"ok": true, "why": "Ran it: shuffling body-mass labels drops R2 from 0.157 to -0.113, collapsing to the dummy as it must."},
+    "E7": {"ok": true, "why": "Pearse 2018's independent 578-species song data (CC0, Zenodo 4946178, file list verified) plus a 1922-2025 date column."},
+    "E8": {"ok": true, "why": "Paper's own code and data are open and rerunnable; Pearse 2018's published pitch-mass link can be re-derived on 578 species."},
+    "G1": {"score": 1, "why": "Keys are scientific names in two taxonomies (BirdTree and Clements); the repo ships a 10,945-row matching table I opened."},
+    "G2": {"score": 2, "why": "AVONET covers all ~11,000 extant bird species and joins on scientific name; BirdTree phylogeny already included."},
+    "G3": {"score": 2, "why": "One species to one AVONET row after taxonomy matching; segments nest cleanly inside recordings inside species."},
+    "G4": {"score": 2, "why": "Combined question: can song fill trait gaps for species nobody has studied behaviourally? Neither source answers it alone."},
+    "H1": {"score": 2, "why": "Full trait range recorded for every species, not only 'successes': mass 4-973 g, all social categories present (counted)."},
+    "H2": {"score": 2, "why": "163 countries, 1,734 recordists, 121 families, 3,160 species - though skewed (Brazil 14,624 and USA 10,040 segments)."},
+    "H3": {"score": 2, "why": "Written out precisely in honest_claim_h3, with the sampling restriction (at least 3 segments on xeno-canto) named."},
+    "H4": {"score": 1, "why": "Gaps are visible in the files I opened and the README names xeno-canto, but the paper's own limitations are paywalled."},
+    "I1": {"score": 2, "why": "Named: the ENES/CEFE group and Theunissen lab who wrote this, plus the Perch and BirdNET bioacoustic-monitoring teams."},
+    "I2": {"score": 2, "why": "A working song-to-trait model lets acoustic monitoring estimate traits for unstudied species; failure bounds acoustic-adaptation claims."},
+    "I3": {"score": 1, "why": "Spearman ranking matches 'which species to prioritise', but the real decision needs calibrated per-species confidence."},
+    "I4": {"score": 1, "why": "Honest: ridge regression (R2 0.157) beat gradient boosting (0.119) on mass, so the mapping may be close to linear."},
+    "J1": {"score": 2, "why": "Grouped and phylogenetic splits, frozen-backbone transfer, calibration, multi-task regression - real modelling, little cleaning."},
+    "J2": {"score": 1, "why": "I can check allometry and oscine/suboscine myself; comparative-phylogenetics judgement would need the authors (email public)."},
+    "J3": {"score": 2, "why": "The 3,160-species acoustic-plus-trait table and the family-held-out baseline numbers are already shareable results."},
+    "J4": {"score": 1, "why": "Proposed four weeks in the effort block, but no budget formally agreed yet."},
+    "J5": {"score": 1, "why": "Kill condition drafted in success_criteria but not yet written into NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Bacquele et al. 2026's own Bayesian phylogenetic Dirichlet regression (species traits and environment -> composition of the eight song motifs)",
+        "open_weights": true,
+        "score_and_split": "Fitted on all 3,160 species; the scripts report variance partitioning and WAIC (a model-fit criterion), not accuracy on held-out species. I read the R scripts and README, not the paywalled paper.",
+        "authors_named_unsolved": "Unknown - the discussion is behind the paywall and the README does not say.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Perch 2.0 (Google's bird-vocalisation classifier, an EfficientNet-B3 convolutional network of about 12 million parameters trained on xeno-canto and other audio)",
+        "open_weights": true,
+        "score_and_split": "Reported state of the art on the BirdSet and BEANS bioacoustic benchmarks for species classification (from the arXiv abstract, which I retrieved by search). It does not predict traits, so there is no number for this task.",
+        "authors_named_unsolved": "Transfer beyond species identification and to new taxa - the paper's stated motivation is that embeddings should serve downstream tasks.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "BirdNET (open bird-sound identifier whose internal 1,024-number embeddings are widely reused for transfer learning)",
+        "open_weights": true,
+        "score_and_split": "Species classification on soundscape benchmarks; published comparisons show its embeddings beat general audio models with as few as 4 training examples. No trait-prediction number exists.",
+        "authors_named_unsolved": "Finding sound classes outside the training set; the embeddings are species-tuned.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Pearse et al. 2018, 'Global macroevolution and macroecology of passerine song' (phylogenetic comparative regression, not a predictive model)",
+        "open_weights": true,
+        "score_and_split": "578 passerine species; reported significant morphological constraint on song pitch but few links to monogamy or sexual dimorphism. Fitted on all species, no held-out evaluation. Data is CC0 on Zenodo 4946178 (I retrieved the record and file list).",
+        "authors_named_unsolved": "Why life-history traits showed so little link to song evolution - they frame it as contrary to expectation.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Perch 2.0 (Google bird-vocalisation classifier, EfficientNet-B3, ~12M parameters), with BirdNET v2.4 as a second option; the primary task needs no backbone because 37 acoustic features are supplied",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU only. The main task (37 supplied acoustic features, 3,160 species) runs a full cross-validation in under a minute, timed. The backbone extension needs a one-off 20 GB audio download plus an estimated 2-4 hours of CPU to embed ~117k short clips.",
+    "licence": "Data is CC BY 4.0 (verified on the Zenodo record). BirdNET is CC BY-NC-SA 4.0, i.e. non-commercial. Perch 2.0's weights are publicly downloadable from Kaggle but I could not verify the licence text - the HuggingFace API returned 401."
+  },
+  "integration": {
+    "partner_dataset": "AVONET (Tobias et al. 2022): standardised morphological measurements for all roughly 11,000 extant bird species, which is the source of the mass and beak columns already present here and would extend the labels far beyond the 3,160 species with recordings",
+    "join_key": "Scientific species name, in the BirdTree and Clements taxonomies, using the repository's own 10,945-row matching table (opened and verified)",
+    "bigger_question_one_sentence": "Can a bird's unmeasured ecology - its size, its social system, the structure of the habitat it lives in - be read off its song accurately enough to fill trait gaps for the thousands of tropical species nobody has ever studied in the field?"
+  },
+  "controls": {
+    "positive_control": "Two, both already run and both passed: separating vocal-learning oscines from non-learning suboscines purely from song structure gave AUC 0.787 on held-out families (textbook expectation: suboscine songs are simpler and innate), and body mass was predicted at Spearman 0.403, recovering the known acoustic allometry that larger birds sing lower, which Pearse et al. 2018 reported as a significant morphological constraint.",
+    "negative_control": "Two, both already run: shuffling the body-mass labels drove R-squared from 0.157 to -0.113, collapsing to the dummy as required; and hand-wing index (wing shape, which should not be audible) scored R-squared 0.02 and Spearman 0.19, close to nothing, which is the result a leaking pipeline would not produce.",
+    "external_validation": "Pearse et al. 2018's independently measured song features for 578 passerine species (CC0, Zenodo 4946178 / Dryad 10.5061/dryad.9sk4v, record and file list verified), a temporal split on the verified recording-date column (46,207 segments before 2015, 64,823 from 2015 on), and a held-out-recordist split across the 1,734 recordists."
+  },
+  "honest_claim_h3": "Among passerine species with at least three song segments on the citizen-science archive xeno-canto, a model that sees only the modulation structure of the song - no location, no taxonomy - can rank species by body mass and beak length at Spearman correlation around 0.4 and separate vocal-learning oscines from non-learning suboscines at AUC around 0.79, when tested on bird families it never saw in training; it cannot usefully predict wing shape or mating system.",
+  "plain_idea": {
+    "one_liner": "Use the sound structure of a bird's song to predict the bird's body size, beak shape and social system.",
+    "train_on": "One row per song segment: 37 numbers summarising how the sound is modulated in time and frequency, for 116,792 segments from 22,630 recordings of 3,160 passerine species (all counts verified in the files). Segments are averaged per species to give 3,160 labelled examples.",
+    "predict": "Body mass in grams, three beak dimensions in millimetres, wing shape, and coded social traits (pair bond, communal breeding, territoriality, mating system). The morphology comes from measurements on museum specimens compiled in AVONET; the social traits from published field observations - neither is derived from the audio.",
+    "why_worthwhile": "Field biologists and acoustic-monitoring groups could estimate the ecology of species that have never been studied behaviourally from a few recordings; and whichever way it comes out, it puts a number on how much of a bird's biology is actually audible, which is the assumption the whole acoustic-adaptation literature rests on."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "3,160 species and 116,792 song segments worldwide, versus 578 species in Pearse et al. 2018, the largest previous comparative song study I found. Perch 2.0 covers roughly 15,000 species but only for identifying them, with no trait labels attached at all."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "Verified 3 to 273 segments and 1 to 25 independent recordings per species, so the spread of predictions across separate recordings of the same bird gives a direct per-species confidence estimate. Neither Perch 2.0 nor BirdNET predicts traits, so neither reports any such confidence."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "There is no trait-prediction model to beat; the number to beat is my own verified hand-crafted-feature baseline (Spearman 0.403 for log body mass on held-out families). Perch 2.0 is a strong, honestly benchmarked 2025 model, but at a different task (species identification), so it is a feature extractor here, not a rival."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails two conditions. Perch 2.0 cannot be run as a trait-prediction baseline out of the box, so there is no like-for-like comparison, and its embeddings measure a different quantity (a species-discriminative audio representation) from the supplied modulation features. It also needs a 20 GB audio download before anything can be tested."
+    }
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "AVONET (Tobias et al. 2022) for body mass, beak and wing measurements; EltonTraits and Birds of the World for diet and social behaviour; the IUCN Red List for range and status; the eBird/Clements taxonomy as the join backbone. I verified that the mass and beak columns in this dataset follow AVONET conventions by inspecting value ranges; I did not open AVONET itself, so its coverage count is from general knowledge of the resource.",
+    "approx_items": 11000,
+    "join_key": "Scientific species name (BirdTree and Clements taxonomies), resolved with the 10,945-row matching table shipped in the repository",
+    "why": "Because the same traits are published for essentially every bird species on Earth, a model trained on these 3,160 passerines can be tested on species held out of this dataset and even on whole other bird orders that xeno-canto covers, which is a far stronger test of generalisation than any split within this one table."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Close relatives sound alike and are also similar in size, so a random split by species would let the model recognise a sister species rather than learn anything general.",
+      "Up to 273 segments come from the same species and many from the same single recording, so splitting at the segment level would put different slices of one recording in both training and test.",
+      "The range-level environment labels (temperature, vegetation index, species richness) can be reconstructed from the recording's own latitude and longitude, which sit in the same table, so those location columns must be dropped from the features.",
+      "The 1,734 recordists use different microphones and recording habits, and recordist correlates with region and therefore with the environmental labels.",
+      "The 'weights' column is one over the number of segments for that species, so it silently encodes how well studied a species is, which correlates with whether its traits were ever measured.",
+      "If bird-audio foundation-model embeddings are used, Perch and BirdNET were themselves pretrained on xeno-canto - including these very recordings - so the backbone has effectively seen the test audio, though never the trait labels."
+    ],
+    "split": "Headline split: GroupKFold holding out whole bird families, using the 'family' column I verified in the files (121 families, 46 with at least 20 species). Stricter version: hold out clades cut from the supplied consensus phylogeny (consensus_sumtrees.tre, present in the repository). Secondary checks: hold out recordists (1,734, column present) and a temporal split on the verified 'date' column (pre-2015 versus 2015 onward, 46,207 against 64,823 segments).",
+    "checks": [
+      "Shuffle the trait labels and confirm collapse to the dummy - already done, R-squared went from 0.157 to -0.113.",
+      "Predict hand-wing index, which should not be audible at all; it scored R-squared 0.02, so the pipeline is not finding phantom signal.",
+      "Train on sample-size features alone (segment count and 'weights') to see how much accuracy comes purely from how well studied a species is.",
+      "Plot error against the phylogenetic distance from each test species to its nearest training species, to show how fast accuracy decays with evolutionary distance."
+    ],
+    "verdict": "Manageable: every grouping column needed (family, recordist, date, a full phylogeny) is present in the files, and the label-shuffle and should-not-be-audible controls already behave correctly."
+  },
+  "success_criteria": {
+    "metric": "Spearman rank correlation between predicted and measured log10 body mass on species in held-out bird families, plus macro-averaged AUC for the categorical social traits. Ranking is the right metric because the use case is ordering candidate species for field follow-up, not hitting an exact gram value.",
+    "baselines": "Global-mean dummy: R-squared 0.000, Spearman 0 (computed). Per-family mean is unavailable by construction under a family-held-out split. My own verified baseline, ridge regression on 75 species-level acoustic summary features under 5-fold GroupKFold by family: log10 mass Spearman 0.403 / R-squared 0.157; log10 beak length 0.402 / 0.143; hand-wing index 0.185 / 0.024; oscine versus suboscine AUC 0.787; sexual selection AUC 0.594.",
+    "success": "Frozen Perch 2.0 embeddings plus a linear head reach Spearman at least 0.55 for log10 body mass on held-out families, against the 0.403 I verified for the supplied hand-crafted modulation features, and macro-AUC at least 0.70 across the three social-system traits, against 0.594 verified for sexual selection.",
+    "noise_ceiling": null,
+    "kill": "If after two weeks no feature set beats Spearman 0.45 for body mass on held-out families and no social trait beats AUC 0.65, stop and publish the ceiling as a short negative result."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning of broad reach; it would take the song-to-trait model generalising across held-out families and onward to non-passerine orders, i.e. a usable global trait-gap-filler rather than a within-dataset correlation."
+    },
+    "realistic": {
+      "journal": "Methods in Ecology and Evolution",
+      "why": "Its core business is new analytical methods and honest benchmarks for ecological data including bioacoustics; a phylogenetically blocked comparison of hand-crafted modulation features against bird-audio foundation-model embeddings for trait prediction is exactly that, and the Spearman-0.4 baseline is already in hand."
+    },
+    "fallback": {
+      "journal": "Ecological Informatics (with a bioRxiv preprint first)",
+      "why": "Publishes applied machine learning on ecological data including bounded or negative results, so 'song predicts size moderately and social system barely, and here is the ceiling' is publishable even if the backbone upgrade fails."
+    }
+  },
+  "pitch": {
+    "headline": "116,792 bird songs from 3,160 species, already reduced to 37 clean acoustic numbers each, with museum-measured body size and social traits attached.",
+    "what_makes_the_data_unusual": "Verified in the files: 3,160 species across 121 families, 163 countries, 1,734 recordists, zero missing acoustic values, zero duplicate rows, CC BY 4.0, and a 1,000-tree phylogeny shipped alongside for honest clade-level splits.",
+    "the_win": "Frozen Perch 2.0 embeddings reach Spearman 0.55 for body mass on species in held-out bird families, against the 0.403 I measured for the paper's own hand-crafted modulation features.",
+    "even_if_it_fails": "You still get a number for how much of a bird's biology is audible - the assumption underneath the whole acoustic-adaptation literature - measured on families never seen in training, which nobody has published.",
+    "who_wants_it": "The ENES/CEFE group and Theunissen lab who built this data, and the passive-acoustic-monitoring community around BirdNET and Perch, who would gain trait estimates from recordings alone."
+  },
+  "ml_idea": "Reverse the paper's direction. The paper asks which traits explain a species' song; instead predict the species' measured traits from its song. Features: the 37 supplied acoustic principal components of the modulation power spectrum, averaged and dispersed per species (75 features), optionally replaced or augmented by frozen Perch 2.0 or BirdNET embeddings of the audio. Targets: log10 body mass, beak length/width/depth, hand-wing index (as a should-not-work control), and the coded social traits. Evaluation: GroupKFold holding out whole bird families, then a stricter clade split from the supplied phylogeny, then a held-out-recordist and a pre-2015/post-2015 temporal split. The headline figure is accuracy as a function of phylogenetic distance from the nearest training species, which cannot produce a useless answer. Secondary task: per-species calibrated confidence from the spread of predictions across that species' 1-25 independent recordings.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 3,
+    "cv_run_minutes": 1,
+    "compute_note": "Timed on this laptop, not estimated: reading the 79.5 MB segment table, aggregating to 3,160 species and running 5-fold family-held-out cross-validation for six targets plus a label-shuffle control took 29 seconds total. The 3 embedding hours is an estimate for the optional Perch 2.0 pass over ~117k short clips on CPU, and assumes you first accept a 20 GB audio download that sits outside the normal size budget.",
+    "cheapest_killing_check": "Already done. Aggregate the 37 acoustic principal components to species means, join to the trait table, and run ridge regression for log10 body mass under 5-fold cross-validation holding out whole families: it gave Spearman 0.403 against 0.000 for the global-mean dummy, collapsed to R-squared -0.113 under label shuffling, and scored near zero on wing shape, which should not be audible. The signal is real and the pipeline is not leaking."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A check passed against files I actually opened, and the counts match the paper exactly (116,792 segments, 3,160 species). Model-readiness is near perfect (11/12): one groupby and one merge produce a 3,160-row table with measured labels in columns, and a full honest cross-validation runs in under a minute. More importantly, the killing check is already done and passed: holding out whole bird families, song structure alone ranks body mass at Spearman 0.403 against a 0.000 dummy, separates vocal-learning oscines from suboscines at AUC 0.787, collapses under label shuffling, and finds nothing for wing shape - so there is real, generalising signal and no obvious leak. The project also cannot produce a useless answer, since 'how far can ecology be read from song, and how fast does that decay with evolutionary distance' is informative whichever way it resolves. Two honest caveats: ridge beat gradient boosting, so the mapping may be close to linear and the gain from a foundation model is not guaranteed; and the headline upgrade to Perch 2.0 embeddings requires a 20 GB audio download, so treat that as an extension rather than the main task."
+}

@@ -1,0 +1,176 @@
+{
+  "paper_id": "science2026-aeg4791",
+  "title": "Senescence-directed nanotherapy ameliorates fibrosis and overcomes immune exclusion in cancer.",
+  "doi": "10.1126/science.aeg4791",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE319261",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded all 8 single-cell matrices from GEO series GSE319261 (318 MB total) and opened each with h5py: 77,815 cells, 32,285 genes, identical gene list in all 8 files, median 6,528-11,980 UMI (unique molecular identifier, i.e. counted RNA molecules) per cell, mitochondrial content 0.8-1.8%. Confirmed the sort-gate labels from file names plus the GEO series matrix. Checked a positive control myself: the Selp gene (which encodes P-selectin) is detected in 80.1% of cells in the liver P-selectin-positive gate vs 22.9% in the matching negative gate.",
+    "what_came_from_paper_text_only": "How the gates were defined (antibody staining for CD62P/P-selectin plus the fluorescent SPiDER probe for senescence-associated beta-galactosidase activity, with thresholds set separately in immune and non-immune compartments), that CD45-positive and CD45-negative cells were pooled into four libraries per organ, and that lung fibrosis was induced with bleomycin. All human data in the paper (tissue microarray imaging, survival/ROC analyses) was read from the text only; the authors state the imaging is available from the corresponding author on request."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GEO GSE319261 is public (released 14 Oct 2026); I downloaded all 8 .h5 matrices with no login. Separately, the multiplex immunofluorescence images are 'on request' only, so that modality is unusable."},
+    "a2_label_is_a_column": {"pass": true, "note": "The label is the sorting gate, given per file in the file name and the GEO sample title (e.g. Liver_ccl4_SposPpos). No inference needed, but it is one constant per file, not a per-cell column."},
+    "a3_inputs_present": {"pass": true, "note": "Full gene-by-cell count matrices are in the files, with both Ensembl gene IDs and gene symbols. No identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "Counts are integer UMIs (unique molecular identifiers) in standard 10x Genomics format; the label is a stated binary gate. Caveat read in the methods: the senescence threshold was set separately for immune and non-immune cells, so 'positive' does not mean one fixed level."},
+    "a5_enough_rows": {"pass": true, "n_rows": 77815, "note": "77,815 cells counted in the files (7,039-12,146 per gate). Far above the row threshold, but the number of independent experimental units is only 8 libraries from one mouse cohort per organ."},
+    "a6_fits_laptop": {"pass": true, "working_set": "318 MB on disk; ~2 GB in memory once concatenated and reduced to variable genes", "note": "I loaded and summarised all 8 files on this 16 GB laptop without trouble."},
+    "a7_counts_match_paper": {"pass": true, "note": "The paper gives no per-sample cell counts to check, but methods say 2,000-15,000 cells were loaded, consistent with the 7,039-12,146 recovered. One real metadata error: all four lung samples carry 'treatment: 6-weeks of CCl4' in GEO although the methods and sample titles say bleomycin."},
+    "a8_label_provenance": {"pass": true, "note": "Both labels are physical measurements made on the cell sorter (an antibody against surface P-selectin, and a fluorogenic substrate for senescence-associated beta-galactosidase activity), not another model's output. The Selp gene is a feature correlated with one label, but it can simply be removed or used as a control."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Eight separate .h5 files, but identical gene lists verified, so concatenation is trivial."},
+    "B2": {"score": 2, "why": "All 8 standard 10x Genomics .h5 files opened first try with h5py; no fixes needed."},
+    "B3": {"score": 1, "why": "Same sorter and run per organ, but senescence thresholds set separately per immune compartment and organ (methods)."},
+    "B4": {"score": 2, "why": "Labels are clean binary gates; no censored or qualitative values anywhere in the files."},
+    "B5": {"score": 2, "why": "Cell barcodes unique within each library; cells were physically sorted once, so no duplicates."},
+    "B6": {"score": 1, "why": "GEO fields documented but the lung treatment field is wrong (says CCl4, methods say bleomycin); gating only in supplementary figures."},
+    "C1": {"score": 1, "why": "Cross-organ transfer is mildly informative, but library-confounded labels make a positive result uninterpretable."},
+    "C2": {"score": 0, "why": "SenCID, SenPred, DeepScence, SenePy are open; a 2026 preprint already trains classifiers on SPiDER-sorted mouse cells."},
+    "C3": {"score": 1, "why": "Only unmodelled piece is surface P-selectin status, and that label is fully confounded with library batch."},
+    "C4": {"score": 2, "why": "Current method is fluorescence-activated sorting with a live-cell probe: lab-based, destructive and costly (methods)."},
+    "C5": {"score": 2, "why": "Obvious dummies exist (majority class, Selp mRNA threshold, SenMayo score) and published tools run as baselines."},
+    "D1": {"score": 2, "why": "scGPT and Geneformer are open-weight single-cell backbones, downloadable; both are human-pretrained though."},
+    "D2": {"score": 1, "why": "Embedding 77,815 cells on CPU is hours, plus mouse-to-human gene mapping; cacheable once but not quick."},
+    "D3": {"score": 2, "why": "scGPT is MIT-licensed and Geneformer Apache-2.0; GEO data carries no reuse restriction."},
+    "E1": {"ok": false, "why": "Each sort gate is its own 10x library, so label and batch are the same variable; no split separates them."},
+    "E2": {"ok": false, "why": "Only 2 holdable groups (liver, lung) from one mouse cohort each; checklist needs 5 or more."},
+    "E3": {"ok": true, "why": "Majority-class and single-gene (Selp) threshold baselines computable directly from the files."},
+    "E4": {"ok": false, "why": "No replicate library for any gate, so measurement noise in the gating cannot be estimated at all."},
+    "E5": {"ok": true, "why": "Verified in files: Selp detected in 80.1% of liver P-positive cells vs 22.9% of P-negative."},
+    "E6": {"ok": true, "why": "Label shuffling and feature-block ablation (lineage genes vs rest) are straightforward on this table."},
+    "E7": {"ok": true, "why": "SPiDER-sorted muscle senescence atlas and GEO GSE201247/GSE203447 p16-sorted macrophages exist as outside checks."},
+    "E8": {"ok": false, "why": "Paper reports no model performance number; published senescence-tool scores are on their own different data."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs and symbols both present in the feature table of every file."},
+    "G2": {"score": 2, "why": "SenNet, CellAge, SenMayo gene sets and Human Protein Atlas join on gene symbol/Ensembl ID."},
+    "G3": {"score": 1, "why": "Gene-level joins are clean within mouse, but mouse-to-human ortholog mapping is one-to-many."},
+    "G4": {"score": 1, "why": "Cross-organ consistency of a function-anchored senescence score is real but partly answered by the 2026 muscle preprint."},
+    "H1": {"score": 2, "why": "Both negative gates sequenced at full depth alongside positives: 4 gates per organ, verified in files."},
+    "H2": {"score": 0, "why": "One lab, one mouse strain (C57BL/6), one cohort per organ, two injury models; no human cells deposited."},
+    "H3": {"score": 2, "why": "The claim is statable in one precise sentence (see honest_claim_h3), including its batch caveat."},
+    "H4": {"score": 1, "why": "Gating and library pooling described in methods, but the label-equals-batch confound is nowhere flagged."},
+    "I1": {"score": 2, "why": "SenNet consortium and senescence/fibrosis labs (Lowe lab at MSKCC, Hammond lab) are the named audience."},
+    "I2": {"score": 1, "why": "A sort-free senescence scorer would change their workflow, but nobody would trust one this confounded."},
+    "I3": {"score": 1, "why": "Precision among top-ranked cells matches the 'which cells to target' decision, roughly."},
+    "I4": {"score": 1, "why": "One gene (Selp) already separates the liver gates 80% vs 23%, so a simple rule does much of the work."},
+    "J1": {"score": 2, "why": "Grouped splits, transfer across organs and single-cell foundation-model embeddings are all real modelling practice."},
+    "J2": {"score": 2, "why": "Lineage markers (Adgre1, Pecam1, Ptprc) make predictions interpretable and sanity-checkable by eye."},
+    "J3": {"score": 2, "why": "A concatenated, gate-annotated 77,815-cell object plus a benchmark of published senescence scores is shareable regardless."},
+    "J4": {"score": 1, "why": "No time budget is fixed by the data; roughly a two-to-three week project if attempted."},
+    "J5": {"score": 0, "why": "No kill date written down anywhere for this candidate."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SenCID (support vector machine classifier of senescence from transcriptomes, Cell Metabolism 2024)",
+        "open_weights": true,
+        "score_and_split": "Trained on 52 senescence transcriptome datasets (602 samples, 30 cell types); reports good performance on bulk and single-cell data, but evaluation is on dataset-level held-out sets rather than functionally sorted ground truth.",
+        "authors_named_unsolved": "That senescence has no universal marker and splits into six distinct 'senescence identities' with different cell-type biases, so a single score is not enough.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SenPred (machine-learning pipeline for senescent dermal fibroblasts, Genome Medicine 2025)",
+        "open_weights": true,
+        "score_and_split": "Over 99% true positives within the same experiment on cultured fibroblasts, but the authors show the 2D-trained model fails to detect senescence in whole-skin tissue data; code at github.com/bethk-h/SenPred_HDF.",
+        "authors_named_unsolved": "Models trained on cultured cells do not transfer to cells in living tissue; only a 3D culture model recovered an in-vivo senescent burden.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "DeepScence (deep-learning detection of senescent cells in single-cell and spatial data, Cell Genomics 2025)",
+        "open_weights": null,
+        "score_and_split": "Found by search; performance numbers not retrieved. Published in a fully open-access journal, so code is likely available.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "SenePy (cell-type-specific single-cell senescence signatures, Nature Communications 2025)",
+        "open_weights": null,
+        "score_and_split": "Found by search; provides cell-type-resolved senescence signature scores rather than a trained classifier. Numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Untitled 2026 preprint: 'Integrative transcriptomic identification of cellular senescence beyond marker limitations'",
+        "open_weights": null,
+        "score_and_split": "Abstract retrieved from Europe PMC: trains machine-learning classifiers on SPiDER senescence-associated beta-galactosidase-sorted single-cell RNA-seq from regenerating mouse muscle; reports classifiers beat marker-based scoring. Exact numbers and split not stated in the abstract.",
+        "authors_named_unsolved": "States that curated senescence gene sets disagree on experimentally sorted senescent cells, and that previous agreement may reflect circular validation.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "sciPENN / totalVI / cTP-net (predicting surface protein levels from single-cell RNA, benchmarked in Genome Biology 2025)",
+        "open_weights": true,
+        "score_and_split": "A 12-method benchmark across 11 datasets; sciPENN best on per-cell correlation in most transfers, Seurat-based methods best per protein. Splits are cross-dataset (e.g. cord blood to peripheral blood).",
+        "authors_named_unsolved": "Performance drops when transferring between tissues and platforms; no method is best in all scenarios.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (transformer models pretrained on tens of millions of single-cell transcriptomes)",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU-only works for cached embeddings of 77,815 cells, but expect several hours; both models are human-pretrained so mouse genes need ortholog mapping first.",
+    "licence": "scGPT MIT, Geneformer Apache-2.0; both permissive. GEO data carries no stated reuse restriction."
+  },
+  "integration": {
+    "partner_dataset": "SenNet / CellAge / SenMayo senescence gene sets, plus the SPiDER-sorted mouse muscle senescence atlas and the p16-sorted macrophage series GSE201247 and GSE203447",
+    "join_key": "Mouse gene symbol / Ensembl gene ID (both present in every .h5 feature table)",
+    "bigger_question_one_sentence": "Do published senescence gene signatures actually mark the cells that a functional beta-galactosidase assay calls senescent, and does that agreement hold across organs?"
+  },
+  "controls": {
+    "positive_control": "Selp (the P-selectin gene) must be enriched in the P-selectin-positive gates, and macrophage/endothelial markers must dominate the double-positive gate as the paper reports. I verified both directly: Selp detected in 80.1% vs 22.9% of liver cells, and Adgre1 in 49.5% of liver double-positive cells vs 9.9% of double-negative.",
+    "negative_control": "Shuffle gate labels and confirm performance collapses to the majority-class rate; also train on sequencing depth and detected-gene count alone, which in these files differ between gates (lung median 6,528 vs 10,833 UMI) and could carry the whole signal.",
+    "external_validation": "The SPiDER-sorted mouse muscle senescence atlas and the p16-reporter-sorted macrophage series GSE201247/GSE203447 exist, but they define senescence differently, so agreement would be suggestive rather than decisive."
+  },
+  "honest_claim_h3": "A classifier trained on these files could say only: within one mouse cohort per organ, cells placed in the P-selectin-positive and beta-galactosidase-positive sorting tubes can be told apart from the other tubes by their transcriptomes — a statement that cannot be separated from the fact that each tube was sequenced as its own 10x library, and which mostly reflects differences in cell-type composition between the tubes.",
+  "plain_idea": {
+    "one_liner": "Use a cell's gene-activity profile to predict whether it was sorted as senescent and surface-P-selectin-positive.",
+    "train_on": "Each example is one cell's gene count profile: 77,815 cells by 32,285 genes, verified in the downloaded files, from mouse fibrotic liver and lung.",
+    "predict": "Two yes/no outputs per cell: surface P-selectin status and senescence status. The truth comes from the cell sorter, which measured an anti-P-selectin antibody signal and a fluorescent probe for senescence-associated beta-galactosidase activity on each cell before sequencing it.",
+    "why_worthwhile": "Senescence has no reliable transcriptome marker, so a scorer trained on a functional assay would let ageing and fibrosis labs find target cells in existing data without sorting; even a failure would show how much published senescence signatures disagree with the functional assay."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "77,815 cells from 8 libraries and one mouse cohort per organ is far less than SenCID's 602 samples across 30 cell types, and the closest competitor already uses the same sorting probe on mouse muscle."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There is no replicate library for any gate, so there is nothing in the files from which to estimate how noisy the gating itself is, and therefore no basis for a calibrated per-cell confidence."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "SenCID (2024) is a support vector machine on bulk data and SenPred's own authors show it fails to transfer from culture to tissue, so both are beatable in principle; but DeepScence (2025) and SenePy (2025) are recent and the 2026 SPiDER-sorted preprint occupies this exact design."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on measurement comparability and split: the outside senescence data defines senescence by p16 reporters or different probes, and no existing model was evaluated on this sorting design, so there is no shared split in which our model strictly dominates."
+    }
+  },
+  "label_elsewhere": {
+    "score": 0,
+    "sources": "",
+    "approx_items": null,
+    "join_key": "",
+    "why": "Not filled for a reject."
+  },
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict, from a single cell's gene counts, whether the cell-sorting machine placed it in the surface-P-selectin-positive and/or senescence-associated-beta-galactosidase-positive tube, then test whether a liver-trained model transfers to lung. The dataset is clean and the labels are genuine physical measurements, but because each of the 8 sorting gates was sequenced as its own library, the label and the batch are literally the same variable, so no honest evaluation of such a classifier is possible from these files. The surviving use of this data is descriptive: as an outside test set for published senescence scoring tools (SenCID, DeepScence, SenePy, SenMayo), asking whether they rank the beta-galactosidase-positive cells higher, with the batch caveat stated plainly.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 2.0,
+    "needs_gpu": false,
+    "peak_ram_gb": 4.0,
+    "embedding_hours": 6.0,
+    "cv_run_minutes": 15,
+    "compute_note": "I actually downloaded all 8 files (318 MB) and loaded each as a sparse matrix on this laptop in a few minutes, so the table-building and RAM figures are measured, not guessed; the scGPT embedding hours and cross-validation minutes are estimates from the 77,815-cell count.",
+    "cheapest_killing_check": "Count how many 10x libraries exist per sort gate. The answer is one, with no replicates (8 libraries = 2 organs x 4 gates), which means label and batch cannot be separated. I ran this check and it killed the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The data is genuinely clean and public (all 8 files downloaded, 77,815 cells, gene lists identical, positive control verified), and every Part A killer passes. It dies on evaluation and on crowding. Each sorting gate was sequenced as a single 10x library with no replicate, so the label to be predicted is exactly the batch; cell-type composition differs drastically between gates (the liver P-selectin-positive gate is 90% endothelial-marker-positive and 3.6% immune-marker-positive, while the lung double-negative gate is 89% immune-marker-positive) and sequencing depth also tracks the label (lung medians 6,528 vs 10,833 UMI). With only two organs to hold out, no split can separate biology from batch, so mandatory checklist item E1 fails. Meanwhile the task is already served by open tools (SenCID, SenPred, DeepScence, SenePy) and a 2026 preprint that trains classifiers on the very same beta-galactosidase sorting probe in mouse muscle. The human data that would have been most interesting (tissue microarray imaging with survival analysis) is 'available on request' and not deposited."
+}

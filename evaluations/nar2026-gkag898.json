@@ -1,0 +1,97 @@
+{
+  "paper_id": "nar2026-gkag898",
+  "title": "Shuttling, swapping, and mixing: the rapid modular evolution of antiviral repertoires in temperate phages and their satellites",
+  "doi": "10.1093/nar/gkag898",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.6084/m9.figshare.31843870",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the Europe PMC supplement (7.9 MB) and opened every table: FileS4_Infections_v2.csv is 532 rows x 10 columns, exactly 19 plasmid-borne defence constructs x 28 phages, no missing values, no duplicate pairs, two replicate plaque-assay ratios (log10 replicate correlation 0.81, 24% of pairs below 0.1-fold); DatasetE1.txt and DatasetE2.txt each hold 19 DNA sequences (the cloned candidate defence fragments and the full plasmids); TableS1 lists the 28 phages with GenBank accessions; FileS1 has 5,966 elements with attL/attR, region size, integrase annotation and element ID (only 241 unique attL strings, 3 host species); TableS2 is 32 anti-defence rows; FileS2/FileS6 are summary proportion tables. Confirmed the Figshare deposit (CC BY 4.0) exists and its two files resolve: P4P2_DereplicatedGenomes.zip, HTTP 200, 55,549,395 bytes, and the 0.23 MB MacSyFinder model zip, which I downloaded and listed (7 HMM profiles for the P2 core genes).",
+    "what_came_from_paper_text_only": "That the big Figshare zip contains proteins and nucleotide replicons for 3,085 P4-like satellites and 1,511 P2-like prophages (I read file names and sizes from the Figshare metadata but did not download the 55 MB archive, which is over the project's 50 MB cap). That defence systems were annotated with DefenseFinder v2.0.0 and PADLOC v2.0.0, and that 57% of P4 and 49% of P2 carry a recognisable defence system. No per-element defence-system annotation table appears in either the supplement or the deposit description."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement downloads from Europe PMC without login; Figshare deposit is public under Creative Commons Attribution 4.0 and both files returned HTTP 200."},
+    "a2_label_is_a_column": {"pass": true, "note": "For the lab-measured framing the label is already a column: Rep1_ratio and Rep2_ratio in FileS4. For the genomic framing there is no defence-system label anywhere in the files, so it would have to be constructed by re-running DefenseFinder/PADLOC (that framing fails A2)."},
+    "a3_inputs_present": {"pass": true, "note": "Cloned defence-gene DNA sequences are present in DatasetE1 (19 records); the 28 phage genomes are only GenBank accessions in TableS1, but 28 lookups is trivial."},
+    "a4_units_stated": {"pass": true, "note": "Ratio columns are dimensionless and defined in the methods (titre on the defence strain divided by titre on the empty-plasmid control); the raw titration columns carry no unit header, presumably plaque-forming units per millilitre."},
+    "a5_enough_rows": {"pass": false, "n_rows": 532, "note": "FAIL. The only measured label table is 532 phage-protection pairs, under the ~1,500-row bar, and the generalisation unit is worse: just 19 defence constructs (28 phages). Nothing can be learned about new defence systems from 19 of them."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~64 MB (7.9 MB supplement + 55 MB sequence archive)", "note": "Everything fits in memory easily; no GPU needed. Not a blocker."},
+    "a7_counts_match_paper": {"pass": true, "note": "FileS4's 19 x 28 matches the text's 'collection of 28 virulent phages' and 11 putative + unknown systems; FileS1's 5,966 elements are the pre-dereplication set versus the paper's 3,085 P4 + 1,511 P2 dereplicated, which the methods explain."},
+    "a8_label_provenance": {"pass": true, "note": "The FileS4 label is a physical plaque assay (two independent replicates), so it is a real measurement. The alternative genomic label would be DefenseFinder's homology-model output on the same sequences used as features, i.e. circular (that framing fails A8)."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DefensePredictor (Laub lab, Science 2025) - gradient boosting on ESM-2 protein language model embeddings plus genomic context",
+        "open_weights": true,
+        "score_and_split": "Mean average precision 0.86 and area under the receiver-operating curve 0.97 in five-fold cross-validation split by homology (proteins clustered at 30% identity kept in one fold); trained on ~15,000 DefenseFinder-derived defence proteins versus ~186,000 controls; prospectively predicted 82 of 100 newly deposited systems.",
+        "authors_named_unsolved": "An 18-32% false-negative rate; cannot see defensive non-coding RNAs such as CRISPR arrays or retron RNAs; and whether it works on species distant from Escherichia coli is untested.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Biological/genomic language model atlas of bacterial immunity (Mordret et al., Cell 2026; also known as ESM-DefenseFinder plus a genomic-context model)",
+        "open_weights": null,
+        "score_and_split": "Reported from abstracts retrieved in search, not from the full paper: screening ~32,000 bacterial genomes predicted ~2 million candidate antiphage proteins and ~20,000 antiphage operon families, with the context model finding systems that share no detectable homology with known ones. I did not verify their split or metric.",
+        "authors_named_unsolved": "Stated in the abstract that homology-based and context-based predictions are complementary, implying neither alone covers the space; experimental validation remains the bottleneck.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DefenseFinder v2 / PADLOC v2 - curated hidden Markov model searches, the tools this paper itself used",
+        "open_weights": true,
+        "score_and_split": "Homology detection rather than prediction; no held-out performance number. The DefensePredictor paper reports these recover only 3-4% of the novel defence protein clusters it flags.",
+        "authors_named_unsolved": "Both can only find systems already in their model database, so anything genuinely new is invisible to them.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (protein language model, small 8M-150M parameter checkpoints run on CPU) for the defence proteins; a DNA model such as Nucleotide Transformer for the elements",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU would suffice for 19 constructs or even all ~100k element proteins at small checkpoints",
+    "licence": "ESM-2 is MIT-licensed; the paper's data is Creative Commons Attribution 4.0, so licensing is not the obstacle"
+  },
+  "integration": {
+    "partner_dataset": "Other published defence-system x phage protection matrices (Vassallo et al. 2022 Escherichia coli pangenome screen, Brenes & Laub 2025 prophage defence arsenal) plus the BASEL phage collection genomes",
+    "join_key": "defence system subtype name (DefenseFinder nomenclature) and phage GenBank accession",
+    "bigger_question_one_sentence": "Pooling every published defence-system-versus-phage plating matrix would let someone ask whether protection specificity is predictable from defence protein sequence and phage genome content, but this paper contributes only 19 of the needed systems and the pooled matrices use different hosts, promoters and assay conditions."
+  },
+  "controls": {
+    "positive_control": "Available in principle: the restriction-modification and Thoeris constructs (Syst.1, Syst.2, Syst.7/8) should score as protective against the phages literature says they restrict, and the empty plasmid pFR66 is the built-in assay control.",
+    "negative_control": "Label shuffling across the 19 x 28 matrix, and the eight constructs that gave no protection against any of the 28 phages.",
+    "external_validation": "Vassallo et al. (2022) and Brenes & Laub (2025) report comparable plating assays for other defence systems, but on different host strains and expression systems, so values are not directly comparable."
+  },
+  "honest_claim_h3": "With 19 cloned systems tested against 28 phages in one Escherichia coli K-12 MG1655 background, any model could only claim 'among these 19 constructs, protection tracks defence system family', which is description, not prediction - the sample is too small to say anything about an unseen defence system.",
+  "plain_idea": {
+    "one_liner": "Use defence gene sequence and phage genome to predict whether a bacterial defence system blocks that phage",
+    "train_on": "Each example would be one defence-system-plus-phage pair: the cloned defence gene DNA (and its translated proteins) plus the phage's genome. I verified there are exactly 532 such pairs (19 constructs x 28 phages), each with two replicate measurements.",
+    "predict": "The output is how strongly the system blocks the phage - the ratio of plaque-forming units on bacteria carrying the defence plasmid to those on an empty-plasmid control, measured by counting plaques on agar lawns in two independent experiments.",
+    "why_worthwhile": "Phage therapy groups and defence-system biologists want to know in advance which phages a given bacterial immune system will stop; today that takes a plaque assay per pair. Even a failure would quantify how much of protection specificity is readable from sequence."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This paper adds 19 defence constructs and 4,596 annotated elements; DefensePredictor already trained on ~15,000 DefenseFinder-derived defence proteins from ~17,000 genomes, and the Cell 2026 language-model atlas screened ~32,000 genomes."},
+    "confidence_score": {"answer": "partly", "why": "The two replicate plating measurements do give a real noise estimate (log10 replicate correlation 0.81, which I computed), something homology tools don't report - but 19 systems is far too few to calibrate anything."},
+    "models_beatable": {"answer": "no", "why": "DefensePredictor is 2025, built on ESM-2 embeddings, evaluated with homology-clustered folds at 30% identity plus a prospective test on newly deposited systems - that is an honest split and an open package, so marginal gains are unlikely from 19 extra examples."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails is sample size and assay comparability: other published protection matrices use different hosts and expression systems, so adding them does not measure the same quantity the same way, and the existing models predict 'is this a defence gene', not 'does it block phage X'."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only non-circular label here is the measured phage-protection matrix in FileS4: 19 cloned candidate defence systems (including 8 previously unknown gene sets) tested against 28 phages, with two replicate efficiency-of-plating ratios. The attractive task - predict protection from defence protein sequence plus phage genome - dies on sample size: 19 systems and 28 phages cannot support leave-one-system-out learning. The genomic alternative (predict which defence system sits in a P4/P2 hotspot from the element's backbone) has no label column in the files, would require re-running DefenseFinder on the same sequences used as features, and the paper's own central finding is that elements with identical core genes carry completely different defences, i.e. the answer is already known to be near-unpredictable.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.07,
+    "needs_gpu": false,
+    "peak_ram_gb": 1,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated from the files I actually opened: the whole usable supplement is 7.9 MB and the sequence archive 55 MB; embedding 19 constructs with a small ESM-2 checkpoint is minutes on CPU. Nothing was timed.",
+    "cheapest_killing_check": "Count the distinct defence constructs in FileS4_Infections_v2.csv - I did it, and the answer is 19, which kills the project in one line of pandas."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5. The only measured label table holds 532 pairs built from just 19 defence constructs and 28 phages - far too few independent systems to train or honestly evaluate anything. The larger genomic resource (3,085 P4-like satellites, 1,511 P2-like prophages, Creative Commons Attribution 4.0) ships sequences but no defence-system label column, so that framing would require constructing the label with DefenseFinder from the very sequences used as features (A2 and A8), in a field where DefensePredictor (Science 2025, open code, mean average precision 0.86 on homology-clustered folds) and a 2026 Cell language-model atlas already work at 1,000-fold greater scale. Excellent biology, no viable ML project."
+}

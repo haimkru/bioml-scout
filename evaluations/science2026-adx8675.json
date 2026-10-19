@@ -1,0 +1,110 @@
+{
+  "paper_id": "science2026-adx8675",
+  "title": "A transcriptional biosensor reveals mechanisms of α-ketoglutarate signaling to chromatin.",
+  "doi": "10.1126/science.adx8675",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE325502 (RNA-seq); https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE325503 (ChIP-seq)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened both GEO (Gene Expression Omnibus) processed files for GSE325502: GSE325502_count.txt.gz is 56,184 gene rows x 36 mouse-brain samples of raw read counts (groups WT-Veh n=10, WT-aKG n=8, KO-Veh n=10, KO-aKG n=8; library sizes 5.8-13.3 million reads), and GSE325502_CPM_plasmidsaurus.csv.gz is the same experiment as counts-per-million for 21,637 genes. I computed that 36,686 genes have any non-zero count and 15,068 have >=10 counts in >=18 samples. I listed the GSE325503 file directory: only 6 merged bigWig coverage tracks (K4me3/K9me3/K27me3, one WT and one KO file each, 144-254 MB), no peak calls and no per-replicate tables. I read the full text on PubMed Central including the data-availability statement and the CRISPR screening methods.",
+    "what_came_from_paper_text_only": "The CRISPR knockout screen targeted 127 genes and yielded 4 gene-level hits (BCAT1, DLD, GPT2, SLC25A11); the screen tables (data S1, S2) and the genome-wide chromatin and expression tables (data S3-S8, 18 KB to 4 MB Excel files) could not be opened: Europe PMC reports the article as not open access, and the PubMed Central supplementary-file endpoints returned a challenge page instead of the files. Counts of '>800 genes downregulated and H3K27-hypermethylated' and '>1,200 genes H3K4me3-hypermethylated and overexpressed' come from the text only."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Both GEO series are public and I downloaded them without login; the paper's supplementary Excel tables (data S1-S8) were NOT retrievable (Europe PMC says not open access, PubMed Central /bin/ links blocked)."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. Nothing in the deposited files is a prediction target: GSE325502 is a raw count matrix and GSE325503 is raw coverage tracks. Any label (knockout-vs-wildtype expression change, or change in a histone mark at a gene) must first be built by running a differential analysis and, for chromatin, by binning 1.3 GB of bigWig signal into gene windows."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Not the blocker: inputs would be mouse genomic sequence pulled from a reference genome by gene symbol, which is a standard lookup, not thousands of manual resolutions."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are clear in the files I opened: integer read counts in count.txt.gz and counts-per-million in the CPM file; bigWig tracks are coverage, normalisation method not stated in the directory listing."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 36,
+      "note": "FAIL. The independent unit is the animal: 36 RNA-seq brain samples in four groups, 21 ChIP-seq libraries collapsed into 6 merged tracks (3 mice per genotype per mark), and a 127-gene CRISPR screen. Gene rows (56,184) are not independent examples — they all come from one perturbation contrast in one tissue of one mouse line."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "note": "Verified sizes: count matrix 1.3 MB gzipped, CPM 3.0 MB gzipped; the six bigWig files total about 1.3 GB, each above the 50 MB single-file cap but streamable. Size is not the problem here."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "The file's 36 columns match the paper's stated design exactly (n = 10 vehicle and n = 8 dm-αKG per genotype), and GEO lists 36 RNA-seq and 21 ChIP-seq samples as described."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "No label exists to trace, so no circularity: counts and coverage are direct sequencing measurements, not another model's output."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "AlphaGenome (DeepMind sequence-to-function DNA model, Nature 2025)",
+        "open_weights": true,
+        "score_and_split": "Reported by its authors to match or beat the best external models in 25 of 26 variant-effect evaluations; I did not retrieve the per-task numbers or splits in this evaluation.",
+        "authors_named_unsolved": "Not retrieved — I only read search summaries, not the paper.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Enformer (sequence-to-expression and histone-mark model)",
+        "open_weights": true,
+        "score_and_split": "Predicts thousands of human and mouse genomic tracks from 200 kb of sequence; specific numbers not retrieved here.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "AlphaGenome or Enformer (DNA sequence models that already output histone-mark and expression tracks for mouse)",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU feasible only for a few thousand gene windows; a GPU would be wanted for genome-wide inference.",
+    "licence": "AlphaGenome weights are non-commercial; Enformer is openly available. Not pursued because the data fails Part A."
+  },
+  "integration": {
+    "partner_dataset": "Mouse ENCODE / public H3K27me3 and H3K4me3 brain tracks, and IDH-mutant glioma datasets where α-ketoglutarate signalling is also disturbed",
+    "join_key": "Mouse gene symbol or Ensembl gene ID, plus mm39/mm10 genomic coordinates",
+    "bigger_question_one_sentence": "Do the genes that gain repressive methylation when the α-ketoglutarate supply is cut in mouse brain overlap the genes silenced in human tumours with the same metabolic lesion — a question this one experiment alone cannot answer, and which needs only a gene list, not a model."
+  },
+  "controls": {
+    "positive_control": "Gpt2 itself must be the most depleted gene in the knockout count matrix — a one-line check that confirms the sample labels are right.",
+    "negative_control": "Shuffle genotype labels across the 36 samples and confirm the differential-expression signal collapses.",
+    "external_validation": "None usable within this paper: there is a single genotype contrast in a single tissue, so any held-out set is drawn from the same experiment."
+  },
+  "honest_claim_h3": "Any model built on these files could only claim to describe which genes changed in one bulk RNA-sequencing contrast between Gpt2-knockout and wild-type mouse brain (and one merged chromatin track per mark), with no independent perturbation, tissue or cohort to test whether the pattern generalises.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence around each gene to predict which genes lose expression and gain repressive chromatin marks when a metabolic enzyme is knocked out.",
+    "train_on": "Gene windows from the mouse genome paired with the change seen between Gpt2-knockout and wild-type brain. Verified counts: 56,184 gene rows but only 36 animals and one knockout-versus-wild-type contrast, plus 6 merged chromatin tracks.",
+    "predict": "A per-gene change score — either the expression log fold-change computed from the deposited read counts, or the change in H3K27me3/H3K4me3 signal that would have to be quantified from the bigWig coverage tracks.",
+    "why_worthwhile": "Researchers studying GPT2 deficiency and α-ketoglutarate-linked tumours would like to know which genes are vulnerable when this metabolite runs short; but with one contrast and no second cohort, a model here would be fitting a single experiment rather than learning a rule."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict, from mouse genomic sequence or promoter CpG content, which genes are downregulated and H3K27me3-hypermethylated when nuclear α-ketoglutarate is depleted by Gpt2 loss, using a frozen DNA sequence model with a new head. The deposited data supports a classical differential-expression analysis, not a supervised learning problem: one perturbation contrast, 36 animals, merged chromatin tracks with no replicate-level processed files, and a 127-gene CRISPR screen.",
+  "effort": {
+    "hours_to_feature_table": 20.0,
+    "working_set_gb": 1.4,
+    "needs_gpu": true,
+    "peak_ram_gb": 3.0,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Measured file sizes directly (1.3 MB + 3.0 MB gzipped tables, six bigWigs of 144-254 MB). The 20 hours is an estimate for running a differential-expression analysis plus binning the bigWig tracks into gene windows; nothing was timed because the project was rejected at Part A.",
+    "cheapest_killing_check": "Count the independent biological units before anything else: 36 RNA-seq animals and one genotype contrast. That number, which took one command on the downloaded count matrix, kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A2 and A5 in the files I opened. The deposited data is a 36-sample bulk RNA-sequencing count matrix plus six merged chromatin coverage tracks — there is no label column anywhere, any target would have to be constructed by running a differential analysis, and the independent sample size (36 animals, one knockout contrast, a 127-gene CRISPR screen) is one to two orders of magnitude below what supervised learning needs. The paper is an excellent piece of biology and a genuinely new biosensor tool, but its data is designed for hypothesis testing, not model training."
+}

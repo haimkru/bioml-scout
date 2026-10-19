@@ -1,0 +1,60 @@
+{
+  "paper_id": "nar2026-gkag874",
+  "title": "TFIIS enhancement of Pol II cleavage is under kinetic control.",
+  "doi": "10.1093/nar/gkag874",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.21998508",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the Europe PMC supplement zip: it holds one spreadsheet (Supplementary Pol II MS.xlsx, 211 rows x 6 columns: rank, % sequence coverage, UniProt accession like sp|P04050|RPB1_YEAST, protein name, species, peptide count) which is a mass-spectrometry purity check of the Pol II (RNA polymerase II) protein prep, plus a 1.1 MB Word supplement. Fetched the Zenodo record page: public, no login, 7 Excel files totalling 7.9 MB (manual mixing data 30.0 kB; single-nucleotide data at varying ATP 63.8 kB and at varying TFIIS 70.1 kB; multi-nucleotide data 33.4 kB; multi-nucleotide fits 1.1 MB; single-nucleotide global fit 6.5 MB; activity isotherm simulations 18.4 kB).",
+    "what_came_from_paper_text_only": "The contents of the 7 Zenodo spreadsheets: six download attempts via the cached fetch helper and one direct curl all failed here with connection resets, DNS errors and a TLS handshake timeout, so I never saw their rows. Everything about what is inside them (quench-flow time courses from 5 ms to 60 s, gel-quantified RNA extension and cleavage, varying TFIIS and ATP concentrations, elongation-complex stability from 8 s to 72 h, at least three independent experiments per condition, fitting with the MENOTR MATLAB toolbox) comes from the methods section."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 21998508 is public with direct download links and no login or application; I confirmed the file list and sizes on the record page. My own transfers failed repeatedly (network errors from this environment), so availability passes but file contents were not inspected."},
+    "a2_label_is_a_column": {"pass": true, "note": "Not verified in the files, but the measured quantity (fraction of radiolabelled RNA extended or cleaved at each time point) is what these gel-quantification spreadsheets exist to hold, so it is almost certainly a column. Passed provisionally; the project dies later anyway."},
+    "a3_inputs_present": {"pass": false, "note": "The only varying inputs are three scalars: reaction time, TFIIS concentration and ATP concentration, all on one fixed yeast Pol II enzyme and one fixed RNA/DNA scaffold. There is no feature space to learn from - no sequence variation, no mutants, no second enzyme."},
+    "a4_units_stated": {"pass": true, "note": "Methods state every unit explicitly (ms and s for time, micromolar TFIIS, millimolar ATP and Mg(OAc)2, nanomolar Pol II), so units are not the problem."},
+    "a5_enough_rows": {"pass": false, "n_rows": null, "note": "FAILS. The modelling unit is a reaction condition, and the paper describes only a handful of TFIIS concentrations crossed with a handful of ATP concentrations, each run in at least three replicates. Even counting every gel-quantified time point of this single reaction, the total is at most a few thousand measurements of one enzyme, far under 1,500 independent labelled examples. I could not open the files to count exactly, so n_rows is null."},
+    "a6_fits_laptop": {"pass": true, "working_set": "7.9 MB of Excel files", "note": "Trivially small; the whole deposit fits in memory many times over."},
+    "a7_counts_match_paper": {"pass": false, "note": "Could not check: the spreadsheets never downloaded, and the paper gives no explicit count of time courses or data points, so there is nothing to compare."},
+    "a8_label_provenance": {"pass": false, "note": "The raw extension/cleavage fractions are real physical measurements, but the quantities the paper actually reports (rate constants, TFIIS binding rate, cleavage rate) live in the 'global fit' and 'fits' files and are outputs of the authors' hybrid genetic-algorithm/least-squares fitting in MENOTR. Using those as labels would be distilling a curve fit, not learning biology."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "A machine learning-based framework for modeling transcription elongation (PNAS 2021)", "open_weights": null, "score_and_split": "Not retrieved in detail; predicts Pol II pausing and position-specific elongation rates from genome-wide nascent RNA sequencing, not from in vitro quench-flow kinetics.", "authors_named_unsolved": "Not read; abstract-level result only.", "runnable_as_baseline": false},
+      {"name": "Probabilistic and machine-learning methods for predicting local rates of transcription elongation from nascent RNA sequencing (NAR 2025)", "open_weights": null, "score_and_split": "Not retrieved in detail; operates on nascent RNA sequencing coverage genome-wide, a different data type from this paper's purified-enzyme time courses.", "authors_named_unsolved": "Not read; abstract-level result only.", "runnable_as_baseline": false}
+    ]
+  },
+  "backbone": {"name": "none applicable", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "n/a"},
+  "integration": {"partner_dataset": "none identified", "join_key": "none - the data carries no identifier that varies across rows (one enzyme, one scaffold)", "bigger_question_one_sentence": "Cannot be written: with a single enzyme and a single nucleic-acid scaffold there is nothing for a partner resource to join to."},
+  "controls": {"positive_control": "n/a - rejected at Part A", "negative_control": "n/a", "external_validation": "n/a"},
+  "honest_claim_h3": "At best a model could say 'given this one yeast Pol II enzyme on this one RNA/DNA scaffold, here is the extension fraction at time t for a given TFIIS and ATP concentration' - which is exactly what the authors' five-parameter kinetic model already does, better and with mechanistic meaning.",
+  "plain_idea": {
+    "one_liner": "Use reaction time plus TFIIS and nucleotide concentration to predict how much RNA the polymerase has extended or cut.",
+    "train_on": "Gel-quantified time points from quench-flow experiments on purified yeast RNA polymerase II: time (5 ms to 60 s), TFIIS concentration and ATP concentration. Number of examples unknown - at most a few thousand points from a handful of conditions, and I could not open the files to count.",
+    "predict": "The fraction of radiolabelled RNA that has been extended or cleaved, read off a denaturing gel after quenching the reaction with acid.",
+    "why_worthwhile": "It would not be: a chemical kinetics model with five rate constants fits this data exactly and explains it, whereas a statistical model would only interpolate three scalars for one enzyme on one template."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "No viable machine-learning project. The data is a mechanistic enzymology dataset: time courses of nucleotide incorporation and RNA cleavage for one purified yeast RNA polymerase II complex, measured as a function of two concentrations. The right model is the ordinary differential equation the authors already fitted, not a learned one.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.008,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated from the Zenodo file listing (7.9 MB total) and the one supplementary spreadsheet I opened (211 rows); nothing was timed because the kinetics files never downloaded.",
+    "cheapest_killing_check": "Count the distinct reaction conditions in 'Pol II + varying TFIIS + 1 mM ATP single nt incorporation data.xlsx' - if it is under ~20 concentration series, as the methods imply, there is nothing to train on."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5, A3 and A8: a single-enzyme, single-scaffold pre-steady-state kinetics study with at most a few dozen reaction conditions, three scalar inputs, and headline values that are themselves least-squares fit outputs. Excellent biochemistry, no machine-learning project."
+}

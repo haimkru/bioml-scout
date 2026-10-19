@@ -1,0 +1,105 @@
+{
+  "paper_id": "science2026-aej5896",
+  "title": "Targeting an atypical G protein-coupled receptor signaling pathway for cardiac fibrosis therapy.",
+  "doi": "10.1126/science.aej5896",
+  "journal": "Science",
+  "data_url": null,
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "No data file could be retrieved. Europe PMC says the paper is not open access and has no PMC copy, no supplementary files, no data flags and no text-mined accessions. NCBI elink from PubMed ID 42784676 returns only related-article links, no GEO (Gene Expression Omnibus), SRA (Sequence Read Archive) or BioProject records. Zenodo (two queries), Dryad and Figshare return zero hits for the DOI, for CGS15943 and for the topic. GEO searches for 'cardiac fibroblast + adenosine receptor' return 0 series, and I scanned 12 recent 'cardiac fibrosis' GEO series titles - none belong to this study. All three standard Science supplementary-file URL patterns return HTTP 403, so even the supplementary tables are unreachable from here.",
+    "what_came_from_paper_text_only": "Everything about the data itself: that roughly 4,000 bioactive compounds were screened at seven doses in reporter induced pluripotent stem cell (iPSC)-derived cardiac fibroblasts whose fluorescence tracks myofibroblast activation, with iPSC-derived cardiomyocytes and endothelial cells as toxicity counter-screens. That comes from the abstract and from press coverage (EurekAlert, Technology Networks), not from any file. I never saw a compound list, a structure, a dose, a unit, or a row count."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL, verified by probing rather than by reading. No deposit exists in any repository I searched (GEO, SRA, BioProject, Zenodo, Dryad, Figshare), the article has no PubMed Central copy, and every Science supplementary-file URL returns HTTP 403. The screening table, if it exists, is a publisher-hosted supplement I cannot download, and the project's house rules forbid scraping publisher sites."
+    },
+    "a2_label_is_a_column": {"pass": true, "note": "Not assessed - stopped at A1. The intended label (percent suppression of fibroblast-activation reporter fluorescence, or a half-maximal effective concentration from the seven-dose curve) is plausibly a column in a supplementary table, but I never saw the table."},
+    "a3_inputs_present": {"pass": true, "note": "Not assessed - stopped at A1. Compound structures would almost certainly be given as names or vendor catalogue identifiers, not SMILES strings, so they would need resolution through PubChem."},
+    "a4_units_stated": {"pass": true, "note": "Not assessed - stopped at A1."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Not assessed - stopped at A1. The paper's ~4,000 compounds would clear the ~1,500-row bar if the table were obtainable and each compound carried a quantitative label."},
+    "a6_fits_laptop": {"pass": true, "working_set": "", "note": "Not assessed - stopped at A1. A 4,000-row screening table would be well under 10 MB."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not assessed - stopped at A1. No download exists to compare against the paper's '~4000 compounds'."},
+    "a8_label_provenance": {"pass": true, "note": "Not assessed - stopped at A1. The label would be a real plate measurement (reporter fluorescence), not another model's output, which is the one encouraging thing here."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "LogiMML (logic-based mechanistic machine learning), PNAS 2024, trained on high-content microscopy images of human cardiac fibroblasts",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the abstract; it was trained on 13 drugs across 137 single-cell image features, so the compound set is tiny compared with a 4,000-compound screen.",
+        "authors_named_unsolved": "Abstract reports predicting how pirfenidone and the Src inhibitor WH-4-023 act; I did not retrieve the discussion, so I cannot quote what they called unsolved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Cell Painting-based bioactivity prediction (Nature Communications 2024), a general model that predicts screening hits from cell-image features plus structure",
+        "open_weights": null,
+        "score_and_split": "Reported to raise hit rates and scaffold diversity across many targets; exact numbers and split not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ChemBERTa or MolFormer (molecular language models that turn a SMILES string into a fixed vector)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU would be ample for ~4,000 molecules",
+    "licence": "Permissive (Apache-style) for ChemBERTa checkpoints on Hugging Face"
+  },
+  "integration": {
+    "partner_dataset": "ChEMBL and PubChem bioactivity, joinable on InChIKey, plus Tox21/cardiotoxicity sets for the counter-screen",
+    "join_key": "InChIKey derived from SMILES (which would itself have to be resolved from compound names)",
+    "bigger_question_one_sentence": "Which target-class annotations in ChEMBL explain which compounds suppress human cardiac-fibroblast activation, so that untested compound libraries could be triaged in silico before plating?"
+  },
+  "controls": {
+    "positive_control": "Known antifibrotic agents that should score as hits (pirfenidone, and artesunate, the lead from this group's own 2024 Cell screen), plus the trivially learnable target of predicting molecular weight from structure.",
+    "negative_control": "Shuffle the activity labels and confirm performance collapses to the majority-class rate; ablate the structure features.",
+    "external_validation": "The companion 4,000-compound screen in Shivnaraine et al., Cell 2024 (PMC11645214), whose supplementary files are retrievable through Europe PMC - a genuinely independent second screen on the same assay platform."
+  },
+  "honest_claim_h3": "Had the data been obtainable, the honest claim would be: predicts whether a compound suppresses reporter-driven myofibroblast activation in one cell line of iPSC-derived cardiac fibroblasts, among compounds a bioactive-compound library curator thought worth including - not whether it reduces fibrosis in a patient.",
+  "plain_idea": {
+    "one_liner": "Use a compound's chemical structure to predict whether it stops heart-scar cells from switching into their damaging, scar-making state.",
+    "train_on": "Chemical structure of each screened compound plus its dose-response curve from the cell assay; the paper says roughly 4,000 compounds at seven doses, but I verified no file and so no count.",
+    "predict": "How strongly a compound suppresses activation of iPSC-derived cardiac fibroblasts, measured as fluorescence from an engineered reporter that lights up when the cell turns into a scar-producing myofibroblast, read on 384-well plates.",
+    "why_worthwhile": "A structure-only triage model would let heart-fibrosis groups rank compound libraries before plating them, and the current method is a weeks-long robotic screen with three cell types; even a failed model would show how little of this phenotype is readable from structure alone."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "4,000 compounds at seven doses would dwarf LogiMML's 13 drugs, but I verified none of it; and the moment the data can't be downloaded, the size advantage is hypothetical."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "A seven-point dose-response per compound plus replicate wells would in principle support per-prediction error bars, which neither named model reports - but I could not confirm that replicates or per-well values are released."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "LogiMML (2024) is a mechanistic signalling model fitted to 13 drugs, not a structure-activity predictor, so it is not a direct competitor; the Cell Painting bioactivity model (2024) is recent and broadly evaluated."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The first condition already fails: I cannot obtain this paper's data at all, so there is no baseline to run and no table to add anything to."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict suppression of iPSC-derived cardiac fibroblast activation (reporter fluorescence, seven-dose curve) from compound structure using frozen ChemBERTa embeddings plus a gradient-boosted head, with the companion 2024 Cell screen as external validation. Dead on arrival because the screening table is not obtainable.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Not estimated: no file was obtained, so every number would be invented. A 4,000-row structure table would be trivial on a laptop if it ever became available.",
+    "cheapest_killing_check": "Try to download one supplementary data file. It already failed: HTTP 403 from science.org on all three standard supplement URL patterns, and zero deposits in GEO, SRA, BioProject, Zenodo, Dryad and Figshare."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A1 fails: no data file exists anywhere I can reach. The paper is paywalled with no PubMed Central copy, has no repository deposit in any of the six archives I searched, and its Science supplementary tables return HTTP 403. The underlying screen (about 4,000 compounds at seven doses in reporter heart-scar cells, with cardiomyocyte and endothelial toxicity counter-screens) would be an attractive structure-activity dataset, so this is worth re-checking once the NIH public-access deposit appears in PubMed Central; until then nothing about the label, units or row count can be verified. Note that this group's companion screen, Shivnaraine et al. Cell 2024 (PMC11645214), does have retrievable supplementary files and may be the better candidate paper."
+}

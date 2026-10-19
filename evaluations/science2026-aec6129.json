@@ -1,0 +1,124 @@
+{
+  "paper_id": "science2026-aec6129",
+  "title": "An expert-level generalist AI for abdominal CT diagnosis.",
+  "doi": "10.1126/science.aec6129",
+  "journal": "Science",
+  "data_url": "https://huggingface.co/radar-generalist (model weights + auxiliary masks); https://github.com/alibaba-damo-academy/damo-radar (code); https://zenodo.org/records/21271172 (code archive); underlying CT images: https://stanfordaimi.azurewebsites.net/datasets/60b9c7ff-877b-48ce-96c3-0194c8205c40 (Merlin, data-use agreement required)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed both released CSVs from the GitHub repo: RADAR_infer_results_MerlinTestset.csv (5,125 rows x 22 columns, every file_name unique, 445 empty cells of which 392 are in the gallstones column, and the 'surgically_absent_gallbladder' column holds values 0-38,901 rather than probabilities, so it is a voxel count or volume, not a score) and RADAR_infer_results_demo.csv (1 row x 147 columns = 1 scan + 146 findings). Listed the GitHub file tree (largest items are four 50-100 MB demo CT volumes in NIfTI format), the Hugging Face model repo (6.37 GB of checkpoints, licence CC BY-NC-SA 4.0), and the Hugging Face RADAR-auxiliary-data repo (991 mask NIfTI files, 0.70 GB in the first listing page; organ-mask images only, no CT images). Read the repo's TRAINING.md and INFERENCE.md, which state the computed tomography (CT) images must be obtained separately from Stanford AIMI under a data-use agreement, and that training used 24 A100/H20 graphics cards.",
+    "what_came_from_paper_text_only": "Everything in the abstract: 400,000+ contrast-enhanced abdominal CT examinations, 15 million anatomy-wise image-text pairs, 18 anatomical structures, 146 imaging findings, the multi-centre internal and external evaluation, and the ~10% sensitivity gain for 26 radiologists. The Science full text is paywalled (Europe PMC: not open access, no PubMed Central identifier; science.org returned HTTP 403), so no data-availability statement, no performance numbers and no supplementary tables were retrieved."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL. The model weights and code are public, but the actual data is not. RAD-CT, the 400,000-examination Chinese multi-hospital training set, is not released anywhere I could find. The only dataset the released pipeline can run on, Merlin, must be requested from Stanford AIMI under a non-commercial research data-use agreement (an access application, confirmed in the repo's TRAINING.md and INFERENCE.md and in Stanford AIMI's own access terms). What is downloadable without an application is model checkpoints, 991 TotalSegmentator organ masks with no matching images, four demo scans, and RADAR's own prediction CSVs."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The released CSV I opened contains only RADAR's predicted scores; there is no ground-truth column anywhere in it. The true finding labels live in Merlin's zero_shot_findings_disease_cls.csv, which the repo tells you to fetch from Stanford AIMI behind the data-use agreement. Building a feature/label table therefore requires joining across a source we cannot open."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "FAIL. The inputs are 3D CT volumes. Only four demo volumes (50-100 MB each) ship with the repo; the auxiliary Hugging Face dataset contains organ masks whose filenames reference Merlin scans that are not included. The inputs are references, not data."
+    },
+    "a4_units_stated": {"pass": true, "note": "Not the blocker. Masks document all 36 organ indices and a 1 x 1 x 5 mm resampling; CT images carry Hounsfield units by convention. But the released prediction CSV mixes probabilities in 0-1 with one column of raw counts (0-38,901) under a finding name, with no column documentation at all."},
+    "a5_enough_rows": {"pass": true, "n_rows": 5125, "note": "Row count is not the problem: 5,125 scans in the released prediction CSV, and Merlin holds 25,494 scans. Those rows are simply not obtainable without the data-use agreement."},
+    "a6_fits_laptop": {
+      "pass": false,
+      "note": "FAIL. 5,125 resized CT volumes at the 50-100 MB each I measured on the demo files is roughly 300-500 GB, far over the ~5 GB laptop limit, and the repo states training used 24 A100 or H20 graphics cards and that even inference expects at least one. No streaming or subsetting route makes a 3D vision-language model trainable on a 16 GB CPU-only laptop."
+    },
+    "a7_counts_match_paper": {"pass": true, "note": "Consistent where checkable: the demo CSV has exactly 146 finding columns, matching the abstract's 146 imaging findings. The 400,000-examination claim is unverifiable because RAD-CT is not released."},
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL for anything buildable from the public files. The only per-case numbers released are RADAR's own output probabilities, so training on them would distil RADAR rather than learn from measurements. The other public artefact, the 991 organ masks, are TotalSegmentator predictions, which the dataset card states outright. The real labels are text-mined from radiology reports, which is defensible, but those sit behind the Merlin agreement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RADAR / RADAR+ (this paper, Alibaba DAMO Academy)",
+        "open_weights": true,
+        "score_and_split": "Abstract claims high diagnostic performance and robust generalisation across internal and external multi-centre evaluation for 18 anatomical structures and 146 findings, plus ~10% sensitivity gain for 26 radiologists in a reader study. Exact metrics not retrieved: the Science article is paywalled. I verified the released external-test prediction file covers 5,125 scans and 21 findings.",
+        "authors_named_unsolved": "Repository states the model is research-only and that further improvement and prospective clinical studies are needed before clinical deployment. Nothing more specific retrievable without the full text.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Merlin (Stanford, 3D CT vision-language foundation model, Nature 2026)",
+        "open_weights": true,
+        "score_and_split": "Per the Nature article summary retrieved in search: unweighted mean F1 (harmonic mean of precision and recall) 0.741 (95% confidence interval 0.727-0.755) internal, 0.647 (0.607-0.678) external. Weights MIT-licensed; the dataset is separate and behind a data-use agreement.",
+        "authors_named_unsolved": "Not retrieved; I only saw the search-level summary, not the discussion section.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "CT-CLIP / CT-CHAT on CT-RATE (Nature Biomedical Engineering)",
+        "open_weights": true,
+        "score_and_split": "Zero-shot multi-abnormality detection on chest, not abdominal, CT: 25,692 non-contrast chest CT volumes from 21,304 patients, expanded to 50,188 reconstructions. Specific metrics not retrieved. Released CC BY-NC-SA; this is the one dataset in the area that downloads without an application.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RADAR itself (CC BY-NC-SA 4.0 checkpoints on Hugging Face, 6.37 GB) or Merlin's I3D ResNet-152 image encoder (MIT)",
+    "freeze_and_head_viable": false,
+    "hardware": "Embedding 3D CT volumes with either backbone needs a graphics card; the repo says training used 24 A100/H20 cards and recommends a card even for inference. Nothing here is a cache-embeddings-once-on-CPU workflow.",
+    "licence": "RADAR weights CC BY-NC-SA 4.0 (non-commercial, share-alike); code Apache-2.0/CC BY-NC-SA; Zenodo code archive CC BY 4.0. Merlin weights MIT, Merlin data under a Stanford AIMI non-commercial agreement."
+  },
+  "integration": {
+    "partner_dataset": "CT-RATE (25,692 chest CT volumes with reports, openly downloadable) would be the natural partner for a cross-body-region transfer study.",
+    "join_key": "No shared key: patients, scanners and body regions are disjoint. Any combination would be transfer evaluation, not a join.",
+    "bigger_question_one_sentence": "Does an abdomen-trained report-supervised CT model transfer to chest CT findings it never saw? A good question, but it needs graphics-card inference over hundreds of gigabytes of volumes, which this laptop cannot do."
+  },
+  "controls": {
+    "positive_control": "Would exist if the data did: RADAR's own published numbers on the Merlin test set could be reproduced from the released prediction CSV plus Merlin's label file. The prediction half is public; the label half is not.",
+    "negative_control": "Label shuffling would be runnable in principle, but there is no feature/label table to shuffle.",
+    "external_validation": "Merlin is the paper's own external set and is agreement-gated; CT-RATE is open but chest-only and needs a graphics card."
+  },
+  "honest_claim_h3": "Nothing can honestly be claimed from the public files: the only per-case numbers released are RADAR's own predicted probabilities on scans we cannot obtain, so any model fitted to them would be reporting how well it copies RADAR, not how well it reads a CT.",
+  "plain_idea": {
+    "one_liner": "Use a contrast-enhanced abdominal CT scan to predict which of 146 radiology findings a radiologist would report.",
+    "train_on": "One abdominal CT volume per patient plus organ masks marking 36 anatomical structures. The paper used over 400,000 examinations; the publicly downloadable portion is 4 demo scans and 991 organ masks with no matching images.",
+    "predict": "A probability for each of 146 imaging findings (for example gallstones, hydronephrosis, hepatic steatosis). The true answer comes from text-mining the radiologist's free-text clinical report written at the time of the scan.",
+    "why_worthwhile": "Radiologists reading abdominal CT miss findings outside the clinical question they were asked; the paper's own reader study reports assistance raising sensitivity by about 10%. The idea is sound; the data to pursue it is not available to us."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "We have no data at all beyond four demonstration scans. RADAR trained on 400,000+ examinations and Merlin on 25,494 scans; the only openly downloadable comparable resource, CT-RATE with 25,692 chest volumes, is somebody else's dataset and covers a different body region."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Calibrated per-prediction confidence would need repeated or multi-reader labels on the same scans. The public files contain no labels at all, only RADAR's point predictions on 5,125 scans."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "RADAR (2026, Science) and Merlin (2026, Nature) are both current, both released open weights, and both report external multi-centre evaluation rather than a random split. Merlin's external F1 of 0.647 versus internal 0.741 is the kind of honest held-out-site number that is hard to beat without comparable data."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: we cannot run RADAR as a baseline, because doing so needs the Merlin CT volumes (data-use agreement) and a graphics card. There is also no accessible new data that joins to this one on any key."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was re-evaluating RADAR honestly: take the released predictions for 5,125 Merlin test scans, join them to Merlin's ground-truth finding labels, and ask where an abdomen-trained, report-supervised model breaks down by finding prevalence, scanner and site. The prediction half is public and I opened it; the label half needs a Stanford AIMI data-use agreement, so the join cannot be made. A second idea, fitting a cheap head on cached CT embeddings, dies on the same missing images plus the graphics-card requirement.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 400.0,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working-set figure is 5,125 Merlin test volumes times the 50-100 MB I measured on the four resized demo NIfTI files in the repo, so roughly 300-500 GB; the training set is larger again. Nothing was timed because no runnable data exists. The repo states training used 24 A100 or H20 graphics cards.",
+    "cheapest_killing_check": "Open the one tabular file the project would hang on, RADAR_infer_results_MerlinTestset.csv, and look for a ground-truth column. There isn't one: 5,125 rows, 21 prediction columns, no labels. That took two minutes and ends the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A on four counts. A1: the training data (RAD-CT, 400,000+ examinations from Chinese hospitals) is not released, and the only dataset the released code runs on, Merlin, requires a Stanford AIMI data-use agreement. A3: the inputs are 3D CT volumes and only four demo scans are public; the 991 Hugging Face files are organ masks with no images. A8: the only per-case numbers downloadable are RADAR's own predicted probabilities, and the masks are TotalSegmentator predictions, so anything fitted to the public files would be distilling two models rather than learning from measurements. A6: hundreds of gigabytes of volumes and a graphics-card requirement put this far outside a 16 GB CPU-only laptop. The model and code are genuinely open and this is good work; the data is not ours to use."
+}

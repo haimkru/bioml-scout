@@ -1,0 +1,196 @@
+{
+  "paper_id": "nar2026-gkag627",
+  "title": "Elongationless start-stop elements are stress-resilient translation gates that are more repressive than uTranslons.",
+  "doi": "10.1093/nar/gkag627",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13338717/supplementaryFiles (contains gkag627_supplemental_files.zip -> 03_RHW_SupplData_260117.xlsx, 68 MB)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the 72.8 MB Europe PMC supplement zip, unpacked the inner 68 MB Excel file, converted its 'Data' sheet to CSV (64 s) and parsed it. Verified: 19,514 unique Ensembl gene rows (rows 38-19551 of the sheet; rows 9-36 are a summary block and row 37 is the header); a 5' untranslated region (UTR) sequence for every gene (pure A/C/G/T, median 170 nt, 95th percentile 785, max 6,792, 150 exact duplicates); 286 measurement columns covering 30 perturbed translation factors from 48 source studies; the two side-by-side blocks share a gene-ID column that matches on all 19,514 rows; missing values coded as the string 'na'. Computed coverage per column (74 columns with >=15,000 values), cross-laboratory and within-study replicate correlations, simple-feature baselines, and the start-stop vs control group difference.",
+    "what_came_from_paper_text_only": "That the transcript chosen per gene is the principal transcript with the longest 5' UTR from GENCODE v43 via the UCSC Table Browser; the biological interpretation of the repeat initiation/termination cycling mechanism; the reporter assay results (in the supplementary PDF, which I did not parse)."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Opened it myself: no login, no application. Europe PMC supplementary zip (72.8 MB) -> inner zip -> 68 MB .xlsx. Nucleic Acids Research is fully open access."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the file: 41 columns are already 'log2 fold change in translation efficiency' for a named factor depletion, plus 77 ribosome-footprint fold-change columns, 18 small-subunit occupancy columns, 11 RNA half-life and 10 RNA level columns. Nothing has to be constructed."},
+    "a3_inputs_present": {"pass": true, "note": "The actual 5' UTR nucleotide sequence is a column (UTR5_Seq) for all 19,514 genes, not an accession. Element sequence, position and 30-nt flanks are also given for start-stop and uTranslon genes."},
+    "a4_units_stated": {"pass": true, "note": "Primary labels are log2 fold change, stated in the column name and in a 'Notes' sheet that defines all 15 data types. Trap recorded: the 11 RNA half-life columns are 'ppm transformed' with negative values where hours are claimed, so that block's units are not interpretable - avoid it."},
+    "a5_enough_rows": {"pass": true, "n_rows": 19514, "note": "19,514 genes; per-perturbation counts verified, e.g. eIF3D knockdown 17,157, eIF4A knockdown 15,127, DDX6 knockout 10,055, DENR knockout 6,165. 14,247 genes have >=20 of the 41 translation-efficiency columns."},
+    "a6_fits_laptop": {"pass": true, "working_set": "68 MB Excel file / 77 MB CSV; ~3 GB peak RAM", "note": "Whole table loads in pandas on a 16 GB laptop. Embedding 19,514 short sequences with a small nucleotide language model is CPU-feasible."},
+    "a7_counts_match_paper": {"pass": true, "note": "Exact match, verified by counting: 19,514 genes, 1,417 predicted start-stop, 708 core start-stop, 216 with a good Kozak context, 1,331 predicted uTranslon(u9), 621 core, 190 good Kozak, 463 control genes - every number in the Methods section."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are measured log2 fold changes from published ribosome profiling and RNA sequencing, not another model's output. One construction risk recorded: translation-efficiency fold change equals footprint fold change minus RNA fold change from the same experiment, so those sibling columns must never be used as features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One Excel sheet, one row per gene, unique Ensembl ID; the two side-by-side blocks matched on all 19,514 rows."},
+    "B2": {"score": 1, "why": "Needed a custom parser: 5-row stacked header, 28 summary rows above the data, missing coded as 'na'."},
+    "B3": {"score": 1, "why": "All log2 fold changes, but from 48 labs; I measured same-factor cross-lab Spearman of 0.01-0.48."},
+    "B4": {"score": 1, "why": "No censored or qualitative values seen, but missingness is heavy: median 30 of 41 translation-efficiency columns present per gene."},
+    "B5": {"score": 1, "why": "Zero duplicate gene rows; 150 duplicate 5' UTR sequences; several columns share identical names (average vs replicate)."},
+    "B6": {"score": 2, "why": "Notes sheet defines all 15 data types, abbreviations and 45 references; each column carries type/factor/source/comment. Five columns lack a source."},
+    "C1": {"score": 2, "why": "Informative either way: either sequence predicts factor dependency, or we publish the measured noise ceiling that explains why not."},
+    "C2": {"score": 2, "why": "Searched: models predict baseline translation efficiency (RiboNN, Optimus 5-Prime, UTR-LM) but none predicts response to factor depletion."},
+    "C3": {"score": 2, "why": "Novel plus unique application: this 19,514 x 286 compiled matrix with sequences has never been used for machine learning."},
+    "C4": {"score": 2, "why": "Each label column is one ribosome-profiling experiment with a knockdown: months of work and tens of thousands of dollars."},
+    "C5": {"score": 2, "why": "I computed the dummy and simple-feature baselines myself: 5' UTR length gives Spearman up to 0.31."},
+    "D1": {"score": 2, "why": "Open-weight DNA/RNA language models fit 5' UTR sequences directly: DNABERT-2, HyenaDNA, Nucleotide Transformer, RNA-FM, UTR-LM."},
+    "D2": {"score": 2, "why": "19,514 sequences, median 170 nt: embed once on CPU, cache, fit a ridge or small multi-task head."},
+    "D3": {"score": 2, "why": "DNABERT-2 and HyenaDNA are Apache 2.0, RNA-FM is MIT; the paper's supplement is Nucleic Acids Research open access."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes (chrom column present, verified) and cluster 5' UTRs by sequence identity."},
+    "E2": {"ok": true, "why": "24 chromosomes, 30 perturbed factors, 48 source studies - plenty of groups to hold out."},
+    "E3": {"ok": true, "why": "Per-column mean is the dummy; I also computed a simple-feature baseline (length, GC, upstream AUG count)."},
+    "E4": {"ok": true, "why": "Measured it: within-study replicate Spearman 0.42 (ABCE1), 0.63 (ASCC3), 0.70 (eIF4A knockdown)."},
+    "E5": {"ok": true, "why": "Reproduced in the file: DENR knockout hits start-stop genes (median -0.213) vs control (+0.100), p=9.2e-18."},
+    "E6": {"ok": true, "why": "Label shuffling and dinucleotide-shuffled sequences are trivially runnable on this table."},
+    "E7": {"ok": true, "why": "Seven factors measured by two or three independent labs; 11 columns are mouse, giving a species transfer test."},
+    "E8": {"ok": true, "why": "The paper's own genome-wide claim (start-stop more repressed than uTranslon) is recomputable from these exact columns."},
+    "G1": {"score": 2, "why": "Verified present: Ensembl gene and transcript, Entrez, HGNC, OMIM, RefSeq, UniProt accession, GRCh38 and hg19 coordinates."},
+    "G2": {"score": 2, "why": "gnomAD 5' UTR variants join on the hg19 5' UTR coordinate column; GTEx and Human Protein Atlas join on Ensembl gene."},
+    "G3": {"score": 1, "why": "One gene = one chosen transcript, so gnomAD variants are one-to-many and variants in other isoforms' UTRs are lost."},
+    "G4": {"score": 2, "why": "Asks whether 5' UTR positions under human population constraint are the ones that create initiation-factor dependency."},
+    "H1": {"score": 2, "why": "All 19,514 genes present with both up and down changes, plus a purpose-built 463-gene length-matched control set."},
+    "H2": {"score": 1, "why": "48 studies and many labs, but almost all immortalised human cell lines; 11 mouse columns, no tissues."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one sentence and is bounded by the noise ceiling I measured."},
+    "H4": {"score": 1, "why": "Sources are documented per column, but the near-zero cross-lab agreement is invisible unless you compute it."},
+    "I1": {"score": 2, "why": "Translation-control labs (Teleman, Iwasaki, Gehring, Dikstein, this paper's group) and messenger RNA therapeutic UTR designers."},
+    "I2": {"score": 2, "why": "Changes which reporter a lab builds, and whether anyone trusts a single knockdown dataset as truth."},
+    "I3": {"score": 2, "why": "Spearman on held-out genes plus precision in the top 100 - exactly the shortlist a lab would test."},
+    "I4": {"score": 1, "why": "Simple features already reach Spearman 0.31, so the complex part of the mapping may be small."},
+    "J1": {"score": 2, "why": "Frozen language-model embeddings, multi-task heads, grouped splits, a measured noise ceiling: real modelling."},
+    "J2": {"score": 1, "why": "Positive controls are named and checkable, but initiation-factor biology is specialised; a translation biologist would help."},
+    "J3": {"score": 2, "why": "The parsed tidy table and the cross-lab reproducibility matrix are both shareable even if the model fails."},
+    "J4": {"score": 2, "why": "Three weeks: one day parsing (mostly done), two days embeddings, the rest modelling and controls."},
+    "J5": {"score": 2, "why": "Kill condition is concrete and pre-stated: no perturbation beaten by 0.05 Spearman over length alone in week one."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RiboNN (Nature Biotechnology 2025, Sanofi) - a multi-task convolutional neural network predicting translation efficiency from messenger RNA sequence",
+        "open_weights": true,
+        "score_and_split": "Reported r=0.79 in human and r=0.78 in mouse for mean translation efficiency across cell types, trained on 3,819 ribosome-profiling datasets spanning 140+ cell types; split details not verified by me.",
+        "authors_named_unsolved": "Per the paper summaries I read, cell-type-specific and condition-specific translation efficiency beyond the mean remains the hard part; responses to loss of a specific initiation factor are not modelled at all.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Optimus 5-Prime (Sample et al. 2019) - a convolutional network predicting mean ribosome load from 5' untranslated region sequence",
+        "open_weights": true,
+        "score_and_split": "Explains up to 93% of mean ribosome load variance on a held-out random-UTR test set from a massively parallel reporter assay, and 81% on 38,789 truncated human UTRs.",
+        "authors_named_unsolved": "Generalisation from synthetic random 5' UTRs to endogenous messenger RNAs in their native context.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "UTR-LM (Nature Machine Intelligence 2024) - a language model for 5' untranslated regions",
+        "open_weights": true,
+        "score_and_split": "Reported 1-6% higher Spearman than Optimus 5-Prime, FramePool and RNA-FM on mean ribosome load prediction from reporter-assay data.",
+        "authors_named_unsolved": "Decoding endogenous UTR function rather than reporter-library behaviour.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "DNABERT-2 or HyenaDNA (open-weight DNA language models), with UTR-LM as a domain-matched alternative and RiboNN embeddings as a comparison",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU: 19,514 sequences of median 170 nucleotides, embedded once and cached (~100 MB), then ridge or small multi-task head.",
+    "licence": "DNABERT-2 Apache 2.0, HyenaDNA Apache 2.0, RNA-FM MIT - all permissive."
+  },
+  "integration": {
+    "partner_dataset": "gnomAD v4 5' untranslated region variants (population allele frequencies), joined to GTEx tissue expression and the Human Protein Atlas",
+    "join_key": "hg19 5' UTR coordinates (column HG19_5UTRcoordinates, verified present) for gnomAD; Ensembl gene ID for GTEx and Human Protein Atlas",
+    "bigger_question_one_sentence": "Are the 5' untranslated region positions that human populations keep free of variation the same positions that make a messenger RNA depend on a particular translation initiation factor?"
+  },
+  "controls": {
+    "positive_control": "Two, both already checked in the file: DENR knockout reduces translation efficiency of start-stop genes (median -0.213) versus control genes (+0.100), Mann-Whitney p=9.2e-18; and the 5'TOP motif score tracks Torin1 (mTOR inhibitor) sensitivity in the expected direction (Spearman -0.177, n=3,720).",
+    "negative_control": "Shuffle each label column across genes and confirm collapse to zero correlation; refit on dinucleotide-shuffled 5' UTR sequences; train on 5' UTR length alone to measure the trivial component (Spearman up to 0.31, measured).",
+    "external_validation": "The same factor measured by independent labs: ABCE1 in three studies, eIF4A in three, ASCC3/DDX6/DENR/eIF4G2/eIF2D in two each; plus 11 mouse-derived columns for a species transfer test."
+  },
+  "honest_claim_h3": "From the 5' untranslated region sequence alone we can predict a modest but real fraction of the between-gene variation in how translation efficiency changes when a given initiation factor is depleted, as measured by one laboratory in an immortalised human cell line - and we can state how much of the unexplained variation is measurement noise rather than missing biology, because the same perturbations were measured by several labs.",
+  "plain_idea": {
+    "one_liner": "Use the beginning of a human messenger RNA to predict how much its protein output falls when a specific translation start-up protein is removed.",
+    "train_on": "One row per human gene: the 5' untranslated region sequence (the stretch before the protein-coding part; median 170 letters), plus lengths, GC content and codon-usage numbers. 19,514 genes, verified by opening the file.",
+    "predict": "The measured log2 fold change in translation efficiency when one of 30 translation factors is knocked down, knocked out or drug-inhibited. Truth comes from ribosome profiling (sequencing the messenger RNA fragments protected by ribosomes) in 48 published studies, already in the table as columns.",
+    "why_worthwhile": "Translation-control labs could predict which factor an untested messenger RNA depends on before building a reporter, and messenger RNA therapeutic designers could choose 5' untranslated regions that keep working under stress. Even if the model fails, the cross-laboratory reproducibility matrix tells the field which published knockdown datasets agree with each other."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "yes",
+      "why": "RiboNN was trained on 3,819 ribosome-profiling datasets but on baseline translation efficiency only; none of RiboNN, Optimus 5-Prime or UTR-LM covers response to loss of a named initiation factor. This table has 286 measurement columns over 30 perturbed factors, with up to 17,157 genes per column."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "Replicate columns within studies and two or three independent labs for seven factors let us attach a measured noise ceiling to each prediction (within-study replicate Spearman 0.42-0.70, cross-lab 0.01-0.48). I did not verify whether RiboNN reports calibrated uncertainty, so I cannot claim this is unique."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "For the exact task there is nothing to beat. For the adjacent baseline-translation-efficiency task, RiboNN is a 2025 Nature Biotechnology model with open code and strong numbers, so we should use it as a feature source or baseline rather than try to beat it."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Extra ribosome-profiling knockdowns from GEO would come from different labs, and I measured near-zero cross-lab agreement for the same factor (ABCE1 Spearman 0.01-0.19, eIF2D -0.03, eIF4G2 0.05), so adding them could add noise rather than signal. The 'same quantity measured the same way' condition fails."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "GEO holds hundreds of ribosome-profiling knockdown and knockout experiments, and the RiboNN atlas (3,819 ribosome-profiling datasets, 140+ cell types, Nature Biotechnology 2025, code at github.com/Sanofi-Public/RiboNN) covers baseline translation efficiency. Massively parallel reporter data from Optimus 5-Prime gives 5' UTR to mean ribosome load for roughly 280,000 random and 30,000 human UTRs. All found by search; I did not download them.",
+    "approx_items": null,
+    "join_key": "Ensembl gene ID (and hg19/GRCh38 coordinates for reporter-assay UTRs)",
+    "why": "Baseline translation efficiency is abundantly measured elsewhere and gives an external check on the sequence features, but the specific label here - the change on depleting one named factor - would have to be reprocessed from raw GEO submissions, so there is no ready-made joinable resource."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Paralogous or near-identical 5' untranslated regions split across training and test: I found 150 exactly duplicated UTR sequences among 19,514 genes.",
+      "Translation-efficiency fold change equals ribosome-footprint fold change minus RNA fold change from the same experiment, so using those sibling columns as features is leakage by construction.",
+      "Which genes have a value in a column depends on sequencing depth, which correlates with gene expression and with 5' UTR length, so missingness is informative.",
+      "The start-stop and uTranslon class columns are computable from the 5' UTR sequence itself, so predicting them from sequence would be circular.",
+      "Eleven columns are mouse measurements mapped onto human genes by orthology, mixing species if used as held-out tests of a human-sequence model."
+    ],
+    "split": "Hold out whole chromosomes using the 'chrom' column (verified present in the file), and additionally cluster 5' UTRs at 80% sequence identity with CD-HIT-EST and hold out clusters. For transfer, leave-one-source-study-out using the source row of the header (48 studies).",
+    "checks": [
+      "Shuffle each label column across genes and confirm Spearman collapses to zero.",
+      "Train on 5' UTR length alone and report it as the trivial component (measured: up to Spearman 0.31 against DAP5/eIF4G2 knockout).",
+      "Report the nearest-neighbour 5' UTR sequence identity between each test gene and the training set.",
+      "Check whether missingness per column predicts the label, by fitting on the missingness pattern alone."
+    ],
+    "verdict": "Manageable: the chromosome column is present, sequence clustering is one CD-HIT run, and the only subtle trap (sibling footprint/RNA columns) is avoidable by using sequence features only."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured log2 translation-efficiency fold change on held-out chromosomes, computed per perturbation, plus precision among the top 100 predicted most factor-dependent genes - the shortlist a lab would actually test with reporters.",
+    "baselines": "Per-column mean gives Spearman 0 by construction. Simple-feature baselines I measured in the file: 5' UTR length vs DAP5/eIF4G2 knockout translation efficiency -0.314 (n=9,084), vs Torin1 +0.310 (n=4,147); GC content vs DDX6 knockout -0.266 (n=10,055). No published model exists for this task.",
+    "success": "Beat the simple-feature ridge by at least 0.08 Spearman on at least 10 of the roughly 20 well-covered perturbations on held-out chromosomes, while recovering both positive controls (DENR/start-stop, 5'TOP/Torin1).",
+    "noise_ceiling": "Measured within-study replicate Spearman: eIF4A knockdown 0.70, ASCC3 knockdown 0.63, ABCE1 knockdown 0.42. Cross-laboratory agreement for the same factor ranges 0.01-0.48, so for several factors the ceiling is effectively zero.",
+    "kill": "If after one week no perturbation is predicted better than 5' UTR length alone by at least 0.05 Spearman on held-out chromosomes, stop and publish only the reproducibility matrix."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Genome Biology",
+      "why": "Publishes sequence-to-function models with genome-wide reanalysis; would need the model to transfer across independent labs and to reveal interpretable 5' untranslated region determinants of factor dependency."
+    },
+    "realistic": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Publishes focused benchmarks and reanalyses of published genomics data; the likely result - language-model embeddings modestly beating simple features on about half the perturbations, bounded by a measured noise ceiling - fits exactly."
+    },
+    "fallback": {
+      "journal": "Scientific Data (plus a bioRxiv preprint)",
+      "why": "Even if no model works, the parsed and documented 19,514-gene by 286-measurement table with sequences, plus the cross-laboratory reproducibility matrix, is a reusable resource with a clear provenance trail."
+    }
+  },
+  "pitch": {
+    "headline": "19,514 human 5' untranslated region sequences in one table alongside 286 measured translation responses to 30 different translation factors being removed.",
+    "what_makes_the_data_unusual": "Verified by opening the file: sequences and labels in the same sheet, 48 source studies, seven factors measured by two or three independent labs, and a purpose-built 463-gene length-matched control set.",
+    "the_win": "Beat 5' UTR length alone (Spearman 0.31 against DAP5/eIF4G2 knockout, measured) by 0.08 or more on ten perturbations, approaching the 0.63-0.70 within-study replicate ceiling.",
+    "even_if_it_fails": "We publish the first cross-laboratory reproducibility matrix for translation-factor knockdown datasets - I already measured ABCE1 agreeing at Spearman 0.01 between two labs, which the field reuses as truth.",
+    "who_wants_it": "Translation-control labs (Teleman, Iwasaki, Gehring, Dikstein, this paper's group) deciding which reporter to build, and messenger RNA therapeutic designers choosing stress-resilient 5' untranslated regions."
+  },
+  "ml_idea": "Multi-task regression from human 5' untranslated region sequence to the measured log2 change in translation efficiency across roughly 20 well-covered translation-factor depletions. Freeze an open-weight DNA language model (DNABERT-2 or HyenaDNA), cache embeddings for all 19,514 sequences once on CPU, and fit a shared trunk with one head per perturbation, masking missing labels. Evaluate per perturbation on held-out chromosomes and sequence-identity clusters, against a simple-feature ridge and the measured replicate noise ceiling, with leave-one-lab-out transfer as the headline generalisation test.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.3,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 4,
+    "cv_run_minutes": 10,
+    "compute_note": "I timed the Excel-to-CSV conversion at 64 seconds and the full-table pandas scans at a few seconds each on this laptop; embedding time is an estimate from typical CPU throughput of a small nucleotide language model on 19,514 sequences of median 170 nucleotides, and the cross-validation estimate assumes a ridge head on cached embeddings.",
+    "cheapest_killing_check": "For every factor measured by two independent labs, correlate the two columns. I already ran it: ABCE1 0.01-0.19, eIF2D -0.03, eIF4G2 0.05, DENR 0.25, DDX6 0.48. So restrict the project up front to perturbations whose within-study replicate Spearman is at least 0.5 (eIF4A 0.70, ASCC3 0.63 qualify)."
+  },
+  "verdict": "verify_first",
+  "verdict_reason": "Part A passes on files I opened: 19,514 genes with their 5' untranslated region sequences and 286 already-measured log2 fold-change columns over 30 translation factors, counts matching the paper exactly, parsed on a laptop, with a positive control reproduced (DENR knockout hits start-stop genes, p=9.2e-18). The one thing to verify before committing is label quality per perturbation: I measured near-zero cross-laboratory agreement for ABCE1, eIF2D and eIF4G2, and simple sequence features already reach Spearman 0.31, so spend the first day selecting the subset of perturbations whose within-study replicate correlation exceeds 0.5 and confirming a language-model head beats length alone there."
+}

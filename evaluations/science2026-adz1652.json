@@ -1,0 +1,119 @@
+{
+  "paper_id": "science2026-adz1652",
+  "title": "Single-cell multiomics connects 3D genome and transcriptome alterations in Alzheimer's disease.",
+  "doi": "10.1126/science.adz1652",
+  "journal": "Science",
+  "data_url": "https://www.synapse.org/Synapse:syn66400203",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Read the paper's data availability statement from the PubMed Central XML (PMC13499675): the GAGE-seq data sit in Synapse folder syn66400203 'under controlled use conditions' needing a data use agreement. I queried the Synapse application programming interface anonymously: the folder has an access requirement attached ('ADKP Clickwrap', the Alzheimer's Disease Knowledge Portal agreement, benefactor syn5550382), and an anonymous file download request returned HTTP 403 Forbidden. I could list names only: 20 per-donor folders plus AD_rna_annotated.rds under 'GAGE-seq (snrnaSeq and snHi-C)', 6 metadata spreadsheets, and 4 donor folders of Xenium spatial transcriptomics. The Zenodo deposit (10.5281/zenodo.19320621) is code only, mirroring GitHub ma-compbio/AD-multiome, whose README states the analysis scripts are 'not runable' without sample annotation files withheld for privacy.",
+    "what_came_from_paper_text_only": "All counts and design facts: 20 prefrontal-cortex donors (10 Alzheimer's disease, 10 age-matched non-AD) profiled by GAGE-seq (simultaneous single-cell RNA and single-cell Hi-C from the same nucleus); Hicformer trained on 7,598 genes across 26 cell-type-by-condition combinations (13 cell types x 2 conditions); matched single-nucleus ATAC-seq from Xiong et al. at syn52293417. I opened no data file, so no cell count, matrix shape or column list was verified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "FAIL. The only copy of the data is Synapse syn66400203 behind the Alzheimer's Disease Knowledge Portal clickwrap plus a ROSMAP data use agreement arranged with Rush University Medical Center or Sage Bionetworks. I confirmed this in the files layer, not just the text: the Synapse access-requirement endpoint returns the ADKP Clickwrap requirement, and an anonymous download returns HTTP 403. Per the rules this is a Part A1 failure; I stopped here."
+    },
+    "a2_label_is_a_column": {"pass": true, "note": "Not assessed beyond noting that the natural label (pseudo-bulk gene expression per cell type and condition) would have to be aggregated from single-cell matrices, i.e. constructed, not read off a column. Not verified in files."},
+    "a3_inputs_present": {"pass": true, "note": "Not assessed; evaluation stopped at A1."},
+    "a4_units_stated": {"pass": true, "note": "Not assessed; evaluation stopped at A1."},
+    "a5_enough_rows": {"pass": true, "n_rows": null, "note": "Not assessed. The paper states 7,598 genes x 26 cell-type-condition combinations for its own model, but the independent unit is the donor and there are only 20. No count verified in any file."},
+    "a6_fits_laptop": {"pass": true, "working_set": "", "note": "Not assessed; evaluation stopped at A1. Single-cell Hi-C contact maps for thousands of nuclei would almost certainly exceed the 5 GB working-set guide."},
+    "a7_counts_match_paper": {"pass": true, "note": "Not assessed; no files could be opened to compare against the paper."},
+    "a8_label_provenance": {"pass": true, "note": "Not assessed; evaluation stopped at A1."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Hicformer (this paper's own model: a transformer that predicts gene expression from DNA sequence plus Hi-C-derived 3D genome features)",
+        "open_weights": false,
+        "score_and_split": "The paper reports three held-out settings (seen genes in unseen cell types, unseen genes in seen cell types, unseen genes in unseen cell types); I did not retrieve the numeric scores because the figures and supplement are not open access.",
+        "authors_named_unsolved": "Not retrievable from the open text I obtained.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Puget (frozen Enformer sequence encoder plus frozen HiCFoundation 3D-structure encoder with a small trained fusion decoder, predicting RNA-seq expression)",
+        "open_weights": true,
+        "score_and_split": "Authors report up to 25% improvement in cross-biosample Pearson correlation over a sequence-only baseline on highly variable genes, and generalisation to held-out biosamples and across species (bioRxiv 2025, code at github.com/Noble-Lab/Puget).",
+        "authors_named_unsolved": "Sequence-only models fail to capture structural context and do not generalise to unseen cell types.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "C.Origami (predicts cell-type-specific chromatin organisation from DNA sequence plus CTCF binding and chromatin accessibility; Nature Biotechnology 2023)",
+        "open_weights": true,
+        "score_and_split": "Published as a de novo chromatin-structure predictor enabling in silico genetic screening; I did not retrieve the exact metric or split.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Hi-Compass (depth-aware deep learning predicting cell-type-specific 3D genome organisation from accessibility, single-cell to spatial resolution; Nature Communications)",
+        "open_weights": null,
+        "score_and_split": "Reported to recover chromatin loops and link disease variants to target genes; metric and split not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "Enformer or HiCFoundation (both would fit this data type: DNA sequence plus Hi-C contact maps), with Geneformer/scGPT as single-cell alternatives",
+    "freeze_and_head_viable": true,
+    "hardware": "Frozen-encoder embeddings for ~8,000 gene loci are CPU-feasible but slow; the paper's own training clearly used GPUs.",
+    "licence": "Moot — the data cannot be obtained, so no backbone question arises."
+  },
+  "integration": {
+    "partner_dataset": "Matched single-nucleus ATAC-seq from the same 20 ROSMAP donors (Synapse syn52293417) and ROSMAP clinical/pathological variables (Braak stage, neuritic plaque burden, global cognition)",
+    "join_key": "ROSMAP individual identifier (the R-numbers visible as Synapse folder names, e.g. R1154454) plus gene symbol / genomic coordinates",
+    "bigger_question_one_sentence": "Does 3D chromatin reorganisation add predictive information about cell-type-specific expression change in Alzheimer's disease beyond sequence and accessibility — and the partner data is itself behind the same access wall, so the join is unavailable too."
+  },
+  "controls": {
+    "positive_control": "Would have been: recover the textbook A/B compartment split (gene-dense active chromatin versus gene-poor inactive chromatin) and known Alzheimer's marker genes such as APOE and microglial activation genes. Not runnable without the data.",
+    "negative_control": "Label shuffling across cell-type-condition pseudo-bulks; not runnable.",
+    "external_validation": "Other single-cell Hi-C brain datasets exist in principle, but with only 20 donors here and controlled access, no validation could be set up."
+  },
+  "honest_claim_h3": "No claim is possible: the data cannot be downloaded without a signed Alzheimer's Disease Knowledge Portal data use certificate, so nothing in the files could be verified.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence and 3D chromatin folding features to predict cell-type-specific gene expression changes in Alzheimer's brain tissue.",
+    "train_on": "Per gene locus (a 400 kilobase window around the transcription start site): one-hot DNA sequence, 1D Hi-C-derived tracks (A/B compartment score, insulation score) and a local 2D Hi-C contact map, for each of 26 cell-type-by-condition pseudo-bulk profiles. The paper says 7,598 genes were used; I verified no count myself.",
+    "predict": "Pseudo-bulk expression level (and the Alzheimer's versus non-Alzheimer's difference) for each gene in each brain cell type, with the truth coming from the RNA half of GAGE-seq, which reads messenger RNA from the same nucleus whose chromatin contacts are measured.",
+    "why_worthwhile": "Groups studying gene regulation in neurodegeneration would learn whether chromatin folding carries information about disease expression changes that DNA sequence and accessibility miss; even a negative answer would tell them 3D features are not worth the assay cost."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "Joint single-cell RNA plus single-cell Hi-C from the same nucleus in diseased human brain is genuinely rare, and existing models (Puget, C.Origami) were trained on cell lines and bulk-ish biosamples. But it is only 20 donors, and none of it is obtainable."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "With 10 Alzheimer's and 10 control donors, per-prediction calibrated uncertainty across donors would rest on very few independent groups, and I could not check replicate structure because no file opened."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "Puget (2025) already pairs a frozen Enformer sequence encoder with a frozen HiCFoundation structural encoder and reports generalisation to held-out biosamples and across species; that is a recent, open, honestly split baseline on the same task."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "The first condition fails outright: we cannot obtain the data, so neither the paper's model nor ours can be run on it. The assays also differ (single-cell Hi-C pseudo-bulk here versus bulk Hi-C in Puget's training), so the measurements are not the same quantity measured the same way."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Predict cell-type-specific pseudo-bulk gene expression, and the Alzheimer's-versus-control expression change, from DNA sequence plus single-cell-Hi-C-derived 3D genome features (A/B compartment, insulation, local contact maps), using a frozen Enformer or HiCFoundation encoder with a trained head, held out by donor and by chromosome. Dead on arrival: the data is controlled-access.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": null,
+    "needs_gpu": true,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "No estimate possible: no file could be opened, so matrix sizes are unknown. Single-cell Hi-C contact maps for thousands of nuclei plus 400 kb sequence windows would need a GPU for any Enformer-style head, judging by the paper's own transformer architecture.",
+    "cheapest_killing_check": "Request the Synapse entity anonymously: syn66400203 carries an Alzheimer's Disease Knowledge Portal clickwrap access requirement and file download returns HTTP 403. One API call, and it kills the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A1 failure, confirmed at the repository and not just in the text. The GAGE-seq single-cell RNA plus Hi-C data live only in Synapse syn66400203 under an Alzheimer's Disease Knowledge Portal clickwrap and a ROSMAP data use agreement; the anonymous download attempt returned HTTP 403 and the access-requirement endpoint lists the clickwrap. The matched single-nucleus ATAC-seq (syn52293417) sits behind the same wall, the Zenodo deposit is code only, the authors state their scripts cannot run without withheld sample annotations, and the article is not open access so even the supplementary tables are unretrievable. Secondary problems if access were granted: only 20 donors (the real independent unit), pseudo-bulk labels that must be constructed from single-cell matrices rather than read from a column (A2 risk), a working set far over the laptop budget, and a recent open competitor (Puget, frozen Enformer plus HiCFoundation, 2025) already doing this task with cross-biosample evaluation."
+}

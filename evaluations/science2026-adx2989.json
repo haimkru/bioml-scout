@@ -1,0 +1,181 @@
+{
+  "paper_id": "science2026-adx2989",
+  "title": "Cross-cohort analysis of expression and splicing quantitative trait loci in TOPMed.",
+  "doi": "10.1126/science.adx2989",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/18249421",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and extracted the Zenodo release credible-sets.tar.gz (44,699,309 bytes, CC-BY-4.0, 29 entries) and parsed all 26 data files with pandas. Whole-blood cis-eQTL (minor allele frequency >= 1%): 497,475 rows, 5 columns (phenotype_id, variant_id, pip, af, cs_id), 18,253 Ensembl genes, 69,766 credible sets (groups of variants statistics cannot tell apart), 0 missing values, 0 duplicate rows, 406,205 unique variants, 41,051 credible sets with 2 or more variants, 31,179 variants with posterior inclusion probability > 0.9, max 29 independent signals per gene, 5.8% insertions/deletions, GRCh38-style chr1..chrX coordinates. Splicing QTL files are keyed by leafcutter intron phenotype (e.g. chr20:50940933:50941129:clu_27784_-:ENSG00000000419.12). Read the README column descriptions. Read the full medRxiv preprint text (PMC11875316) for methods and the data availability statement.",
+    "what_came_from_paper_text_only": "Sample sizes (14,324 RNA-seq samples; whole blood n=6,454; lung n=1,291), the 5% FDR eGene/sGene counts, the 518.2% increase in whole-blood signals versus GTEx, the colocalization results (10,611 GWAS signals), and the method for ranking signals as primary/secondary. The published Science version is paywalled with no PubMed Central record, so I could not open its supplementary tables; the preprint was used instead."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Verified: fetched and extracted the 44.7 MB Zenodo archive, CC-BY-4.0, no login. Note the complementary pieces are closed: individual-level genotypes/expression and the full summary statistics sit in dbGaP (phs001974, phs-controlled), which needs an access application."},
+    "a2_label_is_a_column": {"pass": true, "note": "pip (SuSiE posterior inclusion probability) is a column; the usable label 'which variant in this credible set has the highest pip' is one pandas groupby on one file. WARNING: the primary/secondary signal rank, the feature that makes this dataset distinctive, is NOT in the release - the paper's methods build it by refitting a joint model on individual-level data (dbGaP), so that label would have to be constructed from data we cannot get."},
+    "a3_inputs_present": {"pass": true, "note": "Weak pass. The file has zero feature columns: only genomic coordinates (chr_pos_ref_alt) and Ensembl gene IDs. Every feature must come from outside - GRCh38 reference sequence and a GENCODE annotation. That is two bulk downloads, not thousands of per-item lookups, so it passes, but the release is pure label."},
+    "a4_units_stated": {"pass": true, "note": "Verified in README: pip is a probability (observed range 0.00014-1.0), af is alt-allele frequency (observed 0.0101-0.9899, consistent with the stated 1% MAF cutoff). All five columns documented."},
+    "a5_enough_rows": {"pass": true, "n_rows": 497475, "note": "Verified by counting: 497,475 variant rows in whole-blood cis-eQTL alone; 41,051 credible sets with 2 or more variants (the usable training examples); 2.0 million rows summed over all 26 files."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.35 GB of extracted text plus a GENCODE annotation; ~1.5 GB if the GRCh38 2-bit genome is added", "note": "Verified: all files parsed in pandas on this laptop. A CPU-only baseline (distance to transcription start site, allele frequency, annotation overlap) runs in minutes. Matching the published deep sequence models would need a GPU."},
+    "a7_counts_match_paper": {"pass": true, "note": "Verified exactly. The preprint states '10,282 - 69,766 and 4,992 - 35,770 total cis-eQTL and cis-sQTL signals per tissue'; my counts give exactly 10,282 (monocyte eQTL), 69,766 (whole blood eQTL), 4,992 (monocyte sQTL), 35,770 (whole blood sQTL). Gene counts are consistent with the 9,330-19,465 eGene range (not every eGene yields a credible set)."},
+    "a8_label_provenance": {"pass": true, "note": "Pass with a serious caveat. The label is SuSiE's posterior from Bayesian regression on measured whole-genome sequencing plus RNA-seq - a statistical estimate of a real measurement, not another machine-learning model's prediction, and it is the field's standard benchmark label. But it is documented as unreliable: an independent 2026 study reports 28.6% (primary) to 57.5% (4th-and-higher signals) of high-confidence credible sets failing to replicate across cohorts. Also, the af column is mechanistically tied to fine-mapping power, so using it as a feature risks leakage by construction."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 2, "why": "One tab-separated file per tissue; the proposed project uses a single 497,475-row file. Verified by opening."},
+    "B2": {"score": 2, "why": "All 26 files parsed first try with pandas read_csv, tab-separated, no fixes needed."},
+    "B3": {"score": 2, "why": "All posterior inclusion probabilities from one SuSiE run in one pipeline; already normalised by the authors."},
+    "B4": {"score": 2, "why": "Verified 0 missing values in the whole-blood file; no censored or qualitative entries anywhere."},
+    "B5": {"score": 2, "why": "Verified 0 duplicated rows; the methods say duplicate credible sets were already collapsed."},
+    "B6": {"score": 2, "why": "README documents all five columns, including the cs_id plus phenotype_id uniqueness rule."},
+    "C1": {"score": 1, "why": "Baseline-audit framing is informative either way, but the obvious project is beating a recent published accuracy number."},
+    "C2": {"score": 0, "why": "fiPIP (2026) benchmarked AlphaGenome, Borzoi, Enformer and Sei on this exact TOPMed blood data, open code, honest cross-cohort evaluation."},
+    "C3": {"score": 1, "why": "Secondary-signal angle blocked: rank label needs dbGaP data. Remaining angle is a cheap trivial-baseline audit."},
+    "C4": {"score": 1, "why": "Fine-mapping itself is cheap compute; the expensive step it feeds (reporter assays, CRISPR) is lab work."},
+    "C5": {"score": 2, "why": "Published numbers exist: SuSiE 66.6%, AlphaGenome 77.8%, Borzoi 78.0%, combined 79.3% prioritisation accuracy."},
+    "D1": {"score": 2, "why": "Open-weight DNA backbones match this data type: Borzoi, Enformer, HyenaDNA, Nucleotide Transformer, AlphaGenome."},
+    "D2": {"score": 1, "why": "Competitive models (Borzoi, AlphaGenome) need a GPU over ~400,000 variants; only tiny DNA models cache on CPU."},
+    "D3": {"score": 1, "why": "Data is CC-BY-4.0, but AlphaGenome weights are non-commercial; Borzoi and Enformer are more permissive."},
+    "E1": {"score": 0, "ok": true, "why": "Chromosome is parseable from variant_id (seen in files); hold out whole chromosomes or whole genes."},
+    "E2": {"score": 0, "ok": true, "why": "23 chromosomes, 18,253 genes, 6 tissues - far more than 5 holdout groups, all counted in the files."},
+    "E3": {"score": 0, "ok": true, "why": "Random pick within each credible set, and nearest-to-transcription-start-site, are both computable from the file."},
+    "E4": {"score": 0, "ok": true, "why": "Noise floor estimable: GTEx-TOPMed replication failure rates, plus the near-duplicate MAF 0.1% and 1% whole-blood runs."},
+    "E5": {"score": 0, "ok": true, "why": "Positive control: top-PIP variants must concentrate near transcription start sites and in promoter/enhancer annotations, as the paper reports."},
+    "E6": {"score": 0, "ok": true, "why": "Shuffling posterior probabilities within each credible set is a one-line negative control on this file."},
+    "E7": {"score": 0, "ok": true, "why": "GTEx v10 and eQTL Catalogue publish independently fine-mapped credible sets joinable on GRCh38 variant ID."},
+    "E8": {"score": 0, "ok": true, "why": "fiPIP's 77.8-79.3% prioritisation accuracy is reproducible if their promised Zenodo precomputed scores are posted; code is on GitHub."},
+    "G1": {"score": 2, "why": "Versioned Ensembl gene IDs and GRCh38 chr_pos_ref_alt variant IDs present in every row; seen in the files."},
+    "G2": {"score": 2, "why": "GTEx v10, eQTL Catalogue, Open Targets and Pan-UK Biobank all join on Ensembl gene ID or GRCh38 variant ID."},
+    "G3": {"score": 1, "why": "Many-to-many: 406,205 unique variants across 497,475 gene-variant rows, so a collapse rule is needed."},
+    "G4": {"score": 2, "why": "Combining with GTEx answers which fine-mapped signals replicate across cohorts and whether sequence predicts that."},
+    "H1": {"score": 1, "why": "Negatives are the non-top variants inside each credible set (LD-matched), but no genome-wide or no-signal genes recorded."},
+    "H2": {"score": 2, "why": "Six tissues/cell types, many TOPMed cohorts, ancestrally diverse samples per the paper; counts verified per tissue."},
+    "H3": {"score": 2, "why": "The honest claim is writable precisely; see honest_claim_h3."},
+    "H4": {"score": 2, "why": "Paper is explicit about power limits, saturation analyses, and that GWAS fine-mapping used European UK Biobank only."},
+    "I1": {"score": 2, "why": "The Michigan statgen group behind fiPIP, GTEx/eQTL Catalogue teams, and labs choosing variants for reporter assays."},
+    "I2": {"score": 1, "why": "A baseline audit would change how published prioritisation numbers are read, but redirect few experiments."},
+    "I3": {"score": 2, "why": "Top-1 accuracy within a credible set is literally the decision: which single variant to take into the lab."},
+    "I4": {"score": 1, "why": "Distance to transcription start site may explain most of it; that uncertainty is the project, so ML helps only somewhat."},
+    "J1": {"score": 1, "why": "Real grouped splits and honest evaluation, but mostly feature engineering; no CPU-feasible transfer learning."},
+    "J2": {"score": 2, "why": "Sanity checks are clear: transcription-start-site enrichment, allele-frequency effects, known promoter annotations."},
+    "J3": {"score": 2, "why": "A concatenated, documented credible-set table plus trivial-baseline numbers is shareable even if the model is mediocre."},
+    "J4": {"score": 1, "why": "No time budget written down; three weeks would be realistic but is not committed anywhere."},
+    "J5": {"score": 0, "why": "No kill date or condition written in NOTES.md."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "fiPIP (functionally informed posterior inclusion probability pipeline, 2026, University of Michigan statgen)",
+        "open_weights": true,
+        "score_and_split": "Variant prioritisation accuracy (fraction of credible sets where a cross-cohort-replicated variant ranks top): SuSiE alone 66.6%, AlphaGenome-informed 77.8%, Borzoi-informed 78.0%, combined 79.3%; 87.6% on two-variant credible sets. Evaluated on GTEx v10 blood (n=800) versus TOPMed v1 blood (n=6,454) - i.e. this exact dataset - using cross-cohort replication as ground truth, stratified by credible-set order (primary 28.6% replication failure, secondary 39.7%, tertiary 50.0%, 4th+ 57.5%).",
+        "authors_named_unsolved": "They restricted to single-nucleotide changes because the sequence models are biased on insertions, deletions and complex variants, and they note that precomputed sequence-model scores across all variants are still needed for scalability.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AlphaGenome (DNA-sequence-to-function model, Google DeepMind)",
+        "open_weights": true,
+        "score_and_split": "77.8% variant prioritisation accuracy when folded into fine-mapping; single-track area under the ROC curve 0.71-0.74 on the same GTEx/TOPMed cross-cohort split (numbers from the fiPIP paper).",
+        "authors_named_unsolved": "Not retrieved directly from the AlphaGenome paper in this evaluation.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Borzoi (predicts RNA-seq coverage from DNA sequence, Linder et al., Nature Genetics 2025)",
+        "open_weights": true,
+        "score_and_split": "78.0% variant prioritisation accuracy on the GTEx/TOPMed cross-cohort split reported by fiPIP.",
+        "authors_named_unsolved": "Not retrieved directly from the Borzoi paper in this evaluation.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Enformer and Sei (earlier open-weight DNA sequence-to-function models)",
+        "open_weights": true,
+        "score_and_split": "Both included in the fiPIP benchmark on the same GTEx/TOPMed split and scored below AlphaGenome and Borzoi; exact per-model numbers not extracted.",
+        "authors_named_unsolved": "Enformer is widely reported to under-predict distal enhancer-driven and personal-genome expression variation.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "HyenaDNA-tiny or Nucleotide Transformer (small DNA language models) for a CPU route; Borzoi or AlphaGenome for the competitive route",
+    "freeze_and_head_viable": false,
+    "hardware": "A tiny DNA language model over ~400,000 variant windows is roughly 12 CPU-hours and would not be competitive; Borzoi or AlphaGenome at this scale needs a GPU.",
+    "licence": "Credible-set data CC-BY-4.0; Borzoi and Enformer permissive; AlphaGenome weights non-commercial."
+  },
+  "integration": {
+    "partner_dataset": "GTEx v10 and eQTL Catalogue fine-mapped credible sets (independent cohorts, same SuSiE method)",
+    "join_key": "GRCh38 variant ID (chromosome_position_reference_alternate) plus versioned Ensembl gene ID, both present in every row",
+    "bigger_question_one_sentence": "Which fine-mapped regulatory signals replicate in an independent cohort, and is replication predictable from DNA sequence context rather than from statistical power?"
+  },
+  "controls": {
+    "positive_control": "Top-posterior-probability variants must concentrate near transcription start sites and in promoter/enhancer annotations - the paper itself reports this enrichment against MAF- and LD-matched control credible sets, so a working pipeline has to recover it. Second control: predict distance to transcription start site from the features, which should be near-perfect.",
+    "negative_control": "Shuffle the posterior probabilities within each credible set; top-1 accuracy must fall to the random-within-set rate. Also train on allele frequency alone, since frequency drives fine-mapping power and could leak.",
+    "external_validation": "GTEx v10 whole-blood fine-mapped credible sets (independent cohort, public), and eQTL Catalogue credible sets for other blood studies."
+  },
+  "honest_claim_h3": "Among variants that statistical fine-mapping of 6,454 TOPMed whole-blood samples already placed in the same 95% credible set, this model ranks the one SuSiE judged most likely causal above the others X% of the time; it does not find causal variants that fine-mapping missed, and 'causal' here means 'highest posterior probability', a label that fails to replicate across cohorts in 29% (strongest signal per gene) to 58% (fourth and weaker signals) of cases.",
+  "plain_idea": {
+    "one_liner": "Use DNA sequence context around each variant to pick which variant in a gene's regulatory signal is the causal one.",
+    "train_on": "Each example is one 95% credible set - a small group of genetic variants that the statistics could not tell apart for a given gene. I counted 41,051 such groups with two or more variants in whole blood (plus 28,715 already resolved to a single variant). Features would be built from the GRCh38 reference sequence and gene annotation, since the file itself has none.",
+    "predict": "Which variant in the group carries the highest posterior inclusion probability, SuSiE's estimate of being the causal one. The truth comes from fine-mapping of RNA sequencing in 6,454 TOPMed whole-blood samples combined with whole-genome sequencing of the same people.",
+    "why_worthwhile": "Labs that can only test one variant per locus in a reporter assay or CRISPR edit need a ranking, and we would learn how much of the published deep-sequence-model accuracy is explained by the crude fact of distance to the gene's start."
+  },
+  "paper_type": "resource",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This is 5x more whole-blood signals than GTEx (69,766 credible sets here, verified by counting; the paper reports a 518.2% increase over GTEx whole blood), but the leading benchmark (fiPIP, 2026) already evaluated AlphaGenome, Borzoi, Enformer and Sei on this exact TOPMed v1 blood release, so we would bring no data they lack."},
+    "confidence_score": {"answer": "no", "why": "The existing approach already outputs a calibrated per-variant posterior (the functionally informed posterior inclusion probability), and the only uncertainty information in the open release is the posterior itself plus credible-set size."},
+    "models_beatable": {"answer": "no", "why": "AlphaGenome (2026) and Borzoi (2025) were evaluated in 2026 on an honest cross-cohort replication split, stratified by signal order, reaching 77.8-79.3% prioritisation accuracy against SuSiE's 66.6%. Matching that on a 16 GB CPU laptop is not realistic."},
+    "guaranteed_improvement": {"answer": "no", "why": "Two conditions fail: the baseline (Borzoi/AlphaGenome scoring of ~400,000 variants) cannot be run as our baseline without a GPU, and the natural new data (GTEx v10 credible sets) comes from a different cohort with different processing, so it is not the same quantity measured the same way."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "GTEx v10 fine-mapped credible sets (public, known resource), eQTL Catalogue (SuSiE credible sets for over a hundred QTL datasets, known resource), eQTLGen (whole-blood associations, known resource). All three independently produce the same kind of posterior-inclusion-probability label on the same variant and gene identifiers.",
+    "approx_items": null,
+    "join_key": "GRCh38 variant ID (chromosome_position_reference_alternate) and versioned Ensembl gene ID",
+    "why": "Independently fine-mapped credible sets elsewhere give both extra training data and a ready external test, and the GTEx-versus-TOPMed disagreement is itself a better ground truth than either posterior alone."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Variants in the same linkage-disequilibrium block appear in several credible sets for neighbouring genes, so a random split would put near-identical sequence windows in both train and test.",
+      "The same variant is reused across genes: 406,205 unique variants across 497,475 gene-variant rows in whole blood, so the identical variant can land on both sides of a split.",
+      "The allele-frequency column is mechanistically tied to fine-mapping power - rarer variants give sharper credible sets - so it can act as a back-door proxy for the label.",
+      "Credible-set size is determined by local linkage disequilibrium, so any feature derived from set size leaks the answer.",
+      "The label is SuSiE's own posterior fitted to the same genotypes, so a model that learns local correlation patterns can reproduce it without learning any biology."
+    ],
+    "split": "Hold out whole chromosomes (the chromosome is the first field of variant_id, seen in the files) and, within that, keep every credible set of a gene on the same side so no gene spans train and test. Report results stratified by credible-set size.",
+    "checks": [
+      "Shuffle the posterior probabilities within each credible set and confirm top-1 accuracy collapses to the random-within-set rate.",
+      "Train on allele frequency alone, and on distance to transcription start site alone, to see how much each explains before any sequence model is involved.",
+      "Measure nearest-neighbour genomic distance and sequence similarity between each test variant window and the training windows."
+    ],
+    "verdict": "Manageable: the within-credible-set design already matches candidates for linkage disequilibrium and locus, and chromosome-level holdout is trivial, but the allele-frequency confound needs explicit ablation."
+  },
+  "success_criteria": {
+    "metric": "Top-1 accuracy of picking the highest-posterior-probability variant inside each multi-variant credible set (what the fiPIP paper calls variant prioritisation accuracy). It matches the decision directly: a lab tests one variant per locus.",
+    "baselines": "Trivial baseline: random pick within the set, computable from the file as the mean of 1 divided by credible-set size over the 41,051 multi-variant whole-blood sets (I verified the set-size distribution - 10,367 sets of size 2, 5,963 of size 3, median 2 overall - but did not compute the mean reciprocal). Published numbers on the GTEx/TOPMed cross-cohort split: SuSiE alone 66.6%, AlphaGenome-informed 77.8%, Borzoi-informed 78.0%, combined 79.3%.",
+    "success": "A CPU-only model using distance to transcription start site, allele frequency and annotation overlap reaching within 5 percentage points of the published 77.8% would be the headline result, because it would show the deep sequence models add little. Alternatively, exceeding 79.3% on the same evaluation.",
+    "noise_ceiling": "Cross-cohort replication failure of 28.6% for the strongest signal per gene rising to 57.5% for fourth-and-weaker signals (fiPIP, 2026) bounds how well any model can match posterior-probability labels.",
+    "kill": "If the single feature 'variant nearest the transcription start site' already reaches the published numbers within a day, write a one-page note and stop; if nothing beats random without GPU-scale models, stop."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes method benchmarks and critical re-evaluations; it would take a clear demonstration that trivial positional features recover most of the deep sequence models' eQTL prioritisation accuracy across tissues."},
+    "realistic": {"journal": "Bioinformatics (Applications Note or Original Paper)", "why": "Publishes baseline audits and tooling; a cleaned, reusable credible-set benchmark table with honest trivial-baseline numbers fits exactly, positive or negative."},
+    "fallback": {"journal": "bioRxiv preprint plus a machine-learning-in-computational-biology workshop", "why": "Even a purely negative result - the trivial baseline is far below the published models - is worth posting as a calibration note but would not carry a journal paper."}
+  },
+  "pitch": {
+    "headline": "69,766 fine-mapped whole-blood regulatory signals from 6,454 people, free under CC-BY, with counts matching the paper exactly.",
+    "what_makes_the_data_unusual": "14,699 of 18,253 whole-blood genes carry two or more independent signals, up to 29 per gene (counted in the file); the paper reports 5x more signals than GTEx whole blood. Clean: 0 missing values, 0 duplicate rows.",
+    "the_win": "A laptop-only model using distance to the gene's start plus allele frequency landing within 5 points of AlphaGenome's published 77.8% variant-prioritisation accuracy would show the deep models add little.",
+    "even_if_it_fails": "We learn how much published sequence-model accuracy is distance-to-gene-start in disguise. If the trivial baseline is far below, we have only re-confirmed a 2026 result - little gained.",
+    "who_wants_it": "The Michigan statgen group behind the fiPIP fine-mapping pipeline, and labs picking one variant per locus for reporter-assay or CRISPR follow-up."
+  },
+  "ml_idea": "Within each of the 41,051 multi-variant whole-blood cis-eQTL credible sets, rank the variants and predict which one SuSiE gave the highest posterior inclusion probability. Features come entirely from outside the file: distance to the gene's transcription start site from GENCODE, allele frequency (already a column, but ablated because it is a power confound), variant type (5.8% are insertions/deletions), and optionally embeddings of the +/-512 bp GRCh38 window from a small DNA language model. Evaluate with whole-chromosome holdout, stratified by credible-set size and by tissue, and externally against GTEx v10 credible sets. The point is not to win but to measure how much of the published 77.8-79.3% prioritisation accuracy of AlphaGenome and Borzoi is recoverable from crude positional features.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 1.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 12,
+    "cv_run_minutes": 15,
+    "compute_note": "Table sizes and parse times were measured on this laptop (all 26 files read in pandas in under a minute, 0.35 GB extracted). The 12 embedding hours is an estimate only: ~800,000 sequence windows (400,000 variants x two alleles) at roughly 20 windows per second for a tiny DNA language model on CPU; nothing was timed. Cross-validation minutes are an estimate for gradient boosting on ~400,000 rows.",
+    "cheapest_killing_check": "Join GENCODE transcription start sites to the 41,051 multi-variant whole-blood credible sets and compute the top-1 accuracy of simply picking the variant nearest the gene's start. One afternoon. If it is already near the published 78%, the project is a one-page note; if it is near random, you need a GPU to say anything."
+  },
+  "verdict": "park",
+  "verdict_reason": "Exemplary open data - a 44.7 MB CC-BY release whose credible-set counts match the paper's stated 10,282-69,766 and 4,992-35,770 ranges exactly, with zero missing values and zero duplicates - but it is labels only, with no feature columns at all. The feature that makes the dataset distinctive, the primary-versus-secondary signal rank, is absent from the release and requires dbGaP-controlled individual-level data to reconstruct. And the obvious project (ranking variants inside credible sets from sequence) was published in 2026 by the fiPIP study using this exact TOPMed whole-blood release, open code, AlphaGenome/Borzoi/Enformer/Sei, and an honest cross-cohort replication split stratified by signal order. Park it as a high-quality external validation set for a future model rather than as a project of its own."
+}

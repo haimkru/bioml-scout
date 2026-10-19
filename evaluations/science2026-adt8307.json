@@ -1,0 +1,150 @@
+{
+  "paper_id": "science2026-adt8307",
+  "title": "Epigenetic and 3D genome reprogramming during the aging of the human hippocampus.",
+  "doi": "10.1126/science.adt8307",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE278576 (10x multiome), GSE299139 (snm3C-seq), GSE299899 (CTCF CUT&Tag); also https://data.4dnucleome.org/ren-lab-hippocampus-single-cell-analysis and https://epigenome.wustl.edu/seahorse/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed GSE299139_human_aging_snm3C_metadata.csv.gz: exactly 22,240 rows x 61 columns, with donor, age (years, integers 20-95), gender (11,173 F / 11,067 M nuclei), cluster (15 labels) and class (7 labels) as real columns; 5,023 nuclei flagged is_doublet; only MultiplexGroup has missing values. Downloaded GSE278576_hc11_raw_feature_bc_matrix.h5 (32 MB) and read it with h5py: 97,591 features x 615,177 raw barcodes, GRCh38, split 36,601 'Gene Expression' and 60,990 'Peaks', ~6,199 barcodes above a crude 500-feature cutoff. Pulled all three GEO file listings (FTP index + filelist.txt) and the GSE278576/GSE299139/GSE299899 series matrices, which gave me donor-level age and sex for all 40 snm3C donors and for 7 CUT&Tag donors. Summed the snm3C supplementary file sizes by cell type myself: 543 per-donor-per-cell-type base-level methylation files (ALLC) totalling 544 GB, plus 40 contact files at 34 GB. Listed the analysis code repository (GitHub nrzemke/aging_human_hippocampus) and its Zenodo archive (code only, 20.8 MB zip).",
+    "what_came_from_paper_text_only": "The 295,033-nuclei multiome count, the 18 multiome subclasses, and the biological claims (microglia replacement between ages 50-75, astrocyte loss, global 3D genome erosion) come from the open bioRxiv preprint version (PMC11507755); the Science version itself is paywalled with no PubMed Central record. I did not download any ALLC methylation file, any 3C contact file, any ATAC fragment file, or any bigWig, so every statement about their internal contents rests on file names and the paper."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "All three GEO series are public with no login: I fetched the FTP directory indexes, both filelist.txt manifests and the series matrices, and successfully downloaded two real data files (the 4.2 MB snm3C metadata and a 32 MB multiome matrix)."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Donor age in years is a literal column in GSE299139_human_aging_snm3C_metadata.csv.gz and a literal 'age:' field in all three GEO series matrices, so the obvious target (chronological age) needs no construction. Cell-type labels are also present for the snm3C nuclei, though not for the multiome barcodes."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are real files, not accessions to resolve: the multiome h5 files hold the actual count matrices and the snm3C per-nucleus table holds global methylation fractions and contact ratios. The base-level methylation and contact data exist as files too; the problem is their size, which is A6, not A3."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Age is in whole years, methylation columns are explicit fractions (mCGFrac 0.54-0.86, mCHFrac, mCCCFrac) alongside their numerator and denominator counts, and contact columns are raw counts plus ratios that sum sensibly; counts in the h5 are integer unique molecule / fragment counts."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 40,
+      "note": "FAILS. The only non-circular label is donor-level, and there are exactly 40 donors (verified: 40 unique donor IDs in the snm3C metadata, 40 titles in each series matrix, 7 for CUT&Tag). The 22,240 nuclei and 295,033 nuclei look large, but every nucleus from one donor carries the same age, so a leave-one-donor-out evaluation has 40 independent points - far under the ~1,500-row bar, and the same 'A5 in disguise' failure the checklist records for scCT-DB. Per-nucleus labels that would give more rows are either derived from the same measurement (cell-type clusters called from the methylome) or are the paper's own classifier output (microglial origin)."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "4.5 GB (the 40 multiome h5 files) is fine; 544 GB of base-level methylation plus 34 GB of contact files plus ~100 GB of ATAC fragments is not.",
+      "note": "FAILS for the modalities the paper is actually about. I measured the snm3C supplementary sizes directly: the smallest cell type (Endo) is still 3.7 GB across 26 donors and oligodendrocytes alone are 181 GB, because each file is a whole-genome base-level cytosine report. No binned methylation matrix, no cooler/mcool, no common peak set and no per-barcode cell-type table is deposited, so the DNA methylation and 3D genome signal cannot be reached inside a ~5 GB working set. Only the single-nucleus RNA half of the multiome is laptop-sized, and that is the most crowded and least novel part."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Counts match well: the metadata has exactly the 22,240 snm3C nuclei the paper reports, exactly 40 donors with exactly 10 per 20-year age band and a 20F/20M split as described, and the one multiome file I opened implies roughly 7,000 usable nuclei per donor, consistent with the reported 295,033 total."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Chronological age is a recorded donor attribute from the brain bank, not a model output and not computable from the sequencing features, so age itself is clean. (The paper's own microglial-origin label IS a classifier output and would fail A8, which is why that framing was not pursued.)"
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Cell type-resolved chromatin accessibility clocks for brain aging (bioRxiv, August 2026) - pseudobulk single-nucleus ATAC age predictors",
+        "open_weights": null,
+        "score_and_split": "Trained on prefrontal cortex single-nucleus ATAC from 357 human donors aged 15-100, ~1.5 million nuclei and >521,000 accessible regions; reported to generalise across brain regions and species, best in excitatory neurons. Exact metrics and split not retrieved (preprint PDF only seen via search summary).",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Human brain cell-type-specific aging clocks from single-nuclei transcriptomics (Muralidharan et al., Advanced Science 2025)",
+        "open_weights": null,
+        "score_and_split": "31 prefrontal-cortex donors aged 18-94, 73,941 nuclei; correlation around 0.9 between predicted and true age for bootstrapped pseudobulk clocks in OPC, microglia and excitatory neurons; also reported to hold up on independent single-nucleus datasets.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "scAgeClock (npj Aging 2026) - single-cell transcriptome aging clock using gated multi-head attention",
+        "open_weights": null,
+        "score_and_split": "Trained on >16 million single-cell transcriptomes from >40 human tissues and >400 cell types; reported to beat baseline age predictors. Split details not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "scAge (Nature Aging 2021) and scEpiAge (Nature Communications 2024) - single-cell DNA methylation age predictors",
+        "open_weights": null,
+        "score_and_split": "Both built and validated in mouse (hepatocytes, muscle stem cells, blood); scAge uses a ranked-intersection trick to cope with sparse per-cell CpG coverage, scEpiAge reports improved accuracy on sparse public data. Human brain performance not established.",
+        "authors_named_unsolved": "Sparse and binarised per-cell methylation coverage is the stated obstacle to single-cell age profiling.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "The paper's own microglial-origin classifier (GitHub nrzemke/aging_human_hippocampus, 04_Downstream_Analysis/ML_Classifier, archived at Zenodo 10.5281/zenodo.19391232)",
+        "open_weights": false,
+        "score_and_split": "Notebooks train classifiers on 5 kb-bin CG methylation and on differentially methylated regions to separate yolk-sac-derived from monocyte-derived microglia, using developing-human-brain reference data. Code is public; no trained weights, no reported metric retrieved, and the input matrices are generated on a cluster from paths that are not public.",
+        "authors_named_unsolved": "Not retrieved (Science text paywalled).",
+        "runnable_as_baseline": false
+      }
+    ],
+    "note": "Searched after Part A had already failed, so this audit is recorded as context for the reject rather than as a basis for scoring. It makes the reject stronger, not weaker: a 357-donor accessibility clock and a 16-million-cell transcriptomic clock both already cover brain age prediction with far more donors than the 40 here."
+  },
+  "backbone": {
+    "name": "Geneformer or scGPT would fit the single-nucleus RNA half; no open-weight backbone exists for single-cell methylation-plus-contact data of this kind",
+    "freeze_and_head_viable": null,
+    "hardware": "Not assessed - evaluation stopped at the Part A failure",
+    "licence": "Not assessed"
+  },
+  "integration": {
+    "partner_dataset": "Not assessed beyond noting that donor IDs join cleanly across the three GEO series and that gene symbols/GRCh38 coordinates would join to GTEx, the Allen Brain Atlas and the 357-donor prefrontal-cortex ATAC collection",
+    "join_key": "Donor ID (hc-prefixed, identical across GSE278576 and GSE299139 for 39 of 40 donors); gene symbol / GRCh38 coordinate for external resources",
+    "bigger_question_one_sentence": "Does an aging clock trained on prefrontal cortex transfer to hippocampus - a genuinely interesting transfer question, but one that needs more than 40 hippocampal donors to answer."
+  },
+  "controls": {
+    "positive_control": "Would have been the paper's own reported signals: global CpG-island-independent methylation drift with age and the rise in long-range/trans contact ratio that the paper calls 3D genome erosion, both computable from the per-nucleus metadata I downloaded.",
+    "negative_control": "Shuffle donor ages across donors (not across nuclei) and confirm collapse; also train on sequencing-depth columns alone, since the metadata is dominated by read-count and mapping-rate fields that track plate and batch.",
+    "external_validation": "The 357-donor prefrontal-cortex single-nucleus ATAC collection and the 31-donor prefrontal-cortex transcriptomic clock dataset both exist as independent sources, so external validation would have been possible had the sample size here been adequate."
+  },
+  "honest_claim_h3": "Given 40 post-mortem neurotypical donors from a single consortium, a model here could only claim 'global single-nucleus epigenome summary statistics track chronological age across 40 hippocampal donors' - an association measured on 40 independent points, which cannot support a claim about individual cells or about biological age.",
+  "plain_idea": {
+    "one_liner": "Use single-cell measurements of DNA chemistry and chromosome folding in hippocampus to predict how old the donor was.",
+    "train_on": "Each example would be one cell nucleus or one donor-plus-cell-type summary: how much of its DNA carries methyl tags, how far apart its chromosome contacts reach, and which cell type it is. I verified 22,240 nuclei with these summaries and 40 donors.",
+    "predict": "Donor age in whole years, taken from the brain bank's record of each post-mortem donor and present as an 'age' column in the deposited metadata.",
+    "why_worthwhile": "Aging-biology labs want a measure of how fast an individual brain region is aging, and hippocampus is the region that matters for memory; even a failure would tell us whether coarse epigenome summaries carry age information at all."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "40 donors here against 357 donors and ~1.5 million nuclei in the 2026 prefrontal-cortex accessibility clock, and >16 million cells in scAgeClock. The one genuine advantage - hippocampus rather than cortex, plus paired methylation and 3D contacts - is locked inside 544 GB of base-level files with no binned matrix deposited."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no technical replicates and no repeat donors; 4 of 44 snm3C libraries are extra samples from the same donors, which is not enough to estimate measurement noise. With 40 donors a per-prediction confidence interval would be dominated by donor sampling, not by anything the data can calibrate."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The nearest competitors are from 2025 and 2026, use pseudobulk-per-cell-type designs with hundreds of donors, and at least one reports cross-brain-region and cross-species generalisation - that is honest evaluation on held-out groups, not a random split."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on nearly every condition: the existing clocks' weights were not confirmed available so they cannot be run as our baseline, our assay (methylation plus contacts in hippocampus) does not measure the same quantity the same way as their snATAC prefrontal cortex, and the splits would differ."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was a hippocampus-specific aging clock: predict donor chronological age from per-nucleus or pseudobulk epigenome features (global methylation fractions, cis/trans contact ratios, and ideally binned CpG methylation), evaluated leave-one-donor-out, and then test whether published prefrontal-cortex clocks transfer to hippocampus. It dies on sample size: the label is donor-level and there are 40 donors. A secondary idea - classify microglial developmental origin from the methylome - is both already done by this paper with public code and built on a label that is itself a classifier output (A8).",
+  "effort": {
+    "hours_to_feature_table": 16,
+    "working_set_gb": 4.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 8,
+    "embedding_hours": null,
+    "cv_run_minutes": 5,
+    "compute_note": "Estimated, with two measured anchors: the 4.2 MB snm3C metadata parsed in under a second into a 22,240 x 61 table, and one 32 MB multiome h5 opened and summarised in a few seconds with h5py. The 4.5 GB working set is the sum of the 40 deposited multiome h5 file sizes read from the FTP index; the 16 hours covers filtering ~615,000 raw barcodes per donor down to real nuclei and annotating cell types, which GEO does not provide. The methylation and contact data were not costed because they are 544 GB and 34 GB respectively.",
+    "cheapest_killing_check": "Count the unique donor IDs carrying an age label. It is 40 (one line of pandas on a 4.2 MB file), and 40 is the real sample size for anything predicting age."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5: the only clean label (donor age) exists for exactly 40 donors, so the 22,240 and 295,033 nuclei collapse to 40 independent points under any honest leave-one-donor-out split. Also fails A6 for the two modalities that make the paper distinctive - DNA methylation and 3D contacts are deposited only as 544 GB of base-level cytosine reports and 34 GB of contact files, with no binned matrix, no cooler file and no per-barcode cell-type table, leaving only the single-nucleus RNA half (4.5 GB) within laptop reach. That remaining modality is the crowded one: brain aging clocks already exist from 357 donors (snATAC, 2026), 31 donors (snRNA, 2025) and 16 million cells (scAgeClock). The data itself is clean and honestly deposited - exactly 10 donors per 20-year band, 20F/20M, counts matching the paper - it is simply an n=40 cohort study, not an ML dataset."
+}

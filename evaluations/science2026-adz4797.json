@@ -1,0 +1,104 @@
+{
+  "paper_id": "science2026-adz4797",
+  "title": "Mitochondrial carrier SLC25A34 links clock, diet, and temperature control of adipocyte lipid cycling",
+  "doi": "10.1126/science.adz4797",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE348259",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and opened the only deposited processed file, GSE348259_all_samples_counts.txt.gz (886 KB gzipped) and GSE348259_series_matrix.txt.gz from the NCBI GEO (Gene Expression Omnibus) FTP site. The counts file is a single DESeq2 (a standard differential-expression tool) results table: a title line, then columns Gene, baseMean, log2FoldChange, lfcSE, pvalue, padj, a blank column, and 8 per-mouse normalised count columns (Chow_1-4, Keto_1-4); 14,644 lines total, so ~14,642 genes. The GEO series record and sample list show only 7 samples (4 chow, 3 ketogenic; GSM10069147-GSM10069153), i.e. one fewer than the processed table. Confirmed no proteomics deposit (PRIDE keyword search for SLC25A34 and for Slc25a34 adipose returned zero projects) and no metabolomics deposit from this group (Metabolomics Workbench returned only two Harvard Medical School slc25a34 knockout cell studies, ST004405/ST004407, which belong to a different paper). Confirmed the Science supplementary table archive returns HTTP 403 (no access).",
+    "what_came_from_paper_text_only": "Everything about the lipidomics, acyl-coenzyme A measurements, proteomics, circadian time-course experiments and cold-exposure experiments comes from the abstract and the GEO series description only. The paper itself is subscription-only (Europe PMC: isOpenAccess=N, inEPMC=N, no PMCID), and the bioRxiv preprint (doi 10.64898/2026.05.30.724257) returned HTTP 429 on two attempts, so I never saw the methods or data-availability statement."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "The GEO deposit GSE348259 downloads freely without login (I opened both files). But the Science supplementary tables S1-S13, which hold the lipidomics/proteomics/time-course data described in the abstract, are behind the paywall: HTTP 403."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "If the project were 'predict the ketogenic-diet response of each gene', the label log2FoldChange is literally a column in the file, alongside its standard error and adjusted p-value. This is the one killer that clearly passes."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "The only identifier is a gene symbol (e.g. 0610007P14Rik). No sequences, no promoter coordinates, no genome build stated. Any sequence-based model would require resolving ~14,642 mouse symbols to a genome build and extracting promoter sequence from a second resource, which is exactly the identifier-resolution failure A3 describes."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The file's title line states 'Expression is shown in deseq2 normalized counts', and the statistics columns are the standard DESeq2 log2 fold change, standard error and adjusted p-value. Units are clear."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 14642,
+      "note": "The 14,642 gene rows are not 14,642 independent examples: they are one label vector from a single 4-versus-4 mouse contrast in one tissue (brown adipose tissue) at one temperature. The experimental unit is the mouse, and there are only 7-8 of them. This is the 'A5 in disguise' failure the checklist warns about."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "<1 MB (886 KB gzipped, ~3 MB uncompressed)",
+      "note": "Trivially fits in memory; this is the one dimension on which the dataset is comfortable."
+    },
+    "a7_counts_match_paper": {
+      "pass": false,
+      "note": "GEO's series record and sample list give 7 samples (4 chow, 3 ketogenic), but the processed counts table has 8 per-mouse columns (Chow_1-4, Keto_1-4). One ketogenic-diet mouse appears in the processed table with no matching raw sample record, and I cannot tell which count is right."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "The log2 fold change comes from DESeq2 run on measured RNA sequencing counts, not from another model's predictions, so there is no circularity. The trap is leakage by construction: the same normalised counts sit in the same file as the label, so any feature built from them would partly be the label."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Multi-omics correlation predictor for orphan solute carrier substrates (BMC Genomics 2025, 'Predicting substrates for orphan solute carrier proteins using multi-omics datasets')",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond the search snippet; it correlates solute-carrier expression with intracellular metabolite levels across cancer multi-omics datasets. I did not open the paper, so I have no number or split.",
+        "authors_named_unsolved": "Snippet only: substrates for most SLC25 family mitochondrial carriers, SLC25A34 included, remain unassigned.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "none applicable",
+    "freeze_and_head_viable": false,
+    "hardware": "n/a",
+    "licence": "n/a"
+  },
+  "integration": {
+    "partner_dataset": "none worth naming; a gene-symbol-to-Ensembl join to GTEx or the Human Protein Atlas would be possible but pointless with one contrast",
+    "join_key": "mouse gene symbol (would need mapping to Ensembl gene ID)",
+    "bigger_question_one_sentence": "Cannot be written: with a single 4-versus-4 diet contrast there is no question the join would answer that the contrast does not already answer."
+  },
+  "controls": {
+    "positive_control": "Would have been: the model must recover that Slc25a34, Ucp1 and known peroxisome-proliferator-activated-receptor target genes rise on a ketogenic diet. Not reached, because the dataset fails Part A.",
+    "negative_control": "Label shuffling across genes would be runnable, but there is nothing worth shuffling.",
+    "external_validation": "No second deposit from this paper exists; the related series GSE186314 (liver Slc25a34 knockout, 12 samples) and GSE311513 (muscle, 12 samples) are different tissues from different papers."
+  },
+  "honest_claim_h3": "Any model built on this deposit could only claim 'predicts the direction and size of the ketogenic-diet expression change in brown adipose tissue of four male C57Bl/6N mice at 22 degrees Celsius', which is a description of one experiment, not a transferable claim.",
+  "plain_idea": {
+    "one_liner": "Use each gene's promoter sequence to predict how much a ketogenic diet changes its expression in mouse brown fat.",
+    "train_on": "The one deposited table: 14,642 mouse genes, each with a DESeq2 log2 fold change from 4 chow-fed versus 4 ketogenic-diet-fed mice. Features would have to be promoter sequences fetched from a separate genome resource, since the file holds only gene symbols.",
+    "predict": "The log2 fold change in expression on a ketogenic diet. The true answer comes from bulk RNA sequencing of brown adipose tissue in 7-8 mice, summarised by DESeq2.",
+    "why_worthwhile": "In principle it would tell adipose-biology labs which regulatory motifs drive diet-responsive genes; in practice one 4-versus-4 contrast cannot support that, so the honest answer is that it is not worthwhile."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only framing the deposited data allows is predicting each gene's ketogenic-diet log2 fold change in brown adipose tissue from promoter sequence. It fails on three counts: the inputs are not in the file (gene symbols only), the effective sample size is 7-8 mice from one tissue at one temperature, and the processed table disagrees with the GEO sample record (8 columns versus 7 samples). The paper's genuinely interesting measurements, the circadian time course, the cold exposure, the lipidomics and acyl-coenzyme A quantification, are in paywalled Science supplementary tables that return HTTP 403.",
+  "effort": {
+    "hours_to_feature_table": 6,
+    "working_set_gb": 0.003,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed beyond the download itself: the file is 886 KB gzipped and loads in under a second with pandas. The 6 hours is for mapping 14,642 mouse gene symbols to a genome build and pulling promoter sequences, which would be the only real work and is work that does not pay off here.",
+    "cheapest_killing_check": "Count the sample columns in GSE348259_all_samples_counts.txt.gz and compare with the GEO sample list. Two minutes; it returns 8 versus 7 and shows the whole deposit is a single small diet contrast."
+  },
+  "verdict": "reject",
+  "verdict_reason": "The only openly downloadable data for this paper is GEO series GSE348259: one DESeq2 differential-expression table from a single 4-versus-4 mouse ketogenic-diet contrast in brown adipose tissue. Three Part A killers fail on the files I opened. A3: the table carries gene symbols only, no sequences or coordinates, so model inputs would have to be built from a separate genome resource. A5: although there are 14,642 gene rows, the experimental unit is the mouse and there are 7-8 of them, one tissue, one temperature, one comparison, so there is no held-out group to evaluate on. A7: the processed table has 8 per-mouse columns while the GEO record lists 7 samples, and I cannot tell which is correct. The circadian, cold-exposure, lipidomics and proteomics measurements that make the paper interesting were never deposited (zero hits in PRIDE and no Metabolomics Workbench study from this group) and live in Science supplementary tables that return HTTP 403. This is a well-executed mouse physiology paper with no machine-learning dataset attached."
+}

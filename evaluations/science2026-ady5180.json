@@ -1,0 +1,135 @@
+{
+  "paper_id": "science2026-ady5180",
+  "title": "Thalamic NRXN1-mediated input to human cortical progenitors drives excitatory neurogenesis.",
+  "doi": "10.1126/science.ady5180",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE325956",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Opened the GEO (Gene Expression Omnibus, the public repository for gene activity data) series record GSE325956 and two individual sample records in full text; opened the FTP directory listing of its processed files; ran HTTP HEAD requests (asking only for file size and type) on two files, confirming public access with no login (HTTP 200) and exact byte sizes; ran a ranged request for the first 64 bytes of GSE325956_NRXN1_KO_CX.rds and confirmed the gzip magic bytes 1f 8b 08, so it is a genuine compressed R data object. Confirmed from filelist.txt that the 1.71 GB GSE325956_RAW.tar holds exactly one file (GSM9617787_Severance.rds), not per-sample matrices. Confirmed on samples GSM9617765 and GSM9617800 that Sample_supplementary_file_1 = NONE, i.e. there are no per-sample count matrices. Searched the full public CELLxGENE collection index (397 collections) and found no copy of this dataset; searched Zenodo and GitHub and found no code or metadata repository.",
+    "what_came_from_paper_text_only": "Nothing from the paper body: the Science article is closed access (Europe PMC isOpenAccess = N, no PMCID; Semantic Scholar openAccessPdf status = CLOSED; science.org returned HTTP 403) and the bioRxiv preprint (10.1101/2025.04.25.650717) returned HTTP 429 rate-limiting on four attempts, so its full text is recorded as not retrievable. Everything else here comes from the abstract and from GEO's own metadata fields. I never saw a total nuclei count, a per-condition cell count, a number of assembloids, or a list of cell lines; I did NOT open any .rds file, so the presence and names of columns inside those objects are inferred from GEO's 'Supplementary files format and content: Counts Matrix' field, not seen."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "GEO GSE325956 is public (since 25 Mar 2026), no login and no access application. Verified HTTP 200 and gzip magic bytes on the actual file."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "The experimental condition IS a real column in GEO sample metadata (genotype: Control vs NRXN1 knockout; treatment: fusion/severance/CellTag; batch; cell line; week). But the paper's headline quantity — the RATE of excitatory-neuron production per assembloid — is not a column anywhere; it would have to be constructed by counting cells per annotated type per sample. Passing on the condition framing only."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Gene-by-cell count matrices are stated by GEO to be inside the .rds objects ('Supplementary files format and content: Counts Matrix', GRCh38, CellRanger v8/9). Not verified by opening — I did not download any .rds."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are unique-molecule (UMI) counts per gene per nucleus, with reference genome GRCh38 and pipeline versions stated in GEO. Caveat: two different chemistries are mixed (10x Chromium 3' v3.1/v4 and PIPseq T2 v4.0) across samples, so counts are not directly comparable across platforms."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 43,
+      "note": "FAILS. The experimental unit for every claim in this paper is the assembloid/library, and GEO lists exactly 43 of them (verified: 43 Series_sample_id entries, GSM9617765-GSM9617807), split across several unrelated sub-experiments (baseline fusion, severance, CellTag lineage tracing, NRXN1 knockout vs non-targeting control), so any one comparison has well under 20 samples per arm. Nuclei number in the hundreds of thousands but are pseudoreplicates drawn from those 43 libraries and a handful of stem cell lines, exactly the failure mode that killed the scCT-DB candidate. Far under the ~400 needed even for classification."
+    },
+    "a6_fits_laptop": {
+      "pass": false,
+      "working_set": "17.98 GB single file (GSE325956_Assembloids_CX.rds), plus 12 GB and 5.7 GB companions; smallest relevant object 780 MB compressed",
+      "note": "FAILS. Processed data exists ONLY as six whole-experiment Seurat .rds objects: Assembloids_CX.rds 17,980,418,226 bytes (verified by HTTP Content-Length), NRXN1_KO_TH.rds 12 GB, Assembloids_TH.rds 5.7 GB, CellTag_Slice_ESCs.rds 863 MB, NRXN1_KO_CX.rds 780,249,758 bytes, plus a 1.71 GB tar holding one 1.71 GB Severance.rds. There is no streaming route: R's readRDS decompresses the whole object into memory at once, there is no .h5ad or Zarr version (checked CELLxGENE: absent), and per-sample matrices do not exist (Sample_supplementary_file_1 = NONE on every sample checked). The main cortical object alone needs an estimated 40+ GB of RAM to open on a 16 GB laptop."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No contradiction found: GEO's 43 samples and its summary match the abstract, and filelist.txt sizes match the FTP listing. But the paper's own cell counts could not be checked at all because the Science article is paywalled and the bioRxiv preprint rate-limited, so this is 'no disagreement seen', not 'counts confirmed'."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAILS for the biologically interesting label. GEO's data-processing field states verbatim that 'Cortical and thalamic cells were segregated bioinformatically using the MapQuery function to compare cells to primary tissue datasets (Nano et al, 2025; Nowakowski et al, 2017)' and that cell-type clusters were annotated by 'projections of the organoid data onto primary tissue datasets'. So both the cortical-vs-thalamic assignment and the cell-type calls (outer radial glia, upper-layer excitatory neuron) are outputs of a reference-mapping model applied to these same expression profiles — predicting them from expression is distilling Seurat's MapQuery, and the derived excitatory-neuron proportion inherits that circularity. Only the condition/genotype label is a genuine experimental fact."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "scGPT, a foundation model (a large neural network pretrained on many datasets) for single-cell gene expression, trained on over 33 million cells",
+        "open_weights": true,
+        "score_and_split": "Reported as competitive or best on cell-type annotation across tissues including brain cortex datasets; splits are typically held-out datasets rather than held-out donors.",
+        "authors_named_unsolved": "Transfer to tissues and perturbations unlike the pretraining data.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Geneformer, a transformer model pretrained on ~30 million single cells using rank-ordered gene encodings",
+        "open_weights": true,
+        "score_and_split": "Transfers to network-biology tasks including dosage-sensitivity prediction; cell-type annotation performance reported as comparable to or below simple baselines in independent benchmarks.",
+        "authors_named_unsolved": "Predicting the effect of perturbations in new biological contexts.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Deep perturbation-effect predictors benchmarked in Nature Methods (2025), 'Deep-learning-based gene perturbation effect prediction does not yet outperform simple linear baselines'",
+        "open_weights": true,
+        "score_and_split": "Across seven deep models, none beat deliberately simple baselines (principal component analysis plus linear regression) on mean squared error or Pearson correlation of the change from control.",
+        "authors_named_unsolved": "Whether deep models add anything over linear baselines for perturbation response at all.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "scGPT or Geneformer (single-cell foundation models with open weights)",
+    "freeze_and_head_viable": false,
+    "hardware": "Embedding hundreds of thousands of nuclei with a transformer is practical only on a GPU; and the data cannot be loaded on a 16 GB laptop in the first place.",
+    "licence": "scGPT and Geneformer weights are openly downloadable; the GEO data carries no explicit licence, which is normal for GEO."
+  },
+  "integration": {
+    "partner_dataset": "Primary human fetal cortex atlases (Nowakowski et al. 2017; Nano et al. 2025) and BrainSpan / Human Protein Atlas, joinable on Ensembl gene identifiers",
+    "join_key": "Ensembl gene ID / HGNC gene symbol (gene-level only; there is no cell-level key linking organoid nuclei to primary tissue cells)",
+    "bigger_question_one_sentence": "Does thalamic input push organoid cortical progenitors along the same trajectory seen in real fetal cortex? — but note those same primary atlases were already used to generate this dataset's cell-type labels, so the join is partly circular and cannot serve as independent validation."
+  },
+  "controls": {
+    "positive_control": "Available in principle: a model should recover that NRXN1 expression itself is reduced in the NRXN1 knockout samples, and should separate the two 10x/PIPseq chemistries trivially.",
+    "negative_control": "Label shuffling at the library level (not the cell level) would be essential and is runnable, but with 43 libraries the shuffled-label null distribution is extremely wide.",
+    "external_validation": "None independent. The obvious partner (primary fetal cortex atlases) was used to create this dataset's own cell-type labels, so it cannot validate them."
+  },
+  "honest_claim_h3": "At best: 'a classifier can tell, from a single nucleus's gene expression, whether it came from a cortical organoid that was fused to a thalamic organoid rather than to another cortical organoid — among nuclei from 43 libraries made by one laboratory from a handful of stem cell lines, where condition is partly confounded with sequencing batch and chemistry.' That claim is too narrow and too confounded to be worth the 18 GB it costs to make.",
+  "plain_idea": {
+    "one_liner": "Use a single brain-organoid cell's gene activity to predict whether it grew next to thalamic tissue.",
+    "train_on": "The gene activity profile of each individual nucleus from fused human brain organoids, labelled with its experimental condition. Verified: 43 sequencing libraries exist; the number of nuclei is unknown because I could not open the files or read the paywalled paper.",
+    "predict": "Whether the nucleus came from a cortex-plus-thalamus fusion or a cortex-plus-cortex control, and whether the thalamic side had the NRXN1 gene deleted. The true answer comes from the laboratory's own experimental design, recorded in the repository's sample metadata.",
+    "why_worthwhile": "Developmental neuroscientists building organoid models would learn which gene programmes in cortical progenitors respond to thalamic input; if the model fails, it would show that condition effects are small relative to batch effects in fused organoids."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "43 libraries from one laboratory is tiny next to the 30+ million cells behind scGPT and Geneformer, and the thalamocortical fusion niche it covers is too small to train anything on."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are replicate libraries (GEO notes 11 replicated groups covering 22 of 43 samples), which in principle estimates noise, but with so few independent units per condition any per-prediction confidence would itself be unreliable."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "scGPT (2024) and Geneformer (2023) have open weights and are already honestly benchmarked, and a 2025 Nature Methods benchmark showed simple linear baselines match deep perturbation models — so the open problem is not 'beat them on 43 samples'."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails on every condition: there is no shared evaluation split, no baseline trained on this task, and the obvious partner data (primary fetal cortex atlases) was used to generate this dataset's own labels."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered was: classify individual nuclei from fused human cortical/thalamic organoids by experimental condition (thalamocortical vs corticocortical fusion; NRXN1 knockout vs non-targeting control) from gene expression, and from that recover which progenitor gene programmes respond to thalamic input. It dies on three counts: the only processed data is a set of 6 to 18 GB Seurat objects with no streaming route and no per-sample matrices, the real sample size is 43 libraries rather than hundreds of thousands of nuclei, and the cell-type labels that make the biology interesting were themselves generated by Seurat's MapQuery reference-mapping model.",
+  "effort": {
+    "hours_to_feature_table": 24,
+    "working_set_gb": 18.0,
+    "needs_gpu": true,
+    "peak_ram_gb": 45,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Working set and peak RAM are estimates, not timings: 17,980,418,226 bytes verified by HTTP Content-Length for GSE325956_Assembloids_CX.rds, and R's readRDS decompresses a gzipped Seurat v5 object wholly into memory, typically expanding 2-3x, so 40+ GB on a machine with 16 GB. No embedding or cross-validation timing was attempted because the data was never loaded.",
+    "cheapest_killing_check": "Count the libraries, not the cells: GEO lists 43 samples spread across four distinct sub-experiments, which is the whole answer and takes one minute to confirm from the series record."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails three Part A killers, all verified against the repository rather than the paper. A6: processed data exists only as whole-experiment Seurat .rds objects (17.98 GB, 12 GB, 5.7 GB, verified byte sizes), with no per-sample count matrices (Sample_supplementary_file_1 = NONE), no .h5ad or CELLxGENE copy, and no way to stream a subset on a 16 GB laptop. A5: the experimental unit is the assembloid library and there are exactly 43 of them, split across four unrelated sub-experiments, so the hundreds of thousands of nuclei are pseudoreplicates — the same disguise that killed the scCT-DB candidate. A8: GEO states verbatim that cortical-vs-thalamic assignment and all cell-type calls came from Seurat MapQuery projection onto primary fetal cortex atlases, so the interesting label is another model's output and the headline excitatory-neuron proportion inherits that circularity. The science is excellent; the data is a beautiful mechanistic experiment, not an ML substrate."
+}

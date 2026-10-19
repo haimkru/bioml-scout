@@ -1,0 +1,191 @@
+{
+  "paper_id": "nar2026-gkag853",
+  "title": "PCRD-seq: proximity crosslinking-induced RNA depletion sequencing for low-input chromatin-associated transcriptome profiling.",
+  "doi": "10.1093/nar/gkag853",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE318nnn/GSE318343/suppl/ (GEO GSE318343) + Supplementary Table S6 (xlsx) attached to the paper",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and parsed 7 of the 14 GEO normalized-count tables (gene x sample matrices, 18,724-24,422 lines each, Ensembl gene IDs, 3 replicates per group) and all 10 sheets of Supplementary Table S6 (columns GeneID, Gene_name, Gene_biotype, baseMean, log2FoldChange, lfcSE, stat, pvalue, padj). Row counts match the paper exactly (3,372 enrichment caRNAs; 1,652 PCRD-seq caRNAs; 25 mitochondrial; 2,577 HM; 3,742 NM). I recomputed the label myself: a naive log2 mean-ratio of labelled over unlabelled samples reproduces the authors' DESeq2 log2FoldChange at Pearson r = 0.997 (n = 2,005 lamina genes) and r = 0.989 against the main caRNA sheet (n = 1,608), which also identified which GEO file holds the headline experiment (5 micromolar, 2 min). I measured label reproducibility: Spearman 0.647 between two independent labelling conditions (n = 21,773 genes), Pearson 0.880 between two different negative controls, Spearman 0.498 for a 1-replicate vs 2-replicate split-half. 22,449 genes pass a mean-count >= 10 filter and 10.6% of them have log2 fold change <= -1. I also confirmed via the ENCODE portal API that 27 chromatin-subcellular-fraction total RNA-seq experiments exist for external validation.",
+    "what_came_from_paper_text_only": "The wet-lab protocol, the pipeline (Trimmomatic, kallisto v0.50.0, tximport, DESeq2 against GENCODE GRCh38.p14 v47), the meaning of the sample name codes (concentration / irradiation minutes / replicate), the claim that depletion equals chromatin proximity, and the 5' splice-site analysis. I did not download GENCODE transcript sequences, and two guessed lncATLAS download URLs returned 404 so its per-gene chromatin values are unverified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "All 14 GEO supplementary tables download openly over FTP (1.2-1.9 MB gzipped each); the 5.95 MB supplementary zip with Table S6 downloads from Europe PMC. No login, no application."},
+    "a2_label_is_a_column": {"pass": true, "note": "log2FoldChange is a literal column in Table S6 for the significant genes, and I recomputed the same quantity genome-wide from the deposited count matrices with one line of arithmetic (r = 0.997 against the authors' values). No cross-source inference needed."},
+    "a3_inputs_present": {"pass": true, "note": "Only Ensembl gene IDs are in the files; the sequence input comes from one bulk GENCODE v47 FASTA download (the exact release the authors used), not thousands of lookups. Simple features (length, GC, biotype, abundance) are in or trivially derived from the files."},
+    "a4_units_stated": {"pass": true, "note": "DESeq2 median-of-ratios normalized counts (stated in the file names and methods) and standard DESeq2 output columns; log2 fold change is dimensionless. Sample columns are coded (s_5_2_1) and need the paper to decode."},
+    "a5_enough_rows": {"pass": true, "n_rows": 22449, "note": "22,449 genes with a continuous label after a mean-count >= 10 filter in the headline experiment, of which 2,380 (10.6%) cross the paper's log2 fold change <= -1 threshold; three further cell systems add comparable tables."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~10 MB of count tables plus ~100 MB of GENCODE transcript sequences; cached embeddings for 22k genes about 60 MB", "note": "Everything I did ran in seconds on CPU with peak memory under 1 GB."},
+    "a7_counts_match_paper": {"pass": true, "note": "Verified sheet by sheet: 3,372 / 1,652 / 25 / 2,577 / 3,742 rows exactly match the counts stated in the results text, and sheet values match the GEO counts at r = 0.989."},
+    "a8_label_provenance": {"pass": true, "note": "The label is a ratio of measured RNA-seq read abundances between light-treated and control cells; it is not any model's output and is not computed from the sequence features. Caveat recorded in the leakage plan: gene abundance (baseMean) comes from the same counts as the label, so abundance should be taken from control samples only."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Fourteen one-comparison count tables plus a 9-sheet xlsx; all join cleanly on Ensembl gene ID, but you choose and merge comparisons."},
+    "B2": {"score": 2, "why": "Gzipped tab-separated tables and the xlsx both parsed on the first try with no fixes."},
+    "B3": {"score": 2, "why": "Authors already normalized (DESeq2 median-of-ratios); I reproduced their log2 fold changes at r = 0.997."},
+    "B4": {"score": 1, "why": "No censored strings, but zero- and low-count genes need a filter or pseudocount policy; I used mean >= 10."},
+    "B5": {"score": 2, "why": "Gene IDs unique within each file (23,391 unique rows in the lamina table); no duplicate rows seen."},
+    "B6": {"score": 1, "why": "Table S6 columns are standard DESeq2 names and a Notes sheet; GEO sample codes (s_5_2_1) decoded only from the paper."}
+  ,
+    "C1": {"score": 2, "why": "Cross-assay transfer question: informative whether or not sequence predicts chromatin association, given the measured 0.647 ceiling."},
+    "C2": {"score": 1, "why": "Searched: lncRNA localization models exist (LncLocFormer on 811 lncRNAs, Loc4Lnc, DeepLncRNA) but none on proximity-crosslinking depletion."},
+    "C3": {"score": 2, "why": "New assay nobody has modelled, continuous genome-wide label including protein-coding genes, plus a cross-assay diversity angle."},
+    "C4": {"score": 2, "why": "Current route is a wet-lab photosensitizer labelling experiment plus RNA sequencing per cell line; the paper itself exists to cut its cost."},
+    "C5": {"score": 2, "why": "Obvious dummies in the files (per-biotype mean, abundance-only) and the assay's own 0.647 reproducibility, which I computed."},
+    "D1": {"score": 2, "why": "RNA-FM (an RNA language model) and HyenaDNA / Nucleotide Transformer (DNA language models) all have open downloadable weights."},
+    "D2": {"score": 1, "why": "Transcripts are multi-kilobase, so embeddings need windowing and roughly a day of CPU time, cached once."},
+    "D3": {"score": 2, "why": "RNA-FM and HyenaDNA are openly licensed on GitHub; Nucleotide Transformer's non-commercial terms can be avoided by not using it."},
+    "E1": {"ok": true, "why": "Hold out whole chromosomes (from GENCODE v47) and hold out the HM/NM ovarian cell lines entirely."},
+    "E2": {"ok": true, "why": "Over 20 chromosome groups each with hundreds of genes, plus 4 independent biological systems in the same series."},
+    "E3": {"ok": true, "why": "Per-biotype mean and abundance-only predictors computable directly from the deposited counts."},
+    "E4": {"ok": true, "why": "I measured it: Spearman 0.647 between independent labelling conditions, 0.498 split-half across replicates."},
+    "E5": {"ok": true, "why": "Named caRNAs XIST, PVT1, KCNQ1OT1, MEG3 must rank high; the mitochondrial table must put MT- genes on top (20 of 25 rows)."},
+    "E6": {"ok": true, "why": "Label shuffling and block ablations (abundance only, biotype only, sequence only) are all cheap on a 22k-row table."},
+    "E7": {"ok": true, "why": "Verified 27 ENCODE chromatin-fraction total RNA-seq experiments exist; plus the paper's own ovarian cell lines as held-out cells."},
+    "E8": {"ok": true, "why": "Already done: reproduced the published 1,652-gene caRNA list from the counts at r = 0.989 and matched all five stated counts."},
+    "G1": {"score": 2, "why": "Ensembl gene IDs on a stated GENCODE release (GRCh38.p14 v47) in every file."},
+    "G2": {"score": 2, "why": "ENCODE chromatin-fraction RNA-seq (27 experiments confirmed via the portal API) and lncATLAS, both keyed on Ensembl gene ID."},
+    "G3": {"score": 1, "why": "Gene-to-gene join is clean, but one gene has many transcripts so a collapse rule is needed, and lncATLAS uses GENCODE v24."},
+    "G4": {"score": 2, "why": "Asks whether chromatin association is sequence-encoded and assay-independent, which neither the new assay nor ENCODE answers alone."},
+    "H1": {"score": 2, "why": "Full transcriptome with a continuous value: non-associated genes are reported alongside associated ones, not just hits."},
+    "H2": {"score": 1, "why": "One lab, human only, four cell lines, one assay family; no primary tissue and no other species."},
+    "H3": {"score": 2, "why": "Claim statable precisely: ranks expressed HEK293T genes by crosslinking depletion against a 0.647 assay ceiling."},
+    "H4": {"score": 1, "why": "Paper is explicit about thresholds and even reports a failed 5' splice-site expectation, but cell-line narrowness is not discussed as a limit."},
+    "I1": {"score": 2, "why": "RNA-chromatin mapping labs (Zhong lab's iMARGI, Ulitsky lab's nuclear-retention work) and the PCRD-seq authors themselves."},
+    "I2": {"score": 1, "why": "Would reorder which untested lncRNAs a lab assays next; it changes candidate choice, not the experiment design."},
+    "I3": {"score": 2, "why": "Precision among the top 100 ranked genes matches the real decision: which handful to test at the bench."},
+    "I4": {"score": 1, "why": "Honest risk that abundance plus biotype plus length does most of the work; that is the first thing to test."},
+    "J1": {"score": 2, "why": "Frozen language-model embeddings, grouped splits, ablations and a cross-assay transfer test: the ML I want to practise."},
+    "J2": {"score": 2, "why": "Known chromatin-associated RNAs give an immediate plausibility check on any ranking."},
+    "J3": {"score": 2, "why": "The cleaned genome-wide label table and the measured noise ceiling are shareable even if the model is mediocre."},
+    "J4": {"score": 2, "why": "Three weeks: one day to the feature table, one week of embeddings, one week of modelling and controls."},
+    "J5": {"score": 2, "why": "Kill condition is concrete and datable: sequence adds under 0.03 Spearman over the simple baseline after two weeks."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "LncLocFormer (transformer for multi-label long-noncoding-RNA subcellular localization, Bioinformatics 2023)",
+        "open_weights": null,
+        "score_and_split": "Evaluated on a benchmark of 811 long noncoding RNAs across four locations including a chromatin class; I retrieved the dataset size from the abstract but not the metric values or the split definition.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "Loc4Lnc (convolution plus transformer for long-noncoding-RNA localization, Quantitative Biology 2025)",
+        "open_weights": null,
+        "score_and_split": "Reported 0.636 accuracy on an independent test set (figure taken from the retrieved abstract); split construction not checked.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepLncRNA (neural network predicting nuclear versus cytosolic long-noncoding-RNA localization from sequence, Scientific Reports 2018)",
+        "open_weights": null,
+        "score_and_split": "Trained on ENCODE nuclear/cytosolic fractionation as a binary classifier; I did not retrieve its accuracy or split.",
+        "authors_named_unsolved": "Not retrieved; the paper notes nuclear retention motifs were already known, which it uses as motivation.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "DeepRCI (deep model for RNA-chromatin interactions from sequence plus multi-omics, Quantitative Biology 2023)",
+        "open_weights": null,
+        "score_and_split": "Predicts RNA-chromatin interaction sites rather than a per-gene chromatin-association score; metrics and split not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "AkitaR (deep model using chromatin-associated RNA signal to predict genome folding, Nature Communications 2024)",
+        "open_weights": null,
+        "score_and_split": "Runs in the opposite direction, using measured chromatin-associated RNA as an input feature to predict contact maps, so it is context rather than a competitor.",
+        "authors_named_unsolved": "Reported that both nascent and trans-located chromatin-associated RNAs improve predictions most at cell-type-specific regions.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RNA-FM (an RNA language model) on transcript windows, with HyenaDNA (a long-context DNA model) on gene-body windows as an alternative; k-mer frequencies as the cheap control",
+    "freeze_and_head_viable": true,
+    "hardware": "16 GB laptop CPU; embeddings computed once for about 22,000 genes in windows and cached (roughly 60 MB)",
+    "licence": "RNA-FM and HyenaDNA weights are openly released on GitHub; Nucleotide Transformer's non-commercial licence is avoidable by not using it."
+  },
+  "integration": {
+    "partner_dataset": "ENCODE subcellular-fraction RNA-seq gene quantifications (27 chromatin-fraction total RNA-seq experiments confirmed through the ENCODE portal API), with lncATLAS chromatin relative-concentration values as a second partner (download link not resolved)",
+    "join_key": "Ensembl gene ID (this paper uses GENCODE GRCh38.p14 v47; lncATLAS uses v24, so version mapping is needed)",
+    "bigger_question_one_sentence": "Is a transcript's chromatin association a property written into its sequence that holds across cell lines and across completely different measurement principles, or does each assay largely report its own artifact?"
+  },
+  "controls": {
+    "positive_control": "The paper's named chromatin-associated RNAs (XIST, PVT1, TSIX, KCNQ1OT1, MEG3, LINC00261) must land in the top few percent of predictions; and on the mitochondrial PCRD-seq table the MT- transcripts must come out top (I verified 20 of the 25 depleted genes there are protein-coding mitochondrial genes).",
+    "negative_control": "Shuffle the depletion labels and confirm collapse to the per-biotype mean; ablate the abundance, biotype and sequence feature blocks separately; the mitochondrial, endomembrane and lysosomal PCRD-seq tables act as compartment-specific negatives that a chromatin model should not reproduce.",
+    "external_validation": "ENCODE chromatin-fraction RNA-seq gene quantifications (independent lab, independent assay principle, joined on Ensembl gene ID) and the HM/NM ovarian cell lines held out entirely as unseen cells."
+  },
+  "honest_claim_h3": "Among genes expressed in HEK293T cells (mean normalized count at least 10), transcript sequence plus control-sample abundance ranks genes by their proximity-crosslinking depletion with Spearman rho of X on held-out chromosomes, against a between-experiment reproducibility ceiling of 0.647 that I measured in the same data; the claim covers one lab's photosensitizer assay in four human cell lines and nothing else.",
+  "plain_idea": {
+    "one_liner": "Use a gene's RNA sequence to predict how strongly its transcript sticks to chromatin inside human cells.",
+    "train_on": "One row per human gene: its transcript sequence (from GENCODE release 47, the annotation the authors used), plus length, GC content, gene biotype and abundance in control samples. 22,449 genes passed my expression filter in the headline experiment, with three more cell systems available.",
+    "predict": "A continuous chromatin-association score: the log2 ratio of a gene's RNA level in light-treated versus untreated cells, where RNA close to chromatin is crosslinked and therefore lost during the standard extraction. Measured by RNA sequencing in triplicate, and I reproduced the authors' values from the deposited counts.",
+    "why_worthwhile": "Labs mapping RNA-chromatin contacts could rank which of the roughly 19,000 untested human transcripts to assay next; and either way we learn whether chromatin association is written into the sequence or is mostly an abundance-and-biotype effect, which also tells those labs what their own hit lists mean."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "yes", "why": "22,449 genes with a continuous chromatin-association value, including protein-coding genes, versus the 811-long-noncoding-RNA four-class benchmark used by LncLocFormer; the existing localization models are trained on categorical fractionation labels, not on a graded per-gene measurement."},
+    "confidence_score": {"answer": "partly", "why": "The data supports per-gene uncertainty (three replicates per group, an lfcSE standard-error column, and two independent labelling conditions giving a measured 0.647 agreement), but I did not check whether the existing localization tools already report calibrated confidence."},
+    "models_beatable": {"answer": "partly", "why": "DeepLncRNA is a 2018 sequence classifier and Loc4Lnc reports 0.636 accuracy in 2025, so the numbers are modest, but they solve a different, categorical, long-noncoding-RNA-only task, so a head-to-head win would not be apples to apples."},
+    "guaranteed_improvement": {"answer": "no", "why": "ENCODE chromatin-fraction RNA-seq measures a different quantity (abundance ratio between purified fractions) by a different principle than proximity-crosslinking depletion, and no existing model is evaluated on a chromosome-held-out split of this data, so the same-quantity and same-split conditions both fail."}
+  },
+  "label_elsewhere": {
+    "score": 2,
+    "sources": "ENCODE subcellular-fraction RNA-seq (I queried the ENCODE portal API and confirmed 27 chromatin-fraction total RNA-seq experiments); lncATLAS, which publishes chromatin relative-concentration values for K562 (known resource; two guessed download URLs returned 404, so unverified); RNALocate (known resource, not checked).",
+    "approx_items": null,
+    "join_key": "Ensembl gene ID",
+    "why": "Chromatin or nuclear localization is already measured transcriptome-wide in other cell lines and by a different assay, which supplies both extra training data and a genuinely independent test of whether a sequence model learned biology or one assay's quirks."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Gene abundance drives the measured ratio: lowly expressed genes have noisy depletion values, and abundance is itself partly predictable from sequence, so a model can score well by learning expression level rather than chromatin biology.",
+      "The abundance feature (baseMean) is computed from the same read counts as the label, so correlated sequencing noise can inflate performance unless abundance is taken from control samples only.",
+      "Gene biotype is a shortcut: 1,195 of the 1,652 chromatin-associated hits are long noncoding RNAs, so a long-noncoding-versus-messenger-RNA detector would look good without learning anything about chromatin.",
+      "Paralogues, repeat-containing transcripts and overlapping antisense genes put near-identical sequences in both train and test if genes are split at random.",
+      "Table S6 is pre-filtered to significant genes, so training only on it selects on the label; the full count matrices must be used instead.",
+      "Batch structure: labelling condition (5 versus 10 micromolar) shifts the label systematically, with only Spearman 0.647 agreement between conditions."
+    ],
+    "split": "Hold out whole chromosomes, using the chromosome field from GENCODE v47 (this column is NOT in the deposited files; it must be added by joining to the annotation, which I did not do), and additionally hold out the HM and NM ovarian cell lines as unseen cells; cluster transcripts at about 80% identity and keep clusters intact.",
+    "checks": [
+      "Shuffle the depletion labels and confirm performance collapses to the per-biotype mean.",
+      "Train on abundance alone, biotype alone and length alone to see how much of the signal is non-sequence, and report sequence's marginal gain.",
+      "Measure nearest-neighbour sequence identity between each test gene and the training set and check performance is not concentrated in the high-identity tail.",
+      "Confirm the known chromatin-associated RNAs rank high and that the mitochondrial-compartment table is not reproduced by the chromatin model."
+    ],
+    "verdict": "Manageable, but the real danger here is confounding rather than classic leakage: abundance and biotype must be controlled explicitly or the result will be meaningless."
+  },
+  "success_criteria": {
+    "metric": "Spearman correlation between predicted and measured log2 depletion on held-out chromosomes, reported alongside precision among the top 100 ranked genes, because an experimentalist will only test a handful of candidates at the bench.",
+    "baselines": "Per-biotype mean and abundance-only predictors, both computable directly from the deposited counts; the combined abundance plus biotype plus length gradient-boosting model as the model to beat; and the assay's own between-condition agreement of Spearman 0.647 (n = 21,773 genes, computed by me) as the ceiling. No published model reports a number on this data.",
+    "success": "Spearman at least 0.35 on held-out chromosomes, with sequence features adding at least 0.05 Spearman over the abundance plus biotype plus length baseline, and XIST, PVT1, KCNQ1OT1 and MEG3 all within the top 5% of predictions.",
+    "noise_ceiling": 0.647,
+    "kill": "If sequence features add under 0.03 Spearman over abundance plus biotype plus length on chromosome-held-out folds after two weeks, stop and write up the ceiling measurement instead."
+  },
+  "publication_target": {
+    "ambitious": {"journal": "Genome Biology", "why": "Publishes sequence-to-function models with real biological payoff; it would take a clean result that chromatin association transfers across assays and cell lines and that the model recovers interpretable retention motifs."},
+    "realistic": {"journal": "NAR Genomics and Bioinformatics", "why": "Publishes careful benchmarks and re-analyses of new assays; the likely result (sequence gives a moderate correlation against a measured 0.647 ceiling, partial transfer to ENCODE fractionation) fits exactly."},
+    "fallback": {"journal": "Bioinformatics (brief communication) or a bioRxiv preprint", "why": "Even the negative outcome - that abundance and biotype explain most of the depletion signal, with a measured reproducibility ceiling - is a short, useful note for anyone reading chromatin-associated RNA hit lists."}
+  },
+  "pitch": {
+    "headline": "A brand-new assay hands you a graded chromatin-stickiness number for 22,449 human genes, and nobody has modelled it.",
+    "what_makes_the_data_unusual": "Not a hit list: every expressed gene gets a value, in triplicate, across four cell systems, with compartment-specific controls. I verified all of this in the files and reproduced the authors' fold changes at r = 0.997.",
+    "the_win": "Spearman 0.35 or better on held-out chromosomes against the 0.647 ceiling I measured between independent labelling conditions, with XIST, PVT1 and KCNQ1OT1 in the top 5%.",
+    "even_if_it_fails": "You publish a measured reproducibility ceiling plus the finding that abundance and biotype explain most of the signal - which tells every chromatin-RNA lab what their hit lists actually contain.",
+    "who_wants_it": "Labs mapping RNA-chromatin contacts (the iMARGI group, nuclear-retention-element groups) deciding which untested long noncoding RNAs to assay next."
+  },
+  "ml_idea": "Build a per-gene regression from transcript sequence to PCRD-seq chromatin-association strength (log2 depletion of labelled versus unlabelled cells) across 22,449 expressed HEK293T genes, using frozen RNA/DNA language-model embeddings plus a gradient-boosted head, with chromosome-held-out splits, abundance and biotype ablations, held-out ovarian cell lines, and external testing against ENCODE chromatin-fraction RNA-seq to ask whether chromatin association is sequence-encoded and assay-independent.",
+  "effort": {
+    "hours_to_feature_table": 8,
+    "working_set_gb": 0.5,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": 12,
+    "cv_run_minutes": 10,
+    "compute_note": "The count tables are about 10 MB total and I timed the label computation and reproducibility checks at a few seconds each on this laptop; embedding time is an estimate from 22,449 sequences in 1-kilobase windows at typical small-language-model CPU throughput, and was not timed.",
+    "cheapest_killing_check": "Fit gradient boosting on control-sample abundance, biotype and transcript length alone with chromosome-held-out folds; if adding sequence features does not gain at least 0.03 Spearman, stop."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer passes on the actual files, not the abstract: the counts match the paper exactly (3,372 / 1,652 / 25 / 2,577 / 3,742), the label is a column in Table S6 and I recomputed it genome-wide from the deposited counts at r = 0.997, and the whole working set is about 10 MB. 22,449 genes carry a continuous chromatin-association value that nobody has modelled, there are named positive controls (XIST, PVT1, KCNQ1OT1), built-in compartment negatives, an unseen-cell-line test, and an independent external assay in ENCODE. The honest caveats are that I measured the ceiling at Spearman 0.647 between labelling conditions and that abundance plus biotype may explain most of the signal - but that outcome is itself publishable, which is why this is worth a weekend."
+}

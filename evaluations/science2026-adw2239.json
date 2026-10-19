@@ -1,0 +1,57 @@
+{
+  "paper_id": "science2026-adw2239",
+  "title": "Fruit flies actively restart their circadian clock by proactively shaping their environment.",
+  "doi": "10.1126/science.adw2239",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/18214640",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Opened the Zenodo record (CC-BY-4.0, 21 files, 25.7 GB). Downloaded and parsed all four small CSVs: they are metadata only (machine_name, date, region_id, condition A/B/C/D, Run, reversed, lux, Genotype, baseline_days) with 419/190/120/259 rows and 698 unique flies after de-duplication (the 190-row file is a strict subset of the 419-row file). Read the full 60,812-character R/Quarto analysis script. Downloaded the one zip under 50 MB (49.3 MB) and opened the ethoscope SQLite database inside it: tables ROI_1..ROI_10 with ~360,000 tracking rows each (t in milliseconds, x/y/w/h in pixels, phi angle, xy_dist_log10x1000), covering 237.8 hours at a median 2.37-second sampling interval, plus a CSV_DAM_ACTIVITY table of 14,268 per-minute activity counts per fly, a VAR_MAP units table and a METADATA table.",
+    "what_came_from_paper_text_only": "The paper itself is paywalled (no PubMed Central ID, no full text in Europe PMC), so the experimental design, the clock-neuron imaging results and the sleep-quality claims come from the abstract and the Zenodo description only. I inferred the meaning of conditions A-D from the analysis script's header, not from the paper. The 16 larger zip files (0.38-3.3 GB each) were not downloaded; I assume from the one I opened that they hold the same ethoscope database format."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Zenodo record 18214640, CC-BY-4.0, no login. I downloaded five files directly, including a 49 MB zip, and opened the database inside it."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. The only columns in any downloadable table are experimental design settings (which condition, how many lux, which genotype). Every outcome the paper is about - rhythmic yes/no, period length, rhythmic strength, sleep fragmentation - exists nowhere as a column; the R script computes each one from the raw tracking with a Lomb-Scargle periodogram and the sleepr sleep-annotation algorithm."},
+    "a3_inputs_present": {"pass": true, "note": "Raw per-fly position and movement traces are present in the ethoscope SQLite files, not referenced elsewhere; I read 360,000 rows of one fly directly."},
+    "a4_units_stated": {"pass": true, "note": "The VAR_MAP table names a unit type for every column (x/y/w/h = distance in camera pixels, phi = angle, xy_dist_log10x1000 = relative distance scaled by 1e6) and t is milliseconds; pixel-to-millimetre conversion needs ROI_MAP tube geometry."},
+    "a5_enough_rows": {"pass": false, "n_rows": 698, "note": "FAIL. The independent unit is the fly, not the time point. 698 unique flies across all four metadata files, and the headline 20-lux experiment is only 190 flies (50/50/50/40 across conditions A/B/C/D), before the script discards flies that died before day 8. Below the ~1,500-row bar, and the per-experiment numbers are below the 400-row classification bar."},
+    "a6_fits_laptop": {"pass": false, "working_set": "25.7 GB of zipped SQLite databases", "note": "FAIL. The 17 data zips are 0.38-3.3 GB each, 25.7 GB in total, and there is no way to get at the behaviour traces without downloading them. That breaks both the project's 50 MB per-file rule and the checklist's ~5 GB working-set limit."},
+    "a7_counts_match_paper": {"pass": true, "note": "Cannot fully check because the paper is paywalled, but the four metadata files are internally consistent and the condition counts match the design described in the analysis script."},
+    "a8_label_provenance": {"pass": false, "note": "FAIL by construction. The rhythmicity label is the output of a Lomb-Scargle periodogram run on exactly the movement time series that would be the model's input features, with a significance threshold at alpha = 0.01. Predicting it from those same features is re-implementing the algorithm, not learning biology."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "Any model here could only claim to re-derive, from a fly's movement trace, a rhythmicity score that a standard periodogram already computes from the same trace - or to guess which of four shelter conditions the fly was housed in, which a single feature (fraction of time spent in the dark half of the tube) already reveals.",
+  "plain_idea": {
+    "one_liner": "Use a fly's first days of movement to predict whether it later regains a daily rhythm under constant light.",
+    "train_on": "Per-fly position and movement traces from ethoscope video trackers: roughly 360,000 samples per fly over 10 days at one reading every 2.4 seconds, for 698 unique flies (190 in the main 20-lux experiment). Verified by opening one database.",
+    "predict": "Whether the fly is rhythmic in days 4-8 of constant light, and its period length. The true answer is not measured separately - it is the output of a Lomb-Scargle periodogram run on the same movement trace.",
+    "why_worthwhile": "Circadian biologists would like to know why some individuals recover a rhythm and others do not, but here the answer label is produced by an algorithm from the inputs, so a model would mostly learn that algorithm."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: forecast individual rhythm recovery (rhythmic yes/no, period, rhythmic strength) under constant light from the first days of a fly's movement and shelter-choice trace, or classify the four shelter conditions from behaviour. Both die on the same point - the outcome is a periodogram of the input signal, and the design variables are trivially readable from position.",
+  "effort": {
+    "hours_to_feature_table": 40,
+    "working_set_gb": 25.7,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, not timed: 25.7 GB of zips to fetch and unpack, then one SQLite database at a time (the one I opened held 3.6 million tracking rows and fits in a few GB streamed), plus re-implementing the rethomics R pipeline (scopr, sleepr, zeitgebr) in Python or installing R to get any label at all.",
+    "cheapest_killing_check": "Count unique flies in the four metadata CSVs - two minutes, 25 KB of download. The answer is 698 total and 190 in the main experiment, which is the project."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails four Part A killers at once, all confirmed in the files rather than the paper. A2: no outcome column exists anywhere - the four downloadable CSVs are pure experimental metadata (condition, lux, genotype), and rhythmicity, period, rhythmic strength and sleep quality are all computed inside the authors' R script. A8: that computation is a Lomb-Scargle periodogram of the very movement trace that would be the model's input, so the label is leakage by construction. A5: the independent unit is the fly, and there are 698 unique flies in total, 190 in the headline 20-lux experiment, before death-curation removes more. A6: the behaviour traces are only reachable through 17 zip files of 0.38-3.3 GB, 25.7 GB in total. The data is genuinely well curated - CC-BY-4.0, a complete 60 KB reproducible analysis script, documented units in every database - and is an excellent record of a careful two-condition behavioural experiment. It is not an ML dataset."
+}

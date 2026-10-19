@@ -1,0 +1,90 @@
+{
+  "paper_id": "nar2026-gkag923",
+  "title": "Molecular structure and DNA binding mode of unsymmetric cyanine dyes RiboGreen and OliGreen.",
+  "doi": "10.1093/nar/gkag923",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13613063/ (supplementary data only; no repository deposition)",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Parsed the open-access full-text XML from Europe PMC and read both data tables directly: Table 1 holds 139 numeric NMR (nuclear magnetic resonance) chemical-shift values across 37 atom positions for exactly 3 dyes (RiboGreen, OliGreen, PicoGreen); Table 2 holds 6 dissociation constants and 6 binding-site sizes (3 dyes x 2 nucleic acid types). Also read the data availability statement, which names no repository. Checked Europe PMC/NCBI for accessions: none (only a spurious text-mined 'G98001').",
+    "what_came_from_paper_text_only": "Contents of the supplementary files (Supplementary Table S1, the expanded shift table including 5 previously published dyes, and the molecular dynamics simulation data). The Europe PMC supplementaryFiles endpoint timed out twice at ~135 s, so the supplement was not retrievable and I could not open a single data file."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Open access, no login or access application; but the only data location is the journal's supplementary files, and the Europe PMC supplementary endpoint timed out on two attempts, so nothing was actually opened. No deposition in BMRB, PDB, Zenodo or Dryad."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the full-text tables: chemical shifts are columns in Table 1, and dissociation constant Kd plus binding-site size are columns in Table 2. No construction needed."},
+    "a3_inputs_present": {"pass": true, "note": "Dye structures are drawn in the figures and the atom-naming scheme is given, but no machine-readable structure (SMILES or mol file) is provided; a chemist would have to draw 3 molecules by hand, which is trivial at this scale."},
+    "a4_units_stated": {"pass": true, "note": "Verified in tables: chemical shifts in ppm (parts per million), Kd in nanomolar, extinction coefficient in M-1 cm-1, all stated explicitly."},
+    "a5_enough_rows": {"pass": false, "n_rows": 139, "note": "KILLER. Three molecules total. Table 1 contains 139 chemical-shift numbers over 37 atom positions for 3 dyes; Table 2 contains 6 binding constants. Even counting the 5 previously published dyes the authors merge in, that is ~8 molecules. The checklist floor is ~1,500 labelled rows (~400 for classification), and atom-level shifts from 3 molecules are not independent examples."},
+    "a6_fits_laptop": {"pass": true, "working_set": "<1 MB for the tables; molecular dynamics trajectories unknown size, not retrieved", "note": "Trivially small; the simulation data size is unknown because the supplement would not download."},
+    "a7_counts_match_paper": {"pass": true, "note": "Table 1 and Table 2 as rendered in the full text match the paper's claim of three dyes characterised; no conflicting counts anywhere."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are physical measurements: 700 MHz NMR chemical shifts and McGhee-von Hippel fits to titration fluorescence data. Not another model's output. The free-energy profiles are simulation output, but those are not proposed as labels."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "NMRNet / nmrshiftdb2-2024 benchmark (deep model for predicting NMR chemical shifts from molecular structure)",
+        "open_weights": true,
+        "score_and_split": "Published 2025 in Nature Computational Science as a unified benchmark plus pretrained-then-fine-tuned SE(3) transformer; reports strong correlation with experiment for 1H, 13C and 19F on the nmrshiftdb2-2024 split. I read the search abstract, not the paper's own tables.",
+        "authors_named_unsolved": "Dataset size: public NMR databases hold only ~54,000 entries, far fewer than modern architectures want (the NMRexp paper makes the same point and offers 3.3 million records).",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Machine-learning-assisted design of cyanine photosensitizers (Diao et al., Advanced Materials 2026) and Multi-Fluor, a solvent-aware deep model for fluorescence properties",
+        "open_weights": null,
+        "score_and_split": "Reported to predict singlet-oxygen and fluorescence quantum yields for cyanine derivatives and to screen a 2,835-compound library; I did not retrieve the papers, only search summaries, so I have no numbers or splits.",
+        "authors_named_unsolved": "Not established from what I retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ChemBERTa or MolFormer (chemical language models over SMILES) would be the natural fit for dye structures",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU laptop would suffice, but there is nothing to fit a head on",
+    "licence": "Permissive (Apache/MIT for ChemBERTa), irrelevant here"
+  },
+  "integration": {
+    "partner_dataset": "nmrshiftdb2 / NMRexp for chemical shifts; PubChem or ChEMBL for dye structures via InChIKey",
+    "join_key": "InChIKey (would have to be generated from hand-drawn structures; none present in the paper)",
+    "bigger_question_one_sentence": "Could not be written usefully: three molecules added to a database of tens of thousands changes nothing about any question those databases can already answer."
+  },
+  "controls": {
+    "positive_control": "None at this scale; with 3 molecules there is no train/test to control.",
+    "negative_control": "Label shuffling is meaningless with 3 items.",
+    "external_validation": "nmrshiftdb2 exists and would dwarf this paper's data, which is the point: this paper is not the dataset."
+  },
+  "honest_claim_h3": "No model claim is supportable from this paper alone: with 3 characterised dyes and 6 binding constants, any fitted model would be describing its own training points.",
+  "plain_idea": {
+    "one_liner": "Use the chemical structure of a fluorescent dye to predict its NMR peaks and how tightly it sticks to DNA.",
+    "train_on": "What the model would see: the two-dimensional chemical structure of an unsymmetric cyanine dye. What this paper provides: 3 dyes (RiboGreen, OliGreen, PicoGreen), with 139 verified chemical-shift numbers across 37 atom positions, plus 5 more dyes from earlier literature that the authors tabulate.",
+    "predict": "Two possible outputs: the 1H and 13C NMR (nuclear magnetic resonance) chemical shift at each atom, measured on a 700 MHz spectrometer; or the dissociation constant Kd for binding double-stranded DNA or RNA, measured by fluorescence titration and fitted with the McGhee-von Hippel model.",
+    "why_worthwhile": "Groups making new nucleic-acid stains would like to pick structures before synthesising them, and anyone assigning a cyanine NMR spectrum would like a predicted spectrum to check against. Neither use is served by three examples."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "This paper adds 3 molecules; nmrshiftdb2 holds roughly 54,000 entries and the NMRexp database reports 3.3 million experimental NMR records. On the binding side it adds 6 dissociation constants."},
+    "confidence_score": {"answer": "no", "why": "Error bars exist on the 6 Kd fits (for example 371.0 +/- 102.7 nM for RiboGreen on double-stranded DNA), but six measurements cannot calibrate any model's uncertainty."},
+    "models_beatable": {"answer": "no", "why": "NMRNet is a 2025 pretrained SE(3) transformer evaluated on a published community benchmark; nothing fitted to 3 molecules competes with it."},
+    "guaranteed_improvement": {"answer": "no", "why": "The condition that fails is that our model would not see everything the baseline sees plus more: the extra data here is three molecules, and they are not joined to the baseline's training set by any identifier present in this paper."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict NMR chemical shifts, or double-stranded DNA/RNA binding affinity, for unsymmetric cyanine dyes from structure. The paper is a three-molecule structure-elucidation study, not a dataset. If this family of dyes is interesting, the project would have to start from nmrshiftdb2/NMRexp (for shifts) or a literature-assembled dye-binding table, with this paper contributing three well-characterised test cases at most.",
+  "effort": {
+    "hours_to_feature_table": 1,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.1,
+    "embedding_hours": 0.0,
+    "cv_run_minutes": 0,
+    "compute_note": "Estimated, not timed: the whole dataset is two small tables inside the article HTML/XML, under 1 MB. Effort is irrelevant because there is nothing to model.",
+    "cheapest_killing_check": "Count the molecules. Reading Table 1 takes one minute and shows 3 dyes and 139 shift values, which kills it."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Part A5 fails decisively and was verified in the paper's own tables: the entire dataset is 3 dyes with 139 NMR chemical-shift values and 6 binding constants, roughly two orders of magnitude below the minimum for any supervised model. Secondary problems: no repository deposition (data lives only in supplementary files that Europe PMC would not serve), no machine-readable structures, and the chemical-shift prediction task is already covered by open, benchmarked models (NMRNet on nmrshiftdb2-2024) trained on tens of thousands of molecules."
+}

@@ -1,0 +1,141 @@
+{
+  "paper_id": "nar2026-gkag421",
+  "title": "SPSignal: a web tool for structure-assisted prediction of nuclear localization and nuclear export signals in proteins.",
+  "doi": "10.1093/nar/gkag421",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://doi.org/10.5281/zenodo.19663416 (source code, MIT licence); labelled tables are in the article supplement gkag421_supplemental_files.zip (Tables S1-S5)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the 3.3 MB article supplement and read all five Excel tables with pandas: Table S1 = 200 experimentally validated signals (100 NLS = nuclear localization signal, 100 NES = nuclear export signal; 162 unique UniProt protein accessions, 159 source DOIs, 88 human, 27 Arabidopsis); Table S2 = 140 positive windows with intrinsic-disorder and solvent-accessibility values; Table S3 = 280 negative control windows, exactly 140 labelled 'Deeply buried' and 140 'Random'; Table S4 = 20 RuleFit rules; Table S5 = 38 validation proteins. I also downloaded the 590 KB Zenodo code archive and listed it (two pickled RuleFit models, no training data inside). I computed single-feature AUC (area under the receiver operating characteristic curve) myself: solvent accessibility alone separates NLS positives from the 'Deeply buried' negatives at AUC 0.995 and NES at 0.966, but only 0.680 and 0.539 against the 'Random' negatives.",
+    "what_came_from_paper_text_only": "The RuleFit model's reported ROC-AUC and balanced accuracy are only in Figure 1D, which I did not read as numbers. The exact rule used to pick the 'Deeply buried' and 'Random' control windows is in the supplementary methods PDF, which I could not convert to text (no pdftotext on this machine); I inferred it from the control-type labels and the accessibility values in Table S3, plus the main text's own statement that there is no experimentally validated negative set."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Verified: supplement zip and Zenodo code archive both downloaded with no login; Zenodo record is open access under the MIT licence."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Verified in files: positives sit in Table S2 and negatives in Table S3 with a 'Control type' column, so the binary label is a one-line concatenation of two tables with the same schema, not an inference."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Verified in files: the actual 10- or 20-residue window amino-acid sequence is a column in both Table S2 and Table S3, alongside UniProt accession, start and end positions."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Partly verified: intrinsic disorder is an IUPred3 score on 0-1 (stated in methods) and accessibility is a per-window solvent-accessible surface area; the column header gives no unit symbol, but the scale is consistent across both tables."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 420,
+      "note": "Counted in the files: 140 positive windows + 280 negative windows = 420 rows, but the paper trains two separate models, so the real task size is 210 rows each (70 positives, 140 negatives). The independent-group count is lower still: only ~130 distinct proteins. Below the ~400-row classification floor per task."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "4.4 MB of Excel tables; ~0.5 GB peak RAM",
+      "note": "Verified: every file opened instantly on this laptop; even adding ESM-2 protein-language-model embeddings for 162 proteins stays well under 16 GB."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Verified: the paper says 'a high-confidence reference set of 200 experimentally validated NLS and NES' and Table S1 holds exactly 100 NLS + 100 NES. Only 3 of 420 rows have a missing accessibility value."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "Fails by construction, verified in the files. Half the negatives (140 of 280) carry the control type 'Deeply buried', meaning they were chosen because their solvent accessibility is low - and solvent accessibility is one of the model's two input features. Median accessibility is 1.6-6.5 for buried negatives versus 61-95 for positives, so accessibility alone scores AUC 0.995 (NLS) and 0.966 (NES) against them. Against the 'Random' negatives, the only ones not picked by a feature, the same feature gives AUC 0.680 and 0.539 - no real signal for NES. The paper itself concedes there is no experimentally validated negative set."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "SPSignal (this paper; RuleFit, an interpretable rule-ensemble model, over intrinsic disorder and solvent accessibility)",
+        "open_weights": true,
+        "score_and_split": "Trained on 140 positive and 280 negative windows; evaluated with 20 repeated protein-level train/test splits, reporting ROC-AUC and balanced accuracy in Figure 1D (numbers shown only in the figure). The split itself is honest - whole proteins are held out - but half the negatives were selected using one of the two input features.",
+        "authors_named_unsolved": "They state plainly that using buried and random windows as negatives 'represents a conservative strategy, constrained by the lack of experimentally validated negative datasets, and may underestimate the complexity of distinguishing functional from non-functional surface-adjacent motifs', and ask the community for validated negatives.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "NLSExplorer (Patterns, 2025; attention network 'A2KA' on top of a large protein language model)",
+        "open_weights": true,
+        "score_and_split": "Reported >10% F1 improvement over previous methods on two NLS benchmark datasets; trained and applied at Swiss-Prot scale across 416 species. Code and a web server are public (GitHub Dsadd4/NLSExplorer_1.0).",
+        "authors_named_unsolved": "Discontinuous and non-canonical NLS patterns, addressed by their separate Search-and-Collect (SCNLS) algorithm.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "NESmapper (PLOS Computational Biology, 2014; activity-based position profiles from mutational scanning)",
+        "open_weights": true,
+        "score_and_split": "AUC 0.95 with optimized profiles on artificial test sets, versus 0.85 for Wregex; reported 16-45% fewer false positives than competing methods.",
+        "authors_named_unsolved": "False positives on motifs that look leucine-rich but are not CRM1 cargo.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Wregex, LocNES, NetNES, NESsential (weighted regular expressions and position-specific scoring matrices for nuclear export signals)",
+        "open_weights": true,
+        "score_and_split": "Wregex AUC 0.85 on the NESmapper comparison; all are older sequence-only tools with published web servers.",
+        "authors_named_unsolved": "High false-positive rate from short degenerate motifs - the same gap SPSignal targets.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model; the small 8M-35M parameter checkpoints run on a laptop CPU)",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU only; ~162 proteins to embed once, minutes to a couple of hours",
+    "licence": "MIT (ESM-2); the SPSignal code and tables are MIT / open-access supplement"
+  },
+  "integration": {
+    "partner_dataset": "NLSdb and the NLSExplorer NLS candidate library (nuclear localization signal collections), plus AlphaFold DB predicted structures",
+    "join_key": "UniProt accession plus residue start/end position",
+    "bigger_question_one_sentence": "Does structural exposure add anything to a protein-language-model representation when deciding which of the many sequence-matching candidate motifs in a protein is the one that actually moves it through the nuclear pore?"
+  },
+  "controls": {
+    "positive_control": "Predict window length or leucine content from the window sequence - must be near-perfect, confirming the plumbing works.",
+    "negative_control": "Shuffle the positive/negative label and confirm collapse to the majority-class baseline; and train on solvent accessibility alone, which I already did and which scores AUC 0.995 against the buried negatives.",
+    "external_validation": "Table S5's 38 proteins with independently published validated signals, and the NLSExplorer benchmark sets - but neither supplies validated negatives, which is the actual missing piece."
+  },
+  "honest_claim_h3": "A model trained on these tables would only be claiming 'this window is more exposed and more disordered than a window I deliberately chose from the protein's buried core', not 'this motif is a functional nuclear transport signal'.",
+  "plain_idea": {
+    "one_liner": "Use a short protein motif and how exposed it is on the protein surface to predict whether it truly moves the protein into or out of the nucleus.",
+    "train_on": "Each example is a 10- or 20-amino-acid window from a protein, with its amino-acid sequence, an intrinsic-disorder score and a solvent-accessibility value. I counted 140 positive windows and 280 negative windows, from about 130 distinct proteins.",
+    "predict": "A yes/no label: is this window a real nuclear localization or nuclear export signal? Positives come from 200 signals each validated in a published wet-lab experiment (one source DOI per entry, 159 distinct papers). Negatives were not measured at all - they were picked computationally from buried or random regions of the same proteins.",
+    "why_worthwhile": "Cell biologists studying where a protein sits inside a cell currently get long lists of candidate motifs, most of them false, so a reliable ranking would tell them which mutation to make. Even a failed model would pin down how much of the apparent signal is just surface exposure."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "SPSignal's 200 validated signals are a careful hand-curation, but NLSExplorer (2025) works from Swiss-Prot-scale nuclear localization annotation across 416 species, and NESmapper was built from comprehensive mutational scanning in mammalian cells. 420 labelled windows from ~130 proteins is the smallest dataset in the field, not the largest."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "There are no replicate measurements and no per-window uncertainty anywhere in Tables S1-S3; each entry is a single literature assertion with one DOI. SPSignal already emits a 1-5 confidence rank, so calibrated confidence is not an open gap we could fill with this data."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "The older nuclear export tools (NetNES, Wregex, LocNES, NESmapper, 2005-2014, regular expressions and scoring matrices with no pretrained backbone) are beatable. NLSExplorer (2025, protein language model, open code, >10% F1 gain on two benchmarks) is not, with 420 rows. SPSignal itself used an honest held-out-protein split, so even it is not a soft target."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Adding ESM-2 embeddings would make the model see everything SPSignal sees plus sequence, and SPSignal is runnable as a baseline - but the evaluation set itself is broken: half the negatives were chosen using an input feature, so any gain measures how well we exploit that artefact, not better prediction. The 'same quantity measured the same way' condition fails."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered: freeze ESM-2 (a protein language model), embed each candidate window, and train a small classifier to separate validated nuclear localization and export signals from non-signals, using whole-protein held-out splits, and compare against SPSignal's RuleFit model and the older sequence-only tools. It dies on the negatives: 140 of the 280 non-signal windows were selected for being buried, which is one of the two features, so the benchmark rewards recovering the selection rule rather than the biology.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.005,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0.3,
+    "cv_run_minutes": 1,
+    "compute_note": "Measured, not estimated: the whole supplement is 4.4 MB and all five tables loaded in under a second with pandas on this laptop; the embedding figure is an estimate for 162 full proteins through a small ESM-2 checkpoint on CPU."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Two Part A killers fail on the files, not the paper. A5: 420 labelled windows total, and because the authors train one model per signal type the real task is 210 rows (70 positives) from ~130 proteins - below the classification floor. A8 is worse and is the reason this cannot be fixed by adding data: 140 of the 280 negatives are labelled 'Deeply buried' because they were chosen for low solvent accessibility, and solvent accessibility is one of the model's two inputs. I verified the consequence - accessibility alone separates positives from those negatives at AUC 0.995 (nuclear localization) and 0.966 (nuclear export), while against the 'Random' negatives the same feature gives 0.680 and 0.539, i.e. nothing for export signals. The headline result is largely a restatement of how the negative set was built, and the authors themselves say no experimentally validated negatives exist. On top of that the field is served by NLSExplorer (Patterns 2025), an open protein-language-model method trained at Swiss-Prot scale with a reported >10% F1 gain."
+}

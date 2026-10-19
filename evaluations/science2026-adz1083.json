@@ -1,0 +1,96 @@
+{
+  "paper_id": "science2026-adz1083",
+  "title": "The eukaryote chromosome, a two-state system with interconversion by a volume phase transition",
+  "doi": "10.1126/science.adz1083",
+  "journal": "Science",
+  "data_url": "https://zenodo.org/records/20804829",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unpacked both Zenodo archives (data.tar.gz 0.12 MB, code.tar.gz 0.03 MB, CC-BY-4.0). Parsed all 17 tab-separated data files: 93,984 finite numbers, 1,142 blanks, 5,685 chromosome columns, 544 KB uncompressed. Each file is one titration: rows are the concentration or pH of one agent (units in the header, e.g. '[spm]/M', '[BSA]/uM', 'pH'), columns 1..n are individual chromosomes, cells are theta (fraction decondensed, roughly 0 to 1). Only 10 distinct agents exist in total: potassium chloride, polyethylene glycol, methylamine, putrescine, spermidine, spermine (plus a hysteresis loop run), bovine serum albumin, lysozyme, TEV protease, and three pH series. Also read the MATLAB code (code/gel/load_expts.m and 19 helper files) which lists the exact concentration ladders. Checked Europe PMC (no full text, no PMCID, no supplementary files), EBI BioStudies/BioImage Archive (0 hits) and Zenodo for any image deposit: none exists.",
+    "what_came_from_paper_text_only": "Only the abstract was available (Science is paywalled and the paper is not in PubMed Central), so the species, chromosome preparation method, microscopy setup, and how theta was computed from images all come from the abstract plus the code comments, not from a methods section I read. The Zenodo record has no description or README, so column semantics are inferred from headers and the MATLAB code."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo record 20804829, CC-BY-4.0, no login. I downloaded and extracted both archives successfully."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Theta (fraction decondensed) is the cell value in every matrix; turning the wide matrices into long rows is a reshape, not a construction. Verified in the files."
+    },
+    "a3_inputs_present": {
+      "pass": false,
+      "note": "There are no per-example features. The only predictors are the agent (which lives in the filename, not a column) and its concentration (the row header). The 5,685 chromosome columns are anonymous integers with no accompanying size, chromosome number, cell, or image data, so the large axis of the dataset has zero describable inputs."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Units are explicit in every header: mol/L, mM, uM, nM, %w/v, pH, microns. Theta is dimensionless and already normalised by the authors. Verified in the files."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 10,
+      "note": "A5 in disguise, like the scCT-DB case. 93,984 numbers sounds large but they are repeat readings of 13 dose-response curves. The unit that carries any feature is the chemical agent: n = 10 (potassium chloride, polyethylene glycol, methylamine, putrescine, spermidine, spermine, bovine serum albumin, lysozyme, TEV protease, pH). Counted directly in the files."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "0.0005 GB",
+      "note": "544 KB of text in total. Verified."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No full text to compare against, so I could not check counts; nothing in the files contradicts the abstract. Scored pass only because there is no disagreement to resolve."
+    },
+    "a8_label_provenance": {
+      "pass": true,
+      "note": "Theta is a physical measurement (chromosome area or volume change under the microscope), calibrated by the authors' areal-theta calibration in load_expts.m. Not another model's output."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": []
+  },
+  "backbone": {
+    "name": "",
+    "freeze_and_head_viable": null,
+    "hardware": "",
+    "licence": ""
+  },
+  "integration": {
+    "partner_dataset": "",
+    "join_key": "",
+    "bigger_question_one_sentence": ""
+  },
+  "controls": {
+    "positive_control": "",
+    "negative_control": "",
+    "external_validation": ""
+  },
+  "honest_claim_h3": "At best a model could say: given one of the ten solution conditions these authors tested, interpolate the fraction of chromosome decondensation, which the paper's own 7-parameter gel equation-of-state already does with published MATLAB code.",
+  "plain_idea": {
+    "one_liner": "Use the chemical identity and concentration of a solution additive to predict how much a chromosome swells or shrinks.",
+    "train_on": "Each example would be one chromosome at one additive concentration, labelled with theta, its fraction of decondensation. I counted 93,984 such measurements across 5,685 individual chromosome columns, but they come from only 10 distinct chemical agents and 13 titration series.",
+    "predict": "Theta, a dimensionless 0-to-1 measure of how decondensed a chromosome is, read out by light microscopy of isolated metaphase chromosomes and normalised by the authors' own area-to-theta calibration.",
+    "why_worthwhile": "Chromatin biophysicists would want a predictor that says which small molecules or proteins condense chromosomes and at what dose, but with ten agents measured there is nothing to learn a chemistry-to-effect rule from; the paper's physical model already fits all ten curves."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The only coherent task is predicting theta (fraction of chromosome decondensation) from the identity and concentration of the solution additive, with chemical descriptors or a molecule language model embedding supplying features for the additive. It dies on sample size: ten additives means ten points in feature space, so any cross-validation that holds out an unseen additive has a test set of one. A second idea, predicting chromosome-to-chromosome variation in the transition midpoint across the 5,685 measured chromosomes, has no features at all to predict from, because the columns are anonymous.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.001,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.1,
+    "embedding_hours": 0.01,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated from the actual file sizes I measured: 544 KB of text, 94k numbers; any model on this runs in seconds on a laptop. Nothing timed because no model is worth running.",
+    "cheapest_killing_check": "Count the distinct chemical agents in the deposit. I did: 10. That is the whole feature space, and it kills any predict-from-chemistry project in five minutes."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Exemplary open data (CC-BY, 544 KB, units in every header, 93,984 microscope measurements I opened and counted) but no machine learning problem inside it. A3 fails because the 5,685 chromosome columns are anonymous with no features, and A5 fails because the axis that does carry features holds just 10 chemical agents, so a held-out-agent test set would be a single curve. The paper's own physical gel equation-of-state, with MATLAB code included, already fits every curve, so an ML model would have nothing to add and nothing to generalise to. No microscopy images were deposited anywhere (BioImage Archive and Zenodo both checked), which would have been the one genuinely model-ready asset here."
+}

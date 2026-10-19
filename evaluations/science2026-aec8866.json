@@ -1,0 +1,203 @@
+{
+  "paper_id": "science2026-aec8866",
+  "title": "Growth rate overrides the benefit of extended growing season from boreal to semiarid conifers.",
+  "doi": "10.1126/science.aec8866",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5061/dryad.bvq83bkq0",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded all 14 Dryad files (3.3 MB, CC0) and opened every one. globoxylo.csv = 2,559 rows x 10 cols, 1,273 trees, 134 site codes, 28 species names, years 1998-2021, zero duplicates on Site+Tree+Year; 2,516 rows have the cell-count label RCN and 2,530 have growth rate r90. Verified joins are lossless: clim/soil/site_metadata cover 2,559/2,559 rows on Site, met_year covers 2,559/2,559 on Site+Year with no row explosion, tree_metadata 2,553/2,559 on Site+Tree+Year (Age 96%, Diameter 95%, canopy Class only 13%). Read the README (units documented for every column) and the authors' R scripts. Ran my own gradient-boosting baseline: growth rate r90 R2 = 0.648 under a random 5-fold split but 0.281 under leave-site-out and -0.044 under leave-species-out; label-shuffle control collapsed to R2 = -0.162; measured the noise ceiling from 321 site-years holding >=3 trees (max achievable R2 for a site-year-level model = 0.566 for r90, 0.649 RCN, 0.857 duration dE, 0.925 onset bE).",
+    "what_came_from_paper_text_only": "The ~144,000 underlying weekly cell-count observations are described in the README but are NOT deposited; only the 2,559 derived tree-year summaries are. The micro-coring field protocol, the curve-fitting method used to derive r90/bE/cE/dE/tip from the weekly series, and the paper's reported ~6 degrees C growth-rate optimum come from the text only (Science full text is paywalled, no PMC copy). I did not re-run the authors' R scripts."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Dryad, CC0-1.0, no login and no access application; I downloaded all 14 files and byte sizes match the API manifest exactly. Friction worth recording: datadryad.org now sits behind an Anubis proof-of-work bot wall - non-browser user agents get 403 and browser agents get a JavaScript challenge, so a scripted fetch must solve one sha256 puzzle (52 ms) and reuse the cookie."},
+    "a2_label_is_a_column": {"pass": true, "note": "Nothing is constructed. globoxylo.csv already carries RCN (annual cell count), r90 (cell production rate), bE/cE (onset/cessation day of year), dE (duration) and tip as named columns, one row per tree per year."},
+    "a3_inputs_present": {"pass": true, "note": "Predictors are values, not accessions: met_year.csv gives 57 numeric climate variables per Site x Year (1959-2022) joining 2,559/2,559 rows, soil.csv 12 SoilGrids variables per site, site_metadata.csv exact latitude/longitude/elevation, tree_metadata.csv age and diameter for ~95% of rows. No identifier lookups needed."},
+    "a4_units_stated": {"pass": true, "note": "README lists units for every column: cells per day for r90, day-of-year for bE/cE/tip, days for dE, degrees C, mm, kPa, MJ m-2 yr-1 for climate, and explicit units for each soil variable. No mixed or implied units found."},
+    "a5_enough_rows": {"pass": true, "n_rows": 2516, "note": "2,516 rows with the cell-count label RCN and 2,530 with growth rate r90, out of 2,559 tree-years; above the ~1,500 bar. Group counts also healthy: 134 sites (38 with >=20 tree-years), 28 species (19 with >=20)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "3.3 MB on disk; merged modelling frame 2,559 rows x 96 columns", "note": "Timed on this laptop: four targets x three cross-validation schemes plus a shuffle control finished in 1 min 59 s on CPU, peak memory well under 1 GB."},
+    "a7_counts_match_paper": {"pass": true, "note": "2,559 tree-years, 1,273 trees and 1998-2021 match the README exactly, as do the per-genus counts (spruce 1,234, pine 584, larch 387). Two reconcilable gaps: the file holds 28 species names versus '27 species' (Pinus heldreichii and P. leucodermis are synonyms, which makes the genus counts add up), and 134 site codes versus '105 sites' (site_summary.csv has 105 rows and documents a Group column that merges nearby sites for mapping)."},
+    "a8_label_provenance": {"pass": true, "note": "RCN is a physical count of xylem cells in micro-core sections, not any model's output. Critical caveat I verified rather than read: r90, bE, cE, dE and tip are all fitted from the same weekly cell-count series as RCN, and the authors model RCN = dE x r90 as an identity - I measured correlation 0.95 between RCN and r90 x dE. So those columns must never be used as features for one another; the project predicts each one from climate, soil, tree size and species only."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "Six data files, not one, but I verified every join is lossless and explodes no rows."},
+    "B2": {"score": 2, "why": "All CSVs parsed first try with pandas defaults; no encoding or delimiter fixes needed."},
+    "B3": {"score": 2, "why": "Authors harmonised 105 sites into one set of six variables with common units; multi-observer counting is the residual risk."},
+    "B4": {"score": 2, "why": "No censored or qualitative entries seen; missingness is plain NA (RCN 43, dE 392 of 2,559)."},
+    "B5": {"score": 2, "why": "Zero duplicates on Site+Tree+Year across all 2,559 rows, and zero on every lookup table's key."},
+    "B6": {"score": 2, "why": "README documents every column of every file with units; I checked it against the actual headers."},
+    "C1": {"score": 2, "why": "Measured random-split R2 0.648 vs leave-site-out 0.281 vs leave-species-out -0.044; informative whichever way it lands."},
+    "C2": {"score": 1, "why": "The paper's own GAMs do this exact task with open code, but no out-of-sample split; no ML model exists on this data."},
+    "C3": {"score": 2, "why": "Clear better-plus-novel angle: first held-out evaluation and first species-transfer test of this global network."},
+    "C4": {"score": 2, "why": "Labels require weekly micro-coring of 1,273 trees by ~60 labs over 24 years; extremely slow and costly."},
+    "C5": {"score": 2, "why": "Authors' per-biome marginal R2 and 75%/25% variance split are published, plus dummies I already computed."},
+    "D1": {"score": 2, "why": "TabPFN v2, an open-weight pretrained transformer for tabular data, fits 2,530 rows x 114 features exactly."},
+    "D2": {"score": 2, "why": "TabPFN needs no training at all - in-context inference on 2.5k rows runs on laptop CPU."},
+    "D3": {"score": 1, "why": "Data is CC0, but TabPFN v2 ships under a modified Prior Labs licence, not plain Apache-2.0."},
+    "E1": {"ok": true, "why": "Site, Species and Climate_zone columns all seen in the files; leave-site-out already run."},
+    "E2": {"ok": true, "why": "134 sites (38 with >=20 tree-years), 28 species (19 with >=20), 4 climate zones."},
+    "E3": {"ok": true, "why": "Computed: global-mean dummy R2 = 0.000, train-fold mean on site split R2 = -0.028."},
+    "E4": {"ok": true, "why": "321 site-years have >=3 trees; between-tree spread caps a site-year model at R2 0.566 for r90."},
+    "E5": {"ok": true, "why": "Paper's ~6 C growth-rate optimum and spring-temperature control of onset must both be recovered."},
+    "E6": {"ok": true, "why": "Already run: shuffling r90 labels drops leave-site-out R2 to -0.162, matching the dummy."},
+    "E7": {"ok": true, "why": "Year column (1998-2021) and PI column in site_pis.csv allow temporal and leave-one-lab-out splits; only 6 sites straddle 2015 though."},
+    "E8": {"ok": true, "why": "Authors' five R scripts ship with the data; only hardcoded absolute source() paths need fixing."},
+    "G1": {"score": 2, "why": "Exact decimal latitude/longitude/elevation per site plus Latin binomials - standard keys, seen in site_metadata.csv."},
+    "G2": {"score": 2, "why": "ITRDB (International Tree-Ring Data Bank) at NOAA Paleoclimatology is open and joinable on coordinates plus species."},
+    "G3": {"score": 1, "why": "Coordinate-radius matching to ITRDB chronologies is fuzzy one-to-many, manageable with a distance and species rule."},
+    "G4": {"score": 2, "why": "Asks whether cell-level rate-vs-duration explains century-scale ring-width trends - neither dataset answers alone."},
+    "H1": {"score": 2, "why": "Every monitored tree-year is reported, good and bad: RCN spans 4 to 195.5 cells, r90 0.024 to 2.077."},
+    "H2": {"score": 1, "why": "Four continents but skewed: spruce is 48% of rows, 80% boreal/continental, semi-arid only 223 tree-years from 13 sites."},
+    "H3": {"score": 2, "why": "Honest claim stated as one sentence below, with the species and biome restrictions named."},
+    "H4": {"score": 2, "why": "README states species counts, site counts, years and the 'availability not selection' caveat explicitly."},
+    "I1": {"score": 2, "why": "GloboXylo consortium (Cabon and Fonti at WSL, Rathgeber at INRAE Nancy) plus vegetation-model groups adding sink limitation."},
+    "I2": {"score": 2, "why": "A species-transfer failure would redirect both model parameterisation and where the network samples next."},
+    "I3": {"score": 1, "why": "R2 on held-out sites is roughly the decision; the sharper one is error on site-level mean production."},
+    "I4": {"score": 1, "why": "Boosting beats the dummy clearly but a 4-term GAM already captures much; ML helps rather than transforms."},
+    "J1": {"score": 2, "why": "Grouped splits, transfer evaluation, measured noise ceiling and a tabular foundation model - real ML practice."},
+    "J2": {"score": 1, "why": "Forest ecology is outside the user's core field, but units are intuitive and PI contact emails ship with the data."},
+    "J3": {"score": 2, "why": "Harmonised feature table, the noise ceiling and the CV-gap finding are each shareable on their own."},
+    "J4": {"score": 2, "why": "Three weeks, stated; feature table took me about one script and the full CV runs in two minutes."},
+    "J5": {"score": 1, "why": "Kill condition written in success_criteria below but not yet copied into NOTES.md with a date."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Cabon et al. 2026 generalized additive models (GAMs) for growth rate, onset and duration - this paper's own models, in 4_Model_effect_of_climate.R",
+        "open_weights": true,
+        "score_and_split": "No out-of-sample number published. Models were chosen by AIC (Akaike information criterion) across hundreds of temperature x drought variable combinations and fitted in-sample on the whole dataset; two outliers were manually deleted from the onset model. The companion identity model RCN = duration x rate reports per-biome marginal R2 only, which is a definitional fit, not a prediction.",
+        "authors_named_unsolved": "The paper frames the open issue as whether the warming-driven loss of growth rate offsets the gain from a longer season in future forests; nothing in the deposited code evaluates predictive skill at an unmonitored site or an unseen species.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "INTRAGRO - machine-learning prediction of intra-annual tree growth from dendrometer records",
+        "open_weights": true,
+        "score_and_split": "Reported for dendrometer circumference series, not micro-core cell counts, and on a far smaller site set; I retrieved the description, not the numbers.",
+        "authors_named_unsolved": "Extending intra-annual growth prediction to future climate scenarios.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Random forest models of intra-annual wood formation in Chinese fir (Dendrochronologia 2022)",
+        "open_weights": null,
+        "score_and_split": "Single species at a single location across age classes; not comparable to a 28-species global network.",
+        "authors_named_unsolved": "Capturing multi-peaked cambial division dynamics.",
+        "runnable_as_baseline": false
+      },
+      {
+        "name": "Process-based xylogenesis models (Vaganov-Shashkin, CAMBIUM, XyDyS, Cabon's turgor-driven cell production model)",
+        "open_weights": null,
+        "score_and_split": "Mechanistic, typically calibrated per site; Vaganov-Shashkin-type reconstructions report R2 0.70-0.84 on seasonal kinetics at individual sites, which is an in-sample calibration figure, not a held-out one.",
+        "authors_named_unsolved": "Cabon's 2020 cell-production work names water potential as needed to simulate cessation and final cell number.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "TabPFN v2 (a transformer pretrained on synthetic tabular problems, used without any training) as the headline backbone; HistGradientBoosting and the authors' GAM as the conventional comparators",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU. My gradient-boosting cross-validation took 8-12 s per split; TabPFN inference on 2,530 rows x ~114 features is minutes per fold on CPU, no GPU.",
+    "licence": "Data CC0-1.0 (fully permissive). TabPFN v2 weights are downloadable but under a modified Prior Labs licence rather than plain Apache-2.0, so check terms before any commercial use."
+  },
+  "integration": {
+    "partner_dataset": "ITRDB (International Tree-Ring Data Bank) at NOAA Paleoclimatology - thousands of public annual ring-width chronologies, many for the same conifer species and regions",
+    "join_key": "Site latitude/longitude within a fixed radius plus species match (coordinates are exact decimal degrees in site_metadata.csv); TerraClimate/ERA5 grid cell as the climate bridge",
+    "bigger_question_one_sentence": "Do the cell-level rate and duration measured over 24 years at 105 monitored sites explain the century-scale ring-width trends recorded at nearby ITRDB sites, so that cheap ring widths can stand in for expensive weekly micro-coring?"
+  },
+  "controls": {
+    "positive_control": "Two, both decided in advance: (1) the model must reproduce the paper's unimodal growth-rate response to temperature peaking near 6 degrees C; (2) onset of cell enlargement must be the easiest target and must track spring temperature - it already is, at leave-site-out R2 0.724 versus 0.281 for growth rate.",
+    "negative_control": "Already run: shuffling the growth-rate labels and re-running leave-site-out collapses R2 to -0.162, matching the dummy. Next: ablate feature blocks (climate / soil / tree size / species) and train on site-mean climate alone to measure how much is just a site fingerprint.",
+    "external_validation": "No second independent cell-production dataset exists, so the substitutes are leave-one-PI-out using site_pis.csv (tests whether the model learned one lab's counting style), holding out the whole semi-arid zone, and matching nearby ITRDB ring-width chronologies as a different-but-related measurement."
+  },
+  "honest_claim_h3": "For conifers like those in GloboXylo - 48% spruce, 80% boreal or continental, almost all Northern Hemisphere - climate, soil and tree size predict the annual rate and duration of wood cell production at a site that was never monitored with R2 of roughly 0.3 and 0.6 against a measured ceiling of 0.57 and 0.86, but carry essentially no information for a conifer species absent from the training set.",
+  "plain_idea": {
+    "one_liner": "Use site climate, soil and tree size to predict how fast and how long a conifer builds new wood cells each year.",
+    "train_on": "One row per tree per year: 2,559 tree-years from 1,273 trees at 134 sites in 28 conifer species, 1998-2021, each joined to 57 yearly and seasonal climate variables, 12 soil variables, latitude/longitude/elevation and tree age and diameter.",
+    "predict": "Four measured numbers: cells produced in the year, cell production rate in cells per day, and the start and length of the cell-enlargement season in days. The truth comes from weekly micro-cores cut from living stems, sectioned and counted under a microscope by the site's research group.",
+    "why_worthwhile": "Forest-carbon models assume a longer warm season means more wood; this tests whether that relationship can actually be predicted at a site nobody monitored, and the measured noise floor says how good any such model could ever get."
+  },
+  "paper_type": "resource",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "partly",
+      "why": "It is the same compilation the paper's GAMs used, so no size advantage. Two small edges I verified: their modelling frame is filtered to rows having both tree diameter and age (at most 2,425 rows), while 2,530 rows have the growth-rate label, and they used four AIC-chosen predictors where all 57 climate columns are available."
+    },
+    "confidence_score": {
+      "answer": "yes",
+      "why": "321 site-years contain three or more trees, and between-tree spread accounts for 43% of growth-rate variance - enough to fit and validate a per-prediction interval. The paper's GAMs show confidence bands on partial-effect curves but publish no out-of-sample calibrated interval."
+    },
+    "models_beatable": {
+      "answer": "yes",
+      "why": "The incumbents are 2026 four-term generalized additive models selected by AIC over hundreds of formulas, fitted in-sample with no held-out split and two outliers manually deleted. No out-of-sample number exists, so any honest grouped-split result is new rather than a marginal gain."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Two of the four conditions hold - the authors' GAM ships as runnable R code and our model would see everything it sees - but there is no accessible new data measuring the same quantity the same way: ITRDB records ring width in millimetres, not counted cells, so joining it changes the measured quantity rather than adding to it."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "ITRDB (International Tree-Ring Data Bank, NOAA Paleoclimatology) holds thousands of public annual ring-width chronologies - a closely related but different measurement (width in mm, not counted cells); known resource. Published Northern-Hemisphere xylem-phenology networks exist (found by search) but overlap heavily with this very compilation rather than being independent of it.",
+    "approx_items": null,
+    "join_key": "Site latitude/longitude plus species (and TerraClimate grid cell as the climate bridge)",
+    "why": "Ring widths give a large, free, century-long external yardstick to test whether a cell-production model's predicted year-to-year swings show up in independent growth records, even though the units differ."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Trees at the same site share one climate record and one observer, so a random row split puts near-siblings in train and test - I measured the damage: growth-rate R2 is 0.648 random but 0.281 leaving whole sites out.",
+      "The other wood-formation columns are fitted from the same weekly cell-count series as the label, so using rate and duration to predict annual cell number is leakage by construction (correlation of 0.95 with their product, and the authors treat it as an identity).",
+      "1,954 of 2,559 tree-years come from trees measured in two or more years, so tree identity leaks across folds unless trees are kept whole.",
+      "Each site's cells were counted by one of roughly 60 principal investigators, so counting style is confounded with site, species and biome.",
+      "Site-level climate means in clim.csv are constant within a site and act as a site fingerprint a model can memorise."
+    ],
+    "split": "Primary: leave-site-out on the Site column (seen in globoxylo.csv, 134 levels, 38 with >=20 tree-years). Secondary: leave-species-out on Species (28 levels, 19 with >=20 rows) for the transfer question, leave-one-PI-out using the PI column in site_pis.csv for lab independence, and holding out the whole semi-arid zone using Climate_zone in clim.csv for extrapolation. All four columns were verified present in the files.",
+    "checks": [
+      "Shuffle the labels and confirm collapse to the dummy - already done, R2 fell to -0.162.",
+      "Assert no Site and no tree appears in both sides of any fold before scoring.",
+      "Train on site-mean climate alone to quantify how much skill is just a site fingerprint, and compare with the in-sample per-site mean (R2 0.486 for growth rate).",
+      "Ablate feature blocks separately (climate, soil, tree size, species one-hot) to see which block carries the signal."
+    ],
+    "verdict": "Manageable - every grouping column is present in the files and the main leak has already been quantified before any modelling started."
+  },
+  "success_criteria": {
+    "metric": "R2 (fraction of variance explained) for cell production rate r90 on held-out whole sites, because the decision users face is estimating growth at a forest nobody monitored; Spearman correlation reported alongside for ranking sites.",
+    "baselines": "All measured by me on this data: global-mean dummy R2 = 0.000; training-fold mean on the same leave-site-out split R2 = -0.028; off-the-shelf gradient boosting R2 = 0.281, Spearman 0.549. The paper's GAM publishes no out-of-sample number, so re-running it on this split is itself a new result.",
+    "success": "Leave-site-out R2 >= 0.40 for growth rate (versus 0.281 off-the-shelf and a 0.566 ceiling), with the authors' GAM scored on the identical split for the first time, and the leave-species-out result reported honestly whatever it is.",
+    "noise_ceiling": 0.566,
+    "kill": "If after three weeks neither a tuned model nor TabPFN exceeds R2 0.32 on leave-site-out for growth rate - less than 0.04 above the off-the-shelf baseline - stop modelling and write up the cross-validation gap and the noise ceiling as a short methods note."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Global Change Biology",
+      "why": "Publishes cross-biome syntheses with carbon-cycle consequences; would need the model to beat the published GAM out-of-sample and to show that the species- and dryland-transfer failure changes how vegetation models should use wood-formation data."
+    },
+    "realistic": {
+      "journal": "Agricultural and Forest Meteorology",
+      "why": "Its core output is climate-to-growth modelling with real evaluation, which matches the likely result: the first held-out skill estimates for cell production rate, duration and onset, with a measured noise ceiling."
+    },
+    "fallback": {
+      "journal": "Environmental Data Science (Cambridge)",
+      "why": "Open venue that already published continental-scale machine learning on tree rings and welcomes benchmark and negative results, so the 0.648-to-0.281 random-versus-grouped split gap alone is publishable there."
+    }
+  },
+  "pitch": {
+    "headline": "A global conifer wood-formation network, 2,559 tree-years in one clean CC0 table, that nobody has ever evaluated out of sample.",
+    "what_makes_the_data_unusual": "2,559 tree-years from 1,273 trees, 134 sites, 28 species, 1998-2021, labels counted cell by cell under a microscope; 3.3 MB, CC0, every column documented, zero duplicates, and all joins lossless - all checked in the files.",
+    "the_win": "First honest held-out numbers for climate-driven wood formation: beat my measured leave-site-out R2 of 0.281 for growth rate against a data-derived ceiling of 0.566, and score the paper's own GAM on the same split.",
+    "even_if_it_fails": "You still publish two measured facts: random cross-validation overstates skill here by more than twofold (0.648 vs 0.281), and between-tree noise caps any site-level model at R2 0.566 - both of which constrain every future model on this network.",
+    "who_wants_it": "The GloboXylo consortium (Cabon and Fonti at WSL, Rathgeber at INRAE Nancy) and vegetation-model groups adding sink-limited growth; it would tell them where to sample next and how far to trust climate-only growth models."
+  },
+  "ml_idea": "Predict four measured wood-formation outcomes - annual cell production (RCN), cell production rate (r90, cells/day), onset (bE, day of year) and duration (dE, days) - from site climate (57 yearly and seasonal TerraClimate-derived variables), soil (12 SoilGrids variables), location, elevation, tree age/diameter and species, using strictly none of the other wood-formation columns as features. Compare three model classes on identical splits: the authors' generalized additive model re-run as the baseline, gradient boosting, and TabPFN v2 (a pretrained tabular transformer used with no training). The headline experiment is not accuracy but transfer: how skill decays from a random split to leave-site-out to leave-species-out to holding out the entire semi-arid biome, measured against the between-tree noise ceiling computed from 321 site-years with three or more trees.",
+  "effort": {
+    "hours_to_feature_table": 3,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": 0,
+    "cv_run_minutes": 2,
+    "compute_note": "Timed, not estimated: downloading and inspecting all 14 files took minutes, and one script covering four targets x three cross-validation schemes plus the shuffle control ran in 1 min 59 s wall clock on laptop CPU. TabPFN inference would add minutes per fold, still CPU-only.",
+    "cheapest_killing_check": "Already done: leave-site-out R2 for growth rate came out at 0.281 against a dummy of -0.028 and a noise ceiling of 0.566, so real signal survives grouping. Had it collapsed to the dummy, the project was dead in ten minutes."
+  },
+  "verdict": "do_it",
+  "verdict_reason": "Every Part A killer verified in the files, not the paper: CC0, 3.3 MB, 2,516 labelled rows, units documented, zero duplicates, all joins lossless, counts matching the README once two documented quirks (synonym species, grouped sites) are reconciled. I already ran the whole pipeline end to end in two minutes and it produced the finding the project is built on - random-split R2 0.648 falls to 0.281 when whole sites are held out and to -0.044 for unseen species, against a measured noise ceiling of 0.566. The question cannot produce a useless answer, the incumbent model is a 2026 GAM with no out-of-sample evaluation and runnable code, and the one real weakness is honest: the raw ~144,000 weekly cell counts were not deposited, so only the derived tree-year summaries are available, and the semi-arid conclusion the paper leads with rests on 223 tree-years from 13 sites."
+}

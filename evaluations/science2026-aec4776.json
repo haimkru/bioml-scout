@@ -1,0 +1,128 @@
+{
+  "paper_id": "science2026-aec4776",
+  "title": "Forest canopy decline under elevated CO2 during the Paleocene-Eocene Thermal Maximum.",
+  "doi": "10.1126/science.aec4776",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5061/dryad.wdbrv164q",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded the full Dryad deposit (3,749,546-byte zip, CC0 licence) past the site's proof-of-work wall, unzipped 100 files, and parsed every table with pandas. Counted: Data_S4 modern calibration = 41 rows with a field-measured Leaf Area Index (LAI, leaf area per unit ground area) spanning 0.01-4.78 and 41 non-null canopy-openness values; Data_S5 modern raw cells = 23,391 rows over 41 samples and 2,622 cuticle fragments (63-1,064 cells per sample); Data_S6 fossil samples = 85 rows all carrying a reconstructed LAI (rLAI); Data_S7 fossil raw cells = 36,195 rows over 85 samples; pollen counts = 36 rows x 105 taxa (Data_S2) and 35 rows x 103 (HB_Paly_R); carbon-isotope table = 406 rows. Also computed the correlation between the fossil rLAI label and mean cell aspect ratio (AR): Spearman and Pearson both exactly 1.0.",
+    "what_came_from_paper_text_only": "The abstract and the Dryad README/Data README describe the field and microscope methods (how LAI was measured at modern sites, how cuticles were imaged and traced). The paper's own main text and figures were not retrievable - Science is paywalled and there is no PubMed Central copy - so any count the paper states in its text could not be cross-checked against the files."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Dryad doi:10.5061/dryad.wdbrv164q, CC0-1.0, no login. The site now sits behind an automated proof-of-work challenge that blocks plain downloads; solving it once gave the full 3.75 MB archive."
+    },
+    "a2_label_is_a_column": {
+      "pass": true,
+      "note": "Measured LAI is a plain column in Data_S4_modern_calibration_site_means.csv, and reconstructed rLAI is a column in Data_S6. No construction needed - verified in the files."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "All cell-shape features (area, perimeter, circularity, aspect ratio, solidity, undulation index) are numeric columns in the raw cell tables. The microscope images themselves are NOT deposited, only the filenames, so an image-based model is impossible."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "Data README states LAI in square metres of leaf per square metre of ground, canopy openness in percent, elevation in metres, isotopes in per mil versus the VPDB standard. Cell measurements are in consistent image-analysis units."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 41,
+      "note": "FAILS. Only 41 samples anywhere in the deposit carry a measured LAI, and they come from just 11 named localities with 36 of 41 from one country (Costa Rica). The 23,391 modern cell rows are repeated measurements of those same 41 label values (63-1,064 cells share one LAI each), so the effective labelled sample size is 41, far below the ~1,500-row bar and below the ~400 needed even for classification."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~8 MB of comma-separated tables",
+      "note": "Whole deposit is 3.75 MB compressed; every table loads in under a second on a laptop."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "Internally consistent where checkable (85 fossil samples in Data_S6, Data_S8 and the Output tables; 41 modern samples in both the input and recomputed calibration tables). Could not compare against the paper's own text because Science is paywalled with no PubMed Central copy."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAILS for the fossil label. rLAI is the output of the authors' own regression of LAI on mean cell aspect ratio - I confirmed rLAI correlates with the AR column at exactly 1.0 (both Spearman and Pearson) across all 85 fossil samples, so it is a deterministic function of a feature already in the table. Predicting it from cuticle shape is leakage by construction and distilling their regression. Only the 41 modern LAI values trace back to a physical field measurement."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "The paper's own rLAI calibration: an ordinary least-squares regression of measured Leaf Area Index on mean epidermal cell aspect ratio, fitted on the 41 modern samples (R scripts in the Dryad deposit)",
+        "open_weights": true,
+        "score_and_split": "No held-out split reported in the deposit; the Output/AIC_Model_Fit_table.csv compares 32 candidate predictor combinations by small-sample AIC on the same 41 samples that fitted them. Prediction intervals are reported per fossil sample, but no cross-validated error was found in the files.",
+        "authors_named_unsolved": "Not retrievable - the paper's discussion is paywalled. The deposit's sampling-sufficiency analyses show the authors treated 'how many cuticle fragments are needed for a stable aspect-ratio estimate' as the open methodological question.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "CuticleTrace (Lloyd et al. 2024), an open Fiji/R toolkit that segments and measures epidermal pavement cells from cuticle images",
+        "open_weights": true,
+        "score_and_split": "Not a predictor of canopy structure; reported as segmentation/measurement agreement with hand tracing. No LAI prediction benchmark.",
+        "authors_named_unsolved": "Scaling automated cell segmentation across very different cell morphologies and degraded fossil cuticle.",
+        "runnable_as_baseline": false
+      }
+    ]
+  },
+  "backbone": {
+    "name": "None applicable - the deposit contains tabular shape measurements, not images, sequences or molecules, so no pretrained backbone (ESM-2, ChemBERTa, DNABERT-2 and similar) matches the data type",
+    "freeze_and_head_viable": false,
+    "hardware": "CPU only; the data is ~8 MB and any model fitting here is seconds of work",
+    "licence": "CC0-1.0 (public domain dedication) - no restriction at all on the data"
+  },
+  "integration": {
+    "partner_dataset": "Plausible but not usable at this size: the global modern LAI field networks (for example remote-sensing validation sites) share latitude/longitude with the 41 modern samples, and the Paleobiology Database or Neotoma shares pollen morphotype names with the 35-sample palynology table.",
+    "join_key": "Decimal latitude/longitude for the modern sites; pollen morphotype name (free text, needs resolution) for the palynology tables",
+    "bigger_question_one_sentence": "Could ask whether cuticle-based canopy reconstructions agree with independent light-environment proxies across many basins, but neither this deposit nor an obvious partner supplies enough jointly labelled sites to answer it - 41 modern calibration points cannot support a cross-resource model."
+  },
+  "controls": {
+    "positive_control": "Available in principle: the modern calibration must recover the strong known monotone relationship between canopy openness (measured, percent) and LAI, and a trivially learnable target such as cell area from major x minor axis would test the plumbing.",
+    "negative_control": "Label shuffling across the 41 modern samples is runnable in seconds, but with 41 points the shuffled-label null is wide and uninformative.",
+    "external_validation": "None in the deposit. All 85 fossil samples come from one basin (Hanna Basin, Wyoming) and all 41 modern samples from three Latin American countries with 36 from Costa Rica; no second independent calibration set is included."
+  },
+  "honest_claim_h3": "The most a model fitted to this deposit could honestly claim is: 'among 41 cuticle samples from Costa Rica, Ecuador and Argentina, epidermal cell shape predicts field-measured Leaf Area Index with such-and-such error' - a statement about 41 points from 11 localities, which the authors already make with a one-variable regression.",
+  "plain_idea": {
+    "one_liner": "Use microscopic leaf-skin cell shape to predict how dense a forest canopy was above the plant.",
+    "train_on": "Per-sample summaries of traced epidermal (leaf-surface) cell shape - area, perimeter, circularity, aspect ratio, solidity, wall undulation - from 23,391 individually measured modern cells grouped into 2,622 cuticle fragments and 41 field samples (counts verified in the files).",
+    "predict": "Leaf Area Index, the square metres of leaf per square metre of ground, measured in the field at each modern site with canopy photography; the project would then apply the model to 36,195 fossil cell measurements from 85 Wyoming rock samples spanning the Paleocene-Eocene Thermal Maximum.",
+    "why_worthwhile": "Paleobotanists reconstructing ancient forest structure would get a proxy with honest uncertainty instead of a single-variable regression; even a failure would quantify how much of the signal is really in cell shape rather than in site or species identity."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The only training data for the task is the same 41 modern samples the authors' own regression already used - we would have identical data, not more or better."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "The authors already report per-sample prediction and confidence intervals for every fossil rLAI value (columns rLAI_lwr_PI/upr_PI and rLAI_lwr_CI/upr_CI in Data_S6), so calibrated uncertainty is not a gap we could fill; with 41 points we could not estimate it better."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "Their calibration is a 2026 ordinary least-squares fit on 41 samples selected by small-sample AIC with no held-out split, so a cross-validated or mixed-effects version would be a fairer evaluation - but on 41 points any accuracy gain would be inside the noise."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "No accessible new data joins to this: the condition that fails is 'our model sees everything theirs sees plus new data' - there is no second cuticle-plus-measured-LAI dataset to add, and the fossil samples have no measured LAI at all."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: regress field-measured Leaf Area Index on epidermal cell shape summaries using the 41 modern calibration samples with leave-one-locality-out cross-validation, then apply to 85 fossil Hanna Basin samples. Dead on arrival for two reasons found in the files: only 41 samples carry a measured label (the 23,391 cell rows merely repeat those 41 values), and the fossil 'reconstructed LAI' label is a deterministic function of the aspect-ratio feature (correlation exactly 1.0), so modelling it would distil the authors' own regression rather than learn biology.",
+  "effort": {
+    "hours_to_feature_table": 2,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 0.5,
+    "embedding_hours": null,
+    "cv_run_minutes": 1,
+    "compute_note": "Estimated from the actual file sizes I parsed: the largest table is 36,195 rows x 17 columns (5 MB), everything loads at once in pandas in well under a second. No timing beyond the parses I ran.",
+    "cheapest_killing_check": "Count the rows of Data_S4_modern_calibration_site_means.csv that have a non-null LAI. The answer is 41, and that single count kills the project in one minute."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 and A8. Only 41 samples in the whole deposit carry a field-measured Leaf Area Index (from 11 localities, 36 of 41 in one country); the 23,391 modern and 36,195 fossil cell-level rows are repeated measurements that share those few labels, so the effective labelled sample size is 41 against a bar of ~1,500. The one label that is plentiful - the 85 fossil 'reconstructed LAI' values - is the authors' own regression output, correlating with the mean aspect-ratio feature at exactly 1.0, so predicting it is leakage by construction. The data is otherwise exemplary (CC0, clean comma-separated tables, every column documented, units stated), and it is a fine reproducibility package; it is simply two orders of magnitude too small to train anything. Minor quality notes for the record: one modern sample ('Calilegua') is labelled Costa Rica although that locality is in Argentina, and 3 of the 41 calibration sample names do not match any Site value in the raw cell table."
+}

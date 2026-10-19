@@ -1,0 +1,123 @@
+{
+  "paper_id": "nar2026-gkag867",
+  "title": "Proteome profiling of plant Cajal bodies uncovers kingdom-specific components.",
+  "doi": "10.1093/nar/gkag867",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://academic.oup.com/nar/article/54/17/gkag867/8816725 (supplementary tables); PRIDE PXD065938 (raw mass spectrometry)",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the supplement (nested zips) and opened all 8 Excel tables with pandas/openpyxl. Counted exactly: Table 1 = 94 Cajal-body (CB) proteins (15 'Unique', 79 'Enriched'); Table 2 = 403 proteins depleted from CB (all log2 fold-changes negative); Table 3 = 513 rows / 369 unique proteins from proximity labelling; Table 8 = 93 Arabidopsis-to-human ortholog calls. Checked overlaps: 1 protein appears in both the positive and negative lists, 18 positives overlap proximity labelling. Confirmed the 15 'Unique' proteins have no fold-change values (blank by design).",
+    "what_came_from_paper_text_only": "That the mass spectrometry raw files are in PRIDE PXD065938 (I did not open PRIDE; raw mass spectrometry is excluded by policy anyway), the fluorescence-activated particle sorting protocol, the microscopy validation of 18 proteins, and the statistical cutoffs used to call enrichment."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement downloads freely without login; I extracted and read every table. Raw mass spectrometry is openly deposited in PRIDE under PXD065938."},
+    "a2_label_is_a_column": {"pass": true, "note": "A 'Category' column (Unique/Enriched) plus log2 fold-change columns exist; a binary CB-vs-not label needs only a clean two-table join on the Niben101 gene identifier, which is effort, not construction."},
+    "a3_inputs_present": {"pass": true, "note": "No protein sequences in the files, only Niben101 and TAIR10 gene identifiers; but one Arabidopsis TAIR10 proteome FASTA download resolves all 497 rows, so this is one lookup, not thousands."},
+    "a4_units_stated": {"pass": true, "note": "Column headers state log2 fold-change and p-value explicitly for both comparisons (CB vs Input, CB vs nuclear control); verified in the files."},
+    "a5_enough_rows": {"pass": false, "n_rows": 497, "note": "Only 94 labelled positives and 403 negatives = 497 labelled proteins total, below the ~400-row classification bar once you account for the 94-positive minority class; the proximity-labelling list adds at most 369 noisier positives. The checklist's own precedent (Ribocentre-aptamer, 510 sequences) was rejected at this size."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.8 MB of Excel tables plus a ~40 MB Arabidopsis proteome FASTA", "note": "Trivially laptop-sized; verified file sizes after extraction."},
+    "a7_counts_match_paper": {"pass": true, "note": "Paper claims 15 uniquely localized and 79 enriched proteins; Table 1 contains exactly 15 'Unique' and 79 'Enriched' rows. Exact match, verified."},
+    "a8_label_provenance": {"pass": true, "note": "Labels come from measured mass-spectrometry abundance ratios between sorted Cajal bodies and control nuclear fractions, not from any model's prediction and not computable from protein sequence."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "ProtGPS (Science, Feb 2025, Young and Barzilay labs) - a sequence-based neural network that predicts which of twelve cellular compartments or condensates a human protein goes to, Cajal bodies among them",
+        "open_weights": null,
+        "score_and_split": "Reported area under the receiver operating characteristic curve (a 0-1 measure where 0.5 is random) of 0.83 to 0.95 across the twelve compartments; split details and whether protein families were held out were not confirmed from the full text, only from secondary coverage.",
+        "authors_named_unsolved": "Coverage beyond human proteins and the fact that family members sharing sequence can inflate scores were raised as caveats in commentary; I did not retrieve the primary discussion section.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "PICNIC (Nature Communications, 2024) - a machine-learning classifier that predicts whether a protein participates in a condensate, across many organisms",
+        "open_weights": null,
+        "score_and_split": "Reported to predict condensate participation across organisms regardless of structural disorder; exact numbers and split not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "PhaSePred (PNAS, 2022) - a meta-predictor combining sequence, phosphorylation and imaging features to flag phase-separating proteins, with a public web server",
+        "open_weights": null,
+        "score_and_split": "Authors report that combining multiple feature types beats single-feature predictors; specific numbers not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PSAP (Cell Reports, 2021) - a classifier that scores phase-separation likelihood from amino-acid composition alone",
+        "open_weights": null,
+        "score_and_split": "Reported highest scores for proteins in membraneless organelles including nuclear bodies; no split detail retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "NSort - a set of Bayesian-network classifiers predicting sub-nuclear location in eight classes including Cajal bodies (older, pre-deep-learning)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model that turns an amino-acid sequence into a numeric vector; the 8M and 35M parameter checkpoints run on a laptop CPU)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU; ~500 Arabidopsis proteins embed in well under an hour",
+    "licence": "MIT, permissive"
+  },
+  "integration": {
+    "partner_dataset": "Human Cajal-body proteomes from the two papers the authors already tabulate (Arias Escayola et al. 2025, 262 proteins; Noguchi et al. 2024, 648 proteins), joinable through the Arabidopsis-to-human ortholog table the authors provide",
+    "join_key": "UniProt accession via the reciprocal-best-hit ortholog calls in Supplementary Table 8 (TAIR10 gene identifier to human UniProt)",
+    "bigger_question_one_sentence": "Does a condensate-localization predictor trained on human proteins recover plant Cajal-body membership, i.e. is the sequence code for this organelle conserved across kingdoms?"
+  },
+  "controls": {
+    "positive_control": "Small nuclear ribonucleoprotein and spliceosomal proteins (U2A, SmB, SmD3, Nop10) must score as Cajal-body members; they are textbook components and are present in the positive list.",
+    "negative_control": "Shuffle the positive/negative labels and confirm performance collapses to the 19% positive base rate; also train on amino-acid composition alone to see how much of the signal is just 'basic, disordered, RNA-binding'.",
+    "external_validation": "The two human Cajal-body proteomes tabulated in Supplementary Table 8, and the independent proximity-labelling list in Supplementary Table 3."
+  },
+  "honest_claim_h3": "A model built here could only claim: among the 497 nuclear proteins that one laboratory detected by mass spectrometry in sorted Nicotiana benthamiana Cajal bodies versus control nuclear fractions, it separates the 94 enriched from the 403 depleted ones - a statement about one experiment in one species, not about plant Cajal bodies in general.",
+  "plain_idea": {
+    "one_liner": "Use a plant protein's amino-acid sequence to predict whether it sits in a Cajal body, a small nuclear droplet-like organelle.",
+    "train_on": "Each example is one plant protein, represented by its amino-acid sequence (fetched from the Arabidopsis reference proteome using the gene identifiers in the tables) and optionally its functional annotation. I verified there are 94 positive and 403 negative examples, 497 in total.",
+    "predict": "A yes/no call, or a continuous enrichment score, for Cajal-body membership. The true answer comes from mass spectrometry of Cajal bodies physically sorted out of plant nuclei by a fluorescence-based sorter, compared against two control nuclear fractions.",
+    "why_worthwhile": "Plant cell biologists currently find condensate components one protein at a time by microscopy, so a ranked shortlist would save months of cloning; and because the authors also tabulate human Cajal-body proteins, a failure to transfer across kingdoms would itself be a real finding about how conserved this organelle is."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "Our set is 94 measured positives in one plant species; ProtGPS was trained on curated human proteins across twelve compartments and PICNIC spans many organisms. The only edge is species coverage - plants are genuinely absent from those training sets - but 94 proteins is far too few to exploit it."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "The tables give a log2 fold-change and a p-value per protein from replicate mass-spectrometry runs, so a per-prediction uncertainty is estimable in principle; but with 94 positives any calibration curve would be too noisy to trust, and I did not check whether the existing tools already report calibrated scores."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "NSort and PSAP are old (Bayesian networks, amino-acid composition) and beatable; ProtGPS is a 2025 deep model with reported area-under-curve of 0.83-0.95, which is not beatable from 94 training examples. Re-evaluating ProtGPS on plants is the only viable angle, and its weight availability is unconfirmed."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails three conditions: I could not confirm ProtGPS weights are downloadable so it may not be runnable as a baseline, the human Cajal-body proteomes are measured by different assays (proximity labelling and interactomics, not particle sorting), and there is no shared evaluation split."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "The project considered: embed each protein with ESM-2 (a protein language model) and fit a small classifier to separate the 94 Cajal-body-enriched plant proteins from the 403 depleted nuclear proteins, then test whether a human-trained condensate predictor such as ProtGPS transfers to plants using the authors' own ortholog table. The transfer-evaluation framing is the interesting half, but the plant evaluation set is only 94 positives, so any area-under-curve estimate would carry a confidence interval wide enough to make the answer uninterpretable.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.05,
+    "needs_gpu": false,
+    "peak_ram_gb": 2,
+    "embedding_hours": 0.5,
+    "cv_run_minutes": 2,
+    "compute_note": "Estimated, not timed: 497 proteins of ~400 residues through the ESM-2 35M-parameter checkpoint on a laptop CPU is a few proteins per second, and a logistic-regression cross-validation on 497 rows is seconds. The data is 0.8 MB of Excel plus one proteome FASTA.",
+    "cheapest_killing_check": "Count the positives. I did it: 94. That number alone kills the project, and it took one command."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails A5 on verified counts: 94 labelled Cajal-body proteins and 403 negatives, 497 rows total, from a single mass-spectrometry experiment in one plant species in one laboratory. Everything else about the data is exemplary - the supplement opens cleanly, the paper's 15-plus-79 claim matches the file exactly, the label is a measured abundance ratio with units in the header, negatives are systematically reported, and the authors even supply an Arabidopsis-to-human ortholog table - but no amount of tidiness rescues 94 positives. The one angle that would not need training data, asking whether the human-trained predictor ProtGPS (Science 2025, area under curve 0.83-0.95 across twelve condensates) transfers to plants, still rests on a 94-positive test set whose confidence interval would swamp any effect, and I could not confirm that ProtGPS weights are downloadable. Park the idea, not the dataset: if two or three more plant condensate proteomes appear, the cross-kingdom transfer question becomes a real project."
+}

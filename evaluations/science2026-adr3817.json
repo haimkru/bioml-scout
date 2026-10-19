@@ -1,0 +1,135 @@
+{
+  "paper_id": "science2026-adr3817",
+  "title": "Membrane protein solubilization and structure determination using de novo-designed proteins.",
+  "doi": "10.1126/science.adr3817",
+  "journal": "Science",
+  "data_url": "https://doi.org/10.5281/zenodo.18615447",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and extracted the only deposited archive (Zenodo 10.5281/zenodo.18615447, CC-BY-4.0, WRAPs_v1.0.0.tar.gz, 29,097,257 bytes, 662 entries): 593 PDB structure files, 5 Jupyter notebooks, 19 shell scripts, 2 Python scripts, 4 plain-text parameter files, README, LICENSE. Listed every directory, read the README, opened example PDB files, and grep-searched every text file for any experimental outcome column (soluble, solubility, yield, expression, SEC). Result: the archive is the design pipeline (RFdiffusion plus ProteinMPNN plus AlphaFold2 scripts) with input scaffolds and example output models for 9 targets; there is no CSV, TSV or spreadsheet anywhere, and no column recording whether any design worked. The only per-design numbers present are AlphaFold2 self-assessment scores written into PDB REMARK lines of 81 'selected_0.5_barrel_optimized_outputs' files (plddt_total, plddt_binder, plddt_target, pae_binder, pae_target, pae_interaction), and those directories are named 'selected_', i.e. already filtered to in-silico passes. Also searched PDBe by paper DOI and by title for the cryo-EM depositions and found none under those terms.",
+    "what_came_from_paper_text_only": "All experimental success and failure counts come from the open bioRxiv preprint text (10.1101/2025.02.04.636539, the same study), which reports them only as per-target totals: 5 of 6 helical WRAP-OmpA, 1 of 6 beta-barrel WRAP-OmpA, 2 of 6 WRAP-GlpG, 19 of 58 TP0126, 3 of 10 TP0733, 7 of 29 TP0698, 4 of 24 TP0479 soluble. That is 139 designs tested, roughly 41 soluble, and the text never says which individual designs succeeded. The Science version itself is paywalled with no PubMed Central copy, so its supplementary tables could not be opened; the counts above are from the preprint only."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": true,
+      "note": "Zenodo deposit is open CC-BY-4.0 and downloaded cleanly without login (29 MB tar.gz, extracted and inspected). The Science article and its supplement are paywalled, but the data link itself is open."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "FAIL. The thing to predict (did this designed WRAP make the membrane protein soluble?) is not a column in any deposited file; I grep-searched all text files and found no outcome field. It exists only as per-target aggregate counts in the preprint prose, which do not name which designs succeeded, so per-design labels would have to be invented rather than joined."
+    },
+    "a3_inputs_present": {
+      "pass": true,
+      "note": "Inputs are genuinely present: 593 PDB coordinate files with full backbone and sidechain atoms for designed WRAP-plus-target complexes, so structures and sequences are extractable without external lookups."
+    },
+    "a4_units_stated": {
+      "pass": true,
+      "note": "The only numeric fields are AlphaFold2 confidence scores in PDB REMARK lines (pLDDT on 0-100, predicted aligned error in angstroms), which are standard and unambiguous. No measured quantity with units exists to check."
+    },
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": 139,
+      "note": "FAIL. 139 designs were experimentally tested in total across all seven targets (preprint prose), against the checklist minimum of ~400 for classification. The 593 PDB files are unlabelled pipeline intermediates (230 parametric barrel inputs, 266 partial-diffusion outputs, 81 filtered optimized outputs, all for one target), not labelled examples."
+    },
+    "a6_fits_laptop": {
+      "pass": true,
+      "working_set": "~65 MB extracted from a 29 MB archive",
+      "note": "Trivially laptop-sized to inspect; regenerating any designs, however, would need RFdiffusion on a GPU."
+    },
+    "a7_counts_match_paper": {
+      "pass": true,
+      "note": "No row counts are claimed for the deposit, so nothing contradicts. The archive contents match the README's description of scripts and inputs for nine targets."
+    },
+    "a8_label_provenance": {
+      "pass": false,
+      "note": "FAIL by absence. The only per-design numbers in the files (pLDDT, predicted aligned error, pae_interaction) are AlphaFold2's own outputs, so a model trained on them as a target would just distil AlphaFold2. The real physical measurement (soluble fraction on a gel, size-exclusion chromatography) was never deposited in any per-design form."
+    }
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "Zero-shot design-success scoring with AlphaFold2, ESMFold and ProteinMPNN (Garcia et al., Protein Science, 2026)",
+        "open_weights": true,
+        "score_and_split": "Benchmarked on 614 experimentally characterised de novo designed monomers; search snippet reports the sequence-based soluble-expression predictors GraphSol and SoluProt were the more informative signals for design success. Exact metric not retrieved.",
+        "authors_named_unsolved": "Which structure-prediction confidence scores actually separate folded from failed designs remains unsettled; soluble expression is the dominant failure mode.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Interface-metric success predictors for de novo binders (Overath et al., bioRxiv 2025, meta-analysis of 3,766 binders)",
+        "open_weights": null,
+        "score_and_split": "Over 200 structural, energetic and confidence features from AlphaFold2, AlphaFold3 and Boltz-1 across 3,766 tested binders and 15 targets; the AlphaFold3-derived ipSAE score gave a reported 1.4-fold gain in average precision over ipAE. Split not retrieved.",
+        "authors_named_unsolved": "Generalisation of success predictors to new target classes; reported de novo design success rates still range from roughly 7% to 35%.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "SoluProt and GraphSol (sequence-based predictors of soluble expression in E. coli)",
+        "open_weights": true,
+        "score_and_split": "Trained on thousands of E. coli soluble-expression measurements; used in the above de novo design benchmarks as off-the-shelf baselines. Numbers not retrieved.",
+        "authors_named_unsolved": "Transfer from natural-protein training data to de novo designed sequences.",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (a protein language model) or AlphaFold2 confidence features, either of which would fit this data type",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU; ~140 sequences would embed in minutes",
+    "licence": "ESM-2 is MIT-licensed; the deposited WRAPs archive is CC-BY-4.0"
+  },
+  "integration": {
+    "partner_dataset": "Benchmark sets of experimentally characterised de novo designs (the 614-design monomer benchmark and the 3,766-binder meta-analysis) plus OPM/PDBTM membrane-protein structure resources",
+    "join_key": "PDB identifier for target structures; no identifier at all for the WRAP designs, which are named only by internal codes like pc6_1_0_wrap",
+    "bigger_question_one_sentence": "Could in-silico confidence scores predict which hydrophobic-surface-shielding designs express solubly across many membrane protein targets? Unanswerable here, because this paper contributes no per-design labels to join in."
+  },
+  "controls": {
+    "positive_control": "None available: with no outcome column there is nothing a working pipeline must recover.",
+    "negative_control": "Label shuffling is undefined without labels.",
+    "external_validation": "The 614-design and 3,766-binder benchmarks exist and are larger, which is precisely why this paper adds nothing to them."
+  },
+  "honest_claim_h3": "Nothing can honestly be claimed from the deposited files alone; the most that 139 prose-reported outcomes could ever support is 'among seven membrane protein targets chosen by one lab, this fraction of designs was soluble', which is a success rate, not a model.",
+  "plain_idea": {
+    "one_liner": "Use a designed shielding protein's structure to predict whether it will make its membrane protein partner water-soluble.",
+    "train_on": "The project I considered would train on each designed WRAP-target complex: its three-dimensional model, its sequence and its AlphaFold2 confidence scores. Verified count of experimentally tested designs: 139, and zero of them carry an outcome in the deposited files.",
+    "predict": "A yes/no call on whether the fused design appears in the soluble fraction of bacterial lysate, judged by gel and size-exclusion chromatography in the authors' lab. Those readings were never deposited per design.",
+    "why_worthwhile": "Membrane proteins are the targets of most drugs and are miserable to produce, so a filter that ranked designs before anyone ordered genes would save protein-design labs weeks of cloning. This paper, however, cannot supply the labels to build one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "139 tested designs here, with no per-design outcomes released, against 614 characterised monomers in one published benchmark and 3,766 tested binders in another. We would have an order of magnitude less data, and in an unusable form."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "No replicate measurements and no per-design outcomes are deposited, so there is no basis for estimating noise or expressing per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "The competing work is 2025-2026, uses AlphaFold3 and Boltz-1 features on thousands of designs, and names interface metrics with measured precision gains. Nothing about 139 unlabelled designs beats that."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition outright: there is no label here, so our model could not even be trained, let alone see everything the existing baselines see plus more."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: classify designed WRAP (water-soluble RFdiffused amphipathic protein) complexes as solubly expressed or not, from structure and sequence features, with a frozen protein language model plus a small head. Dead on arrival because the outcome was never deposited per design and only 139 designs were ever tested.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.07,
+    "needs_gpu": true,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": null,
+    "compute_note": "Sizes are measured: 29 MB archive, ~65 MB extracted, inspected on CPU in seconds. Embedding time estimated for ~140 short sequences on CPU. A GPU is listed because regenerating or extending any designs requires RFdiffusion; no cross-validation time is given because there is no label to cross-validate.",
+    "cheapest_killing_check": "Count how many designs have a recorded per-design soluble/insoluble outcome in the deposited files. The answer is zero; the paper's prose gives 139 tested designs as seven aggregate fractions that never name the individual designs."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails three Part A killers, confirmed by opening the files rather than reading the paper. A2: the deposited Zenodo archive is the design pipeline (593 model PDB files, notebooks, shell scripts) with no outcome column anywhere, so the solubility label would have to be constructed from prose that does not even identify which designs worked. A5: only 139 designs were experimentally tested in total, against a ~400 minimum for classification. A8: the only per-design numbers available are AlphaFold2's own confidence scores, so any model built on them would distil AlphaFold2 rather than learn from measurement. The field also already has far larger labelled design-success sets (614 monomers, 3,766 binders), so even the angle is taken. Excellent paper, cryo-EM structure and all; simply not a dataset."
+}

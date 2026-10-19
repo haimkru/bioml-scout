@@ -1,0 +1,55 @@
+{
+  "paper_id": "science2026-aeb1157",
+  "title": "Supergene control of chiral development in mirror-image flowers.",
+  "doi": "10.1126/science.aeb1157",
+  "journal": "Science",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1138953",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "Pulled the full SRA (Sequence Read Archive) run table for the study's BioProjects: 263 runs, 257 BioSamples, 211 RNA-seq libraries (205 distinct sample names, labelled L/R morph plus organ and stage in the sample names), 47 Illumina whole-genome libraries, 4 PacBio, 1 Nanopore, totalling ~908 GB of raw reads. Listed the 12 GenBank genome assemblies for Wachendorfia paniculata, W. thyrsiflora and Barberetta aurea (contig N50 7-34 Mb). Confirmed GEO (Gene Expression Omnibus) has zero records for Wachendorfia, so no processed expression matrix was deposited. Found the bioRxiv supplement file list (media-1.pdf, media-8/9/10.xlsx, media-11.docx) but every download returned HTTP 429; Science itself returns 403 and the Wageningen repository copy is embargoed to 2027-02-11, so no supplementary data table could be opened. Checked Zenodo: the only related record (21210133) is three pollinator videos (CC-BY, 33 MB total).",
+    "what_came_from_paper_text_only": "Everything about the biology and the measurements - the hemizygous ~100-200 kb supergene, MIR156-R and YUCCA-R, the organ-deflection angle measurements, the gravitropism experiments and the pollen-placement counts - comes from the abstract, the press releases and search-result summaries of the bioRxiv preprint. No row counts for any phenotype table were verified."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "GenBank assemblies and SRA reads are public with no login or application (verified via NCBI E-utilities). But the paper's own data tables are not reachable: bioRxiv returns 429 on all supplementary media, Science returns 403, the institutional copy is embargoed to 2027-02-11."},
+    "a2_label_is_a_column": {"pass": false, "note": "No feature/label table exists anywhere. The handedness label lives only in SRA sample names (e.g. L_EA1, R_EA1, F06_L) and the features would have to be built from scratch by aligning 211 raw RNA-seq libraries - the target and the features both have to be constructed."},
+    "a3_inputs_present": {"pass": false, "note": "Inputs are raw FASTQ accessions, not sequences or a count matrix; using them means downloading ~908 GB and running an alignment pipeline against a newly released genome."},
+    "a4_units_stated": {"pass": false, "note": "Could not check. The deflection-angle measurements (presumably degrees) sit in supplementary spreadsheets I could not download, so no units column was verified."},
+    "a5_enough_rows": {"pass": false, "n_rows": 205, "note": "Verified in the SRA run table: 205 distinct RNA-seq samples and 257 BioSamples in total, spread over 6 species, organs and stages. Far under the ~400 needed even for a classification task; the real unit is the plant, of which there are a few dozen per experiment."},
+    "a6_fits_laptop": {"pass": false, "working_set": "~908 GB raw reads + ~1-2 GB genome assemblies", "note": "Verified by summing size_MB across the 263 SRA runs: 929,716 MB. No processed intermediate was deposited, so there is no small working set to fall back on."},
+    "a7_counts_match_paper": {"pass": true, "note": "Nothing to contradict: the repository counts are internally consistent, and the paper's own numbers could not be read to compare."},
+    "a8_label_provenance": {"pass": true, "note": "Handedness (left- vs right-handed flower) is a directly scored physical phenotype, not a model output, and is independent of any sequence feature. This killer is the one thing that is clearly fine."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {"existing_models": []},
+  "backbone": {"name": "", "freeze_and_head_viable": null, "hardware": "", "licence": ""},
+  "integration": {"partner_dataset": "", "join_key": "", "bigger_question_one_sentence": ""},
+  "controls": {"positive_control": "", "negative_control": "", "external_validation": ""},
+  "honest_claim_h3": "No honest claim is available: with 205 sequencing samples from six species and no processed measurement table, any model would be describing a handful of plants rather than learning a generalisable rule.",
+  "plain_idea": {
+    "one_liner": "Use gene activity in flower organs to predict whether a flower is left- or right-handed.",
+    "train_on": "Each example would be one flower organ (style or stamen) from one plant, described by how strongly each gene is switched on. At most 205 such samples exist, spread over six plant species, two organs and three developmental stages.",
+    "predict": "Whether the flower is the left-handed or right-handed form. The true answer comes from a person looking at the flower and scoring which side the female organ points to - a direct visual measurement, which is reliable but available for only a few dozen plants per experiment.",
+    "why_worthwhile": "Plant evolutionary biologists studying mirror-image flowers would like a molecular readout of handedness, but with this sample size the only thing a model could learn is which of these particular plants is which."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": null,
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered: classify left- versus right-handed flower morph from organ-specific gene expression, or predict the deflection angle of styles and stamens from genotype at the hemizygous supergene. Both die on sample size - 205 RNA-seq samples, a few dozen plants - and on the absence of any deposited processed data.",
+  "effort": {
+    "hours_to_feature_table": 80,
+    "working_set_gb": 908,
+    "needs_gpu": false,
+    "peak_ram_gb": null,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated, nothing timed: 908 GB is the exact sum of size_MB over the 263 SRA runs, and 80 hours is a guess at downloading and aligning 211 RNA-seq libraries against a newly released 1-2 Gb monocot genome, which would not fit a 16 GB laptop anyway.",
+    "cheapest_killing_check": "Count the labelled biological units in the SRA run table - it took one request and returned 205 RNA-seq samples across six species, which is below the ~400 minimum for a classification task."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Beautiful biology, but there is no modellable table: the only public data is ~908 GB of raw reads for 205 samples across six species, the phenotype spreadsheets are unreachable (bioRxiv 429, Science 403, repository embargoed to 2027), and the sample size is an order of magnitude below the Part A5 floor. Fails A2, A3, A5 and A6."
+}

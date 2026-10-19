@@ -1,0 +1,58 @@
+{
+  "paper_id": "nar2026-gkag915",
+  "title": "BaCas12a3 represents a new subtype of type V CRISPR effector with collateral activity toward tRNA.",
+  "doi": "10.1093/nar/gkag915",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1400466 (plus PRJNA1400313, PRJNA1414247); supplement via Europe PMC gkag915_supplemental_files.zip",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Downloaded and unzipped the 16 MB Europe PMC supplement and the inner 13.6 MB archive: it holds only 6 files, all Word documents or videos. Parsed the Word XML of all three data-bearing documents: Supplementary File 1 contains FASTA-style sequences (1 query + 324 round-1 hits, 17 round-2 hits, 99 round-3 hits, 208 sequences for phylogeny, 525 CRISPR spacers); Supplementary File 2 contains zero text tables and 40 embedded PNG screenshots of read coverage with no numbers at all; Supplementary Tables S1-S5 are 5 Word tables of strains, plasmids, oligos and cryo-EM (cryo-electron microscopy) statistics. Queried NCBI for the three BioProjects: they contain 5 sequencing runs in total (raw reads only).",
+    "what_came_from_paper_text_only": "That the PFS (protospacer flanking sequence) depletion assay used a randomised 5-nucleotide library, and that per-tRNA (transfer RNA) 3'-end cleavage scores were computed by normalising read counts at the last 8 bases to positions -6 to -8. No processed score table for either appears in the supplement or in any repository I could find; the cryo-EM structures (PDB 21WE/21WJ, EMD-68046/68050) were not fetched."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement downloads freely and the three BioProjects are public; no login or access application. But what downloads is Word documents, PNG screenshots and 5 raw sequencing runs, not a data table."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAIL. No prediction target exists as a column anywhere. Both candidate labels - per-variant depletion of the 5-nucleotide flanking library, and per-tRNA 3'-end cleavage efficiency - would have to be built from scratch out of raw FASTQ reads in SRA; the paper's own version of them appears only as figures and as 40 image screenshots in Supplementary File 2."},
+    "a3_inputs_present": {"pass": true, "note": "Not scored further (A2 already failed). Protein and spacer sequences are present as text, though embedded inside a .docx rather than a FASTA file."},
+    "a4_units_stated": {"pass": false, "note": "Not scored further. The cleavage 'score' is described in methods as a read count normalised to neighbouring positions, but no table of those values is distributed, so there are no units to inspect."},
+    "a5_enough_rows": {"pass": false, "n_rows": 525, "note": "FAIL independently of A2. Largest machine-readable set is 525 CRISPR spacer sequences (verified by counting); other sets are 324, 208, 99, 28 sequences, about 40 tRNA species, and 5 sequencing runs. The flanking-sequence library spans at most 4^5 = 1024 possible variants. All far below the ~1,500-row (or ~400 for classification) threshold."},
+    "a6_fits_laptop": {"pass": true, "working_set": "14 MB supplement", "note": "Everything distributed as processed data is tiny; raw reads would be small too but are excluded by project rules against raw sequencing."},
+    "a7_counts_match_paper": {"pass": true, "note": "Counts I extracted match the text: 324 initial PSI-BLAST hits, 525 spacers, 28 retained Cas12a3 candidates - all as stated in Methods."},
+    "a8_label_provenance": {"pass": false, "note": "Not scored further. The only ready-made 'labels' in the files are BLAST-derived annotations of spacer targets (virus or mobile element hits), i.e. an alignment tool's output computed from the same spacer sequences that would be the features - leakage by construction."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {"name": "Protein2PAM (deep learning predictor of PAM, the short DNA motif a CRISPR enzyme requires next to its target, predicted from the Cas protein sequence; Nature Biotechnology 2025)", "open_weights": true, "score_and_split": "Reported median accuracy 0.460 on 31 held-out Cas12a proteins, trained on >45,000 CRISPR-Cas PAMs", "authors_named_unsolved": "Cas12a specificity is its weakest class; divergent and metagenomic effectors remain poorly predicted", "runnable_as_baseline": true},
+      {"name": "AIL-Scan (ESM protein-language-model screen that found seven new Cas12a subtypes and fitted small trans-cleavage activity models; Nature Communications 2025)", "open_weights": null, "score_and_split": "Reported discovery of 7 unreported Cas12a subtypes with distinct cleavage and PAM preferences; no split reported in the material I retrieved", "authors_named_unsolved": "Activity prediction from very small experimental sample sizes", "runnable_as_baseline": null},
+      {"name": "DeepCas12a (convolutional network for AsCas12a on-target cutting efficiency)", "open_weights": null, "score_and_split": "Reported to beat DeepCpf1, CRISPR-DT, C-SVR and Cas12a_predictor on both classification and regression; splits not checked", "authors_named_unsolved": "Generalisation to enzymes and contexts outside the training library", "runnable_as_baseline": null},
+      {"name": "TIGER (convolutional network for Cas13d guide efficacy, the closest analogue for an RNA-cutting effector; Nature Biotechnology 2023)", "open_weights": true, "score_and_split": "Trained on ~200,000 measured guide RNAs in human cells; evaluated on held-out guides and genes", "authors_named_unsolved": "Transfer to other Cas orthologs and to collateral (bystander) cleavage", "runnable_as_baseline": true}
+    ]
+  },
+  "backbone": {"name": "ESM-2 (protein language model) would fit the Cas12a3 sequences in principle", "freeze_and_head_viable": false, "hardware": "CPU laptop would suffice for 208-324 sequences", "licence": "ESM-2 is MIT-licensed; paper supplement carries the NAR open-access licence"},
+  "integration": {"partner_dataset": "Protein2PAM's >45,000-PAM training set, or GTRNAdb/tRNAscan-SE tRNA catalogues", "join_key": "protein sequence / UniProt accession; tRNA isoacceptor name", "bigger_question_one_sentence": "Could a model predict which flanking motif and which transfer RNAs a newly mined CRISPR effector will act on - a question this paper's 28 sequences and 40 coverage screenshots cannot train or test."},
+  "controls": {"positive_control": "None available: the paper's own measurements are not distributed as numbers, so nothing can be reproduced.", "negative_control": "Label shuffling is meaningless with no labelled table.", "external_validation": "A parallel paper (Dmytrenko et al.) reports the homologous Ba1Cas12a3 and would be an independent check on the mechanism, but again as text, not as data."},
+  "honest_claim_h3": "No honest model claim is possible from these files: the only thing a model could be trained on is 525 spacer sequences or 208 aligned protein fragments, and the measured outcomes (flanking-motif depletion, tRNA cleavage) exist only as figures.",
+  "plain_idea": {
+    "one_liner": "Use a CRISPR enzyme's protein sequence to predict which transfer RNAs it cuts and which flanking motif it needs.",
+    "train_on": "The project I considered would train on the 28 Cas12a3-family protein sequences in this paper plus homologs, or on the 1,024 possible 5-letter flanking sequences from the depletion screen. Both counts are verified and both are far too small.",
+    "predict": "Either the cleavage efficiency at the 3' end of each transfer RNA (measured by small-RNA sequencing and normalised read counts) or the survival of each flanking-sequence variant in a plasmid depletion screen. Neither measurement is distributed as numbers.",
+    "why_worthwhile": "CRISPR engineers would like to know a new effector's substrate and motif requirements before doing the lab work; but learning that needs thousands of measured effectors, not one."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "Protein2PAM trained on over 45,000 measured PAMs and TIGER on about 200,000 guide RNAs; this paper offers 28 effector sequences and roughly 40 transfer RNA observations, none of them released as numbers."},
+    "confidence_score": {"answer": "no", "why": "The three BioProjects hold 5 sequencing runs in total, so there is no replicate structure from which to estimate measurement noise."},
+    "models_beatable": {"answer": "partly", "why": "Protein2PAM's median accuracy of 0.460 on 31 Cas12a proteins is genuinely weak, but improving it needs a large new PAM dataset, which this paper does not provide."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails on every condition: there is no feature/label table to add to a baseline, the measurement is not released, and no shared evaluation split exists."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: predict transfer-RNA cleavage preference or the 5-nucleotide flanking-sequence requirement of type V CRISPR effectors from protein sequence, using ESM-2 embeddings with a small head. The idea is sound in general but this paper contributes 28 effector sequences and no released measurements, so it is a single data point for someone else's much larger screen, not a dataset.",
+  "effort": {"hours_to_feature_table": null, "working_set_gb": 0.014, "needs_gpu": false, "peak_ram_gb": null, "embedding_hours": null, "cv_run_minutes": null, "compute_note": "Only the 14 MB supplement was handled; no modelling work was estimated because no labelled table exists to model.", "cheapest_killing_check": "Unzip the supplement and list the file types - six Word documents and videos, with the per-transfer-RNA cleavage data present only as 40 PNG screenshots. That took five minutes and killed it."},
+  "verdict": "reject",
+  "verdict_reason": "Mechanistic structural-biology paper with no labelled table: both candidate prediction targets exist only as figures or raw reads (A2 fails), and the largest machine-readable set is 525 spacer sequences (A5 fails)."
+}

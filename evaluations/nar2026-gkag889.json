@@ -1,0 +1,126 @@
+{
+  "paper_id": "nar2026-gkag889",
+  "title": "Interdependent RNA structural motifs at the 3'-terminus of the West Nile virus genome regulate viral growth.",
+  "doi": "10.1093/nar/gkag889",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1427911 (does not resolve)",
+  "verified": {
+    "opened_data_files": false,
+    "what_i_actually_checked": "I queried NCBI for the one accession the paper gives (PRJNA1427911): BioProject, SRA and GEO DataSets all return 'term was not found / no items found', so nothing is downloadable today. I downloaded and unpacked the Europe PMC supplementary archive (15.0 MB zip): it holds only the six main figures as images plus a single 15.4 MB, ~18-page supplemental PDF - no CSV, TSV, .shape, .map or .xlsx of per-nucleotide reactivities. I searched BioProject for related West Nile deposits and found only the lab's earlier 2023 project PRJNA949723, not this one. I listed the authors' analysis code repository (github.com/pylelab/Tb-seq): README plus a Scripts folder, no data.",
+    "what_came_from_paper_text_only": "Everything about the experiments: that SHAPE-MaP (a chemical probe read out by sequencing that reports how flexible each nucleotide is) and Tb-seq (terbium-induced cutting that marks tight backbone turns) were run on wild-type and four pseudoknot-mutant RNAs in two replicates, across magnesium concentrations; the 12 terbium-cleavage sites; and the viral growth assay of ~10 constructs with six technical replicates each. I could not render the supplemental PDF pages (no PDF rasteriser installed), so its exact contents rest on the paper's captions."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {
+      "pass": false,
+      "note": "The sole data accession PRJNA1427911 returns 'not found' in NCBI BioProject, SRA and GEO (checked all three). Even once released it would be raw Illumina reads, which this project does not download; the processed per-nucleotide reactivity profiles that a model would need are published only as coloured figure panels inside a 15.4 MB PDF."
+    },
+    "a2_label_is_a_column": {
+      "pass": false,
+      "note": "No table exists. Any label - per-nucleotide reactivity, or per-construct viral growth - would have to be built by re-running the authors' pipeline on unreleased sequencing reads or by digitising heat-map colours from figures."
+    },
+    "a3_inputs_present": {"pass": true, "note": "Only part that holds: the input sequence is the WNV NY99 genome (GenBank AF404756) and every mutant is spelled out nucleotide-by-nucleotide in the methods, so inputs are reconstructable by hand."},
+    "a4_units_stated": {"pass": true, "note": "Paper states units clearly (normalised SHAPE reactivity, viral genome copies per microlitre, mM Mg2+), but there is no file in which to check them."},
+    "a5_enough_rows": {
+      "pass": false,
+      "n_rows": null,
+      "note": "The independent unit is the RNA construct: wild type plus four pseudoknot mutants plus two terbium-site mutants plus a cyclisation-defective control, about 10 groups, with two replicates for probing and six technical replicates for growth. Even counting every nucleotide of the ~570-nt RNA gives only a few thousand highly correlated positions - far under the ~1,500 independent labelled rows the checklist requires."
+    },
+    "a6_fits_laptop": {"pass": true, "working_set": "<0.1 GB if the figures are digitised", "note": "Size is never the problem here; the data is tiny."},
+    "a7_counts_match_paper": {"pass": false, "note": "Cannot be checked at all - there is no download to compare against the paper, and the data statement itself is inconsistent (it calls a PRJNA BioProject number a 'GEO Accession')."},
+    "a8_label_provenance": {"pass": true, "note": "Provenance is honest where described: reactivities come from chemical probing read out by sequencing, growth from quantitative reverse-transcription PCR; neither is another model's output."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "RibonanzaNet (Stanford Das lab deep network that predicts per-nucleotide chemical reactivity from RNA sequence)",
+        "open_weights": true,
+        "score_and_split": "Trained on roughly a million crowdsourced probing profiles from the Ribonanza Kaggle challenge; authors report state-of-the-art reactivity prediction and transfer to secondary structure, evaluated on held-out sequence sets. Exact numbers not retrieved.",
+        "authors_named_unsolved": "Generalising to long, natural RNAs and to tertiary interactions such as pseudoknots, which their training data under-represents.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RNA-FM (RNA foundation language model)",
+        "open_weights": true,
+        "score_and_split": "Reported as a general RNA embedding model that can be fine-tuned for structure tasks; a retrieved review notes it is weaker than RiNALMo on structure benchmarks.",
+        "authors_named_unsolved": "Structure-aware pretraining; the review retrieved says RNA-FM carries less structural information than newer models.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RiNALMo (general-purpose RNA language model)",
+        "open_weights": true,
+        "score_and_split": "Authors report it generalises well on structure-prediction tasks, with pretrained features alone matching fine-tuned baselines; split details not retrieved.",
+        "authors_named_unsolved": "Transfer to RNA families unseen in pretraining.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "RNA-state-inf / SHAPE-score deep learning (Yesselman-era SHAPE predictors)",
+        "open_weights": null,
+        "score_and_split": "Reported higher Pearson correlation with experimental SHAPE scores than thermodynamic folding; split not stated in the retrieved summary.",
+        "authors_named_unsolved": "In vivo versus in vitro discrepancy and pseudoknotted regions.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {
+    "name": "RibonanzaNet or RNA-FM (RNA sequence models, CPU-feasible for a few hundred short sequences)",
+    "freeze_and_head_viable": true,
+    "hardware": "Laptop CPU would be plenty for ~10 sequences of 570 nt",
+    "licence": "Open weights (RibonanzaNet via MultiMolecule; RNA-FM MIT-style), not verified in detail because the project dies earlier"
+  },
+  "integration": {
+    "partner_dataset": "Ribonanza / RMDB chemical-probing archives and the flavivirus 3'UTR structure database (searchable by pseudoknot pattern), joinable in principle on viral strain accession and nucleotide coordinate",
+    "join_key": "GenBank accession (AF404756) plus nucleotide position",
+    "bigger_question_one_sentence": "Do sequence-only RNA models trained on short synthetic constructs recover the magnesium-dependent pseudoknot interdependence that long viral 3'-terminal RNAs actually show? - a good question, but unanswerable without this paper's numbers, which are not released."
+  },
+  "controls": {
+    "positive_control": "The paper's own hierarchy SLIV > DBI > DBII > SLII would be the control a model must recover, but with four mutants it is four data points, not a control.",
+    "negative_control": "The cyclisation-defective (Cyc_Def) mutant is included in the growth assay as a known-detrimental reference.",
+    "external_validation": "The lab's earlier West Nile riboregulatory study (BioProject PRJNA949723, 2023) exists and does resolve, so an independent probing dataset is available - but it is a different experiment, not a validation set for these labels."
+  },
+  "honest_claim_h3": "No claim is possible: with ten constructs and no released measurement table, any model fitted here would describe four mutations in one virus, not a learnable mapping.",
+  "plain_idea": {
+    "one_liner": "Use RNA sequence to predict how flexible each nucleotide is and how well the mutated virus grows.",
+    "train_on": "What I considered: the wild-type and mutant West Nile 3'-terminal RNA sequences (about 570 nucleotides each) with their per-nucleotide chemical-probing profiles. Verified count of independent constructs: about 10, from the paper text only.",
+    "predict": "Per-nucleotide reactivity (how exposed each base is, measured by a chemical that tags flexible nucleotides and read out by sequencing) and, per construct, viral genome copies after infection measured by quantitative reverse-transcription PCR.",
+    "why_worthwhile": "RNA-targeting antiviral groups would want to know which structural motifs are load-bearing across flaviviruses; even a failed model would say whether sequence-only RNA models see pseudoknot interdependence. But neither is testable without the data."
+  },
+  "paper_type": "experimental",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "About 10 constructs and 2 replicates here, against roughly a million probing profiles behind RibonanzaNet. The only edge would be that this is a long natural viral RNA with pseudoknots - and those numbers are not downloadable."
+    },
+    "confidence_score": {
+      "answer": "no",
+      "why": "Two replicates per condition is enough to put an error bar on a figure, not enough to calibrate per-prediction uncertainty."
+    },
+    "models_beatable": {
+      "answer": "no",
+      "why": "RibonanzaNet (2024, dual-tower transformer, open weights, evaluated on held-out sequences) and RiNALMo are recent and strong; nothing here could train a competitor."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: our model cannot see anything, because the measurement table does not exist in any public file."
+    }
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: fine-tune an RNA sequence model (RibonanzaNet or RNA-FM) on the paper's SHAPE-MaP reactivity profiles to predict magnesium-dependent pseudoknot folding in flavivirus 3' ends, and separately regress viral growth on mutation identity. Both die because the measurements are not released and because the construct count is ~10.",
+  "effort": {
+    "hours_to_feature_table": null,
+    "working_set_gb": 0.1,
+    "needs_gpu": false,
+    "peak_ram_gb": 1.0,
+    "embedding_hours": 0.1,
+    "cv_run_minutes": null,
+    "compute_note": "Compute is trivial for ten 570-nt sequences; estimated, not timed. The blocker is data availability, not hardware.",
+    "cheapest_killing_check": "Resolve the accession: one NCBI query for PRJNA1427911 in BioProject, SRA and GEO. All three return 'not found', which kills the project in under a minute."
+  },
+  "verdict": "reject",
+  "verdict_reason": "Fails Part A1: the only data accession (PRJNA1427911) does not resolve in NCBI BioProject, SRA or GEO, and the supplement is a figures-only PDF with no reactivity table - so the labels would have to be re-derived from unreleased sequencing reads or digitised from heat-map colours (A2 fail). It also fails A5 by a wide margin: about 10 independent RNA constructs with two probing replicates each, where the checklist asks for ~1,500 labelled rows. A re-check in six months, if the BioProject is released and processed reactivity files appear, would still leave the sample-size problem."
+}

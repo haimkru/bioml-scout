@@ -1,0 +1,92 @@
+{
+  "paper_id": "nar2026-gkag896",
+  "title": "DiCE-Ex: a web server for network-based differential-centrality gene exploration.",
+  "doi": "10.1093/nar/gkag896",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/Wanbioinfo/DiCE-Ex (code + sample data); Zenodo 10.5281/zenodo.20532604; server https://connect.posit.iu.edu/DiCE-Ex/",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Listed the whole GitHub repository tree, then downloaded and opened four sample files: sample_Human_data_DGE.csv (14,938 gene rows; columns Gene.Symbol, P.Value, adj.P.Val, logFC), sample_Human_metadata.csv (232 sample rows; columns sample_id, class), sample_Mouse_data_geneExp.csv (13,634 gene rows x 12 GSM sample columns), sample_Mouse_metadata.csv (12 rows). Confirmed the web server returns HTTP 200 with no login, and confirmed the Zenodo archive is one 273 MB zip of the same code. Also saw the bundled reference networks in the repo (BioGRID human 35 MB and mouse 3 MB, STRING v12 human 87 MB and mouse 79 MB, all gzipped redistributions of those public databases).",
+    "what_came_from_paper_text_only": "The case studies and their benchmark gene lists, read from the publisher's HTML (the paper is not open access and has no PubMed Central identifier, so there is no full text in Europe PMC): prostate cancer cohort PRAD_SU2C_2019 from cBioPortal with 22 samples flagged 'Neuroendocrine Features = Yes' and 210 flagged 'No'; a heart failure with reduced ejection fraction (HFrEF) RNA sequencing study; validation against ten published neuroendocrine prostate cancer marker gene sets of which 43 genes appeared in at least two sources (16 recovered by the tool), and 141 heart failure genes supported by at least two sources (29 recovered). I did not open those literature gene lists myself."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Code and sample data download freely from GitHub and Zenodo with no login; the Shiny web server also responds (HTTP 200). I downloaded and parsed four files myself."},
+    "a2_label_is_a_column": {"pass": false, "note": "FAILS. The only thing worth predicting here is 'is this gene a genuine condition-specific disease driver', and that is a column in no file. The paper builds it by hand from ten separate published marker gene lists and keeping genes named in at least two of them. The columns that do exist are either per-sample ('class' = Normal/other, 232 rows) or derived statistics (logFC, P.Value) of the expression matrix, not biological labels."},
+    "a3_inputs_present": {"pass": true, "note": "Not reached, but for the record: gene symbols, a full expression matrix and the protein-protein interaction networks are all shipped in the repository, so features would be available without identifier lookups."},
+    "a4_units_stated": {"pass": true, "note": "Not reached. The expression values are stated as log-scale normalized values and the differential expression table carries named statistic columns, so units are legible."},
+    "a5_enough_rows": {"pass": false, "n_rows": 184, "note": "Also FAILS. The positive class is the validated driver-gene set: 43 neuroendocrine prostate cancer genes plus 141 heart failure genes, about 184 positives in total across two unrelated conditions. The checklist needs about 400 minimum for a classification task. The 14,938 gene rows are unlabelled."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~0.2 GB", "note": "Not reached. Everything is small: the largest single file is the 87 MB gzipped STRING human network, and the whole repository without images is under 300 MB."},
+    "a7_counts_match_paper": {"pass": true, "note": "The 232 rows in the human sample metadata match the paper's 22 plus 210 prostate cancer samples exactly. No disagreement found."},
+    "a8_label_provenance": {"pass": false, "note": "Also FAILS for the obvious alternative project. The tool's own output, the ensemble differential-centrality score, is a deterministic function of the same expression matrix and network that would be the model's features, so predicting it is leakage by construction and at best distils a published R script. The driver-gene label meanwhile is literature curation, not a measurement made in this paper."}
+  },
+  "part_a_verdict": "reject",
+  "score_items": {},
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DiCE (the method this web server wraps; Nucleic Acids Research 2025, same group)",
+        "open_weights": true,
+        "score_and_split": "No held-out split and no accuracy number. Evaluation is overlap with literature gene lists: 16 of 43 neuroendocrine prostate cancer genes and 29 of 141 heart failure genes recovered. Read from the publisher page, not reproduced by me.",
+        "authors_named_unsolved": "Not determined; the paper is paywalled and I only read the sections the publisher page exposed.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "Precision Medicine Gene Network Analyser (ensemble machine learning on network topology for cancer driver genes)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved. A search snippet reported degree centrality as its top feature (importance 0.32) ahead of betweenness (0.24) and PageRank (0.19); I did not open the paper, so I cannot state its score or split.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      },
+      {
+        "name": "PINDeL (graph convolutional network on the human Protein Locality Graph for disease-associated proteins)",
+        "open_weights": null,
+        "score_and_split": "Not retrieved beyond a search snippet claiming it outperforms prior machine learning methods on disease gene identification. No number or split verified.",
+        "authors_named_unsolved": "Not retrieved.",
+        "runnable_as_baseline": null
+      }
+    ]
+  },
+  "backbone": {"name": "none applicable", "freeze_and_head_viable": false, "hardware": "n/a", "licence": "n/a"},
+  "integration": {
+    "partner_dataset": "none pursued",
+    "join_key": "gene symbol / Ensembl gene",
+    "bigger_question_one_sentence": "Not written, because with roughly 184 curated positive genes across two unrelated diseases there is no question a model could answer that a ranked list does not already answer."
+  },
+  "controls": {
+    "positive_control": "Would have been: recover the textbook neuroendocrine prostate cancer markers (for example the transcription factors named in the published marker sets). Not pursued.",
+    "negative_control": "Label shuffling across genes. Not pursued.",
+    "external_validation": "The mouse sample dataset, or a second disease cohort. Not pursued."
+  },
+  "honest_claim_h3": "Any model built on this paper's own files could only claim 'reproduces a published R script's gene ranking on two example datasets', because the paper supplies a tool and two demonstration cohorts, not a labelled gene table.",
+  "plain_idea": {
+    "one_liner": "Use how a gene's position in the protein interaction network shifts between healthy and diseased tissue to predict whether it is a real disease driver.",
+    "train_on": "For each gene, how connected and how central it is in a protein-protein interaction network rebuilt separately for the sick and the healthy group, plus its change in expression. Only 14,938 human genes and 13,634 mouse genes exist in the shipped example files, and almost none of them carry a label.",
+    "predict": "Whether the gene is a genuine condition-specific disease driver. The true answer would have to come from literature curation: the paper's own standard is a gene named in at least two of ten published marker gene lists, giving 43 such genes for neuroendocrine prostate cancer and 141 for heart failure.",
+    "why_worthwhile": "Groups hunting for drug targets would want a ranked gene list that catches regulators whose expression barely moves. But with under 200 curated positives from two unrelated diseases, and with the tool's own score computable directly from the features, nothing here could be trained or honestly tested."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {"answer": "no", "why": "The paper ships one 232-sample human prostate cohort (itself a redistribution of cBioPortal's PRAD_SU2C_2019) and one 12-sample mouse dataset. Existing network-based driver-gene models train on pan-cancer compendia far larger than that."},
+    "confidence_score": {"answer": "no", "why": "No replicate measurements of the quantity that matters, and only two conditions, so there is no way to estimate per-gene uncertainty in driver status from these files."},
+    "models_beatable": {"answer": "partly", "why": "The tool itself reports no accuracy number on any split, only literature overlap counts (16 of 43 genes, 29 of 141), so it would be easy to beat on paper. That is a weakness of the evaluation, not an opening, since there is no held-out set here to beat it on."},
+    "guaranteed_improvement": {"answer": "no", "why": "Fails the first condition: there is no shared evaluation split to run a baseline on, and the labelled positives number in the tens, so no added data could make an improvement near-certain."}
+  },
+  "label_elsewhere": null,
+  "leakage_plan": null,
+  "success_criteria": null,
+  "publication_target": null,
+  "pitch": null,
+  "ml_idea": "Considered and rejected: train a classifier on per-gene differential network-centrality features to predict curated disease-driver status, using the tool's shipped prostate cancer and heart failure examples. Dead because the label is nowhere in the files, must be assembled from ten separate literature gene lists, and amounts to roughly 184 positive genes; the alternative of predicting the tool's own ensemble score is circular, since that score is computed from the same features.",
+  "effort": {
+    "hours_to_feature_table": 12,
+    "working_set_gb": 0.2,
+    "needs_gpu": false,
+    "peak_ram_gb": 3,
+    "embedding_hours": null,
+    "cv_run_minutes": null,
+    "compute_note": "Estimated from the file sizes I actually downloaded, not timed. The largest piece is the 87 MB gzipped STRING human interaction file; a weighted network over roughly 15,000 genes with centrality measures fits comfortably in a few GB of RAM. Compute was never the obstacle here.",
+    "cheapest_killing_check": "Count the labelled positive genes. It takes one look at the paper's validation paragraph: 43 neuroendocrine prostate cancer genes and 141 heart failure genes, both assembled by hand from literature, which is both under the row minimum and not a column in any file."
+  },
+  "verdict": "reject",
+  "verdict_reason": "This is a web server paper, and the files are a Shiny application plus redistributed public networks (BioGRID, STRING) and two example expression datasets, which I opened. It fails three Part A killers at once. A2: the target, genuine disease-driver status, is a column in no file and must be hand-built from ten published literature gene lists. A5: that construction yields about 184 positive genes across two unrelated diseases, well under the 400 needed for classification. A8: the obvious alternative target, the tool's own ensemble differential-centrality score, is a deterministic function of the very features a model would use, so predicting it is leakage by construction and would only distil a published R script. The code being fully open and the counts matching the paper exactly (232 samples = 22 plus 210) are genuine credits, but they are credits to a tool, not to a dataset."
+}

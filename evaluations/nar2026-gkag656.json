@@ -1,0 +1,210 @@
+{
+  "paper_id": "nar2026-gkag656",
+  "title": "DeepAden: an explainable machine learning method for predicting the substrate specificity of nonribosomal peptide synthetases.",
+  "doi": "10.1093/nar/gkag656",
+  "journal": "Nucleic Acids Research",
+  "data_url": "https://github.com/Qinlab502/DeepAden (code + data/train_set.csv + open weights); NAR supplement gkag656_supplemental_files.zip contains Datasets S1-S4; code archive also at https://doi.org/10.5281/zenodo.18754112",
+  "verified": {
+    "opened_data_files": true,
+    "what_i_actually_checked": "Unzipped the NAR supplement and parsed all 4 sheets of the dataset workbook with pandas: Dataset S1 = exactly 4,545 rows x 7 columns (Id, Label, Sequence, Taxonomy, GenBank/UniProt/RefSeq accession), Dataset S2 = 223 substrates with SMILES (a text form of chemical structure), Dataset S3 = 201-sequence benchmark, Dataset S4 = 78 PDB structures each with a 27-residue pocket string. Confirmed: 0 duplicate sequences and 0 duplicate IDs in S1, 0 sequences shared between S1 and the 201-row benchmark, no non-standard amino-acid letters, sequence length 130-762 (median 481), 269 distinct label strings of which 50 (98 rows) are pipe-separated multi-substrate strings absent from S2. Also downloaded data/train_set.csv (5.1 MB, 8,617 rows) and data/mol_db.csv (223 rows) from GitHub: labels agree 100% with S1 for the 4,420 shared IDs, and the extra 4,197 IDs are the augmentation copies (8,617 rows but only 4,536 unique sequences). Listed the full GitHub tree and confirmed open weights are present (weights_for_benchmark.pth, weights_for_users.pth, a LoRA adapter for ESM-2 650M, and a KDE confidence calibrator). HEAD on the Zenodo archive: 124 MB, over the 50 MB cap, not downloaded. Ran my own 5-mer overlap check of the 201 benchmark sequences against all 4,545 training sequences: 6 are near-identical (overlap >0.8), 42 are >0.6, 130 are below 0.2.",
+    "what_came_from_paper_text_only": "All reported performance numbers (five-fold cross-validation accuracy 90.57% +/- 0.57%; 85.48% = 53/62 in the 80-100% sequence-identity bin; 44.44% = 4/9 in the low-identity bin versus PARAS 50% = 5/10 and NRPStransformer 18.18% = 2/11; a 2.5-3.3% top-3 advantage overall), the provenance chain (MIBiG v3.1 1,627 + PARAS 3,257 + NRPStransformer 4,430 sequences, de-duplicated with CD-HIT at 95% identity), and the claim that ABP-ESM2 was fine-tuned on 191,303 pocket sequences. The supplementary PDF's text could not be extracted (font-encoded), so sheet legends/column definitions were not read."
+  },
+  "part_a_killers": {
+    "a1_downloadable": {"pass": true, "note": "Supplement zip and GitHub files downloaded without login; CC BY paper, repository has a LICENSE file. Only the 124 MB Zenodo code archive exceeded the size cap."},
+    "a2_label_is_a_column": {"pass": true, "note": "Verified in the file: 'Label' is a column in Dataset S1 holding the substrate name, and Dataset S2 maps 223 of those names to a SMILES chemical structure. Nothing is constructed."},
+    "a3_inputs_present": {"pass": true, "note": "Verified: the full adenylation-domain protein sequence is a column in Dataset S1 (no accession lookups needed), the substrate SMILES string is a column in Dataset S2, and the 27-residue pocket is a column in GitHub train_set.csv."},
+    "a4_units_stated": {"pass": true, "note": "This is classification, not measurement: the label is a named substrate pinned to a canonical SMILES string, so no numeric units are needed. Checked in the files."},
+    "a5_enough_rows": {"pass": true, "n_rows": 4545, "note": "Counted 4,545 labelled rows in Dataset S1, over the ~400 classification floor. But 131 of 269 label strings appear once and only 44 classes have >=10 rows (4,077 of the rows)."},
+    "a6_fits_laptop": {"pass": true, "working_set": "~7 MB (1.4 MB xlsx + 5.1 MB csv)", "note": "Trivially fits. Frozen ESM-2 650M embeddings for 4,545 sequences of median length 481 on CPU is the heaviest step, roughly 4 GB peak memory; using only the 27-residue pockets makes it minutes."},
+    "a7_counts_match_paper": {"pass": true, "note": "Dataset S1 has exactly the 4,545 rows the paper claims. Two discrepancies are explained, not contradictory: '223 substrate labels' is the size of the compound library (Dataset S2), while S1 holds 269 distinct label strings (222 single names plus 47 multi-substrate strings); GitHub train_set.csv has 8,617 rows but only 4,536 unique sequences because it is the augmented copy described in Methods."},
+    "a8_label_provenance": {"pass": true, "note": "Labels are expert curation, not a model output: MIBiG v3.1 'experimentally validated or structurally supported' entries plus the curated PARAS and NRPStransformer sets, with the authors stating they corrected erroneous annotations by reading the literature. Flag, not a kill: many annotations are inferred from the structure of the final peptide product rather than from a direct adenylation assay of that domain, and older MIBiG entries could in principle carry annotations originally assigned by a prediction tool. The label is in no way computed from the sequence features."}
+  },
+  "part_a_verdict": "pass",
+  "score_items": {
+    "B1": {"score": 1, "why": "One workbook, but label-to-SMILES join via sheet S2 fails for 50 label strings (98 rows); checked in file."},
+    "B2": {"score": 2, "why": "xlsx and csv both parsed with pandas on the first try, no fixes needed."},
+    "B3": {"score": 1, "why": "Authors standardised labels across three source sets, but the 201-row benchmark sheet keeps raw names ('n-me-thr', 'FAc12')."},
+    "B4": {"score": 1, "why": "95 rows carry pipe-separated ambiguous multi-substrate labels needing a policy; easy to drop (2% of rows)."},
+    "B5": {"score": 2, "why": "Verified 0 duplicate sequences, 0 duplicate IDs, 0 sequences shared between training and benchmark sheets."},
+    "B6": {"score": 1, "why": "Column names self-explanatory but no data dictionary; supplementary PDF text was not extractable."},
+    "C1": {"score": 2, "why": "'How fast does accuracy decay with sequence distance, and does it transfer to fungi?' is informative either way."},
+    "C2": {"score": 0, "why": "Four open, reproducible models (PARAS, NRPStransformer, AdenPredictor, DeepAden itself) with identity-stratified evaluation already published."},
+    "C3": {"score": 1, "why": "Angle is 'better evaluation' plus a fungal/metazoan holdout (514 non-bacterial rows in file); DeepAden already trains on fungi."},
+    "C4": {"score": 2, "why": "Ground truth needs radiolabelled ATP-pyrophosphate exchange assays or heterologous expression; months of lab work per domain."},
+    "C5": {"score": 2, "why": "Published numbers exist (85.48% high-identity, 90.57% cross-validation) plus an obvious nearest-pocket lookup baseline."},
+    "D1": {"score": 2, "why": "ESM-2 650M (protein language model) and MoLFormer-XL (molecule language model) both open weights; repo already wires both in."},
+    "D2": {"score": 2, "why": "27-residue pocket strings embed in minutes on CPU; full 4,545 domains ~2 h once, then cached."},
+    "D3": {"score": 2, "why": "ESM-2 is MIT, MoLFormer-XL Apache 2.0, paper is CC BY, repo carries a LICENSE file."},
+    "E1": {"ok": true, "why": "CD-HIT clustering at 40-50% identity on pocket or full domain; also taxonomy holdout, both buildable from file columns."},
+    "E2": {"ok": true, "why": "22 taxonomy groups in file (Actinomycetota 1506, Pseudomonadota 1312, Fungi 433, Bacillota 373, Cyanobacteriota 290, Myxococcota 250)."},
+    "E3": {"ok": true, "why": "Majority class (leucine, 380/4545 = 8.4%) and nearest-pocket-neighbour lookup are both trivial to compute."},
+    "E4": {"ok": true, "why": "Three overlapping public source sets (MIBiG, PARAS, NRPStransformer) allow measuring cross-source annotation disagreement; no replicate assays exist."},
+    "E5": {"ok": true, "why": "The 10-residue Stachelhaus code must recover phenylalanine for PDB 1AMU (in Dataset S4); textbook, pre-specifiable."},
+    "E6": {"ok": true, "why": "Label shuffling and block ablation (pocket only vs substrate only) are both cheap on a 4,545-row table."},
+    "E7": {"ok": true, "why": "The 46 benchmark entries are newly added MIBiG 4.0 records, giving a genuine database-version temporal split."},
+    "E8": {"ok": true, "why": "DeepAden's open weights plus the 201-row benchmark sheet make reproducing its 85.48% high-identity number an afternoon's work."},
+    "G1": {"score": 2, "why": "Verified in file: GenBank protein accessions (3,646/4,545), taxonomy strings, PDB IDs in S4, SMILES; UniProt sparse (330)."},
+    "G2": {"score": 2, "why": "MIBiG 4.0 full biosynthetic gene cluster records join on GenBank accession; AlphaFold DB structures join via UniProt."},
+    "G3": {"score": 2, "why": "One protein accession maps to several numbered A-domains (ACR33075.1.A1); clean one-to-many with an explicit index."},
+    "G4": {"score": 1, "why": "Combined question (predicted monomer strings matched to mass-spectrometry molecular families) is real but the paper already demoed it on 2 clusters."},
+    "H1": {"score": 0, "why": "Only accepted substrates are recorded; no measured non-substrates, so all negatives are assumed. Verified in file."},
+    "H2": {"score": 1, "why": "22 taxonomy groups but 62% of rows are two bacterial phyla; coverage limited to characterised, published gene clusters."},
+    "H3": {"score": 2, "why": "The honest claim is writable in one precise sentence (see honest_claim_h3)."},
+    "H4": {"score": 2, "why": "Paper is explicit about class imbalance, nonproteinogenic scarcity, small low-homology bins and static pocket boundaries."},
+    "I1": {"score": 2, "why": "Named: the Medema/Wageningen group behind PARAS and antiSMASH, the Westlake NRPStransformer group, natural-product genome-mining labs."},
+    "I2": {"score": 2, "why": "A powered low-homology result would change which predictor antiSMASH ships and how miners treat novel-taxon predictions."},
+    "I3": {"score": 2, "why": "Top-1 and top-3 accuracy is exactly the decision: which substrate to write into a gene cluster annotation, or shortlist."},
+    "I4": {"score": 1, "why": "The 27-residue pocket nearest-neighbour lookup (the classic Stachelhaus code) already performs well; ML adds a margin."},
+    "J1": {"score": 2, "why": "Grouped identity-clustered splits, frozen protein language model plus head, calibration, transfer testing: real ML work."},
+    "J2": {"score": 1, "why": "Substrate names are interpretable, but judging whether a predicted nonproteinogenic monomer is plausible needs NRPS expertise."},
+    "J3": {"score": 2, "why": "A clean identity-clustered benchmark plus re-run of three tools is publishable even if our own model loses."},
+    "J4": {"score": 1, "why": "No time budget stated; three heavy tool installs (AlphaFold models for PARAS, ESM-2 + MoLFormer for DeepAden) make it vague."},
+    "J5": {"score": 0, "why": "No kill date or condition written down anywhere yet."}
+  },
+  "c2_audit": {
+    "existing_models": [
+      {
+        "name": "DeepAden (this paper; graph attention network for pocket localisation plus contrastive learning over ESM-2 and MoLFormer embeddings)",
+        "open_weights": true,
+        "score_and_split": "90.57% +/- 0.57% five-fold cross-validation accuracy; on the 201-sequence independent benchmark, top-3 accuracy 2.5-3.3% above the other two tools; stratified by sequence identity to its own training set: 85.48% (53/62) in the 80-100% bin, 44.44% (4/9) in the low-identity bin.",
+        "authors_named_unsolved": "They state plainly that 'a more stringent low-homology benchmark will be required to fully assess this advantage', that the static 27-residue pocket boundary cannot handle large substrates or conformational change, and that pocket-level promiscuity means top-1 assignments should not be trusted alone.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "PARAS / PARASECT (random forest over sequence and AlphaFold-structure-derived pocket features; JACS Au 2026)",
+        "open_weights": true,
+        "score_and_split": "Curated 3,653 adenylation domains; on DeepAden's 201-sequence benchmark it reached 50.0% (5/10) in the low-identity bin, the best of the three tools there, and was statistically indistinguishable from DeepAden overall.",
+        "authors_named_unsolved": "Their abstract names domains selecting large substrates and domains from under-represented taxa as the cases existing approaches struggle with.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "NRPStransformer (protein language model over the flavodoxin-like subdomain; JACS 2025)",
+        "open_weights": true,
+        "score_and_split": "Reported 92% overall accuracy across 43 frequently observed amino acids from 4,100 adenylation domains; on DeepAden's benchmark it collapsed to 18.18% (2/11) in the low-identity bin.",
+        "authors_named_unsolved": "Scope is explicitly bacterial adenylation domains, leaving fungal and other eukaryotic domains uncovered.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "AdenPredictor (extra-trees classifier; Bioinformatics 2023)",
+        "open_weights": true,
+        "score_and_split": "Reported 8% better overall accuracy than then-existing approaches and ~30% better on A-domains dissimilar to training data; split details not read in full.",
+        "authors_named_unsolved": "Identified 19 clusters of A-domains possibly matching amino acids never implicated in NRPS assembly, i.e. unlabelled specificity space.",
+        "runnable_as_baseline": true
+      },
+      {
+        "name": "NRPSpredictor2 (support vector machine, 2011) and SANDPUMA (ensemble, 2017)",
+        "open_weights": true,
+        "score_and_split": "Long-standing antiSMASH defaults; DeepAden cites them as performing well on proteinogenic substrates only. No number retrieved.",
+        "authors_named_unsolved": "Specificity codes derived from a single co-crystal structure, limiting generalisation across phylogenetically diverse domains (as characterised by the DeepAden authors).",
+        "runnable_as_baseline": true
+      }
+    ]
+  },
+  "backbone": {
+    "name": "ESM-2 (esm2_t33_650M_UR50D, a protein language model) for the adenylation-domain pocket, paired with MoLFormer-XL (a molecule language model) for substrate SMILES",
+    "freeze_and_head_viable": true,
+    "hardware": "CPU laptop: embedding the 27-residue pocket strings takes minutes; embedding all 4,545 full domains (median 481 residues) takes roughly 2 hours once and is then cached. Reproducing DeepAden's own contrastive training would want a GPU.",
+    "licence": "ESM-2 MIT, MoLFormer-XL Apache 2.0, paper CC BY, DeepAden repo carries a LICENSE file. No restriction on the proposed use."
+  },
+  "integration": {
+    "partner_dataset": "MIBiG 4.0 (the curated database of characterised biosynthetic gene clusters, which supplied the 46 newest benchmark entries) plus AlphaFold DB predicted structures",
+    "join_key": "GenBank protein accession (present for 3,646 of 4,545 rows, verified in the file), with the A-domain index parsed from the Id column; UniProt accession for AlphaFold DB but it is present for only 330 rows",
+    "bigger_question_one_sentence": "Does adenylation-domain substrate prediction get accurate enough on remote homologs to assign orphan biosynthetic gene clusters to unidentified mass-spectrometry molecular families at scale, rather than one cluster at a time?"
+  },
+  "controls": {
+    "positive_control": "PDB entry 1AMU in Dataset S4 is the founding phenylalanine-specific structure; any working pipeline must assign phenylalanine to it from its 27-residue pocket. Second control: predict amino-acid composition of the pocket from the pocket embedding, which must be near-perfect.",
+    "negative_control": "Shuffle the substrate labels and confirm accuracy collapses to the 8.4% majority-class rate (leucine, 380/4,545); separately ablate the substrate branch and the pocket branch to see which carries the signal.",
+    "external_validation": "Three independent sources: the 201-sequence benchmark sheet (0 exact sequence overlap with training, verified), the 46 entries added only in MIBiG 4.0 (a database-version temporal split), and the 514 non-bacterial rows (433 Fungi, 58 Arthropoda, 23 Mollusca) which NRPStransformer explicitly does not cover."
+  },
+  "honest_claim_h3": "Given a 27-residue binding pocket extracted from an adenylation domain, the model ranks the most likely substrate among 223 substrates that have already been seen at least once in a published, curated biosynthetic gene cluster, with accuracy that is high for domains sharing over 80% sequence identity with the training set and roughly coin-flip for domains below 40% identity; it says nothing about substrates never before recorded, and it has never seen a measured non-substrate.",
+  "plain_idea": {
+    "one_liner": "Use the amino acids lining an enzyme's binding pocket to predict which building block it selects for a natural product.",
+    "train_on": "Each example is one adenylation domain: its full protein sequence (median 481 amino acids) or the 27 amino acids lining its substrate pocket. Verified 4,545 such examples in the supplementary workbook, plus 201 held-out benchmark examples.",
+    "predict": "Which of 223 chemical building blocks the domain activates, each given as a chemical structure string. Ground truth is expert curation from the MIBiG database and two earlier curated sets: mostly inferred from the published structure of the final peptide the gene cluster makes, sometimes from a direct biochemical assay.",
+    "why_worthwhile": "Natural-product genome miners use these predictions to guess what an uncharacterised gene cluster makes before spending months growing the organism; knowing exactly where the prediction stops working would change which clusters they chase. Even a negative result maps the reliability boundary of four published tools."
+  },
+  "paper_type": "computational",
+  "crowded_field_case": {
+    "more_or_better_data": {
+      "answer": "no",
+      "why": "The 4,545 rows are the de-duplicated union of exactly the data the competitors used: MIBiG v3.1 (1,627), the PARAS set (3,257) and the NRPStransformer set (4,430). There is no larger pool to bring, and only 44 of 269 label classes have 10 or more examples."
+    },
+    "confidence_score": {
+      "answer": "partly",
+      "why": "DeepAden already ships a kernel-density confidence calibrator (model/kde_model/kde_calibrator.pkl, 23 MB, seen in the repo tree), so per-prediction confidence is taken. What is missing and could be added is a sequence-distance-aware confidence, since the data has no replicate assays to estimate measurement noise."
+    },
+    "models_beatable": {
+      "answer": "partly",
+      "why": "NRPSpredictor2 (2011, support vector machine) and SANDPUMA (2017) are old and beatable, but PARAS (2026, random forest on AlphaFold-derived features), NRPStransformer (2025, protein language model) and DeepAden (2026) are current, open, and already evaluated with sequence-identity stratification. DeepAden's own advantage over PARAS was 2.5-3.3% on top-3 and not statistically supported."
+    },
+    "guaranteed_improvement": {
+      "answer": "no",
+      "why": "Fails the first condition: there is no accessible new data measuring the same quantity the same way. Everything public was already pooled into these 4,545 rows, and new MIBiG 4.0 entries were partly consumed as the benchmark. Baselines are runnable and the split can be matched, but with no new data the improvement is not near-certain."
+    }
+  },
+  "label_elsewhere": {
+    "score": 1,
+    "sources": "MIBiG 4.0 (curated biosynthetic gene cluster database), the PARAS dataset (3,653 curated A-domains, JACS Au 2026), the NRPStransformer dataset (~4,100-4,430 domains, JACS 2025), and antiSMASH-DB. All confirmed by the search results and the paper's own Methods, not browsed directly.",
+    "approx_items": 9000,
+    "join_key": "GenBank protein accession plus A-domain index; MIBiG BGC identifier for cluster-level records",
+    "why": "The label does exist in large public resources, but this paper already merged all three of them down to 4,545 unique domains, so the only genuinely new labelled data is the trickle of post-cutoff MIBiG 4.0 entries; the resources serve better as an independent re-curation check than as extra training data."
+  },
+  "leakage_plan": {
+    "risks": [
+      "Near-duplicate domains across the split: my own 5-mer overlap check found 6 of 201 benchmark sequences near-identical to a training sequence and 42 above 0.6 overlap, and CD-HIT was only run at a loose 95% identity threshold, so a random split would be badly optimistic.",
+      "Whole-gene-cluster leakage: several A-domains come from the same biosynthetic gene cluster and the same GenBank protein accession, so splitting by domain lets sibling domains from one cluster sit on both sides.",
+      "The 27-residue pocket column in GitHub's train_set.csv is itself produced by DeepAden's pocket-prediction model, so using it as a feature means inheriting that model's errors and any training-set memorisation it carries; extracting pockets independently from Dataset S1 sequences avoids this.",
+      "Source-dataset leakage into the benchmark: 155 of the 201 benchmark sequences come from the NRPStransformer benchmark, which is not independent of NRPStransformer's own curation choices.",
+      "Label provenance circularity: some MIBiG substrate annotations may originally have been assigned by an earlier prediction tool rather than measured, which would quietly reward models that imitate those tools."
+    ],
+    "split": "Cluster all 4,746 sequences (4,545 training plus 201 benchmark) with CD-HIT or MMseqs2 at 40% identity on the full adenylation domain and hold out whole clusters, nested inside a GenBank-accession grouping so no gene cluster spans the split. Both columns were seen in the file: Sequence is present for every row, GenBank_accession for 3,646 of 4,545 (the 899 missing rows fall back to the Id prefix). Add two orthogonal held-out sets: all 433 Fungi plus 81 metazoan rows, and the 46 MIBiG-4.0-only benchmark entries as a database-version temporal split.",
+    "checks": [
+      "Shuffle substrate labels and confirm accuracy falls to the 8.4% majority-class rate (leucine, 380/4,545); anything above that means leakage or a bug.",
+      "Report, for every test domain, its maximum sequence identity to the training set, and plot accuracy against that number instead of quoting one headline accuracy.",
+      "Train on the 27-residue pocket alone with a plain nearest-neighbour lookup; if that matches the deep model, the deep model is memorising pockets.",
+      "Shuffle labels within identity cluster rather than globally, to confirm the grouped cross-validation is actually grouping."
+    ],
+    "verdict": "Manageable: every column needed for a correct split is in the file and CD-HIT is a one-line install, but the honest split shrinks the low-identity test set to a few dozen sequences, so the real risk is low statistical power rather than undetected leakage."
+  },
+  "success_criteria": {
+    "metric": "Top-1 and top-3 accuracy on held-out 40%-identity clusters, reported separately per identity band. Top-3 is the decision metric because a genome miner shortlists candidate monomers and checks them against a mass spectrum rather than committing to one.",
+    "baselines": "Trivial: majority class = 8.4% (leucine, 380 of 4,545, counted in the file) and nearest-pocket-neighbour lookup on the 27-residue pocket. Published: DeepAden 85.48% (53/62) in the 80-100% identity band and 44.44% (4/9) below 40%; PARAS 50.0% (5/10) and NRPStransformer 18.18% (2/11) in that low band; all from the paper's text.",
+    "success": "A low-homology test set of at least 150 sequences across at least 10 substrate classes on which all three published tools are re-scored, with our frozen-ESM-2 model reaching top-3 accuracy at least 10 percentage points above the best of them in the sub-40%-identity band. Below that margin the result is a benchmark note, not a model paper.",
+    "noise_ceiling": null,
+    "kill": "If a 40%-identity clustered split leaves fewer than 150 test sequences spanning 10 or more substrate classes, or if nearest-pocket-neighbour lookup lands within 3 percentage points of the published tools on that split, stop: there is nothing a new model can honestly demonstrate."
+  },
+  "publication_target": {
+    "ambitious": {
+      "journal": "Nature Communications",
+      "why": "Publishes biology-first machine learning on natural-product discovery, but would need the new model to clearly beat PARAS and NRPStransformer on remote homologs plus at least one experimentally confirmed new substrate assignment."
+    },
+    "realistic": {
+      "journal": "Bioinformatics",
+      "why": "The likely result is a rigorous sequence-identity-clustered re-evaluation of four open tools plus a frozen-backbone baseline, which is exactly the applications-note-and-benchmark material Bioinformatics publishes."
+    },
+    "fallback": {
+      "journal": "NAR Genomics and Bioinformatics",
+      "why": "Even if our model does not win, 'all four published adenylation-domain predictors fall to near chance below 40% sequence identity, and here is the clustered benchmark to prove it' is a publishable negative-result benchmark there."
+    }
+  },
+  "pitch": {
+    "headline": "A clean 4,545-row table pairing enzyme binding pockets with the chemical building blocks they select, plus open weights for the paper's own model.",
+    "what_makes_the_data_unusual": "Verified in the file: 4,545 unique sequences, zero duplicates, zero overlap with the 201-row benchmark, sequences and SMILES chemical structures both present so no lookups are needed, 22 taxonomy groups including 433 fungal domains, and 78 PDB structures with pockets pre-extracted.",
+    "the_win": "Show that all four published tools drop to near the 8.4% majority-class rate below 40% sequence identity, where the paper itself could only test 9 to 11 sequences, and beat the best of them by 10 points on a properly powered low-homology split.",
+    "even_if_it_fails": "You still produce the stringent low-homology benchmark the DeepAden authors themselves say is missing, and a reliability curve telling genome miners exactly where to stop trusting these predictions.",
+    "who_wants_it": "The Wageningen group behind PARAS and antiSMASH, and the Westlake NRPStransformer group; it would change which predictor antiSMASH ships and whether miners act on predictions for novel-taxon gene clusters."
+  },
+  "ml_idea": "Build a sequence-identity-clustered benchmark for adenylation-domain substrate prediction and re-score four open tools on it. Pool Dataset S1 (4,545) and Dataset S3 (201), cluster at 40% identity with CD-HIT, and hold out whole clusters nested within GenBank accession so no gene cluster spans the split. Baseline: frozen ESM-2 650M embeddings of the 27-residue pocket plus a logistic-regression or random-forest head, contrasted with a nearest-pocket-neighbour lookup. Report accuracy as a function of distance to training data rather than one headline number, with two orthogonal transfer tests: hold out all 433 fungal plus 81 metazoan domains (NRPStransformer is bacteria-only), and use the 46 MIBiG-4.0-only entries as a database-version temporal split.",
+  "effort": {
+    "hours_to_feature_table": 4,
+    "working_set_gb": 0.01,
+    "needs_gpu": false,
+    "peak_ram_gb": 4,
+    "embedding_hours": 2,
+    "cv_run_minutes": 10,
+    "compute_note": "Estimated, not timed: 4,545 sequences of median length 481 through ESM-2 650M on CPU at roughly 1-2 seconds each gives about 2 hours once, cached thereafter; pockets alone are 27 residues and take minutes. The 10-minute cross-validation figure is for a linear or tree head on cached embeddings. The four hours to a feature table covers the label-to-SMILES join, a policy for the 95 pipe-separated multi-substrate rows, and normalising the benchmark sheet's raw label names. Running PARAS and NRPStransformer as baselines is a separate multi-day cost because of their AlphaFold and language-model dependencies.",
+    "cheapest_killing_check": "Run CD-HIT at 40% identity over the pooled 4,746 sequences and count how many test-cluster sequences fall below 40% identity to everything in training, and across how many substrate classes. The paper's own figure implies only 9 to 11 such sequences per tool; if a clustered split cannot produce at least 150 across 10 classes, no honest low-homology comparison is possible and the project ends there."
+  },
+  "verdict": "park",
+  "verdict_reason": "Part A passes cleanly on files I actually opened: 4,545 rows exactly as claimed, labels in a column, sequences and SMILES both present, no duplicates, no train/benchmark sequence overlap, 7 MB total. The problem is Part C. This is a computational paper whose default project is beating its own model, and the field has at least four open, reproducible predictors (PARAS 2026, NRPStransformer 2025, AdenPredictor 2023, DeepAden itself with downloadable weights and a confidence calibrator) that have already been evaluated with sequence-identity stratification. No new measurement exists here: the 4,545 rows are the de-duplicated union of exactly the data the competitors trained on, with only 44 of 269 label classes having 10 or more examples and zero measured non-substrates. The one genuine opening is the stringent low-homology benchmark the authors themselves name as missing, which is real and cannot produce a useless answer, but it is a benchmark-note-scale result that needs three heavy tool installs and may be killed outright by the cheapest check: the paper's own low-identity bin held only 9 to 11 sequences. Park it as a well-defined fallback project, not a first choice."
+}
