@@ -1,6 +1,6 @@
 # bioml-scout
 
-Edited: 10.14.2026
+Edited: 10.22.2026
 
 Author: haim krupkin (HK) +claude
 
@@ -10,6 +10,7 @@ decides whether it is a good basis for a machine-learning project.
 We give a return on investment (ROI) score based on paramemters defined manually by HK which then an agentic swam reviews each paper and its resources according to these chemarks.
 The checkamrks include data availability, novelty, diffuculty, impact, and many more.
 
+Some known papers manually read by HK/previously worked on were also examined for their outpus, overall the output is accurate, but of course can be improved.
 
 **The dashboard** holds every evaluation, scored and browsable — hover a point for the one-line
 idea and the arithmetic behind its score, click it for the full report.
@@ -21,15 +22,8 @@ idea and the arithmetic behind its score, click it for the full report.
 
 ## Where it has got to
 
-As of 14 October 2026, with the run still going: 774 of 1,027 papers evaluated, from 8 journals
+As of 14 October 2026, with the run still going: 1026 of 1,027 papers evaluated, from 8 journals
 published between 1 July and 1 October 2026.
-
-| verdict | papers | what it means |
-|---|---|---|
-| **do it** | 25 | passed every deal-breaker, with the data opened and checked |
-| **verify first** | 35 | looks good, but one specific count needs confirming |
-| park | 62 | passed the deal-breakers, weak case |
-| rejected | 652 | failed a deal-breaker — usually the data needs an access application, or the label would have to be constructed |
 
 
 ## How it works
