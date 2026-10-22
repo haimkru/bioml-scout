@@ -106,4 +106,4 @@ open dashboard.html
 Pacing is important otherwise u will burn through tokens if tokens are given in a per hour/day basis.
 Generally we have a setting to test on 10 papers initally and we can tweek the agents afterwards. its best to do htis at this stage.
 
-For questions: contact hkrupkin@stanford. edu 
+For questions: contact hkrupkin@stanford.edu 
