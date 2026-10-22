@@ -2,7 +2,7 @@
 
 Edited: 10.22.2026
 
-Author: haim krupkin (HK) +claude
+Author: Haim Krupkin (HK) +claude
 
 Reads recent open-access biology papers, finds the data attached to them, opens that data, and
 decides whether it is a good basis for a machine-learning project. 
