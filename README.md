@@ -2,10 +2,14 @@
 
 Edited: 10.14.2026
 
-Author: haim krupkin+claude
+Author: haim krupkin (HK) +claude
 
 Reads recent open-access biology papers, finds the data attached to them, opens that data, and
 decides whether it is a good basis for a machine-learning project. 
+
+We give a return on investment (ROI) score based on paramemters defined manually by HK which then an agentic swam reviews each paper and its resources according to these chemarks.
+The checkamrks include data availability, novelty, diffuculty, impact, and many more.
+
 
 **The dashboard** holds every evaluation, scored and browsable — hover a point for the one-line
 idea and the arithmetic behind its score, click it for the full report.
